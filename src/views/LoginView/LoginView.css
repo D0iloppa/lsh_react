@@ -1,0 +1,38 @@
+/* LoginView.css - Updated for consistent fonts */
+
+.login-container {
+    min-height: 83vh;
+    background-color: #f9fafb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    /* 손글씨 느낌의 Google Font 사용 */
+    font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+  }
+  
+  .login-wrapper {
+    width: 100%;
+    max-width: 24rem;
+  }
+  
+  .login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  /* Footer */
+  .login-footer {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    font-size: 0.75rem;
+  }

@@ -1,0 +1,194 @@
+/* SketchComponents.css */
+
+/* ========== Sketch Div Styles ========== */
+.sketch-div {
+    background-color: white;
+    border: 1px solid #333;
+    box-shadow: 2px 4px 6px rgba(0,0,0,0.1);
+  }
+  
+  /* Sketch Div Variants */
+  .sketch-div--container {
+    padding: 1.5rem;
+    border-top-left-radius: 15px 8px;
+    border-top-right-radius: 8px 20px;
+    border-bottom-right-radius: 12px 6px;
+    border-bottom-left-radius: 6px 15px;
+    transform: rotate(-1.2deg);
+  }
+  
+  .sketch-div--card {
+    padding: 1rem;
+    border-top-left-radius: 12px 6px;
+    border-top-right-radius: 6px 15px;
+    border-bottom-right-radius: 10px 4px;
+    border-bottom-left-radius: 4px 12px;
+    transform: rotate(0.8deg);
+  }
+  
+  .sketch-div--wrapper {
+    padding: 0.5rem;
+    border-top-left-radius: 8px 10px;
+    border-top-right-radius: 14px 5px;
+    border-bottom-right-radius: 6px 12px;
+    border-bottom-left-radius: 10px 7px;
+    transform: rotate(-0.5deg);
+  }
+  
+  /* ========== Sketch Input Styles ========== */
+  .sketch-input-group {
+    margin-bottom: 1rem;
+  }
+  
+  .sketch-input {
+    width: 100%;
+    padding: 0.75rem;
+    color: #374151;
+    background-color: #fafafa;
+    border: 0.8px solid #666;
+    outline: none;
+    transition: border-color 0.2s;
+    font-size: 1rem;
+    font-family: inherit;
+    box-sizing: border-box; /* 이게 중요! */
+  }
+  
+  .sketch-input:focus {
+    border-color: #374151;
+  }
+  
+  .sketch-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .sketch-input::placeholder {
+    color: #6b7280;
+  }
+  
+  /* Sketch Input Variants */
+  .sketch-input--email {
+    border-top-left-radius: 8px 4px;
+    border-top-right-radius: 12px 8px;
+    border-bottom-right-radius: 6px 10px;
+    border-bottom-left-radius: 10px 5px;
+    transform: rotate(0.5deg);
+  }
+  
+  .sketch-input--password {
+    border-top-left-radius: 10px 6px;
+    border-top-right-radius: 5px 12px;
+    border-bottom-right-radius: 8px 4px;
+    border-bottom-left-radius: 12px 9px;
+    transform: rotate(-0.4deg);
+  }
+  
+  .sketch-input--default {
+    border-top-left-radius: 6px 8px;
+    border-top-right-radius: 10px 5px;
+    border-bottom-right-radius: 8px 12px;
+    border-bottom-left-radius: 12px 6px;
+    transform: rotate(0.2deg);
+  }
+  
+  /* ========== Sketch Button ========== */
+  .sketch-button {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #e5e7eb;
+    color: #374151;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 0.8px solid #666;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+    font-family: inherit;
+    border-top-left-radius: 12px 7px;
+    border-top-right-radius: 6px 14px;
+    border-bottom-right-radius: 10px 5px;
+    border-bottom-left-radius: 8px 11px;
+    transform: rotate(0.3deg);
+    box-sizing: border-box; /* 추가! */
+  }
+  
+  .sketch-button:hover:not(:disabled) {
+    background-color: #d1d5db;
+  }
+  
+  .sketch-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .sketch-button--secondary {
+    background-color: transparent;
+    color: #6b7280;
+    border: none;
+    text-transform: none;
+    letter-spacing: normal;
+    text-decoration: underline wavy #999;
+    font-size: 0.875rem;
+    padding: 0.25rem;
+    transform: rotate(-0.2deg);
+  }
+  
+  .sketch-button--secondary:hover:not(:disabled) {
+    color: #374151;
+    background-color: transparent;
+  }
+  
+  /* ========== Error Messages ========== */
+  .sketch-error-message {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    transform: rotate(0.1deg);
+  }
+  
+  .sketch-success-message {
+    color: #059669;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    transform: rotate(-0.1deg);
+  }
+  
+  /* ========== Sketch Title ========== */
+  .sketch-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #374151;
+    transform: rotate(0.8deg);
+  }
+  
+  .sketch-title--large {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #111827;
+    transform: rotate(-0.3deg);
+  }
+  
+  /* ========== Link Styles ========== */
+  .sketch-link {
+    color: #6b7280;
+    text-decoration: underline wavy #999;
+    transition: color 0.2s;
+    font-size: 0.875rem;
+  }
+  
+  .sketch-link:hover {
+    color: #374151;
+  }
+  
+  .sketch-link--primary {
+    color: #374151;
+    font-weight: 500;
+    text-decoration: underline wavy #666;
+  }
+  
+  .sketch-link--primary:hover {
+    color: #111827;
+  }
