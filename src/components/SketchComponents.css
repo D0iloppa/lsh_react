@@ -18,7 +18,7 @@
   }
   
   .sketch-div--card {
-    padding: 1rem;
+    padding: 0.5rem;  /* 더 작게 */
     border-top-left-radius: 12px 6px;
     border-top-right-radius: 6px 15px;
     border-bottom-right-radius: 10px 4px;

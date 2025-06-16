@@ -1,3 +1,8 @@
+* {
+  font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+}
+
+
 #root {
   max-width: 1280px;
   margin: 0 auto;

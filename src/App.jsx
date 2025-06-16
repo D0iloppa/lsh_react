@@ -1,20 +1,74 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
-import LoginView from './views/LoginView';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
-function App() {
-  const isLoggedIn = false; // 임시 값. 실제론 전역 상태로 대체
+import WelcomePage from '@components/Welcome';
+
+import LoginView from '@components/Login';
+import RegisterView from '@components/Register';
+
+import MainApp from '@layout/MainApp';
+
+const AppRoutes = () => {
+  const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
+
+  const handleWelcomeComplete = () => {
+    // 튜토리얼 완료 시 로그인 상태 체크
+    if (isLoggedIn) {
+      navigate('/main');
+    } else {
+      navigate('/login');
+    }
+  };
 
   return (
-    <Router basename="/lsh"> {/* ← /lsh 하위에서 돌아가게 함 */}
-      <Routes>
-        <Route path="/" element={
-          isLoggedIn ? <Navigate to="/main" /> : <LoginView />
-        } />
-        <Route path="*" element={<div>404 Not Found</div>} />
-      </Routes>
-    </Router>
+    <Routes>
+      {/* 1. 최초 진입 - 항상 WelcomePage */}
+      <Route 
+        path="/" 
+        element={<WelcomePage onComplete={handleWelcomeComplete} />} 
+      />
+
+      {/* 2. 로그인 페이지 */}
+      <Route 
+        path="/login" 
+        element={
+          isLoggedIn ? <Navigate to="/main" replace /> : <LoginView />
+        } 
+      />
+
+
+      {/* 3. 회원가입 페이지 */}
+      <Route 
+        path="/register" 
+        element={
+          isLoggedIn ? <Navigate to="/main" replace /> : <RegisterView />
+        } 
+      />
+
+      {/* 3. 메인 앱 (로그인 필요) */}
+      <Route 
+        path="/main" 
+        element={
+          isLoggedIn ? <MainApp /> : <Navigate to="/login" replace />
+        } 
+      />
+
+      {/* 404 페이지 */}
+      <Route path="*" element={<div>404 Not Found</div>} />
+    </Routes>
+  );
+};
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router basename="/lsh">
+        <AppRoutes />
+      </Router>
+    </AuthProvider>
   );
 }
 

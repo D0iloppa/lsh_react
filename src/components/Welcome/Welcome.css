@@ -1,0 +1,294 @@
+/* Welcome 페이지 전체 스타일 */
+.welcome-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  }
+  
+  /* 상단 회전 영역 */
+  .rotation-section {
+    position: relative;
+    padding: 20px;
+    height: 320px;
+  }
+  
+  .venue-rotation {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* 네비게이션 화살표 */
+  .navigation-arrows {
+    position: absolute;
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20;
+    pointer-events: none;
+  }
+  
+  .arrow-container {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    opacity: 0.8;
+  }
+  
+  .arrow-line {
+    width: 22px;
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+    transform-origin: right center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+  }
+  
+  .arrow-line-1 {
+    transform: rotate(-30deg);
+    width: 18px;
+  }
+  
+  .arrow-line-2 {
+    transform: rotate(0deg);
+    width: 22px;
+  }
+  
+  .arrow-line-3 {
+    transform: rotate(30deg);
+    width: 18px;
+  }
+  
+  .navigation-arrows:hover .arrow-line {
+    background: #e91e63;
+    opacity: 1;
+  }
+  
+
+    /* welcome section*/
+   .welcome-description{
+    text-align: center;
+   }
+
+  /* 브랜드 섹션 */
+  .brand-section {
+    padding: 0 20px 20px 20px;
+  }
+  
+  .brand-info {
+    position: relative;
+    background: white;
+    border: 3px solid #343a40;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+  
+  .brand-content {
+    position: relative;
+    z-index: 10;
+  }
+  
+  .brand-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .brand-icon {
+    font-size: 32px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    animation: bounce 2s ease-in-out infinite;
+  }
+  
+  .brand-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #343a40;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial Black', sans-serif;
+    letter-spacing: 1px;
+  }
+  
+  .brand-subtitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: #495057;
+    margin: 0 0 12px 0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  
+  .brand-description {
+    font-size: 16px;
+    color: #6c757d;
+    margin: 0;
+    line-height: 1.5;
+    font-style: italic;
+    font-weight: 500;
+  }
+  
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-8px);
+    }
+    60% {
+      transform: translateY(-4px);
+    }
+  }
+  
+  /* 액션 버튼 섹션 */
+  .action-buttons-section {
+    padding: 0 20px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .action-btn {
+    position: relative;
+    padding: 18px 24px;
+    border: 3px solid #343a40;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .btn-text {
+    position: relative;
+    z-index: 10;
+    text-transform: uppercase;
+    font-family: 'Arial Black', sans-serif;
+  }
+  
+  .action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s ease;
+    z-index: 5;
+  }
+  
+  .action-btn:hover::before {
+    left: 100%;
+  }
+  
+  
+  .create-account-btn {
+    background: white;
+    color: #343a40;
+    border-color: #343a40;
+  }
+  
+  .create-account-btn:hover {
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 58, 64, 0.2);
+  }
+  
+  .create-account-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(52, 58, 64, 0.1);
+  }
+  
+  /* 반응형 디자인 */
+  @media (max-width: 768px) {
+    .rotation-section {
+      padding: 16px;
+      height: 280px;
+    }
+    
+    .navigation-arrows {
+      right: 24px;
+    }
+    
+    .arrow-line {
+      width: 18px;
+      height: 2px;
+    }
+    
+    .arrow-line-1,
+    .arrow-line-3 {
+      width: 14px;
+    }
+    
+    .brand-section {
+      padding: 0 16px 16px 16px;
+    }
+    
+    .brand-info {
+      padding: 20px;
+    }
+    
+    .brand-title {
+      font-size: 24px;
+    }
+    
+    .brand-subtitle {
+      font-size: 18px;
+    }
+    
+    .brand-description {
+      font-size: 14px;
+    }
+    
+    .action-buttons-section {
+      padding: 0 16px 16px 16px;
+      gap: 12px;
+    }
+    
+    .action-btn {
+      padding: 16px 20px;
+      font-size: 16px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .rotation-section {
+      padding: 12px;
+      height: 240px;
+    }
+    
+    .navigation-arrows {
+      right: 20px;
+    }
+    
+    .brand-icon {
+      font-size: 28px;
+    }
+    
+    .brand-title {
+      font-size: 20px;
+    }
+    
+    .brand-subtitle {
+      font-size: 16px;
+    }
+    
+    .brand-description {
+      font-size: 13px;
+    }
+    
+    .action-btn {
+      padding: 14px 18px;
+      font-size: 15px;
+    }
+  }

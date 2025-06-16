@@ -1,5 +1,6 @@
 // views/LoginView/login.js
 
+
 // 이메일 유효성 검사
 export const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -33,6 +34,35 @@ export const validateForm = (email, password) => {
     };
 };
 
+export const loginPost = async (email, password) => {
+    
+    const demo_user = {
+        name : '테스트',
+        email : email
+    }
+
+    return {
+        success: true,
+        message: 'Login successful!',
+        user : demo_user
+    };
+
+    /*
+        // 임시 로직 (실제로는 API 응답 처리)
+        if (email === 'test@example.com' && password === 'password') {
+            return {
+                success: true,
+                message: 'Login successful!'
+            };
+        } else {
+            return {
+                success: false,
+                errors: { general: 'Invalid email or password' }
+            };
+        }
+    */
+};
+
 // 로그인 핸들러
 export const handleLogin = async (email, password) => {
     try {
@@ -46,20 +76,11 @@ export const handleLogin = async (email, password) => {
         }
 
         // 로그인 API 호출 (여기서 실제 API 연동)
-        console.log('Login attempt:', { email, password });
+        // console.log('Login attempt:', { email, password });
 
-        // 임시 로직 (실제로는 API 응답 처리)
-        if (email === 'test@example.com' && password === 'password') {
-            return {
-                success: true,
-                message: 'Login successful!'
-            };
-        } else {
-            return {
-                success: false,
-                errors: { general: 'Invalid email or password' }
-            };
-        }
+
+
+        return await loginPost(email, password);
 
     } catch (error) {
         console.error('Login error:', error);

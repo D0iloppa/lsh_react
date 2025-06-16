@@ -1,0 +1,86 @@
+.main-app-container {
+    height: calc(100vh - 80px);  /* 80px = 네비게이션 바 높이 */
+    max-width: 28rem;
+    margin: 0 auto;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  
+  .content-area {
+    flex: 1;
+    overflow-y: auto;
+    background-color: #f9fafb;
+    /* 하단 네비게이션 높이만큼 padding-bottom */
+    padding-bottom: 80px;
+  }
+  
+  .bottom-navigation {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 28rem;
+    background-color: white;
+    border-top: 3px solid #1f2937;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .nav-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+  
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    transform: rotate(0.5deg);
+  }
+  
+  .nav-item:hover {
+    transform: rotate(-0.5deg) scale(1.05);
+  }
+  
+  .nav-item.active {
+    color: #1f2937;
+    font-weight: 600;
+    transform: rotate(-1deg) scale(1.1);
+  }
+  
+  .nav-item:not(.active) {
+    color: #6b7280;
+  }
+  
+  .nav-icon {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2;
+  }
+  
+  .nav-label {
+    font-size: 0.75rem;
+    text-align: center;
+    line-height: 1;
+  }
+  
+  /* 스케치 스타일 효과 */
+  .nav-item:nth-child(1) { transform: rotate(1deg); }
+  .nav-item:nth-child(2) { transform: rotate(-0.5deg); }
+  .nav-item:nth-child(3) { transform: rotate(0.8deg); }
+  .nav-item:nth-child(4) { transform: rotate(-1.2deg); }
+  
+  .nav-item.active:nth-child(1) { transform: rotate(1.5deg) scale(1.1); }
+  .nav-item.active:nth-child(2) { transform: rotate(-1deg) scale(1.1); }
+  .nav-item.active:nth-child(3) { transform: rotate(1.3deg) scale(1.1); }
+  .nav-item.active:nth-child(4) { transform: rotate(-1.7deg) scale(1.1); }

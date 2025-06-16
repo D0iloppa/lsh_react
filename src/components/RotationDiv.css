@@ -1,0 +1,247 @@
+.rotation-div {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #f8f9fa;
+  }
+  
+  .rotation-div.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+  }
+  
+  .rotation-placeholder {
+    color: #6c757d;
+    font-size: 16px;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .rotation-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  .rotation-items-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    will-change: transform;
+  }
+  
+  .rotation-item {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* 네비게이션 버튼 */
+  .rotation-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+  }
+  
+  .rotation-div:hover .rotation-nav {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  .rotation-nav:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: translateY(-50%) scale(1.1);
+  }
+  
+  .rotation-nav:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+  
+  .rotation-nav-prev {
+    left: 10px;
+  }
+  
+  .rotation-nav-next {
+    right: 10px;
+  }
+  
+  /* 인디케이터 */
+  .rotation-indicators {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+  }
+  
+  .rotation-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+  
+  .rotation-indicator:hover {
+    background: rgba(255, 255, 255, 0.7);
+    transform: scale(1.1);
+  }
+  
+  .rotation-indicator.active {
+    background: white;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+    transform: scale(1.2);
+  }
+  
+  .rotation-indicator.active::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #007bff;
+  }
+  
+  /* 페이드 효과를 원하는 경우를 위한 클래스 */
+  .rotation-div.fade .rotation-items-container {
+    position: relative;
+  }
+  
+  .rotation-div.fade .rotation-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+  }
+  
+  .rotation-div.fade .rotation-item.active {
+    opacity: 1;
+  }
+  
+  /* 반응형 디자인 */
+  @media (max-width: 768px) {
+    .rotation-nav {
+      width: 36px;
+      height: 36px;
+      font-size: 16px;
+    }
+    
+    .rotation-nav-prev {
+      left: 8px;
+    }
+    
+    .rotation-nav-next {
+      right: 8px;
+    }
+    
+    .rotation-indicators {
+      bottom: 12px;
+    }
+    
+    .rotation-indicator {
+      width: 10px;
+      height: 10px;
+    }
+    
+    .rotation-indicator.active::before {
+      width: 4px;
+      height: 4px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .rotation-nav {
+      width: 32px;
+      height: 32px;
+      font-size: 14px;
+    }
+    
+    .rotation-indicators {
+      bottom: 8px;
+      gap: 6px;
+    }
+    
+    .rotation-indicator {
+      width: 8px;
+      height: 8px;
+    }
+    
+    .rotation-indicator.active::before {
+      width: 3px;
+      height: 3px;
+    }
+  }
+  
+  /* 커스텀 테마를 위한 CSS 변수 */
+  .rotation-div {
+    --rotation-nav-bg: rgba(0, 0, 0, 0.5);
+    --rotation-nav-hover-bg: rgba(0, 0, 0, 0.7);
+    --rotation-nav-color: white;
+    --rotation-indicator-bg: rgba(255, 255, 255, 0.5);
+    --rotation-indicator-active-bg: white;
+    --rotation-indicator-active-color: #007bff;
+  }
+  
+  /* 다크 테마 */
+  .rotation-div.dark {
+    --rotation-nav-bg: rgba(255, 255, 255, 0.2);
+    --rotation-nav-hover-bg: rgba(255, 255, 255, 0.3);
+    --rotation-nav-color: white;
+    --rotation-indicator-bg: rgba(255, 255, 255, 0.3);
+    --rotation-indicator-active-bg: white;
+    --rotation-indicator-active-color: #0d6efd;
+  }
+  
+  .rotation-nav {
+    background: var(--rotation-nav-bg);
+    color: var(--rotation-nav-color);
+  }
+  
+  .rotation-nav:hover {
+    background: var(--rotation-nav-hover-bg);
+  }
+  
+  .rotation-indicator {
+    background: var(--rotation-indicator-bg);
+  }
+  
+  .rotation-indicator.active {
+    background: var(--rotation-indicator-active-bg);
+  }
+  
+  .rotation-indicator.active::before {
+    background: var(--rotation-indicator-active-color);
+  }

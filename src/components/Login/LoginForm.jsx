@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import { handleLogin, handleForgotPassword } from './login';
+// import { handleLogin, handleForgotPassword } from './login';
+
+import { useAuth } from '@contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+
 import SketchInput from '@components/SketchInput';
 
 export default function LoginForm() {
@@ -9,17 +14,23 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
 
+  const { login, loading } = useAuth(); // ← AuthContext 사용
+  const navigate = useNavigate();
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
     setMessage('');
 
-    const result = await handleLogin(email, password);
+    const result = await login(email, password);
     
     if (result.success) {
       setMessage(result.message);
-      // 로그인 성공 시 리다이렉트 등 추가 로직
+      // 로그인 성공 시 메인 페이지로 이동
+      setTimeout(() => {
+        navigate('/main');
+      }, 1000); // 1초 후 이동 (성공 메시지 표시용)
     } else {
       setErrors(result.errors);
     }

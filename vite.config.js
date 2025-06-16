@@ -8,7 +8,12 @@ export default defineConfig({
     alias: {
       '@': '/src',
       '@components': '/src/components',
-      '@views': '/src/views'
+      '@contexts' : '/src/contexts',
+      '@pages': '/src/pages',
+      '@hooks': '/src/hooks',
+      '@layout': '/src/layout',
+      '@utils': '/src/utils',
+      '@assets': '/src/assets'
     }
   },
   plugins: [react()],
