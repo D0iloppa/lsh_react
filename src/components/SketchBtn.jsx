@@ -71,7 +71,7 @@ const SketchBtn = ({
         }
 
         .sketch-btn.accent {
-          background-color: #fbbf24;
+          background-color: rgb(245, 255, 237);
           color: #1f2937;
         }
 

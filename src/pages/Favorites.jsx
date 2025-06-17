@@ -47,27 +47,33 @@ const FavoritesPage = ({
   variant = "nodes", // "nodes", "arrow", "simple"
   ...props 
 }) => {
-    return (
-      <svg 
-        width={size} 
-        height={size} 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke={color} 
-        strokeWidth={strokeWidth}
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-        className={`share-icon ${className}`}
-        {...props}
-      >
-        {/* 간단한 공유 아이콘 - 상자에서 화살표가 나오는 형태 */}
-        <path d="M14 2L20 8V20C20 21.1 19.1 22 18 22H6C4.9 22 4 21.1 4 20V4C4 2.9 4.9 2 6 2H14Z" />
-        <path d="M14 2V8H20" />
-        <path d="M12 11L16 7" />
-        <path d="M16 7H12" />
-        <path d="M16 7V11" />
-      </svg>
-    );
+     return (
+    <svg 
+      width={size} 
+      height={size} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke={color} 
+      strokeWidth={strokeWidth}
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      className={`share-icon ${className}`}
+      {...props}
+    >
+      {/* 오른쪽 위 노드 */}
+      <circle cx="18" cy="5" r="3" />
+      
+      {/* 왼쪽 아래 노드 */}
+      <circle cx="6" cy="12" r="3" />
+      
+      {/* 오른쪽 아래 노드 */}
+      <circle cx="18" cy="19" r="3" />
+      
+      {/* 연결선들 */}
+      <path d="M8.59 13.51L15.42 17.49" />
+      <path d="M15.41 6.51L8.59 10.49" />
+    </svg>
+  );
 };
 
 
@@ -212,6 +218,11 @@ const FavoritesPage = ({
           color: #1f2937;   
           margin: 0 0 0.25rem 0;
         }
+        .venue-info {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
 
         .venue-description {
          text-align: start;
@@ -285,6 +296,7 @@ const FavoritesPage = ({
                 size="small"
                 onClick={handleSort}
               >
+                <HatchPattern opacity={0.4} />
                 SORT
               </SketchBtn>
               <SketchBtn 
@@ -292,6 +304,7 @@ const FavoritesPage = ({
                 size="small"
                 onClick={handleFilter}
               >
+                <HatchPattern opacity={0.4} />
                 FILTER
               </SketchBtn>
             </div>

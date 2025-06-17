@@ -13,34 +13,123 @@ const NotificationsPage = ({
 }) => {
   const [selectedFilter, setSelectedFilter] = useState('all');
 
+const getIcon = () => {
+    switch (type) {
+      case 'booking':
+        return (
+          <svg 
+            width={size} 
+            height={size} 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke={color} 
+            strokeWidth={strokeWidth}
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+            className={`notification-icon ${className}`}
+            {...props}
+          >
+            {/* 벨 아이콘 */}
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+        );
+        
+      case 'promotion':
+        return (
+          <svg 
+            width={size} 
+            height={size} 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke={color} 
+            strokeWidth={strokeWidth}
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+            className={`notification-icon ${className}`}
+            {...props}
+          >
+            {/* 선물 상자 아이콘 */}
+            <polyline points="20,12 20,22 4,22 4,12" />
+            <rect x="2" y="7" width="20" height="5" />
+            <line x1="12" y1="22" x2="12" y2="7" />
+            <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+            <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+          </svg>
+        );
+        
+      case 'alert':
+        return (
+          <svg 
+            width={size} 
+            height={size} 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke={color} 
+            strokeWidth={strokeWidth}
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+            className={`notification-icon ${className}`}
+            {...props}
+          >
+            {/* 경고 삼각형 아이콘 */}
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+        );
+        
+      default:
+        return (
+          <svg 
+            width={size} 
+            height={size} 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke={color} 
+            strokeWidth={strokeWidth}
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+            className={`notification-icon ${className}`}
+            {...props}
+          >
+            {/* 기본 알림 아이콘 */}
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        );
+    }
+  };
+
   const notifications = [
     {
-      id: 1,
-      type: 'booking',
-      icon: '🔔',
-      message: 'New booking at Sky Lounge',
-      date: '24/05/2028',
-      time: '14:05',
-      isRead: false
-    },
-    {
-      id: 2,
-      type: 'promotion',
-      icon: '💝',
-      message: '50% off at Beach Club',
-      date: '24/05/2028',
-      time: '07:05',
-      isRead: true
-    },
-    {
-      id: 3,
-      type: 'alert',
-      icon: '⚠️',
-      message: 'Alert Event rescheduled',
-      date: '24/05/2028',
-      time: '16:05',
-      isRead: false
-    }
+    id: 1,
+    type: 'booking',
+    icon: <span style={{ filter: 'grayscale(1)', fontSize: '1.25rem' }}>🔔</span>,
+    message: 'New booking at Sky Lounge',
+    date: '24/05/2028',
+    time: '14:05',
+    isRead: false
+  },
+  {
+    id: 2,
+    type: 'promotion',
+    icon: <span style={{ filter: 'grayscale(1)', fontSize: '1.25rem' }}>💝</span>,
+    message: '50% off at Beach Club',
+    date: '24/05/2028',
+    time: '07:05',
+    isRead: true
+  },
+  {
+    id: 3,
+    type: 'alert',
+    icon: <span style={{ filter: 'grayscale(1)', fontSize: '1.25rem' }}>⚠️</span>,
+    message: 'Alert Event rescheduled',
+    date: '24/05/2028',
+    time: '16:05',
+    isRead: false
+  }
   ];
 
   const handleClearAll = () => {
@@ -89,6 +178,8 @@ const NotificationsPage = ({
           margin: 0 auto;
           background-color: white;
           position: relative;
+
+          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .header {
@@ -108,20 +199,23 @@ const NotificationsPage = ({
         }
 
         .filter-section {
-          padding: 1rem;
+          display: flex;
+          padding: 17px 10px;
           border-bottom: 2px solid #e5e7eb;
         }
 
         .filter-label {
-          font-size: 0.9rem;
-          font-weight: bold;
-          color: #1f2937;
-          margin-bottom: 0.75rem;
+              margin-right: 12px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #1f2937;
+            line-height: 3;
+            margin-bottom: 0px;
         }
 
         .filter-buttons {
           display: flex;
-          gap: 0.5rem;
+          gap:5px;
         }
 
         .notifications-list {
@@ -171,7 +265,7 @@ const NotificationsPage = ({
         }
 
         .notification-message {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+         
           font-size: 0.95rem;
           color: #374151;
           margin: 0 0 0.25rem 0;
@@ -179,14 +273,14 @@ const NotificationsPage = ({
         }
 
         .notification-datetime {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+        
           font-size: 0.8rem;
           color: #6b7280;
           margin: 0;
         }
 
         .notification-status {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+        
           font-size: 0.8rem;
           font-weight: bold;
           flex-shrink: 0;
@@ -207,9 +301,7 @@ const NotificationsPage = ({
             border-right: none;
           }
 
-          .filter-buttons {
-            flex-wrap: wrap;
-          }
+          
         }
       `}</style>
 
@@ -243,6 +335,7 @@ const NotificationsPage = ({
                 size="small"
                 onClick={() => handleFilterChange(filter.type)}
               >
+                 {<HatchPattern opacity={0.4} />}
                 {filter.label}
               </SketchBtn>
             ))}
@@ -257,7 +350,7 @@ const NotificationsPage = ({
               className={`notification-item ${notification.isRead ? 'read' : ''}`}
               onClick={() => handleNotificationClick(notification)}
             >
-              {!notification.isRead && <HatchPattern opacity={0.03} />}
+              {<HatchPattern opacity={0.4} />}
 
               <div className="notification-content">
                 <div className="notification-icon">

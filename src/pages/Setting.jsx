@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchInput from '@components/SketchInput';
@@ -18,6 +18,10 @@ const SettingsPage = ({
   const [phone, setPhone] = useState('+84 123 456 789');
   const [shareLocation, setShareLocation] = useState(false);
   const [showOnlineStatus, setShowOnlineStatus] = useState(true);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleBack = () => {
     console.log('Back 클릭');
