@@ -12,32 +12,52 @@ const SketchBtn = ({
   return (
     <>
       <style jsx>{`
-        .sketch-btn {
-          cursor: pointer;
-          position: relative;
-          transition: all 0.2s ease;
-          outline: none;
-          display: inline-block;
-          text-decoration: none;
-          transform: rotate(-0.5deg);
-        }
 
-        .sketch-btn:hover:not(:disabled) {
-          transform: rotate(-0.5deg) scale(1.02);
-          box-shadow: 3px 3px 0px #1f2937;
-        }
+      .sketch-btn {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: #e5e7eb;
+        color: #374151;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border: 0.8px solid #666;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.2s;
+        font-family: inherit;
+        border-top-left-radius: 12px 7px;
+        border-top-right-radius: 6px 14px;
+        border-bottom-right-radius: 10px 5px;
+        border-bottom-left-radius: 8px 11px;
+        transform: rotate(0.3deg);
+        box-sizing: border-box; /* 추가! */
 
-        .sketch-btn:active:not(:disabled) {
-          transform: rotate(-0.5deg) scale(0.98);
-          box-shadow: 1px 1px 0px #1f2937;
-        }
+        font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+      }
+      
+      .sketch-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      
+      .sketch-btn--secondary {
+        background-color: transparent;
+        color: #6b7280;
+        border: none;
+        text-transform: none;
+        letter-spacing: normal;
+        text-decoration: underline wavy #999;
+        font-size: 0.875rem;
+        padding: 0.25rem;
+        transform: rotate(-0.2deg);
+      }
+      
+      .sketch-btn--secondary:hover:not(:disabled) {
+        color: #374151;
+        background-color: transparent;
+      }
 
-        .sketch-btn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-          background-color: #f3f4f6;
-          color: #9ca3af;
-        }
 
         /* Variants */
         .sketch-btn.primary {

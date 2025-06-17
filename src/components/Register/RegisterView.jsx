@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@contexts/AuthContext';
 import SketchInput from '@components/SketchInput';
+import SketchBtn from '@components/SketchBtn';
+import Header from '@components/Header';
+import HatchPattern from '@components/HatchPattern';
+import InitFooter2 from '@components/InitFooter2';
+
 
 export default function RegisterView() {
   const [formData, setFormData] = useState({
@@ -92,23 +97,33 @@ export default function RegisterView() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white min-h-screen border-gray-800 p-6">
+    <div className="register-container max-w-md mx-auto bg-white min-h-screen border-gray-800 p-6">
       {/* 헤더 */}
-      <div style={{ textAlign: 'center', marginBottom: '2rem', padding: '1rem 0', borderBottom: '2px solid #374151' }}>
-        <span style={{ fontSize: '1.5rem', marginRight: '0.5rem' }}>🍸</span>
-        <span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>LeTanTon Sheriff</span>
-      </div>
+      <Header 
+          className="custom-header"
+          hatchOpacity={0.4}
+        />
 
-      <h2 className="sketch-title">Register Member</h2>
+      <h2
+        className=""
+        style={{
+          fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif", fontSize: '1.5rem', marginBottom: '5px'
+        }}
+      >
+        Register Member
+      </h2>
+
       
       <p style={{ 
         fontSize: '0.875rem', 
         color: '#6b7280', 
-        textAlign: 'center', 
-        marginBottom: '2rem',
-        lineHeight: '1.4'
+        textAlign: 'start', 
+        marginBottom: '1rem',
+        marginTop: '0',
+        lineHeight: '1.4',
+        fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"
       }}>
-        Join us to explore the vibrant nightlife of Vietnam.
+        Join us to explore the vibrant nightlife of Vietnam. <br></br>
         Sign up now to receive exclusive updates on events and reservations.
       </p>
 
@@ -122,34 +137,34 @@ export default function RegisterView() {
         )}
 
         {/* Full Name Input */}
+          <p style={{ margin:'0', fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Full Name</p>
         <SketchInput
           type="text"
           name="fullName"
-          placeholder="Full Name"
           value={formData.fullName}
           onChange={handleInputChange}
           disabled={isLoading}
           error={errors.fullName}
-          variant="text"
+          variant="text" style={{ marginBottom: '-8px' }} 
         />
 
         {/* Email Input */}
+        <p style={{ margin:'0',fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>email</p>
         <SketchInput
           type="email"
           name="email"
-          placeholder="Email Address"
           value={formData.email}
           onChange={handleInputChange}
           disabled={isLoading}
           error={errors.email}
-          variant="email"
+          variant="email" style={{ marginBottom: '-8px' }} 
         />
 
         {/* Password Input */}
+        <p style={{ margin:'0',fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Password</p>
         <SketchInput
           type="password"
           name="password"
-          placeholder="Password"
           value={formData.password}
           onChange={handleInputChange}
           disabled={isLoading}
@@ -158,22 +173,30 @@ export default function RegisterView() {
         />
 
         {/* Sign Up Button */}
-        <button
+        {/* <button
           type="submit"
           className="sketch-button"
           disabled={isLoading}
         >
           {isLoading ? 'Signing up...' : 'SIGN UP'}
-        </button>
+        </button> */}
+        <SketchBtn
+          type="submit"
+          className="sketch-button"
+          disabled={isLoading}
+        >
+          <HatchPattern opacity={0.3} />
+          {isLoading ? 'Signing up...' : 'SIGN UP'}
+        </SketchBtn>
       </form>
 
       {/* 소셜 로그인 */}
-      <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-        <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+      <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+        <p style={{marginBottom: '0', fontSize: '0.875rem', color: '#6b7280' }}>
           or sign up with
         </p>
         
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'center'}}>
           <button 
             className="sketch-button sketch-button--secondary"
             onClick={() => handleSocialLogin('facebook')}
@@ -204,7 +227,7 @@ export default function RegisterView() {
       </div>
 
       {/* Login Link */}
-      <div style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.875rem', color: '#6b7280' }}>
+      <div style={{ textAlign: 'center', marginTop: '5px', fontSize: '0.875rem', color: '#6b7280' }}>
         Already have an account?{' '}
         <a 
           href="#" 
@@ -219,7 +242,7 @@ export default function RegisterView() {
       </div>
 
       {/* 푸터 */}
-      <div style={{ 
+      {/* <div style={{ 
         textAlign: 'center', 
         marginTop: '3rem', 
         padding: '1rem 0', 
@@ -228,7 +251,11 @@ export default function RegisterView() {
         color: '#6b7280'
       }}>
         © 2025. LeTanTon Sheriff All rights reserved.
-      </div>
+      </div> */}
+      <InitFooter2 />
+      
+                
+                <InitFooter2 />
     </div>
   );
 }

@@ -73,23 +73,43 @@ const ImagePlaceholder = ({
 
   // 이미지가 없거나 로딩 실패한 경우 - SVG 플레이스홀더
   return (
-    <div className={`border-2 border-gray-800 bg-white relative ${className} ${fallbackClassName}`} style={style}>
-      <svg className="w-full h-full" viewBox="0 0 100 100">
-        <line x1="10" y1="10" x2="90" y2="90" stroke="black" strokeWidth="2"/>
-        <line x1="90" y1="10" x2="10" y2="90" stroke="black" strokeWidth="2"/>
+  <>
+    <div className={`placeholder-image ${className} ${fallbackClassName}`} style={style}>
+      <svg className="cross-svg" viewBox="0 0 100 100">
+        {/* <line x1="10" y1="10" x2="90" y2="90" stroke="gray" strokeWidth="2"/>
+        <line x1="90" y1="10" x2="10" y2="90" stroke="gray" strokeWidth="2"/> */}
       </svg>
       {/* 이미지 로딩 실패 시 숨겨진 이미지 */}
       {src && imageError && (
         <img 
           src={src} 
           alt={alt}
-          className="hidden"
+          className="hidden-image"
           onLoad={handleImageLoad}
           onError={handleImageError}
         />
       )}
     </div>
-  );
+    
+    <style jsx>{`
+      .placeholder-image {
+        border: 1px solid #1f2937;
+        border-radius: 0.5rem;
+        background: white;
+        position: relative;
+      }
+      
+      .cross-svg {
+        width: 50%;
+        height: 50%;
+      }
+      
+      .hidden-image {
+        display: none;
+      }
+    `}</style>
+  </>
+);
 };
 
 export default ImagePlaceholder;

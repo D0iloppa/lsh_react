@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
+import SketchBtn from '@components/SketchBtn';
 import RotationDiv from '@components/RotationDiv';
 import PopularVenue from '@components/PopularVenue';
 
@@ -40,8 +41,45 @@ const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
     navigate('/register');
   };
 
+const CocktailIcon = () => (
+  <svg 
+    width="30" 
+    height="30" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="#333" 
+    strokeWidth="1.5"
+    style={{ transform: 'rotate(-1deg)' }}
+  >
+    <path 
+      d="M6.2 4.8 L17.8 4.2 L12.1 12.5 Z" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+    />
+    <line 
+      x1="12" 
+      y1="12.5" 
+      x2="11.9" 
+      y2="18.5" 
+      strokeLinecap="round" 
+    />
+    <line 
+      x1="9.2" 
+      y1="18.8" 
+      x2="14.8" 
+      y2="18.2" 
+      strokeLinecap="round" 
+    />
+    <path 
+      d="M16.5 6.2 C17.8 5.8, 18.5 7.2, 17.2 8.1 C15.8 9.2, 17.1 10.8, 18.2 9.5"
+      strokeLinecap="round" 
+      fill="none" 
+    />
+  </svg>
+);
+
   return (
-    <div className="max-w-md mx-auto bg-white min-h-screen border-4 border-gray-800">
+    <div className="welcome-container max-w-md mx-auto bg-white min-h-screen">
       {/* 상단 회전 영역 */}
       <div className="rotation-section">
         <RotationDiv 
@@ -66,8 +104,10 @@ const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
       <div className="brand-section">
         <div className="brand-content">
               <div className="brand-header">
-                <span className="brand-icon">🍸</span>
-                <h1 className="brand-title">LeTanTon Sheriff</h1>
+               <div className="logo-container">
+                <CocktailIcon />
+                <h1 className="sketch-title sketch-title--large">LeTanTon Sheriff</h1>
+              </div>
               </div>
               
               <h2 className="brand-subtitle">All Girlsbars Here</h2>
@@ -79,7 +119,7 @@ const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
       </div>
 
       {/* 액션 버튼들 */}
-      <div className="action-buttons-section">
+      {/* <div className="action-buttons-section">
         <SketchDiv 
           className="action-btn explore-btn"
           variant="button"
@@ -97,8 +137,29 @@ const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
           <HatchPattern opacity={0.15} />
           <span className="btn-text">CREATE AN ACCOUNT</span>
         </SketchDiv>
-      </div>
+      </div> */}
+       <div className="relative" style={{ marginTop: '1rem' }}>
+          <HatchPattern opacity={0.3} />
+          
+          <SketchBtn 
+            className="sketch-button" style={{ fontWeight: 'bold' , backgroundColor: '#f5ffed'}}
+            onClick={onNextScreen}
+          >
+            EXPLORE NOW
+          </SketchBtn>
+        </div>
+        <div className="relative" style={{ marginTop: '1rem' }}>
+          <HatchPattern opacity={0.3} />
+          
+          <SketchBtn 
+            className="sketch-button" style={{ fontWeight: 'bold' }}
+            onClick={onCreateAccount}
+          >
+            CREATE AN ACCOUNT
+          </SketchBtn>
+        </div>
     </div>
+    
   );
 };
 

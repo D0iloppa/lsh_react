@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 
 import SketchInput from '@components/SketchInput';
 
+import SketchBtn from '@components/SketchBtn';
+
 export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -93,13 +95,13 @@ export default function LoginForm() {
         />
 
         {/* Login Button */}
-        <button
+        <SketchBtn
           type="submit"
           className="sketch-button"
           disabled={isLoading}
         >
           {isLoading ? 'Logging in...' : 'LOGIN'}
-        </button>
+        </SketchBtn>
       </form>
 
       {/* Forgot Password */}
@@ -108,7 +110,7 @@ export default function LoginForm() {
           type="button"
           onClick={onForgotPassword}
           disabled={isLoading}
-          className="sketch-button sketch-button--secondary"
+          className="sketch-btn sketch-btn--secondary"
         >
           Forgot Password?
         </button>

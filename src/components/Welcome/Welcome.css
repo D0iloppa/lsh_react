@@ -1,13 +1,19 @@
 /* Welcome 페이지 전체 스타일 */
 .welcome-container {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+     font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
   }
   
+  .logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
   /* 상단 회전 영역 */
   .rotation-section {
     position: relative;
     padding: 20px;
-    height: 320px;
   }
   
   .venue-rotation {
@@ -15,7 +21,6 @@
     height: 100%;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   }
   
   /* 네비게이션 화살표 */
@@ -72,9 +77,9 @@
    }
 
   /* 브랜드 섹션 */
-  .brand-section {
+  /* .brand-section {
     padding: 0 20px 20px 20px;
-  }
+  } */
   
   .brand-info {
     position: relative;
@@ -116,6 +121,7 @@
   }
   
   .brand-subtitle {
+    text-align: center;
     font-size: 20px;
     font-weight: 600;
     color: #495057;
@@ -125,6 +131,7 @@
   }
   
   .brand-description {
+    text-align: center;
     font-size: 16px;
     color: #6c757d;
     margin: 0;
@@ -213,7 +220,6 @@
   @media (max-width: 768px) {
     .rotation-section {
       padding: 16px;
-      height: 280px;
     }
     
     .navigation-arrows {
@@ -231,7 +237,7 @@
     }
     
     .brand-section {
-      padding: 0 16px 16px 16px;
+      padding: 0 16px 70px 16px;
     }
     
     .brand-info {
@@ -264,7 +270,6 @@
   @media (max-width: 480px) {
     .rotation-section {
       padding: 12px;
-      height: 240px;
     }
     
     .navigation-arrows {

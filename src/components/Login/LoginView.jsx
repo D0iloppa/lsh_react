@@ -3,6 +3,9 @@ import SketchDiv from '@components/SketchDiv';
 import LoginForm from './LoginForm';
 import './LoginView.css';
 import '@components/SketchComponents.css';
+import InitFooter from '@components/InitFooter';
+import HatchPattern from '@components/HatchPattern';
+
 
 // 칵테일 아이콘 컴포넌트
 const CocktailIcon = () => (
@@ -56,18 +59,35 @@ export default function LoginView() {
 
         {/* Login Form Container */}
         <SketchDiv variant="container">
+          <HatchPattern opacity={0.3} />
           <LoginForm />
         </SketchDiv>
 
         {/* Footer */}
-        <footer className="login-footer">
+       
+          <InitFooter />
+
+          
+          <InitFooter 
+            privacyHref="/privacy-policy"
+            termsHref="/terms-of-service"
+          />
+
+          
+          <InitFooter 
+            className="custom-footer"
+            privacyHref="/privacy"
+            termsHref="/terms"
+          />
+        {/* <footer className="login-footer">
           <a href="#" className="sketch-link">
             Privacy Policy
           </a>
           <a href="#" className="sketch-link">
             Terms of Service
           </a>
-        </footer>
+        </footer> */}
+
       </div>
     </div>
   );

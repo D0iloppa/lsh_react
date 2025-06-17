@@ -2,8 +2,9 @@
       max-width: 28rem;
       margin: 0 auto;
       background-color: white;
-      border: 4px solid #1f2937;
       position: relative;
+
+      font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
     }
     
     .header {
@@ -49,9 +50,7 @@
       border-color: #374151;
     }
     
-    .content-area {
-      padding: 1rem;
-    }
+
     
     .description-text {
       text-align: center;

@@ -2,6 +2,7 @@ import React from 'react';
 import SketchDiv from '@components/SketchDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import HatchPattern from '@components/HatchPattern';
+import SketchBtn from '@components/SketchBtn';
 import '@components/SketchComponents.css';
 
 import ProgressIndicator from './ProgressIndicator';
@@ -12,14 +13,14 @@ const Tutorial2 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
   return (
       <div className="tutorial-container">
       {/* 진행 표시기 */}
-      <div className="content-area">
+      {/* <div className="content-area">
         <ProgressIndicator 
             currentStep={currentStep} 
             totalSteps={totalSteps} 
           />
-      </div>
+      </div> */}
 
-        <div className="content-area">
+        <div className="">
           <ImagePlaceholder />
 
           {/* 설명 텍스트 */}
@@ -29,14 +30,15 @@ const Tutorial2 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
           </p>
 
           {/* Next Screen 버튼 */}
-          <div className="next-button-container">
-            <button 
+          <div className="relative" style={{ marginTop: '1rem' }}>
+            <HatchPattern opacity={0.3} />
+            
+            <SketchBtn 
               className="sketch-button"
               onClick={onNextScreen}
             >
               {isLast ? 'Get Started' : 'Next Screen'}
-            </button>
-            <HatchPattern opacity={0.4} />
+            </SketchBtn>
           </div>
         </div>
       </div>

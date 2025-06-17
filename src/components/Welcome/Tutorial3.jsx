@@ -4,23 +4,25 @@ import SketchDiv from '@components/SketchDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
+import SketchBtn from '@components/SketchBtn';
 
 import ProgressIndicator from './ProgressIndicator';
+import { Weight } from 'lucide-react';
 
 const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
   return (
 
 
 
-    <div className="max-w-md mx-auto bg-white min-h-screen border-4 border-gray-800 p-6">
+    <div className="tutorial-container max-w-md mx-auto bg-white min-h-screenp-6">
 
     {/* 진행 표시기 */}
-    <div className="content-area">
+    {/* <div className="content-area">
       <ProgressIndicator 
           currentStep={currentStep} 
           totalSteps={totalSteps} 
         />
-    </div>
+    </div> */}
 
 
       <SketchDiv variant="container">
@@ -45,15 +47,17 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
       </div>
 
       {/* Next Screen 버튼 */}
-      <div className="relative">
-        <button
-          className="sketch-button"
-          onClick={onNextScreen}
-        >
-          Enjoy Letan ton Sheriff
-        </button>
-        <HatchPattern />
-      </div>
+      <div className="relative" style={{ marginTop: '1rem' }}>
+          {<HatchPattern opacity={0.3} />}
+          
+          <SketchBtn 
+            className="sketch-button" style={{ fontWeight: 'bold',  backgroundColor: '#f5ffed'}}
+            onClick={onNextScreen}
+          >
+            Enjoy Letan ton Sheriff!
+          </SketchBtn>
+          {/* <HatchPattern /> */}
+        </div>
     </div>
   );
 };
