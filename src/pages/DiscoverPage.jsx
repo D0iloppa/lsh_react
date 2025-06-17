@@ -103,7 +103,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
 
           font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
         }
-        .featured-section { padding-bottom: 60px; padding: 1rem; text-align: center; border-bottom: 1px solid #1f2937; }
+        .featured-section { padding-bottom: 60px; padding: 1rem; text-align: center;}
         .club-image-area {
           border-radius: 3px;
           width: 100%; height: 200px; border: 1px solid #1f2937;

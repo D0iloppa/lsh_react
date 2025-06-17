@@ -70,14 +70,19 @@ const ReserveSummaryPage = ({
         }
 
         .booking-summary-box {
-          border: 1px solid #1f2937;
-          background-color: #f8fafc;
-          padding: 1.5rem;
-          margin-bottom: 2rem;
-          transform: rotate(-0.3deg);
-          box-shadow: 3px 3px 0px #1f2937;
-          position: relative;
-          overflow: hidden;
+              border-top-left-radius: 12px 7px;
+              border-top-right-radius: 6px 14px;
+              border-bottom-right-radius: 10px 5px;
+              border-bottom-left-radius: 8px 11px;
+              /* border-radius: 5px; */
+              border: 1px solid #1f2937;
+              background-color: #f8fafc;
+              padding: 1.5rem;
+              margin-bottom: 2rem;
+              transform: rotate(-0.3deg);
+              box-shadow: 3px 3px 0px #1f2937;
+              position: relative;
+              overflow: hidden;
         }
 
         .summary-content {
@@ -153,7 +158,7 @@ const ReserveSummaryPage = ({
           
           {/* Booking Summary Box */}
           <div className="booking-summary-box">
-            <HatchPattern opacity={0.05} />
+            <HatchPattern opacity={0.4} />
             <div className="summary-content">
               <div className="summary-item">
                 <span className="summary-label">Date:</span>
@@ -187,7 +192,7 @@ const ReserveSummaryPage = ({
             onClick={handleConfirm}
           >
             CONFIRM RESERVATION
-            <HatchPattern opacity={0.1} />
+            <HatchPattern opacity={0.4} />
           </SketchBtn>
         </div>
       </div>

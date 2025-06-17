@@ -118,8 +118,6 @@ const SketchHeader = ({
           line-height: 1.2;
           transform: rotate(-0.1deg);
           text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.05);
-
-          font-family: 'Courier New', monospace;
         }
 
         .right-section {
@@ -141,7 +139,6 @@ const SketchHeader = ({
         }
 
         .header-button {
-          width: 2.25rem;
           height: 2.25rem;
           background-color: #f8fafc;
           border: 0.8px solid #666;
@@ -202,8 +199,6 @@ const SketchHeader = ({
           }
 
           .header-button {
-            width: 2rem;
-            height: 2rem;
             font-size: 0.875rem;
           }
         }

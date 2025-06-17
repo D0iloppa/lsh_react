@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';  
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
+import SketchHeader from '@components/SketchHeader';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 
@@ -11,6 +12,10 @@ const FavoritesPage = ({
 }) => {
   const [sortBy, setSortBy] = useState('name');
   const [filter, setFilter] = useState('all');
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleProfile = () => {
     console.log('Profile 클릭');
@@ -33,6 +38,38 @@ const FavoritesPage = ({
       selectedVenue: venue
     });
   };
+
+  const ShareIcon = ({ 
+  size = 24, 
+  color = "#333", 
+  strokeWidth = 1.5,
+  className = "",
+  variant = "nodes", // "nodes", "arrow", "simple"
+  ...props 
+}) => {
+    return (
+      <svg 
+        width={size} 
+        height={size} 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke={color} 
+        strokeWidth={strokeWidth}
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+        className={`share-icon ${className}`}
+        {...props}
+      >
+        {/* 간단한 공유 아이콘 - 상자에서 화살표가 나오는 형태 */}
+        <path d="M14 2L20 8V20C20 21.1 19.1 22 18 22H6C4.9 22 4 21.1 4 20V4C4 2.9 4.9 2 6 2H14Z" />
+        <path d="M14 2V8H20" />
+        <path d="M12 11L16 7" />
+        <path d="M16 7H12" />
+        <path d="M16 7V11" />
+      </svg>
+    );
+};
+
 
   const favorites = [
     {
@@ -69,7 +106,7 @@ const FavoritesPage = ({
           margin: 0 auto;
           background-color: white;
           min-height: 100vh;
-          border: 4px solid #1f2937;
+          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
           position: relative;
         }
 
@@ -83,7 +120,7 @@ const FavoritesPage = ({
         }
 
         .logo {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+          
           font-weight: bold;
           color: #1f2937;
           font-size: 1.1rem;
@@ -101,7 +138,6 @@ const FavoritesPage = ({
         }
 
         .section-title {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 1.3rem;
           font-weight: bold;
           color: #1f2937;
@@ -120,12 +156,15 @@ const FavoritesPage = ({
         }
 
         .favorite-card {
-          border: 3px solid #1f2937;
+            border-top-left-radius: 12px 7px;
+          border-top-right-radius: 6px 14px;
+          border-bottom-right-radius: 10px 5px;
+          border-bottom-left-radius: 8px 11px;
+          border: 1px solid #1f2937;
           background-color: #f8fafc;
           padding: 1rem;
           transform: rotate(-0.1deg);
           transition: all 0.2s;
-          box-shadow: 3px 3px 0px #1f2937;
           position: relative;
           overflow: hidden;
           display: flex;
@@ -135,7 +174,7 @@ const FavoritesPage = ({
 
         .favorite-card:hover {
           transform: rotate(-0.1deg) scale(1.01);
-          box-shadow: 4px 4px 0px #1f2937;
+         
         }
 
         .favorite-card:nth-child(even) {
@@ -151,13 +190,13 @@ const FavoritesPage = ({
           z-index: 10;
           display: flex;
           gap: 1rem;
-          align-items: center;
+        
           width: 100%;
         }
 
         .venue-image {
-          width: 4rem;
-          height: 4rem;
+          width: 20rem;
+          height: 7rem;
           flex-shrink: 0;
           border: 2px solid #1f2937;
         }
@@ -167,15 +206,15 @@ const FavoritesPage = ({
         }
 
         .venue-name {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+         text-align: start;
           font-size: 1rem;
           font-weight: bold;
-          color: #1f2937;
+          color: #1f2937;   
           margin: 0 0 0.25rem 0;
         }
 
         .venue-description {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+         text-align: start;
           font-size: 0.85rem;
           color: #4b5563;
           margin: 0;
@@ -217,7 +256,14 @@ const FavoritesPage = ({
 
       <div className="favorites-container">
         {/* Header */}
-        <div className="header">
+        <SketchHeader
+                  onClick={handleProfile}
+                  title={'PROFILE'}
+                  showBack={true}
+                  onBack={() => console.log('뒤로가기')}
+                  rightButtons={[]}
+                />
+        {/* <div className="header">
           <div className="logo">≡ LeTanTon Sheriff</div>
           <SketchBtn 
             variant="secondary" 
@@ -226,7 +272,7 @@ const FavoritesPage = ({
           >
             PROFILE
           </SketchBtn>
-        </div>
+        </div> */}
 
         {/* Content Section */}
         <div className="content-section">
@@ -255,7 +301,7 @@ const FavoritesPage = ({
           <div className="favorites-list">
             {favorites.map((venue, index) => (
               <div key={venue.id} className="favorite-card">
-                <HatchPattern opacity={0.03} />
+                <HatchPattern opacity={0.4} />
                 
                 <div className="card-content">
                   <ImagePlaceholder 
@@ -264,7 +310,10 @@ const FavoritesPage = ({
                   />
                   
                   <div className="venue-details">
+                    <div className="venue-info">
                     <h3 className="venue-name">{venue.name}</h3>
+                    <ShareIcon />
+                    </div>
                     <p className="venue-description">{venue.description}</p>
                   </div>
 
@@ -274,7 +323,7 @@ const FavoritesPage = ({
                       size="small"
                       onClick={() => handleBook(venue)}
                     >
-                      Book
+                      Book Now
                     </SketchBtn>
                   </div>
                 </div>

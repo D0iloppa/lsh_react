@@ -51,6 +51,8 @@ const InfoCard = ({
               width: 64px;
               height: 64px;
               flex-shrink: 0;
+              margin-top: auto;
+              margin-bottom: auto;
         }
         .ic-gap {
           gap: 20px;
@@ -73,7 +75,7 @@ const InfoCard = ({
           transform: rotate(-8deg);
         }
 
-        
+
         .rating-badge {
           display: flex;
           align-items: center;

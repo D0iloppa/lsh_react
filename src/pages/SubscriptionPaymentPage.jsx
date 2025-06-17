@@ -132,15 +132,19 @@ const SubscriptionPaymentPage = ({
         }
 
         .duration-select {
-          height: 40px;
+          height: 50px;
           width: 100%;
           padding: 0.75rem;
           border: 1px solid #1f2937;
-          border-radius: 3px;
+          border-top-left-radius: 6px 8px;
+           border-top-right-radius: 10px 5px;
+           border-bottom-right-radius: 8px 12px;
+           border-bottom-left-radius: 12px 6px;
           background-color: white;
           cursor: pointer;
           transform: rotate(-0.2deg);
-        
+
+          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .confirm-section {
@@ -277,14 +281,23 @@ const SubscriptionPaymentPage = ({
         </div>
 
         {/* Confirm Section */}
-        <div className="full-width" style={{paddingBottom: '20px'}}>
+        {/* <div className="full-width" style={{paddingBottom: '20px'}}>
           <SketchBtn 
             onClick={handleConfirmPay}
           >
             Confirm & Pay
             <HatchPattern opacity={0.4} />
           </SketchBtn>
-        </div>
+        </div> */}
+        <SketchBtn 
+          className="full-width" style={{paddingBottom: '20px'}}
+          variant="primary" 
+          size="large"
+          onClick={handleConfirmPay}
+        >
+          Confirm & Pay
+          <HatchPattern opacity={0.4} />
+        </SketchBtn>
       </div>
     </>
   );

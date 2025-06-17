@@ -21,19 +21,22 @@ const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
       venueName: "KLUB ONE",
       description: "Premium entertainment with elite hostesses and vibrant atmosphere",
       rating: "4.9",
-      location: "District 1, Ho Chi Minh City"
+      location: "District 1, Ho Chi Minh City",
+      image:'/cdn/content/mang.png'
     },
     {
       venueName: "Elite Hostess Club",
       description: "Experience top-notch services with our elite hostesses",
       rating: "4.8",
-      location: "District 3, Ho Chi Minh City"
+      location: "District 3, Ho Chi Minh City",
+      image:'/cdn/content/qui.png'
     },
     {
       venueName: "Vibrant Lounge Bar",
       description: "Join us for a night full of fun and great vibes",
       rating: "4.7",
-      location: "District 7, Ho Chi Minh City"
+      location: "District 7, Ho Chi Minh City",
+      image:'/cdn/content/skybar.png'
     }
   ];
 
@@ -79,7 +82,7 @@ const CocktailIcon = () => (
 );
 
   return (
-    <div className="welcome-container max-w-md mx-auto bg-white min-h-screen">
+    <div className="welcome-container max-w-md mx-auto bg-white">
       {/* 상단 회전 영역 */}
       <div className="rotation-section">
         <RotationDiv 
@@ -95,6 +98,7 @@ const CocktailIcon = () => (
               description={venue.description}
               rating={venue.rating}
               location={venue.location}
+              image={venue.image}
             />
           ))}
         </RotationDiv>
@@ -138,6 +142,8 @@ const CocktailIcon = () => (
           <span className="btn-text">CREATE AN ACCOUNT</span>
         </SketchDiv>
       </div> */}
+
+
        <div className="relative" style={{ marginTop: '1rem' }}>
           <HatchPattern opacity={0.3} />
           

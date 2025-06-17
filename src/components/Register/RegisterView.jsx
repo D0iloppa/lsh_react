@@ -99,7 +99,7 @@ export default function RegisterView() {
   };
 
   return (
-    <div className="register-container max-w-md mx-auto bg-white min-h-screen border-gray-800 p-6">
+    <div className="register-container max-w-md mx-auto bg-white border-gray-800 p-6">
       {/* 헤더
       <Header 
           className="custom-header"
@@ -119,7 +119,7 @@ export default function RegisterView() {
 
       <SketchHeader 
               title="Register Member"
-              showBack={true}
+              showBack={false}
               onBack={() => console.log("뒤로가기")}
               rightButtons={[]}
             />

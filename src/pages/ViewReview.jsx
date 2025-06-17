@@ -4,6 +4,9 @@ import SketchInput from '@components/SketchInput';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 
+import SketchHeader from '@components/SketchHeader'
+import SketchDiv from '@components/SketchDiv'
+
 const ViewReviewPage = ({ 
   navigateToPageWithData, 
   PAGES,
@@ -58,8 +61,6 @@ const ViewReviewPage = ({
           max-width: 28rem;
           margin: 0 auto;
           background-color: white;
-          min-height: 100vh;
-          border: 4px solid #1f2937;
           position: relative;
         }
 
@@ -73,7 +74,6 @@ const ViewReviewPage = ({
         }
 
         .logo {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-weight: bold;
           color: #1f2937;
           font-size: 1.1rem;
@@ -82,7 +82,6 @@ const ViewReviewPage = ({
         .notification-icon {
           width: 2rem;
           height: 2rem;
-          border: 2px solid #1f2937;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -99,11 +98,9 @@ const ViewReviewPage = ({
 
         .venue-section {
           padding: 1.5rem;
-          border-bottom: 3px solid #1f2937;
         }
 
         .venue-title {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 1.3rem;
           font-weight: bold;
           color: #1f2937;
@@ -123,7 +120,6 @@ const ViewReviewPage = ({
         }
 
         .venue-subtitle {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 1rem;
           font-weight: bold;
           color: #d97706;
@@ -131,7 +127,6 @@ const ViewReviewPage = ({
         }
 
         .venue-description {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 0.9rem;
           color: #4b5563;
           line-height: 1.4;
@@ -142,7 +137,6 @@ const ViewReviewPage = ({
         }
 
         .reviews-title {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 1.2rem;
           font-weight: bold;
           color: #1f2937;
@@ -150,12 +144,10 @@ const ViewReviewPage = ({
         }
 
         .review-card {
-          border: 3px solid #1f2937;
           background-color: #f8fafc;
           padding: 1rem;
           margin-bottom: 1rem;
           transform: rotate(0.2deg);
-          box-shadow: 2px 2px 0px #1f2937;
           position: relative;
           overflow: hidden;
         }
@@ -189,7 +181,6 @@ const ViewReviewPage = ({
         }
 
         .user-name {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 0.95rem;
           font-weight: bold;
           color: #1f2937;
@@ -197,14 +188,12 @@ const ViewReviewPage = ({
         }
 
         .review-meta {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 0.8rem;
           color: #6b7280;
           margin: 0.25rem 0 0 0;
         }
 
         .review-text {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 0.9rem;
           color: #374151;
           line-height: 1.4;
@@ -222,12 +211,16 @@ const ViewReviewPage = ({
 
       <div className="view-review-container">
         {/* Header */}
-        <div className="header">
-          <div className="logo">🍸 LeTanTon Sheriff</div>
-          <div className="notification-icon" onClick={handleNotifications}>
-            🔔
-          </div>
-        </div>
+
+        <SketchHeader
+          title="LeTanTon Sheriff"
+          showBack={false}
+          onBack={() => {
+            // goBack();
+            navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
+          }}
+          rightButtons={[]}
+        />
 
         {/* Search Section */}
         <div className="search-section">
@@ -242,26 +235,26 @@ const ViewReviewPage = ({
         </div>
 
         {/* Venue Information */}
-        <div className="venue-section">
+        <SketchDiv className="venue-section">
           <h1 className="venue-title">{venueData.name}</h1>
           
           <div className="venue-image-container">
             <ImagePlaceholder 
               src={venueData.image} 
-              className="venue-image"
+              className=""
             />
           </div>
 
           <div className="venue-subtitle">{venueData.subtitle}</div>
           <p className="venue-description">{venueData.description}</p>
-        </div>
+        </SketchDiv>
 
         {/* User Reviews */}
         <div className="reviews-section">
           <h2 className="reviews-title">User Reviews</h2>
           
           {reviews.map((review, index) => (
-            <div key={review.id} className="review-card">
+            <SketchDiv key={review.id} className="review-card">
               <HatchPattern opacity={0.03} />
               <div className="review-content">
                 <div className="review-header">
@@ -278,7 +271,7 @@ const ViewReviewPage = ({
                 </div>
                 <p className="review-text">{review.comment}</p>
               </div>
-            </div>
+            </SketchDiv>
           ))}
         </div>
       </div>

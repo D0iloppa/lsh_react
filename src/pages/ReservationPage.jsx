@@ -201,6 +201,14 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
           padding: 0 1.5rem 1.5rem;
         }
 
+        .form-step-3 { 
+            padding: 8px;
+            border: 1px solid #333;
+            border-top-left-radius: 12px 7px;
+              border-top-right-radius: 6px 14px;
+              border-bottom-right-radius: 10px 5px;
+              border-bottom-left-radius: 8px 11px;}
+
 
         @media (max-width: 480px) {
           .reservation-container {
@@ -274,7 +282,7 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
           </div>
 
           {/* Step 3: Choose Time */}
-          <div className="form-step">
+          <div className="form-step-3">
             <div className="step-label">
               <span className="step-number">3</span>
               Choose
@@ -287,6 +295,7 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
                   size="small"
                   onClick={() => handleTimeSelect(time)}
                 >
+                   <HatchPattern opacity={0.4} />
                   {time}
                 </SketchBtn>
               ))}
@@ -303,7 +312,7 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
             onClick={handleReserve}
           >
             RESERVE
-            <HatchPattern opacity={0.1} />
+            <HatchPattern opacity={0.4} />
           </SketchBtn>
         </div>
 

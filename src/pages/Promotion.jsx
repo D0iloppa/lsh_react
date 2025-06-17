@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchInput from '@components/SketchInput';
+import SketchDiv from '@components/SketchDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
-
 import SketchHeader from '@components/SketchHeader'
+import { Share, Filter } from 'lucide-react';
 
 const PromotionsPage = ({ 
   navigateToPageWithData, 
@@ -48,7 +49,7 @@ const PromotionsPage = ({
       date: 'Dec 14, 2023',
       time: '9 PM',
       location: 'Hanoi Sky Bar',
-      image: '/placeholder-event1.jpg'
+      image: '/cdn/mang.png'
     },
     {
       id: 2,
@@ -56,7 +57,7 @@ const PromotionsPage = ({
       date: 'Dec 15, 2023',
       time: '8 PM',
       location: 'Saigon Lounge',
-      image: '/placeholder-event2.jpg'
+      image: '/cdn/qui.png'
     },
     {
       id: 3,
@@ -64,7 +65,7 @@ const PromotionsPage = ({
       date: 'Dec 16, 2023',
       time: '6 PM',
       location: 'Da Nang Beach Club',
-      image: '/placeholder-event3.jpg'
+      image: '/cdn/skybar.png'
     }
   ];
 
@@ -79,105 +80,105 @@ const PromotionsPage = ({
           position: relative;
         }
 
-        .header {
+        .content-section {
+          padding: 1.5rem;
           display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 1rem;
-          background-color: #f9fafb;
+          flex-direction: column;
+          gap: 1.5rem;
         }
 
-        .logo {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
-          font-weight: bold;
-          color: #1f2937;
-          font-size: 1.1rem;
-        }
-
-        .header-icons {
-          display: flex;
-          gap: 0.5rem;
-        }
-
-        .header-icon {
-          width: 2rem;
-          height: 2rem;
-          border: 2px solid #1f2937;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          background-color: white;
-          font-size: 1rem;
-          transition: all 0.2s;
-        }
-
-        .header-icon:hover {
-          transform: scale(1.1);
-        }
-
+        /* Filter Section */
         .filter-section {
-          padding: 1rem;
-          border-bottom: 2px solid #e5e7eb;
+          padding: 1.25rem;
+          background-color: #fefefe;
+          border: 0.8px solid #666;
+          position: relative;
+          overflow: hidden;
+          border-top-left-radius: 12px 15px;
+          border-top-right-radius: 14px 8px;
+          border-bottom-right-radius: 8px 12px;
+          border-bottom-left-radius: 10px 6px;
+          transform: rotate(-0.1deg);
+        }
+
+        .filter-content {
           display: flex;
           gap: 0.75rem;
           align-items: center;
+          position: relative;
+          z-index: 2;
         }
 
         .filter-input {
           flex: 1;
         }
 
-        .promotions-section {
-          padding: 1rem;
+        .filter-btn {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
         }
 
+        /* Promotion Cards */
         .promotion-card {
-          border: 3px solid #1f2937;
-          background-color: #f8fafc;
-          margin-bottom: 1.5rem;
-          transform: rotate(-0.2deg);
-          transition: all 0.2s;
-          box-shadow: 3px 3px 0px #1f2937;
+          padding: 0;
+          background-color: #fefefe;
+          border: 0.8px solid #666;
           position: relative;
           overflow: hidden;
-        }
+          border-top-left-radius: 15px 8px;
+          border-top-right-radius: 8px 12px;
+          border-bottom-right-radius: 12px 6px;
+          border-bottom-left-radius: 6px 14px;
+          transition: all 0.2s;
 
-        .promotion-card:hover {
-          transform: rotate(-0.2deg) scale(1.01);
-          box-shadow: 4px 4px 0px #1f2937;
+          margin-bottom: 20px;
         }
 
         .promotion-card:nth-child(even) {
-          transform: rotate(0.2deg);
+          transform: rotate(0.3deg);
+        }
+
+        .promotion-card:nth-child(odd) {
+          transform: rotate(-0.2deg);
+        }
+
+        .promotion-card:hover {
+          box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .promotion-card:nth-child(even):hover {
-          transform: rotate(0.2deg) scale(1.01);
+          transform: rotate(0.3deg) scale(1.01);
+        }
+
+        .promotion-card:nth-child(odd):hover {
+          transform: rotate(-0.2deg) scale(1.01);
         }
 
         .promotion-content {
           position: relative;
-          z-index: 10;
+          z-index: 2;
+          display: flex;
+          flex-direction: column;
         }
 
         .promotion-image {
           width: 100%;
           height: 180px;
-          border-bottom: 3px solid #1f2937;
+          object-fit: cover;
+          border-bottom: 0.8px solid #666;
         }
 
         .promotion-info {
-          padding: 1rem;
+          padding: 1.25rem;
         }
 
         .promotion-title {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
-          font-size: 1.1rem;
-          font-weight: bold;
+          font-size: 1.25rem;
+          font-weight: 600;
           color: #1f2937;
-          margin: 0 0 0.5rem 0;
+          margin: 0 0 0.75rem 0;
+          line-height: 1.2;
         }
 
         .promotion-details {
@@ -185,50 +186,146 @@ const PromotionsPage = ({
         }
 
         .promotion-detail {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
-          font-size: 0.9rem;
-          color: #4b5563;
+          font-size: 0.875rem;
+          color: #6b7280;
           margin: 0.25rem 0;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .detail-label {
+          font-weight: 500;
+          color: #374151;
+          min-width: 3rem;
         }
 
         .promotion-actions {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          gap: 1rem;
         }
 
-        .share-icon {
-          width: 2rem;
-          height: 2rem;
-          border: 2px solid #1f2937;
+        .share-btn {
+          width: 2.5rem;
+          height: 2.5rem;
+          background-color: #f8fafc;
+          border: 0.8px solid #666;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          background-color: white;
-          font-size: 0.9rem;
           transition: all 0.2s;
+          transform: rotate(2deg);
+          flex-shrink: 0;
         }
 
-        .share-icon:hover {
-          transform: scale(1.1);
+        .share-btn:hover {
+          background-color: #e2e8f0;
+          transform: rotate(2deg) scale(1.05);
+          box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
         }
 
+        .book-btn-wrapper {
+          flex: 1;
+          display: flex;
+          justify-content: flex-start;
+        }
+
+        /* Special promotion highlight */
+        .promotion-card.featured {
+          border-color: #f59e0b;
+          background-color: #fef3c7;
+        }
+
+        .promotion-card.featured::before {
+          content: '⭐';
+          position: absolute;
+          top: 0.75rem;
+          right: 0.75rem;
+          font-size: 1.5rem;
+          z-index: 3;
+        }
+
+        /* Empty state */
+        .empty-state {
+          text-align: center;
+          padding: 3rem 1.5rem;
+          color: #6b7280;
+        }
+
+        .empty-state h3 {
+          font-size: 1.125rem;
+          font-weight: 500;
+          margin-bottom: 0.5rem;
+          color: #374151;
+        }
+
+        .empty-state p {
+          font-size: 0.875rem;
+          line-height: 1.5;
+        }
+
+        /* Responsive */
         @media (max-width: 480px) {
-          .promotions-container {
-            max-width: 100%;
-            border-left: none;
-            border-right: none;
+          .content-section {
+            padding: 1rem;
+            gap: 1rem;
           }
 
-          .filter-section {
+          .filter-content {
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            align-items: stretch;
           }
 
-          .filter-input {
-            width: 100%;
+          .filter-btn {
+            justify-content: center;
+          }
+
+          .promotion-info {
+            padding: 1rem;
+          }
+
+          .promotion-title {
+            font-size: 1.1rem;
+          }
+
+          .promotion-actions {
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: stretch;
+          }
+
+          .book-btn-wrapper {
+            justify-content: center;
+          }
+
+          .share-btn {
+            align-self: center;
+          }
+        }
+
+        /* Loading animation */
+        .loading-card {
+          background: linear-gradient(
+            90deg,
+            #f0f0f0 25%,
+            #e0e0e0 50%,
+            #f0f0f0 75%
+          );
+          background-size: 200% 100%;
+          animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+          0% {
+            background-position: 200% 0;
+          }
+          100% {
+            background-position: -200% 0;
           }
         }
       `}</style>
@@ -242,70 +339,99 @@ const PromotionsPage = ({
           rightButtons={[]}
         />
 
-
-        {/* Filter Section */}
-        <div className="filter-section">
-          <div className="filter-input">
-            <SketchInput
-              type="text"
-              placeholder="Filter by category"
-              value={filterQuery}
-              onChange={(e) => setFilterQuery(e.target.value)}
-            />
-          </div>
-          <SketchBtn 
-            variant="secondary" 
-            size="small"
-            onClick={handleApplyFilter}
-          >
-            Apply
-          </SketchBtn>
-        </div>
-
-        {/* Promotions Section */}
-        <div className="promotions-section">
-          {promotions.map((promotion, index) => (
-            <div key={promotion.id} className="promotion-card">
-              <HatchPattern opacity={0.03} />
-              
-              <div className="promotion-content">
-                <ImagePlaceholder 
-                  src={promotion.image} 
-                  className="promotion-image"
+        <div className="content-section">
+          {/* Filter Section */}
+          <SketchDiv className="filter-section">
+            <HatchPattern opacity={0.02} />
+            
+            <div className="filter-content">
+              <div className="filter-input">
+                <SketchInput
+                  type="text"
+                  placeholder="Filter by category"
+                  value={filterQuery}
+                  onChange={(e) => setFilterQuery(e.target.value)}
                 />
-                
-                <div className="promotion-info">
-                  <h3 className="promotion-title">{promotion.title}</h3>
-                  
-                  <div className="promotion-details">
-                    <p className="promotion-detail">
-                      Date {promotion.date} | Time {promotion.time}
-                    </p>
-                    <p className="promotion-detail">
-                      Location {promotion.location}
-                    </p>
-                  </div>
+              </div>
+              <SketchBtn 
+                variant="secondary" 
+                size="small"
+                onClick={handleApplyFilter}
+                className="filter-btn"
+              >
+                <Filter size={16} />
+                Apply
+              </SketchBtn>
+            </div>
+          </SketchDiv>
 
-                  <div className="promotion-actions">
-                    <SketchBtn 
-                      variant="primary" 
-                      size="small"
-                      onClick={() => handleBookNow(promotion)}
-                    >
-                      Book Now
-                    </SketchBtn>
+          {/* Promotions Section */}
+          <div className="promotions-list">
+            {promotions.length > 0 ? (
+              promotions.map((promotion, index) => (
+                <SketchDiv 
+                  key={promotion.id} 
+                  className={`promotion-card ${index === 0 ? 'featured' : ''}`}
+                >
+                  <HatchPattern opacity={0.02} />
+                  
+                  <div className="promotion-content">
+                    <ImagePlaceholder 
+                      src={promotion.image} 
+                      alt={promotion.title}
+                      className="promotion-image"
+                    />
                     
-                    <div 
-                      className="share-icon"
-                      onClick={() => handleShare(promotion)}
-                    >
-                      📤
+                    <div className="promotion-info">
+                      <h3 className="promotion-title">{promotion.title}</h3>
+                      
+                      <div className="promotion-details">
+                        <div className="promotion-detail">
+                          <span className="detail-label">Date:</span>
+                          <span>{promotion.date}</span>
+                        </div>
+                        <div className="promotion-detail">
+                          <span className="detail-label">Time:</span>
+                          <span>{promotion.time}</span>
+                        </div>
+                        <div className="promotion-detail">
+                          <span className="detail-label">Venue:</span>
+                          <span>{promotion.location}</span>
+                        </div>
+                      </div>
+
+                      <div className="promotion-actions">
+                        <div className="book-btn-wrapper">
+                          <SketchBtn 
+                            variant="primary" 
+                            size="medium"
+                            onClick={() => handleBookNow(promotion)}
+                          >
+                            Book Now
+                          </SketchBtn>
+                        </div>
+                        
+                        <button 
+                          className="share-btn"
+                          onClick={() => handleShare(promotion)}
+                        >
+                          <Share size={16} />
+                        </button>
+                      </div>
                     </div>
                   </div>
+                </SketchDiv>
+              ))
+            ) : (
+              <SketchDiv className="promotion-card">
+                <HatchPattern opacity={0.02} />
+                <div className="empty-state">
+                  <h3>No Events Found</h3>
+                  <p>Try adjusting your filter or check back later for new events.</p>
                 </div>
-              </div>
-            </div>
-          ))}
+              </SketchDiv>
+            )}
+          </div>
         </div>
       </div>
     </>

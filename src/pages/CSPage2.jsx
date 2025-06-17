@@ -3,6 +3,10 @@ import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import '@components/SketchComponents.css';
 
+import SketchDiv from '@components/SketchDiv'
+
+import SketchHeader from '@components/SketchHeader'
+
 const CSPage2 = ({ 
   navigateToPageWithData, 
   PAGES,
@@ -64,20 +68,10 @@ const CSPage2 = ({
           max-width: 28rem;
           margin: 0 auto;
           background-color: white;
-          min-height: 100vh;
-          border: 4px solid #1f2937;
           position: relative;
         }
 
-        .header {
-          padding: 1.5rem;
-          border-bottom: 3px solid #1f2937;
-          background-color: #f9fafb;
-          text-align: center;
-        }
-
         .page-title {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 1.4rem;
           font-weight: bold;
           color: #1f2937;
@@ -89,14 +83,12 @@ const CSPage2 = ({
         }
 
         .inquiry-card {
-          border: 3px solid #1f2937;
           background-color: #f8fafc;
           padding: 1.5rem;
           margin-bottom: 1rem;
           cursor: pointer;
           transform: rotate(-0.1deg);
           transition: all 0.2s;
-          box-shadow: 3px 3px 0px #1f2937;
           position: relative;
           overflow: hidden;
         }
@@ -175,14 +167,20 @@ const CSPage2 = ({
 
       <div className="cs2-container">
         {/* Header */}
-        <div className="header">
-          <h1 className="page-title">Customer Support</h1>
-        </div>
+        <SketchHeader
+          title="Customer Support"
+          showBack={true}
+          onBack={() => {
+            // goBack();
+            navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
+          }}
+          rightButtons={[]}
+        />
 
         {/* Inquiries Section */}
         <div className="inquiries-section">
           {inquiries.map((inquiry, index) => (
-            <div
+            <SketchDiv
               key={inquiry.id}
               className="inquiry-card"
               onClick={() => handleInquiryClick(inquiry)}
@@ -214,7 +212,7 @@ const CSPage2 = ({
                   </div>
                 </div>
               </div>
-            </div>
+            </SketchDiv>
           ))}
         </div>
       </div>

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchInput from '@components/SketchInput';
+import SketchHeader from '@components/SketchHeader'
+import SketchDiv from '@components/SketchDiv'
 import '@components/SketchComponents.css';
 
 const SettingsPage = ({ 
@@ -47,30 +49,9 @@ const SettingsPage = ({
           max-width: 28rem;
           margin: 0 auto;
           background-color: white;
-          min-height: 100vh;
-          border: 4px solid #1f2937;
           position: relative;
         }
 
-        .header {
-          padding: 1rem;
-          border-bottom: 3px solid #1f2937;
-          background-color: #f9fafb;
-          position: relative;
-          text-align: center;
-        }
-
-        .back-button {
-          position: absolute;
-          left: 1rem;
-          top: 50%;
-          transform: translateY(-50%);
-          background: none;
-          border: none;
-          font-size: 1.2rem;
-          cursor: pointer;
-          color: #1f2937;
-        }
 
         .page-title {
           font-family: 'Comic Sans MS', cursive, sans-serif;
@@ -85,12 +66,10 @@ const SettingsPage = ({
         }
 
         .settings-section {
-          border: 3px solid #1f2937;
           background-color: #f8fafc;
           padding: 1.5rem;
           margin-bottom: 1rem;
           transform: rotate(-0.1deg);
-          box-shadow: 3px 3px 0px #1f2937;
           position: relative;
           overflow: hidden;
         }
@@ -105,7 +84,6 @@ const SettingsPage = ({
         }
 
         .section-title {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 1rem;
           font-weight: bold;
           color: #1f2937;
@@ -115,12 +93,9 @@ const SettingsPage = ({
         .language-select {
           width: 100%;
           padding: 0.75rem;
-          border: 3px solid #1f2937;
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           background-color: white;
           cursor: pointer;
           transform: rotate(0.1deg);
-          box-shadow: 2px 2px 0px #1f2937;
         }
 
         .toggle-container {
@@ -135,7 +110,6 @@ const SettingsPage = ({
         }
 
         .toggle-label {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 0.9rem;
           color: #374151;
         }
@@ -144,7 +118,7 @@ const SettingsPage = ({
           width: 3rem;
           height: 1.5rem;
           background-color: #d1d5db;
-          border: 2px solid #1f2937;
+          border: 1px solid #1f2937;
           border-radius: 1rem;
           position: relative;
           cursor: pointer;
@@ -181,7 +155,6 @@ const SettingsPage = ({
         }
 
         .field-label {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 0.9rem;
           color: #374151;
           margin-bottom: 0.5rem;
@@ -196,7 +169,6 @@ const SettingsPage = ({
           border: 3px solid #1f2937;
           background-color: #f3f4f6;
           padding: 0.75rem 2rem;
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-weight: bold;
           cursor: pointer;
           transform: rotate(0.2deg);
@@ -220,17 +192,19 @@ const SettingsPage = ({
 
       <div className="settings-container">
         {/* Header */}
-        <div className="header">
-          <button className="back-button" onClick={handleBack}>
-            &lt;
-          </button>
-          <h1 className="page-title">Settings</h1>
-        </div>
+        <SketchHeader 
+          title="Settings"
+          showBack={false}
+          onBack={() => console.log("뒤로가기")}
+          rightButtons={[]}
+        />
+        
 
         {/* Settings Content */}
         <div className="settings-content">
+
           {/* Language Selection */}
-          <div className="settings-section">
+          <SketchDiv className="settings-section">
             <HatchPattern opacity={0.05} />
             <div className="section-content">
               <h2 className="section-title">Language Selection</h2>
@@ -245,10 +219,10 @@ const SettingsPage = ({
                 <option value="Japanese">日本語</option>
               </select>
             </div>
-          </div>
+          </SketchDiv>
 
           {/* Notification Preferences */}
-          <div className="settings-section">
+          <SketchDiv className="settings-section">
             <HatchPattern opacity={0.05} />
             <div className="section-content">
               <h2 className="section-title">Notification Preferences</h2>
@@ -263,10 +237,10 @@ const SettingsPage = ({
                 label="Event Alerts"
               />
             </div>
-          </div>
+          </SketchDiv>
 
           {/* Account Details */}
-          <div className="settings-section">
+          <SketchDiv className="settings-section">
             <HatchPattern opacity={0.05} />
             <div className="section-content">
               <h2 className="section-title">Account Details</h2>
@@ -287,10 +261,10 @@ const SettingsPage = ({
                 />
               </div>
             </div>
-          </div>
+          </SketchDiv>
 
           {/* Privacy Settings */}
-          <div className="settings-section">
+          <SketchDiv className="settings-section">
             <HatchPattern opacity={0.05} />
             <div className="section-content">
               <h2 className="section-title">Privacy Settings</h2>
@@ -305,13 +279,13 @@ const SettingsPage = ({
                 label="Show Online Status"
               />
             </div>
-          </div>
+          </SketchDiv>
 
           {/* Logout */}
           <div className="logout-section">
-            <button className="logout-button" onClick={handleLogout}>
+            <SketchBtn className="" onClick={handleLogout}>
               Logout
-            </button>
+            </SketchBtn>
           </div>
         </div>
       </div>

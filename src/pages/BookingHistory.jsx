@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
+import SketchHeader from '@components/SketchHeader';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 
@@ -26,6 +27,10 @@ const BookingHistoryPage = ({
       }
     });
   };
+
+  useEffect(() => {
+      window.scrollTo(0, 0);
+    }, []);
 
   const bookings = [
     {
@@ -80,8 +85,6 @@ const BookingHistoryPage = ({
           max-width: 28rem;
           margin: 0 auto;
           background-color: white;
-          min-height: 100vh;
-          border: 4px solid #1f2937;
           position: relative;
         }
 
@@ -93,7 +96,7 @@ const BookingHistoryPage = ({
         }
 
         .page-title {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+          
           font-size: 1.4rem;
           font-weight: bold;
           color: #1f2937;
@@ -105,20 +108,23 @@ const BookingHistoryPage = ({
         }
 
         .booking-card {
-          border: 3px solid #1f2937;
+          border-top-left-radius: 12px 7px;
+          border-top-right-radius: 6px 14px;
+          border-bottom-right-radius: 10px 5px;
+          border-bottom-left-radius: 8px 11px;
+          border: 1px solid #1f2937;
           background-color: #f8fafc;
           padding: 1rem;
           margin-bottom: 1rem;
           transform: rotate(-0.1deg);
           transition: all 0.2s;
-          box-shadow: 3px 3px 0px #1f2937;
+          
           position: relative;
           overflow: hidden;
         }
 
         .booking-card:hover {
           transform: rotate(-0.1deg) scale(1.01);
-          box-shadow: 4px 4px 0px #1f2937;
         }
 
         .booking-card:nth-child(even) {
@@ -137,8 +143,8 @@ const BookingHistoryPage = ({
         }
 
         .booking-image {
-          width: 4rem;
-          height: 4rem;
+          width: 20rem;
+          height: 7rem;
           flex-shrink: 0;
           border: 2px solid #1f2937;
         }
@@ -148,7 +154,7 @@ const BookingHistoryPage = ({
         }
 
         .venue-name {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+         
           font-size: 1rem;
           font-weight: bold;
           color: #1f2937;
@@ -156,14 +162,14 @@ const BookingHistoryPage = ({
         }
 
         .host-info {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+          
           font-size: 0.85rem;
           color: #4b5563;
           margin: 0 0 0.25rem 0;
         }
 
         .booking-datetime {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+          
           font-size: 0.85rem;
           color: #6b7280;
           margin: 0;
@@ -177,7 +183,7 @@ const BookingHistoryPage = ({
         }
 
         .booking-status {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+          
           font-size: 0.8rem;
           font-weight: bold;
           margin-bottom: 0.5rem;
@@ -215,15 +221,21 @@ const BookingHistoryPage = ({
 
       <div className="booking-history-container">
         {/* Header */}
-        <div className="header">
+         <SketchHeader
+            title={'Booking History'}
+            showBack={true}
+            onBack={() => console.log('뒤로가기')}
+            rightButtons={[]}
+          />
+        {/* <div className="header">
           <h1 className="page-title">Booking History</h1>
-        </div>
+        </div> */}
 
         {/* Bookings Section */}
         <div className="bookings-section">
           {bookings.map((booking, index) => (
             <div key={booking.id} className="booking-card">
-              <HatchPattern opacity={0.03} />
+              <HatchPattern opacity={0.4} />
               
               <div className="booking-content">
                 <ImagePlaceholder 
@@ -253,6 +265,7 @@ const BookingHistoryPage = ({
                       size="small"
                       onClick={() => handleRebook(booking)}
                     >
+                      <HatchPattern opacity={0.4} />
                       Rebook
                     </SketchBtn>
                     
@@ -261,6 +274,7 @@ const BookingHistoryPage = ({
                       size="small"
                       onClick={() => handleReview(booking)}
                     >
+                      <HatchPattern opacity={0.4} />
                       Review
                     </SketchBtn>
                   </div>
@@ -271,7 +285,7 @@ const BookingHistoryPage = ({
         </div>
 
         {/* Footer Copyright */}
-        <div style={{ 
+        {/* <div style={{ 
           padding: '1rem', 
           textAlign: 'center', 
           borderTop: '2px solid #e5e7eb',
@@ -285,7 +299,7 @@ const BookingHistoryPage = ({
           }}>
             © 2023 LeTanTon Sheriff. All rights reserved.
           </p>
-        </div>
+        </div> */}
       </div>
     </>
   );

@@ -42,7 +42,7 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
 
       {/* 메인 이미지 */}
-      <div className="mb-6">
+      <div className="mt-20">
         <ImagePlaceholder className="w-full h-48" />
       </div>
 

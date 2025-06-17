@@ -56,7 +56,7 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
       {/* Elite Hostess Club 카드 */}
       <InfoCard 
          title="Elite Hostess Club"
-         imageSrc="/cdn/mang.png"
+         imageSrc="/cdn/content/mang.png"
          description="Experience top-notch services with our elite hostesses."
          titleClassName="transform rotate-1"
          descriptionClassName="transform rotate-1"
@@ -67,7 +67,7 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
       <InfoCard 
         title="Vibrant Lounge Bar"
-        imageSrc="/cdn/qui.png"
+        imageSrc="/cdn/content/qui.png"
         description="Join us for a night full of fun and great vibes."
         titleClassName="transform -rotate-1"
         descriptionClassName="transform -rotate-1"

@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
+import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 
-const NotificationsPage = ({ 
-  navigateToPageWithData, 
+import SketchHeader from '@components/SketchHeader'
+
+const NotificationsPage = ({
+  navigateToPageWithData,
   PAGES,
-  ...otherProps 
+  ...otherProps
 }) => {
   const [selectedFilter, setSelectedFilter] = useState('all');
 
@@ -25,7 +28,7 @@ const NotificationsPage = ({
       type: 'promotion',
       icon: '💝',
       message: '50% off at Beach Club',
-      date: '24/05/2028', 
+      date: '24/05/2028',
       time: '07:05',
       isRead: true
     },
@@ -53,7 +56,7 @@ const NotificationsPage = ({
   const handleNotificationClick = (notification) => {
     console.log('Notification clicked:', notification);
     // 알림 클릭 시 해당 페이지로 이동
-    switch(notification.type) {
+    switch (notification.type) {
       case 'booking':
         navigateToPageWithData && navigateToPageWithData(PAGES.RESERVATIONS);
         break;
@@ -68,8 +71,8 @@ const NotificationsPage = ({
     }
   };
 
-  const filteredNotifications = selectedFilter === 'all' 
-    ? notifications 
+  const filteredNotifications = selectedFilter === 'all'
+    ? notifications
     : notifications.filter(n => n.type === selectedFilter);
 
   const filterButtons = [
@@ -85,8 +88,6 @@ const NotificationsPage = ({
           max-width: 28rem;
           margin: 0 auto;
           background-color: white;
-          min-height: 100vh;
-          border: 4px solid #1f2937;
           position: relative;
         }
 
@@ -100,7 +101,6 @@ const NotificationsPage = ({
         }
 
         .page-title {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 1.3rem;
           font-weight: bold;
           color: #1f2937;
@@ -113,7 +113,6 @@ const NotificationsPage = ({
         }
 
         .filter-label {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 0.9rem;
           font-weight: bold;
           color: #1f2937;
@@ -130,14 +129,12 @@ const NotificationsPage = ({
         }
 
         .notification-item {
-          border: 3px solid #1f2937;
           background-color: white;
           padding: 1rem;
           margin-bottom: 0.75rem;
           cursor: pointer;
           transform: rotate(-0.1deg);
           transition: all 0.2s;
-          box-shadow: 2px 2px 0px #1f2937;
           position: relative;
           overflow: hidden;
         }
@@ -218,16 +215,22 @@ const NotificationsPage = ({
 
       <div className="notifications-container">
         {/* Header */}
-        <div className="header">
-          <h1 className="page-title">Notifications</h1>
-          <SketchBtn 
-            variant="secondary" 
+        <SketchHeader
+          title="Notifications"
+          showBack={true}
+          onBack={() => {
+            // goBack();
+            navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
+          }}
+          rightButtons={[
+            <div
             size="small"
             onClick={handleClearAll}
           >
             Clear All
-          </SketchBtn>
-        </div>
+          </div>
+          ]}
+        />
 
         {/* Filter Section */}
         <div className="filter-section">
@@ -249,18 +252,18 @@ const NotificationsPage = ({
         {/* Notifications List */}
         <div className="notifications-list">
           {filteredNotifications.map((notification) => (
-            <div
+            <SketchDiv
               key={notification.id}
               className={`notification-item ${notification.isRead ? 'read' : ''}`}
               onClick={() => handleNotificationClick(notification)}
             >
               {!notification.isRead && <HatchPattern opacity={0.03} />}
-              
+
               <div className="notification-content">
                 <div className="notification-icon">
                   {notification.icon}
                 </div>
-                
+
                 <div className="notification-details">
                   <p className="notification-message">
                     {notification.message}
@@ -269,12 +272,12 @@ const NotificationsPage = ({
                     {notification.date} {notification.time}
                   </p>
                 </div>
-                
+
                 <div className={`notification-status ${notification.isRead ? 'read' : 'unread'}`}>
                   {notification.isRead ? 'read' : 'unread'}
                 </div>
               </div>
-            </div>
+            </SketchDiv>
           ))}
         </div>
       </div>

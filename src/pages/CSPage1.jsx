@@ -4,6 +4,8 @@ import SketchBtn from '@components/SketchBtn';
 import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
 
+import SketchHeader from '@components/SketchHeader'
+
 const CSPage1 = ({ 
   navigateToPageWithData, 
   PAGES,
@@ -46,8 +48,6 @@ const CSPage1 = ({
           max-width: 28rem;
           margin: 0 auto;
           background-color: white;
-          min-height: 100vh;
-          border: 4px solid #1f2937;
           position: relative;
         }
 
@@ -59,7 +59,6 @@ const CSPage1 = ({
         }
 
         .page-title {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 1.4rem;
           font-weight: bold;
           color: #1f2937;
@@ -77,7 +76,6 @@ const CSPage1 = ({
         }
 
         .section-title {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 1.1rem;
           font-weight: bold;
           color: #1f2937;
@@ -85,11 +83,9 @@ const CSPage1 = ({
         }
 
         .contact-form {
-          border: 3px solid #1f2937;
           background-color: #f8fafc;
           padding: 1.5rem;
           transform: rotate(-0.2deg);
-          box-shadow: 3px 3px 0px #1f2937;
           position: relative;
           overflow: hidden;
         }
@@ -108,22 +104,17 @@ const CSPage1 = ({
         }
 
         .message-textarea {
-          width: 100%;
+          width: 91%;
           min-height: 120px;
           padding: 0.75rem;
-          border: 3px solid #1f2937;
-          font-family: 'Comic Sans MS', cursive, sans-serif;
-          font-size: 0.9rem;
           background-color: white;
           resize: vertical;
           transform: rotate(0.1deg);
-          box-shadow: 2px 2px 0px #1f2937;
           outline: none;
         }
 
         .message-textarea:focus {
           transform: rotate(0.1deg) scale(1.01);
-          box-shadow: 3px 3px 0px #1f2937;
         }
 
         .message-textarea::placeholder {
@@ -138,7 +129,6 @@ const CSPage1 = ({
         }
 
         .operating-hours {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 0.9rem;
           color: #4b5563;
           margin: 0;
@@ -155,9 +145,16 @@ const CSPage1 = ({
 
       <div className="cs-container">
         {/* Header */}
-        <div className="header">
-          <h1 className="page-title">Customer Support</h1>
-        </div>
+
+        <SketchHeader
+          title="Customer Support"
+          showBack={true}
+          onBack={() => {
+            // goBack();
+            navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
+          }}
+          rightButtons={[]}
+        />
 
         {/* Search Section */}
         <div className="search-section">

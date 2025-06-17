@@ -6,6 +6,8 @@ import SketchInput from '@components/SketchInput';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 
+
+
 const ShareExpPage = ({ 
   navigateToPageWithData, 
   PAGES,

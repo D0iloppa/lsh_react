@@ -6,12 +6,13 @@
     display: flex;
     flex-direction: column;
     position: relative;
+
+    font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
   }
   
   .content-area {
     flex: 1;
     overflow-y: auto;
-    background-color: #f9fafb;
     /* 하단 네비게이션 높이만큼 padding-bottom */
     padding-bottom: 80px;
   }
