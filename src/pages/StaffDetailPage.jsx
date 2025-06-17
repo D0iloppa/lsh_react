@@ -1,35 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
+
 import RotationDiv from '@components/RotationDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
-
+import SketchHeader from '@components/SketchHeader';
 import HatchPattern from '@components/HatchPattern';
-import SketchInput from '@components/SketchInput';
 import SketchBtn from '@components/SketchBtn';
 import '@components/SketchComponents.css';
 
 const StaffDetailPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
   const [date, setDate] = useState('');
   const [partySize, setPartySize] = useState('');
+  const girl = otherProps || {};
 
-  const profiles = [
-    {
-      id: "10",
-      image: "/placeholder-girl1.jpg"
-    },
-    {
-      id: "15",
-      image: "/placeholder-girl2.jpg"
-    },
-    {
-      id: "8", 
-      image: "/placeholder-girl3.jpg"
-    }
-  ];
+  const getAgeFromBirthYear = (birthYear) => {
+    const currentYear = new Date().getFullYear();
+    return birthYear ? currentYear - parseInt(birthYear, 10) : null;
+  };
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <>
       <style jsx>{`
-      
         .discover-section {
           padding: 2rem 1.5rem;
           text-align: center;
@@ -54,15 +48,77 @@ const StaffDetailPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
           background-color: #d1d5db;
           transform: rotate(0.3deg);
         }
+
+        .staff-detail-container {
+          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        .profile-images-section {
+          margin-bottom: 1rem;
+        }
+
+        .dual-image-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .image-left {
+          width: 100%;
+          max-width: 300px;
+        }
+
+        .profile-image {
+          margin-top: 20px;
+          width: 100%;
+          border-radius: 1rem;
+        }
+
+        .staff-info-section {
+          text-align: center;
+          margin-top: 1rem;
+        }
+
+        .staff-name {
+          font-size: 1.5rem;
+          font-weight: bold;
+        }
+
+        .staff-age {
+          font-size: 1.1rem;
+          margin-top: 0.25rem;
+        }
+
+        .staff-specialty {
+          font-size: 1rem;
+          color: #6b7280;
+          margin-top: 0.25rem;
+        }
+
+        .staff-description {
+          margin-top: 0.75rem;
+          font-size: 0.95rem;
+          color: #4b5563;
+        }
+
+        .booking-form-section {
+          margin-top: 2rem;
+          padding-bottom: 20px;
+        }
+
+        .full-width {
+          width: 100%;
+        }
       `}</style>
 
       <div className="staff-detail-container">
-        {/* Header */}
-        <div className="header">
-          <div className="logo">🍸 LeTanTon Sheriff</div>
-        </div>
+        <SketchHeader
+          title={'STAFF PROFILE'}
+          showBack={true}
+          onBack={() => console.log('뒤로가기')}
+          rightButtons={[]}
+        />
 
-        {/* Profile Images Section */}
         <div className="profile-images-section">
           <RotationDiv 
             interval={3000} 
@@ -70,66 +126,40 @@ const StaffDetailPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
             pauseOnHover={true}
             className="profile-rotation"
           >
-            {profiles.map((profile, index) => (
-              <div key={index} className="profile-slide">
-                <div className="dual-image-container">
-                  <div className="image-left">
-                    <ImagePlaceholder src={profile.image} className="profile-image" />
-                  </div>
+            <div className="profile-slide">
+              <div className="dual-image-container">
+                <div className="image-left">
+                  <ImagePlaceholder
+                    src={girl.image_url || '/placeholder-girl1.jpg'}
+                    className="profile-image"
+                  />
                 </div>
               </div>
-            ))}
+            </div>
           </RotationDiv>
         </div>
 
-        {/* Staff Info Section */}
         <div className="staff-info-section">
-          <div className="staff-name">Linh Tran</div>
-          <div className="staff-age">Age 24</div>
+          <div className="staff-name">{girl.name || 'Unknown Staff'}</div>
+          <div className="staff-age">
+            {girl.birth_year ? `Age ${getAgeFromBirthYear(girl.birth_year)}` : 'Age N/A'}
+          </div>
           <div className="staff-specialty">Specialty Mixology Customer Relations</div>
-          
           <div className="staff-description">
-            Linh has been working in the nightlife industry for over 3 years and 
-            is known for her excellent mixology skills and friendly customer 
-            service.
+            {girl.description || 'No description available.'}
           </div>
         </div>
 
-        {/* Booking Form Section */}
         <div className="booking-form-section">
-          <div className="form-field">
-            <label className="field-label">Date</label>
-            <SketchInput 
-              type="text" 
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="form-input"
-              placeholder=""
-            />
-          </div>
-
-          <div className="form-field">
-            <label className="field-label">Party Size</label>
-            <SketchInput 
-              type="text" 
-              value={partySize}
-              onChange={(e) => setPartySize(e.target.value)}
-              className="form-input"
-              placeholder=""
-            />
-          </div>
-
-
-        <SketchBtn className="full-width"
-                onClick={ () => {
-                    navigateToPageWithData(PAGES.RESERVATION, {});
-                }}
-            >
+          <SketchBtn
+            className="full-width"
+            onClick={() => {
+              navigateToPageWithData(PAGES.RESERVATION, {});
+            }}
+          >
             Reserve Now
             <HatchPattern opacity={0.4} />
-        </SketchBtn>
-
-
+          </SketchBtn>
         </div>
       </div>
     </>

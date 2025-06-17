@@ -6,6 +6,7 @@ import usePageNavigation from '@hooks/pageHook';
 
 
 // pages import
+import HatchPattern from '@components/HatchPattern';
 import HomePage from '@pages/HomePage';
 import DiscoverPage from '@pages/DiscoverPage';
 import StaffDetailPage from '@pages/StaffDetailPage'
@@ -122,7 +123,7 @@ const MainApp = () => {
         { id: PAGES.HOME, icon: Home, label: 'Home' },
         { id: PAGES.SEARCH, icon: Search, label: 'Search' },
         { id: PAGES.EVENTS, icon: Calendar, label: 'Event list' },
-        { id: PAGES.ACCOUNT, icon: User, label: 'Profile' }
+        { id: PAGES.ACCOUNT, icon: User, label: 'Account' }
     ];
 
     return (
@@ -135,6 +136,7 @@ const MainApp = () => {
             {/* 하단 네비게이션 (고정) */}
             <nav className="bottom-navigation">
                 <div className="nav-container">
+                    {<HatchPattern opacity={0.3} />}
                     {navigationItems.map(({ id, icon: Icon, label }) => (
                         <button
                             key={id}

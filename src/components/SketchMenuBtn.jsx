@@ -47,6 +47,8 @@ const SketchMenuBtn = ({
           font-weight: 500;
           font-size: 1rem;
           color: #374151;
+
+          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .menu-arrow {
@@ -60,7 +62,7 @@ const SketchMenuBtn = ({
         className={`menu-item ${className}`}
         onClick={onClick}
       >
-        {showHatch && <HatchPattern opacity={0.03} />}
+        {showHatch && <HatchPattern opacity={0.3} />}
 
         <div className="menu-content">
           <div className="menu-icon">{icon}</div>

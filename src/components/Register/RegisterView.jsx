@@ -8,6 +8,8 @@ import HatchPattern from '@components/HatchPattern';
 import InitFooter2 from '@components/InitFooter2';
 
 
+import SketchHeader from '@components/SketchHeader'
+
 export default function RegisterView() {
   const [formData, setFormData] = useState({
     fullName: '',
@@ -98,7 +100,7 @@ export default function RegisterView() {
 
   return (
     <div className="register-container max-w-md mx-auto bg-white min-h-screen border-gray-800 p-6">
-      {/* 헤더 */}
+      {/* 헤더
       <Header 
           className="custom-header"
           hatchOpacity={0.4}
@@ -112,7 +114,23 @@ export default function RegisterView() {
       >
         Register Member
       </h2>
+      */
+      }
 
+      <SketchHeader 
+              title="Register Member"
+              showBack={true}
+              onBack={() => console.log("뒤로가기")}
+              rightButtons={[]}
+            />
+      <h2
+        className=""
+        style={{
+          fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif", fontSize: '1.5rem', marginBottom: '5px'
+        }}
+      >
+        Register Member
+      </h2>
       
       <p style={{ 
         fontSize: '0.875rem', 

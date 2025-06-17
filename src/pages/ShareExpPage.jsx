@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; 
+import SketchHeader from '@components/SketchHeader';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchInput from '@components/SketchInput';
@@ -61,15 +62,17 @@ const ShareExpPage = ({
           background-color: white;
           position: relative;
           padding: 1.5rem;
+
+          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .review-main-section {
-          border: 3px solid #1f2937;
+          border-radius: 5px;
+          border: 1px solid #1f2937;
           background-color: #f8fafc;
           padding: 1.5rem;
           margin-bottom: 2rem;
           transform: rotate(-0.2deg);
-          box-shadow: 3px 3px 0px #1f2937;
           position: relative;
           overflow: hidden;
         }
@@ -99,7 +102,7 @@ const ShareExpPage = ({
         }
 
         .venue-name {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+         
           font-size: 1.1rem;
           font-weight: bold;
           color: #1f2937;
@@ -119,7 +122,7 @@ const ShareExpPage = ({
         }
 
         .rating-label {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+         
           font-size: 0.95rem;
           font-weight: bold;
           color: #1f2937;
@@ -143,7 +146,7 @@ const ShareExpPage = ({
           cursor: pointer;
           font-size: 1.2rem;
           transition: all 0.2s;
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+         
         }
 
         .star-button.empty {
@@ -185,10 +188,17 @@ const ShareExpPage = ({
         }
       `}</style>
 
+        <SketchHeader
+          title={'Confirm and pay'}
+          showBack={true}
+          onBack={() => console.log('뒤로가기')}
+          rightButto
+          ns={[]}
+        />
       <div className="share-exp-container">
         {/* Main Review Section */}
         <div className="review-main-section">
-          <HatchPattern opacity={0.05} />
+          <HatchPattern opacity={0.4} />
           <div className="review-content">
             {/* Header with Image and Venue Info */}
             <div className="review-header">
@@ -230,13 +240,23 @@ const ShareExpPage = ({
 
         {/* My Review Button */}
         <div className="my-review-section">
-          <SketchBtn 
+        <SketchBtn
+            className="full-width"
+            onClick={() => {
+              //navigateToPageWithData(PAGES.RESERVATION, {});
+            }}
+          >
+            My reviews
+            <HatchPattern opacity={0.4} />
+          </SketchBtn>
+
+          {/* <SketchBtn 
             variant="secondary" 
             size="medium"
             onClick={handleMyReviews}
           >
             My Review
-          </SketchBtn>
+          </SketchBtn> */}
         </div>
       </div>
     </>

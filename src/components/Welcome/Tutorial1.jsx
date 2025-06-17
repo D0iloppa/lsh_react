@@ -60,6 +60,7 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
          description="Experience top-notch services with our elite hostesses."
          titleClassName="transform rotate-1"
          descriptionClassName="transform rotate-1"
+         imageSize="w-24 h-24"
          className="mb-4"
       />
 

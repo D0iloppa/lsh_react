@@ -1,321 +1,196 @@
-import React, { useState } from 'react';
-import { ArrowRight, MapPin, Star, Heart } from 'lucide-react';
-import SketchDiv from '@components/SketchDiv';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Star, Heart } from 'lucide-react';
+
 import ImagePlaceholder from '@components/ImagePlaceholder';
+import SketchSearch from '@components/SketchSearch';
 import HatchPattern from '@components/HatchPattern';
-import '@components/SketchComponents.css';
+import SketchBtn from '@components/SketchBtn';
 
-
-
-const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAGES, ...otherProps }) => {
-
+const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAGES }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [hotspots, setHotspots] = useState([]);
 
-
-
-  // 장소 데이터 (샘플)
-  const hotspots = [
-    {
-      id: 1,
-      name: 'Sky Lounge',
-      rating: 4.8,
-      image: null,
-      isFavorite: false
-    },
-    {
-      id: 2, 
-      name: 'Elite Club',
-      rating: 4.6,
-      image: null,
-      isFavorite: true
-    },
-    {
-        id: 3, 
-        name: 'Rooftop Bar',
-        rating: 4.5,
-        image: null,
-        isFavorite: true
-    }
-  ];
+  useEffect(() => {
+    const fetchHotspots = async () => {
+      try {
+        const response = await axios.get('/api/api/getVenueList');
+        const data = response.data || [];
+        const transformed = data.map((item, index) => ({
+          id: item.venue_id || index,
+          name: item.name || 'Unknown',
+          rating: parseFloat(item.rating || 0).toFixed(1),
+          image: item.image_url,
+          isFavorite: false,
+        }));
+        setHotspots(transformed);
+      } catch (error) {
+        console.error('장소 정보 가져오기 실패:', error);
+      }
+    };
+    fetchHotspots();
+  }, []);
 
   const handleSearch = () => {
-    console.log('검색:', searchQuery);
-
     navigateToMap({
-        searchQuery: searchQuery,
-        searchFrom: 'home'
-      });
-
-
+      initialKeyword:searchQuery,
+      searchFrom: 'home',
+    });
   };
 
   const handleLocationClick = () => {
-
     navigateToMap({
-        searchQuery: searchQuery,
-        searchFrom: 'home'
-      });
+      initialKeyword:searchQuery,
+      searchFrom: 'home',
+    });
   };
 
-  const handleDiscover = () => {
-    console.log('Discover 클릭', PAGES);
-
-    navigateToPageWithData(PAGES.DISCOVER, {});
-  };
+  const handleDiscover = (venueId) => {
+  navigateToPageWithData(PAGES.DISCOVER, { venueId });
+};
 
   const toggleFavorite = (id) => {
-    console.log('즐겨찾기 토글:', id);
+    setHotspots((prev) =>
+      prev.map((spot) =>
+        spot.id === id ? { ...spot, isFavorite: !spot.isFavorite } : spot
+      )
+    );
   };
 
   return (
     <>
       <style jsx>{`
         .homepage-container {
-          min-height: 100vh;
           background-color: #f9fafb;
+          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
         }
-        
         .hero-section {
+          height: 117px;
+          border: 1px solid #333;
           position: relative;
           padding: 2rem 1.5rem;
           background-color: white;
+          border-top-left-radius: 12px 7px;
+          border-top-right-radius: 6px 14px;
+          border-bottom-right-radius: 10px 5px;
+          border-bottom-left-radius: 8px 11px;
         }
-        
         .hero-title {
           font-size: 1.5rem;
           font-weight: bold;
           color: #374151;
-          line-height: 1.3;
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
           transform: rotate(-0.5deg);
         }
-        
-        .search-container {
-          display: flex;
-          gap: 0.75rem;
-          margin-bottom: 2rem;
-        }
-        
-        .search-input-wrapper {
-          flex: 1;
-          position: relative;
-        }
-        
-        .search-input {
-          width: 100%;
-          padding: 0.75rem 1rem;
-          border: 2px solid #374151;
-          background-color: white;
-          font-size: 1rem;
-          color: #6b7280;
-          border-radius: 8px 12px 6px 10px;
-          transform: rotate(0.3deg);
-          outline: none;
-        }
-        
-        .search-input:focus {
-          border-color: #1f2937;
-          transform: rotate(-0.2deg);
-        }
-        
-        .search-arrow {
-          position: absolute;
-          right: 1rem;
-          top: 50%;
-          transform: translateY(-50%);
-          color: #6b7280;
-        }
-        
-        .location-button {
-          width: 48px;
-          height: 48px;
-          border: 2px solid #374151;
-          background-color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          border-radius: 6px 10px 8px 6px;
-          transform: rotate(-0.8deg);
-        }
-        
-        .location-button:hover {
-          background-color: #f9fafb;
-          transform: rotate(0.5deg);
-        }
-        
         .content-section {
-          padding: 0 1.5rem;
+          padding: 1rem 1.5rem;
         }
-        
-        .section-title {
-          font-size: 1.25rem;
-          font-weight: bold;
-          color: #374151;
-          margin-bottom: 1rem;
-          transform: rotate(0.3deg);
-        }
-        
-        .hotspot-card {
+        .card {
+         border: 1px solid #333;
           position: relative;
-          margin-bottom: 1rem;
+          border-radius: 10px;
+          overflow: hidden;
+          background: white;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+          margin-bottom: 1.5rem;
         }
-        
-        .card-content {
-          display: flex;
-          align-items: flex-start;
-          gap: 1rem;
-          position: relative;
-          z-index: 10;
+        .card img {
+          width: 100%;
+          height: auto;
+          display: block;
         }
-        
-        .venue-image {
-          width: 80px;
-          height: 80px;
-          flex-shrink: 0;
-        }
-        
-        .venue-info {
-          flex: 1;
-          padding-right: 2rem;
-        }
-        
-        .venue-name {
-          font-size: 1.1rem;
-          font-weight: bold;
-          color: #374151;
-          margin-bottom: 0.5rem;
-          transform: rotate(-0.3deg);
-        }
-        
-        .venue-rating {
+        .rating-badge {
+          position: absolute;
+          top: 8px;
+          left: 8px;
+          background: white;
+          border-radius: 4px;
+          padding: 4px 8px;
+          font-size: 0.75rem;
           display: flex;
           align-items: center;
-          gap: 0.25rem;
-          color: #6b7280;
-          font-size: 0.9rem;
-          transform: rotate(0.2deg);
+          box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+          z-index: 2; /* 그라디언트보다 위에 표시 */
+
         }
-        
-        .favorite-button {
+        .heart-icon {
           position: absolute;
-          top: 1rem;
-          right: 1rem;
-          background: none;
+          top: 8px;
+          right: 8px;
+          cursor: pointer;
+          z-index: 2; /* 그라디언트보다 위에 표시 */
+
+        }
+        .card-footer {
+          padding: 1rem;
+          background: #f3f4f6;
+          text-align: right;
+        }
+        .discover-btn {
+          background: black;
+          color: white;
           border: none;
+          padding: 0.5rem 1rem;
+          border-radius: 4px;
+          font-weight: bold;
           cursor: pointer;
-          color: #6b7280;
-          z-index: 20;
-          transform: rotate(12deg);
         }
-        
-        .favorite-button.active {
-          color: #ef4444;
-          transform: rotate(-8deg);
+
+        .overlay-gradient {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 60%; /* 상단 60% 영역에 그라디언트 적용 */
+          background: linear-gradient(
+             to bottom, 
+             rgba(0, 0, 0, 0.5) 0%,    /* 상단: 30% 불투명 검은색 */
+             rgba(0, 0, 0, 0.15) 40%,  /* 중간: 40% 불투명 검은색 */
+             rgba(0, 0, 0, 0) 100%     /* 하단: 완전 투명 */
+           );
+          z-index: 1;
+          pointer-events: none; /* 클릭 이벤트가 하위 요소로 전달되도록 */
+          border-radius: inherit; /* 카드의 border-radius 상속 */
         }
-        
-        .discover-section {
-          padding: 2rem 1.5rem;
-          text-align: center;
-        }
-        
-        .discover-button {
-          position: relative;
-          padding: 0.75rem 2rem;
-          background-color: #e5e7eb;
-          color: #374151;
-          border: 2px solid #374151;
-          font-weight: 500;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          cursor: pointer;
-          font-size: 1rem;
-          border-radius: 10px 6px 12px 8px;
-          transform: rotate(-0.5deg);
-        }
-        
-        .discover-button:hover {
-          background-color: #d1d5db;
-          transform: rotate(0.3deg);
-        }
+
+
       `}</style>
-      
+
       <div className="homepage-container">
         {/* Hero Section */}
         <section className="hero-section">
           <HatchPattern opacity={0.3} />
-          
-          <div style={{ position: 'relative', zIndex: 10 }}>
-            <h1 className="hero-title">
-              Explore LeTanTon bars and beautiful grils
-            </h1>
-            
-            <div className="search-container">
-              <div className="search-input-wrapper">
-                <input
-                  type="text"
-                  placeholder="Enter venue or location"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="search-input"
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                />
-                <ArrowRight className="search-arrow" size={20} />
-              </div>
-              
-              <button className="location-button" onClick={handleLocationClick}>
-                <MapPin size={20} />
-              </button>
-            </div>
-          </div>
+          <h1 className="hero-title">Explore LeTanTon bars and beautiful girls</h1>
+          <SketchSearch
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            handleSearch={handleSearch}
+            handleLocationClick={handleLocationClick}
+          />
         </section>
 
-        {/* Hotspots Section */}
+        {/* Hotspots */}
         <section className="content-section">
-          <h2 className="section-title">Hotspots near you</h2>
-          
+          <h2 className="section-title" style={{margin: '0', marginTop: '26px', fontSize: '21px'}}>Hotspots near you</h2>
           {hotspots.map((spot) => (
-            <div key={spot.id} className="hotspot-card">
-              <SketchDiv variant="card">
-                <HatchPattern opacity={0.2} />
-                
-                <div className="card-content">
-                  <ImagePlaceholder 
-                    src={spot.image}
-                    className="venue-image"
-                  />
-                  
-                  <div className="venue-info">
-                    <h3 className="venue-name">{spot.name}</h3>
-                    <div className="venue-rating">
-                      <Star size={16} fill="currentColor" />
-                      <span>{spot.rating}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <button 
-                  className={`favorite-button ${spot.isFavorite ? 'active' : ''}`}
-                  onClick={() => toggleFavorite(spot.id)}
-                >
-                  <Heart 
-                    size={20} 
-                    fill={spot.isFavorite ? 'currentColor' : 'none'} 
-                  />
-                </button>
-              </SketchDiv>
+            <div className="card" key={spot.id}>
+              <ImagePlaceholder src={spot.image} alt={spot.name} />
+              <div className="overlay-gradient"></div>
+              <div className="rating-badge">
+                <Star size={14} style={{ marginRight: '4px', fill: 'yellow'}} />
+                {spot.rating}
+              </div>
+              <div className="heart-icon" onClick={() => toggleFavorite(spot.id)}>
+                <Heart fill={spot.isFavorite ? '#f43f5e' : 'none'} color="#f43f5e" />
+              </div>
+              <div className="card-footer">
+                <SketchBtn className="discover-btn" onClick={() => handleDiscover(spot.id)}>
+                  {<HatchPattern opacity={0.3} />}
+                DISCOVER
+              </SketchBtn>
+              </div>
             </div>
           ))}
-        </section>
-
-        {/* Discover Section */}
-        <section className="discover-section">
-          <div className="relative">
-            <button className="discover-button" onClick={handleDiscover}>
-              Discover
-            </button>
-            <HatchPattern opacity={0.4} />
-          </div>
         </section>
       </div>
     </>

@@ -5,6 +5,7 @@ const ImagePlaceholder = ({
   src = null, 
   alt = "Image", 
   className = "",
+  imageSize = "w-full h-full",
   fallbackClassName = "",
   style = {} 
 }) => {
@@ -57,7 +58,7 @@ const ImagePlaceholder = ({
     return (
       <div className={`border-2 border-gray-800 bg-gray-100 relative ${className}`} style={style}>
         <div className="w-full h-full flex items-center justify-center">
-          <div className="text-gray-500 text-sm">Loading...</div>
+          <div className="text-gray-500 text-sm"></div>
         </div>
         {/* 숨겨진 이미지로 로딩 체크 */}
         <img 

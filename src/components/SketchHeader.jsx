@@ -114,6 +114,8 @@ const SketchHeader = ({
           line-height: 1.2;
           transform: rotate(-0.1deg);
           text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.05);
+
+          font-family: 'Courier New', monospace;
         }
 
         .right-section {
@@ -225,7 +227,7 @@ const SketchHeader = ({
       `}</style>
       
       <SketchDiv className={`page-header ${variant} ${className}`}>
-        <HatchPattern opacity={0.02} />
+        <HatchPattern opacity={0.3} />
 
         {/* 왼쪽: Back 버튼 (선택적) */}
         <div className="left-section">

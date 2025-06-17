@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const GoogleMapComponent = ({ places = [], onMarkerClick = () => {} }) => {
+
+const GoogleMapComponent = ({ places = [], onMarkerClick = () => {}, disableInteraction = false }) => {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const infoWindowRef = useRef(null);
@@ -26,30 +27,34 @@ const GoogleMapComponent = ({ places = [], onMarkerClick = () => {} }) => {
     loadGoogleMaps();
   }, []);
 
-  const initMap = () => {
-    if (!window.google || !window.google.maps) return;
+const initMap = () => {
+  if (!window.google || !window.google.maps) return;
 
-    mapInstance.current = new window.google.maps.Map(mapRef.current, {
-      center: { lat: 10.782865, lng: 106.701439 },
-      zoom: 18,
-      disableDefaultUI: true,
-      gestureHandling: "greedy",
-      styles: [
-        { featureType: "landscape", elementType: "geometry", stylers: [{ color: "#a7c0cd" }] },
-        { featureType: "poi", elementType: "geometry", stylers: [{ color: "#1e2a38" }] },
-        { featureType: "man_made", elementType: "geometry.fill", stylers: [{ color: "#1e2a38" }] },
-        { featureType: "building", elementType: "geometry.fill", stylers: [{ color: "#1e2a38" }] },
-        { featureType: "road", elementType: "geometry", stylers: [{ color: "#90a4ae" }] },
-        { featureType: "road", elementType: "labels", stylers: [{ visibility: "off" }] },
-        { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] },
-        { featureType: "water", elementType: "geometry", stylers: [{ color: "#0a0a0a" }] },
-        { elementType: "labels.icon", stylers: [{ visibility: "off" }] }
-      ]
-    });
-
-    setMapReady(true);
+  const baseOptions = {
+    center: { lat: 10.782865, lng: 106.701439 },
+    zoom: 18,
+    disableDefaultUI: true,
+    styles: [
+      { featureType: "landscape", elementType: "geometry", stylers: [{ color: "#a7c0cd" }] },
+      { featureType: "poi", elementType: "geometry", stylers: [{ color: "#1e2a38" }] },
+      { featureType: "man_made", elementType: "geometry.fill", stylers: [{ color: "#1e2a38" }] },
+      { featureType: "building", elementType: "geometry.fill", stylers: [{ color: "#1e2a38" }] },
+      { featureType: "road", elementType: "geometry", stylers: [{ color: "#90a4ae" }] },
+      { featureType: "road", elementType: "labels", stylers: [{ visibility: "off" }] },
+      { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] },
+      { featureType: "water", elementType: "geometry", stylers: [{ color: "#0a0a0a" }] },
+      { elementType: "labels.icon", stylers: [{ visibility: "off" }] }
+    ],
+    // 🔐 제어 비활성화 조건 추가
+    draggable: !disableInteraction,
+    scrollwheel: !disableInteraction,
+    disableDoubleClickZoom: disableInteraction,
+    gestureHandling: disableInteraction ? "none" : "greedy"
   };
 
+  mapInstance.current = new window.google.maps.Map(mapRef.current, baseOptions);
+  setMapReady(true);
+};
   useEffect(() => {
     if (!mapReady || !places) return;
 

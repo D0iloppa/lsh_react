@@ -1,5 +1,5 @@
 .main-app-container {
-    height: calc(100vh - 80px);  /* 80px = 네비게이션 바 높이 */
+    /*height: calc(100vh - 80px);  /* 80px = 네비게이션 바 높이 */
     max-width: 28rem;
     margin: 0 auto;
     background-color: white;
@@ -17,6 +17,7 @@
   }
   
   .bottom-navigation {
+     z-index:1000;
     position: fixed;
     bottom: 0;
     left: 50%;
@@ -24,7 +25,7 @@
     width: 100%;
     max-width: 28rem;
     background-color: white;
-    border-top: 3px solid #1f2937;
+    border-top: 1px solid #1f2937;
     padding: 1rem 1.5rem;
     box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
   }
@@ -36,6 +37,7 @@
   }
   
   .nav-item {
+    font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;

@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
+
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import '@components/SketchComponents.css';
+import SketchHeader from '@components/SketchHeader';
+
+
 
 const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
   const [attendee, setAttendee] = useState('');
@@ -41,6 +45,10 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
     navigateToPageWithData(PAGES.RESERVATION_SUM, {attendee, selectedDate, selectedTime})
   };
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   return (
     <>
       <style jsx>{`
@@ -49,8 +57,9 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
           margin: 0 auto;
           background-color: white;
           min-height: 100vh;
-          border: 4px solid #1f2937;
           position: relative;
+
+          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .header {
@@ -76,7 +85,7 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
         }
 
         .main-title {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+        
           font-size: 1.2rem;
           font-weight: bold;
           margin: 0;
@@ -84,7 +93,7 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
         }
 
         .sub-title {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+         
           font-size: 0.9rem;
           color: #6b7280;
           margin: 0.25rem 0 0 0;
@@ -96,6 +105,14 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
 
         .form-step {
           margin-bottom: 2rem;
+
+          //  border-top-left-radius: 12px 7px;
+          // border-top-right-radius: 6px 14px;
+          // border-bottom-right-radius: 10px 5px;
+          // border-bottom-left-radius: 8px 11px;
+          // width: 100%;
+          // padding: 0.75rem;
+          // border: 1px solid #1f2937;
         }
 
         .step-number {
@@ -113,7 +130,7 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
         }
 
         .step-label {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+         
           font-size: 1rem;
           font-weight: bold;
           color: #1f2937;
@@ -123,12 +140,19 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
         }
 
         .attendee-select {
+          height: 40px;
+          border-top-left-radius: 12px 7px;
+          border-top-right-radius: 6px 14px;
+          border-bottom-right-radius: 10px 5px;
+          border-bottom-left-radius: 8px 11px;
           width: 100%;
           padding: 0.75rem;
-          border: 3px solid #1f2937;
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+          border: 1px solid #1f2937;
+          /* border-radius: 3px; */
           background-color: white;
           cursor: pointer;
+
+          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .calendar-grid {
@@ -144,7 +168,7 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
           align-items: center;
           justify-content: center;
           font-size: 0.8rem;
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+          
         }
 
         .calendar-header {
@@ -189,7 +213,13 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
 
       <div className="reservation-container">
         {/* Header */}
-        <div className="header">
+         <SketchHeader
+                  title={'Reservation'}
+                  showBack={true}
+                  onBack={() => console.log('뒤로가기')}
+                  rightButtons={[]}
+                />
+        {/* <div className="header">
           <button className="back-button">
             &lt;
           </button>
@@ -197,7 +227,7 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
             <h1 className="main-title">Reserve Your Night Out</h1>
             <p className="sub-title">Hanoi Night Market</p>
           </div>
-        </div>
+        </div> */}
 
         {/* Form Section */}
         <div className="form-section">

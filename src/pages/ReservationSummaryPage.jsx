@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react'; 
+
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import '@components/SketchComponents.css';
+import SketchHeader from '@components/SketchHeader';
 
 const ReserveSummaryPage = ({ 
   navigateToPageWithData, 
@@ -34,7 +36,7 @@ const ReserveSummaryPage = ({
           margin: 0 auto;
           background-color: white;
           min-height: 100vh;
-          border: 4px solid #1f2937;
+         font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
           position: relative;
         }
 
@@ -49,7 +51,7 @@ const ReserveSummaryPage = ({
         }
 
         .logo {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+          
           font-weight: bold;
           color: #1f2937;
           font-size: 1.1rem;
@@ -60,7 +62,7 @@ const ReserveSummaryPage = ({
         }
 
         .section-title {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+         
           font-size: 1.3rem;
           font-weight: bold;
           color: #1f2937;
@@ -68,7 +70,7 @@ const ReserveSummaryPage = ({
         }
 
         .booking-summary-box {
-          border: 3px solid #1f2937;
+          border: 1px solid #1f2937;
           background-color: #f8fafc;
           padding: 1.5rem;
           margin-bottom: 2rem;
@@ -84,7 +86,7 @@ const ReserveSummaryPage = ({
         }
 
         .summary-item {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+         
           font-size: 0.95rem;
           color: #374151;
           margin-bottom: 0.5rem;
@@ -135,9 +137,15 @@ const ReserveSummaryPage = ({
 
       <div className="summary-container">
         {/* Header */}
-        <div className="header">
+        <SketchHeader
+                  title={'Booking Summary'}
+                  showBack={true}
+                  onBack={() => console.log('뒤로가기')}
+                  rightButtons={[]}
+                />
+        {/* <div className="header">
           <div className="logo">🍸 LeTanTon Sheriff</div>
-        </div>
+        </div> */}
 
         {/* Content Section */}
         <div className="content-section">

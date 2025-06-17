@@ -24,9 +24,11 @@ const SketchSearch = ({
         }
         
         .search-input {
-          width: 100%;
+          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+
+          width: 90%;
           padding: 0.75rem 1rem;
-          border: 2px solid #374151;
+          border: 1px solid #374151;
           background-color: white;
           font-size: 1rem;
           color: #6b7280;
@@ -49,16 +51,16 @@ const SketchSearch = ({
         }
         
         .location-button {
-          width: 48px;
-          height: 48px;
-          border: 2px solid #374151;
-          background-color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          border-radius: 6px 10px 8px 6px;
-          transform: rotate(-0.8deg);
+              width: 50px;
+              height: 53px;
+              border: 1px solid #374151;
+              background-color: white;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              border-radius: 6px 10px 8px 6px;
+              transform: rotate(-0.8deg);
         }
         
         .location-button:hover {

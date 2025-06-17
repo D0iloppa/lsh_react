@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
+import SketchHeader from '@components/SketchHeader';
 
 const SubscriptionPaymentPage = ({ 
   navigateToPageWithData, 
@@ -40,6 +41,10 @@ const SubscriptionPaymentPage = ({
     navigateToPageWithData && navigateToPageWithData(PAGES.SHARE_EXP, { paymentSuccess: true });
   };
 
+   useEffect(() => {
+      window.scrollTo(0, 0);
+    }, []);
+
   return (
     <>
       <style jsx>{`
@@ -47,7 +52,7 @@ const SubscriptionPaymentPage = ({
           max-width: 28rem;
           margin: 0 auto;
           background-color: white;
-          border: 4px solid #1f2937;
+          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
           position: relative;
         }
 
@@ -61,7 +66,7 @@ const SubscriptionPaymentPage = ({
         }
 
         .logo {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+          
           font-weight: bold;
           color: #1f2937;
           font-size: 1.1rem;
@@ -89,7 +94,7 @@ const SubscriptionPaymentPage = ({
         }
 
         .section-title {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+          
           font-size: 1.1rem;
           font-weight: bold;
           color: #1f2937;
@@ -127,14 +132,15 @@ const SubscriptionPaymentPage = ({
         }
 
         .duration-select {
+          height: 40px;
           width: 100%;
           padding: 0.75rem;
-          border: 3px solid #1f2937;
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+          border: 1px solid #1f2937;
+          border-radius: 3px;
           background-color: white;
           cursor: pointer;
           transform: rotate(-0.2deg);
-          box-shadow: 2px 2px 0px #1f2937;
+        
         }
 
         .confirm-section {
@@ -158,16 +164,25 @@ const SubscriptionPaymentPage = ({
             text-align: center;
           }
         }
+
+        .no-rotate{border-radius: 5px !important;}
       `}</style>
 
       <div className="payment-container">
         {/* Header */}
-        <div className="header">
+       
+                <SketchHeader
+                  title={'Confirm reservation'}
+                  showBack={true}
+                  onBack={() => console.log('뒤로가기')}
+                  rightButtons={[]}
+                />
+        {/* <div className="header">
           <div className="logo">🍸 LeTanTon Sheriff</div>
           <div className="profile-icon" onClick={handleProfile}>
             👤
           </div>
-        </div>
+        </div> */}
 
         {/* Content Section */}
         <div className="content-section">
@@ -223,7 +238,7 @@ const SubscriptionPaymentPage = ({
           </div>
 
           {/* Payment Information */}
-          <div className="section">
+          <div className="section" style={{marginBottom: '0px'}}>
             <div className="section-title">Payment Information</div>
             
             <div className="form-field">
@@ -262,14 +277,12 @@ const SubscriptionPaymentPage = ({
         </div>
 
         {/* Confirm Section */}
-        <div className="confirm-section">
+        <div className="full-width" style={{paddingBottom: '20px'}}>
           <SketchBtn 
-            variant="accent" 
-            size="medium"
             onClick={handleConfirmPay}
           >
             Confirm & Pay
-            <HatchPattern opacity={0.1} />
+            <HatchPattern opacity={0.4} />
           </SketchBtn>
         </div>
       </div>

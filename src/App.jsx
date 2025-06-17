@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'r
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
+import PageView from './debug/PageView'
+
 import WelcomePage from '@components/Welcome';
 
 import LoginView from '@components/Login';
@@ -25,6 +27,11 @@ const AppRoutes = () => {
 
   return (
     <Routes>
+
+      {/* 👇 테스트용 또는 독립 페이지 라우트 */}
+      <Route path="/pv/:id" element={<PageView />} />
+
+
       {/* 1. 최초 진입 - 항상 WelcomePage */}
       <Route 
         path="/" 
@@ -44,15 +51,16 @@ const AppRoutes = () => {
       <Route 
         path="/register" 
         element={
-          isLoggedIn ? <Navigate to="/main" replace /> : <RegisterView />
+           <RegisterView />
         } 
       />
 
-      {/* 3. 메인 앱 (로그인 필요) */}
+      {/* 4. 메인 앱 (로그인 필요) */}
       <Route 
         path="/main" 
         element={
-          isLoggedIn ? <MainApp /> : <Navigate to="/login" replace />
+          <MainApp />
+          /* isLoggedIn ? <MainApp /> : <Navigate to="/login" replace /> */
         } 
       />
 
