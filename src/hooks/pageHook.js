@@ -20,7 +20,8 @@ const PAGES = {
   PROMOTION: 'promotion',
   BOOKINGHISTORY: 'bookinghistory',
   FAVORITES: 'favorites',
-  SETTING: 'setting'
+  SETTING: 'setting',
+  PROFILE: 'profile'
 };
 
 const usePageNavigation = (initialPage = PAGES.HOME, customData = {}) => {

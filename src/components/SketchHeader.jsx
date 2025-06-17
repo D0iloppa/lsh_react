@@ -68,6 +68,10 @@ const SketchHeader = ({
           flex-shrink: 0;
         }
 
+        .bb-noshow{
+          display:none;
+        }
+
         .back-button {
           width: 2.5rem;
           height: 2.5rem;
@@ -231,7 +235,7 @@ const SketchHeader = ({
 
         {/* 왼쪽: Back 버튼 (선택적) */}
         <div className="left-section">
-            <button className="back-button" onClick={onBack}>
+            <button  style={{ display: showBack ? '' : 'none' }} className={`back-button ${showBack ? '' : 'bb-noshow'}`} onClick={onBack}>
                 <ChevronLeft size={20} />
             </button>
         </div>

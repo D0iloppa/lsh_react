@@ -5,6 +5,8 @@ import SketchInput from '@components/SketchInput';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 
+import SketchHeader from '@components/SketchHeader'
+
 const PromotionsPage = ({ 
   navigateToPageWithData, 
   PAGES,
@@ -74,7 +76,6 @@ const PromotionsPage = ({
           margin: 0 auto;
           background-color: white;
           min-height: 100vh;
-          border: 4px solid #1f2937;
           position: relative;
         }
 
@@ -83,7 +84,6 @@ const PromotionsPage = ({
           justify-content: space-between;
           align-items: center;
           padding: 1rem;
-          border-bottom: 3px solid #1f2937;
           background-color: #f9fafb;
         }
 
@@ -235,17 +235,13 @@ const PromotionsPage = ({
 
       <div className="promotions-container">
         {/* Header */}
-        <div className="header">
-          <div className="logo">🍸 LeTanTon Sheriff</div>
-          <div className="header-icons">
-            <div className="header-icon" onClick={handleHome}>
-              🏠
-            </div>
-            <div className="header-icon" onClick={handleMenu}>
-              ≡
-            </div>
-          </div>
-        </div>
+        <SketchHeader 
+          title="Event List"
+          showBack={false}
+          onBack={() => console.log("뒤로가기")}
+          rightButtons={[]}
+        />
+
 
         {/* Filter Section */}
         <div className="filter-section">

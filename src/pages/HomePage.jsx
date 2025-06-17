@@ -160,7 +160,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
         {/* Hero Section */}
         <section className="hero-section">
           <HatchPattern opacity={0.3} />
-          <h1 className="hero-title">Explore LeTanTon bars and beautiful girls</h1>
+          <h1 className="hero-title">Explore LeTanTon bars and beautiful Staffs</h1>
           <SketchSearch
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}

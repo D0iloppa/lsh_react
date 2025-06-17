@@ -36,7 +36,7 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
       <div className="mb-6">
         <ImagePlaceholder 
            src={"/cdn/tuto1.png"}
-          className="w-60 h-48"  style={{ border: '1px solid #333', borderRadius: '5px'}}/>
+          className="w-60 h-48"  style={{ border: '1px solid #333', borderRadius: '5px', height: '270px'}}/>
       </div>
 
       {/* 제목 */}

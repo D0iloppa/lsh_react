@@ -22,20 +22,29 @@ const AccountPage = ({
   };
 
   const menuBtnClick = (menu_id) => {
-    console.log('Notification clicked:', type, message);
     // 각 알림 타입에 따른 페이지 이동 로직
-    switch(type) {
-      case 'venue_hours':
-        navigateToPageWithData && navigateToPageWithData(PAGES.VENUE_DETAILS);
+    switch(menu_id) {
+      case 1: // Profile (제작 필요)
+        navigateToPageWithData && navigateToPageWithData(PAGES.PROFILE);
         break;
-      case 'loyalty_program':
-        navigateToPageWithData && navigateToPageWithData(PAGES.SUBSCRIPTION);
+      case 2:  // Booking History
+        navigateToPageWithData && navigateToPageWithData(PAGES.BOOKINGHISTORY);
         break;
-      case 'payment':
-        navigateToPageWithData && navigateToPageWithData(PAGES.PAYMENT_HISTORY);
+      case 3: // Payment (제작 필요)
+        navigateToPageWithData && navigateToPageWithData(PAGES.BOOKINGHISTORY);
         break;
-      default:
-        console.log('Default notification action');
+      case 4: // Notifications
+        navigateToPageWithData && navigateToPageWithData(PAGES.NOTIFICATIONS);
+        break;
+      case 5: // Favorites
+        navigateToPageWithData && navigateToPageWithData(PAGES.FAVORITES);
+        break;
+      case 6: // Settings
+        navigateToPageWithData && navigateToPageWithData(PAGES.SETTING);
+        break;
+      case 7: // Support
+        navigateToPageWithData && navigateToPageWithData(PAGES.CSPAGE1);
+        break;
     }
   };
 
@@ -134,7 +143,7 @@ const AccountPage = ({
         {/* Header */}
         <SketchHeader 
           title="Account"
-          showBack={true}
+          showBack={false}
           onBack={() => console.log("뒤로가기")}
           rightButtons={[]}
         />

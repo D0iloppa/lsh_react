@@ -8,7 +8,7 @@ import HatchPattern from '@components/HatchPattern';
 import SketchInput from '@components/SketchInput';
 import GoogleMapComponent from '@components/GoogleMapComponent';
 
-const MapPage = ({ onVenueSelect = () => {}, onSearch = () => {}, initialKeyword = '' }) => {
+const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSearch = () => {}, initialKeyword = '' }) => {
   const [searchQuery, setSearchQuery] = useState(initialKeyword); 
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [places, setPlaces] = useState([]);
@@ -257,24 +257,32 @@ const MapPage = ({ onVenueSelect = () => {}, onSearch = () => {}, initialKeyword
             </div>
 
             {selectedVenue && (
-              <SketchDiv className="venue-info-overlay">
-                <HatchPattern opacity={0.1} />
-                <div className="venue-info-content">
-                  <div className="venue-info-header">
-                    <span className="venue-star">⭐</span>
-                    <h3 className="venue-name">{selectedVenue.name}</h3>
-                  </div>
-                  <div className="venue-details">
-                    <span className="venue-rating">🎵 {selectedVenue.music}</span>
-                    <span className="venue-people">👥 {selectedVenue.people}</span>
-                  </div>
-                  <div className="venue-price-info">
-                    <span className="venue-price">${selectedVenue.price}</span>
-                    <span className="venue-entry">entry</span>
-                    <span className="venue-stars">⭐{selectedVenue.rating}/5</span>
-                  </div>
+            <SketchDiv
+              className="venue-info-overlay"
+              onClick={() =>
+                navigateToPageWithData(PAGES.DISCOVER, { venueId: selectedVenue.venue_id })
+              }
+              style={{ cursor: 'pointer' }} // 클릭 가능한 것처럼 보이게
+            >
+              <HatchPattern opacity={0.1} />
+              <div className="venue-info-content">
+                <div className="venue-info-header">
+                  <span className="venue-star">⭐</span>
+                  <h3 className="venue-name">{selectedVenue.name}</h3>
                 </div>
-              </SketchDiv>
+                <div className="venue-details">
+                  <span className="venue-rating">🎵 5</span>
+                  <span className="venue-people">👥 10</span>
+                </div>
+                <div className="venue-price-info">
+                  <span className="venue-price">$30</span>
+                  <span className="venue-entry">entry</span>
+                  <span className="venue-stars">⭐{selectedVenue.rating}/5</span>
+                </div>
+              </div>
+            </SketchDiv>
+          )}
+
             )}
           </SketchDiv>
         </div>

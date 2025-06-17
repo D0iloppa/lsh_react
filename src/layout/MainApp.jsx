@@ -23,6 +23,10 @@ import ShareExpPage from '@pages/ShareExpPage'
 import SearchPage from '@pages/SearchPage';
 import EventListPage from '@pages/EventListPage';
 import AccountPage from '@pages/AccountPage';
+
+import Profile from '@pages/Profile';
+
+
 import MapPage from '@pages/MapPage';
 
 import ViewReview from '@pages/ViewReview';
@@ -54,6 +58,7 @@ const MainApp = () => {
         navigateToSearch,     // ✅ 추가  
         navigateToEvents,     // ✅ 추가
         navigateToProfile,    // ✅ 추가
+        goBack,
         PAGES
     } = usePageNavigation(); // 🎯 여기서만 호출!
 
@@ -68,6 +73,7 @@ const MainApp = () => {
             navigateToProfile,
             navigateToPage,
             navigateToPageWithData,
+            goBack,
             PAGES
         };
 
@@ -79,7 +85,7 @@ const MainApp = () => {
             case PAGES.SEARCH:
                 return <MapPage {...pageData} {...navigationProps} />;
             case PAGES.EVENTS:
-                return <EventListPage {...pageData} {...navigationProps} />;
+                return <Promotion {...pageData} {...navigationProps} />;
             case PAGES.ACCOUNT:
                 return <AccountPage {...pageData} {...navigationProps} />;
             case PAGES.DISCOVER:
@@ -111,8 +117,8 @@ const MainApp = () => {
                 return <Favorites {...pageData} {...navigationProps} />;
             case PAGES.SETTING:
                 return <Setting {...pageData} {...navigationProps} />;
-
-
+            case PAGES.PROFILE:
+                return <Profile {...pageData} {...navigationProps} />;
             default:
                 return <HomePage {...navigationProps} />;
         }

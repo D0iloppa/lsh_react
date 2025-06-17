@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import RotationDiv from '@components/RotationDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
+import HatchPattern from '@components/HatchPattern';
 import SketchHeader from '@components/SketchHeader';
 import GoogleMapComponent from '@components/GoogleMapComponent';
 
-const DiscoverPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
+const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const venueId = otherProps?.venueId || null;
   const [venueInfo, setVenueInfo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -176,7 +177,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
         <SketchHeader
           title={venueInfo?.name || 'Discover'}
           showBack={true}
-          onBack={() => console.log('뒤로가기')}
+          onBack={() => goBack()}
           rightButtons={[]}
         />
 
@@ -225,15 +226,10 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
         </div>
 
         <div className="upcoming-events">
-          <div className="section-title">Upcoming Events</div>
-          <div className="events-grid">
-            <div className="event-card">No Events</div>
-            <div className="event-card">No Events</div>
-          </div>
         </div>
 
         <div className="top-girls-section">
-          <div className="section-title">Top Girls</div>
+          <div className="section-title">Top Staffs</div>
           <RotationDiv interval={3000} showIndicators={true} pauseOnHover={true} className="girls-rotation">
             {topGirls.map((girl, index) => (
               <div key={index} className="girl-slide">
@@ -244,7 +240,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
                 )}
                 <div className="girl-name">{girl.displayName}</div>
                 <button className="girl-detail-btn" onClick={() => handleDetail(girl)}>
-                  Girl Detail
+                  Staff Detail
                 </button>
               </div>
             ))}
