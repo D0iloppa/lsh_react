@@ -143,7 +143,7 @@ const AccountPage = ({
         {/* Header */}
         <SketchHeader 
           title="Account"
-          showBack={false}
+          showBack={true}
           onBack={() => console.log("뒤로가기")}
           rightButtons={[]}
         />

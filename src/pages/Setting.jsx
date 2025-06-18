@@ -54,11 +54,13 @@ const SettingsPage = ({
           margin: 0 auto;
           background-color: white;
           position: relative;
+
+           font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
         }
 
 
         .page-title {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
+          
           font-size: 1.3rem;
           font-weight: bold;
           color: #1f2937;
@@ -95,7 +97,13 @@ const SettingsPage = ({
         }
 
         .language-select {
+        font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+           border-top-left-radius: 12px 7px;
+          border-top-right-radius: 6px 14px;
+          border-bottom-right-radius: 10px 5px;
+          border-bottom-left-radius: 8px 11px;
           width: 100%;
+          height: 50px;
           padding: 0.75rem;
           background-color: white;
           cursor: pointer;
@@ -198,7 +206,7 @@ const SettingsPage = ({
         {/* Header */}
         <SketchHeader 
           title="Settings"
-          showBack={false}
+          showBack={true}
           onBack={() => console.log("뒤로가기")}
           rightButtons={[]}
         />
@@ -209,7 +217,7 @@ const SettingsPage = ({
 
           {/* Language Selection */}
           <SketchDiv className="settings-section">
-            <HatchPattern opacity={0.05} />
+            <HatchPattern opacity={0.4} />
             <div className="section-content">
               <h2 className="section-title">Language Selection</h2>
               <select 
@@ -227,7 +235,7 @@ const SettingsPage = ({
 
           {/* Notification Preferences */}
           <SketchDiv className="settings-section">
-            <HatchPattern opacity={0.05} />
+            <HatchPattern opacity={0.4} />
             <div className="section-content">
               <h2 className="section-title">Notification Preferences</h2>
               <ToggleSwitch 
@@ -245,7 +253,7 @@ const SettingsPage = ({
 
           {/* Account Details */}
           <SketchDiv className="settings-section">
-            <HatchPattern opacity={0.05} />
+            <HatchPattern opacity={0.4} />
             <div className="section-content">
               <h2 className="section-title">Account Details</h2>
               <div className="form-field">
@@ -269,7 +277,7 @@ const SettingsPage = ({
 
           {/* Privacy Settings */}
           <SketchDiv className="settings-section">
-            <HatchPattern opacity={0.05} />
+            <HatchPattern opacity={0.4} />
             <div className="section-content">
               <h2 className="section-title">Privacy Settings</h2>
               <ToggleSwitch 
@@ -287,7 +295,7 @@ const SettingsPage = ({
 
           {/* Logout */}
           <div className="logout-section">
-            <SketchBtn className="" onClick={handleLogout}>
+            <SketchBtn className="danger" onClick={handleLogout}>
               Logout
             </SketchBtn>
           </div>

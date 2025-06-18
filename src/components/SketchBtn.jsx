@@ -76,18 +76,17 @@ const SketchBtn = ({
         }
 
         .sketch-btn.danger {
-          background-color: #ef4444;
-          color: white;
-          border-color: #dc2626;
-          box-shadow: 2px 2px 0px #dc2626;
+         background-color: #ffa6a64f;
+          color: #595959;
+          // box-shadow: 2px 2px 0px rgb(255, 183, 183);
         }
 
         .sketch-btn.danger:hover:not(:disabled) {
-          box-shadow: 3px 3px 0px #dc2626;
+          box-shadow: 3px 3px 0px rgb(255, 183, 183);
         }
 
         .sketch-btn.danger:active:not(:disabled) {
-          box-shadow: 1px 1px 0px #dc2626;
+          box-shadow: 1px 1px 0px rgb(255, 183, 183);
         }
 
         /* Sizes */

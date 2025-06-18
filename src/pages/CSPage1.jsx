@@ -49,6 +49,8 @@ const CSPage1 = ({
           margin: 0 auto;
           background-color: white;
           position: relative;
+
+           font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .header {
@@ -66,24 +68,29 @@ const CSPage1 = ({
         }
 
         .search-section {
-          padding: 1.5rem;
-          border-bottom: 2px solid #e5e7eb;
+            margin-top: 15px;
+          padding: 1.0rem;
         }
 
         .contact-form-section {
+        margin: auto;
+         width: 80%;
+         border-top-left-radius: 12px 7px;
+         border-top-right-radius: 6px 14px;
+         border-bottom-right-radius: 10px 5px;
+         border-bottom-left-radius: 8px 11px;
           padding: 1.5rem;
-          border-bottom: 2px solid #e5e7eb;
+          border: 1px solid #666;
         }
 
         .section-title {
           font-size: 1.1rem;
           font-weight: bold;
           color: #1f2937;
-          margin-bottom: 1rem;
         }
 
         .contact-form {
-          background-color: #f8fafc;
+          
           padding: 1.5rem;
           transform: rotate(-0.2deg);
           position: relative;
@@ -104,6 +111,11 @@ const CSPage1 = ({
         }
 
         .message-textarea {
+        font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+         border-top-left-radius: 12px 7px;
+         border-top-right-radius: 6px 14px;
+         border-bottom-right-radius: 10px 5px;
+         border-bottom-left-radius: 8px 11px;
           width: 91%;
           min-height: 120px;
           padding: 0.75rem;
@@ -153,15 +165,17 @@ const CSPage1 = ({
             // goBack();
             navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
           }}
+          
           rightButtons={[]}
         />
 
         {/* Search Section */}
         <div className="search-section">
+         
           <form onSubmit={handleSearch}>
             <SketchInput
               type="text"
-              placeholder="Search FAQs"
+              placeholder="Search FAQs" style={{ backGroundColor: 'white' }}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -173,17 +187,18 @@ const CSPage1 = ({
           <div className="section-title">Contact Form</div>
           
           <div className="contact-form">
-            <HatchPattern opacity={0.05} />
             <div className="form-content">
               <form onSubmit={handleSubmit}>
+                
                 <div className="form-field">
+                 
                   <SketchInput
                     type="text"
                     placeholder="Name"
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
                     required
-                  />
+                  /> 
                 </div>
 
                 <div className="form-field">
@@ -209,11 +224,11 @@ const CSPage1 = ({
                 <SketchBtn 
                   type="submit"
                   className="full-width" 
-                  variant="primary" 
-                  size="large"
+                  variant="secondary" 
+                  size="normal"
                 >
                   Submit
-                  <HatchPattern opacity={0.1} />
+                  <HatchPattern opacity={0.4} />
                 </SketchBtn>
               </form>
             </div>
@@ -221,7 +236,7 @@ const CSPage1 = ({
         </div>
 
         {/* Footer */}
-        <div className="footer">
+        <div className="footer" style={{backgroundColor: '#f9fafb'}}>
           <p className="operating-hours">
             Operating Hours: Mon-Fri 9 PM - 5 PM
           </p>

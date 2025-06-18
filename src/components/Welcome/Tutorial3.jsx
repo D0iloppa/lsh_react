@@ -43,7 +43,7 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
       {/* 메인 이미지 */}
       <div className="mt-20">
-        <ImagePlaceholder className="w-full h-48" />
+        <ImagePlaceholder src={"/cdn/content/tuto-2.png"} className="w-full h-48" style={{ border: '1px solid #333', borderRadius: '5px'}} />
       </div>
 
       {/* Next Screen 버튼 */}

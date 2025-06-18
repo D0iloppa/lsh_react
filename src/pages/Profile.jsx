@@ -84,7 +84,7 @@ const Profile = ({
           width: 4rem;
           height: 4rem;
           border-radius: 50%;
-          background: linear-gradient(135deg, #fbbf24, #f59e0b);
+          background: linear-gradient(135deg, #fbbf24,rgb(255, 219, 158));
           display: flex;
           align-items: center;
           justify-content: center;

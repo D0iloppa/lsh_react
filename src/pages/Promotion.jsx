@@ -103,7 +103,7 @@ const PromotionsPage = ({
 
         .filter-content {
           display: flex;
-          gap: 0.75rem;
+         
           align-items: center;
           position: relative;
           z-index: 2;
@@ -160,11 +160,12 @@ const PromotionsPage = ({
           z-index: 2;
           display: flex;
           flex-direction: column;
+          padding: 1rem;
         }
 
         .promotion-image {
           width: 100%;
-          height: 180px;
+          height: 100%;
           object-fit: cover;
           border-bottom: 0.8px solid #666;
         }
@@ -236,15 +237,15 @@ const PromotionsPage = ({
 
         /* Special promotion highlight */
         .promotion-card.featured {
-          border-color: #f59e0b;
+          border-color:rgb(255, 193, 86);
           background-color: #fef3c7;
         }
 
         .promotion-card.featured::before {
           content: '⭐';
           position: absolute;
-          top: 0.75rem;
-          right: 0.75rem;
+          top: 0.95rem;
+          right: 0.95rem;
           font-size: 1.5rem;
           z-index: 3;
         }
@@ -272,12 +273,11 @@ const PromotionsPage = ({
         @media (max-width: 480px) {
           .content-section {
             padding: 1rem;
-            gap: 1rem;
+          
           }
 
           .filter-content {
             flex-direction: column;
-            gap: 0.75rem;
             align-items: stretch;
           }
 
@@ -358,7 +358,7 @@ const PromotionsPage = ({
                 size="small"
                 onClick={handleApplyFilter}
                 className="filter-btn"
-              >
+              > <HatchPattern opacity={0.4} />
                 <Filter size={16} />
                 Apply
               </SketchBtn>
@@ -373,7 +373,7 @@ const PromotionsPage = ({
                   key={promotion.id} 
                   className={`promotion-card ${index === 0 ? 'featured' : ''}`}
                 >
-                  <HatchPattern opacity={0.02} />
+                  <HatchPattern opacity={0.4} />
                   
                   <div className="promotion-content">
                     <ImagePlaceholder 

@@ -143,8 +143,8 @@ const BookingHistoryPage = ({
         }
 
         .booking-image {
-          width: 20rem;
-          height: 7rem;
+          width: 100%;
+          height: 100%;
           flex-shrink: 0;
           border: 2px solid #1f2937;
         }
