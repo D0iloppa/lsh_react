@@ -70,7 +70,7 @@ const CSPage1 = ({
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         .cs-container {
           max-width: 28rem;
           margin: 0 auto;

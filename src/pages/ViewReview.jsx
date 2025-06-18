@@ -56,7 +56,7 @@ const ViewReviewPage = ({
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         .view-review-container {
           max-width: 28rem;
           margin: 0 auto;

@@ -80,7 +80,7 @@ const BookingHistoryPage = ({
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         .booking-history-container {
           max-width: 28rem;
           margin: 0 auto;

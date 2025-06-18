@@ -184,7 +184,7 @@ const getIcon = () => {
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
 
         .notifications-container {
           max-width: 28rem;

@@ -61,7 +61,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
 
       
         .homepage-container {

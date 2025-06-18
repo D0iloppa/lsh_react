@@ -1,4 +1,7 @@
 import React from 'react';
+
+import { useNavigate } from 'react-router-dom';
+
 import HatchPattern from '@components/HatchPattern';
 
 const InitFooter = ({ 
@@ -8,20 +11,34 @@ const InitFooter = ({
   hatchOpacity = 0.3,
   ...props 
 }) => {
+
+
+  const navigate = useNavigate();
+
+  const navigateTo = (href) => {
+    navigate(href);
+  };
+
   return (
     <>
       <footer className={`init-footer ${className}`} {...props}>
         <HatchPattern opacity={hatchOpacity} />
         <div className="footer-content">
           <a 
-            href={privacyHref} 
+             onClick={(e) => {
+              e.preventDefault();
+              navigateTo(privacyHref);
+            }}
             className="sketch-link"
           >
             Privacy Policy
           </a>
           <span className="divider">|</span>
           <a 
-            href={termsHref} 
+            onClick={(e) => {
+              e.preventDefault();
+              navigateTo(termsHref);
+            }}
             className="sketch-link"
           >
             Terms of Service
@@ -29,7 +46,7 @@ const InitFooter = ({
         </div>
       </footer>
       
-      <style jsx>{`
+      <style jsx="true">{`
         .init-footer {
           position: fixed;
           bottom: 0;

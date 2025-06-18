@@ -47,7 +47,7 @@ const SubscriptionPaymentPage = ({
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         .payment-container {
           max-width: 28rem;
           margin: 0 auto;

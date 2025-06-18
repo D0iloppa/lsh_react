@@ -12,7 +12,7 @@ const SketchMenuBtn = ({
 }) => {
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         .menu-item {
           position: relative;
           padding: 0.75rem 1rem;

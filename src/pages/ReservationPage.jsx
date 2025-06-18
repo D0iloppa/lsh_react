@@ -51,7 +51,7 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
   
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         .reservation-container {
           max-width: 28rem;
           margin: 0 auto;

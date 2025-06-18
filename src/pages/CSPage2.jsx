@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // useEffect import 추가
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -17,53 +17,97 @@ const CSPage2 = ({
   ...otherProps 
 }) => {
 
-const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     message: ''
   });
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    console.log('Search FAQs:', searchQuery);
-    // FAQ 검색 로직
-  };
+  // 실제 데이터를 위한 상태 추가
+  const [inquiries, setInquiries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleInquiryClick = (inquiry) => {
-    console.log('Inquiry clicked:', inquiry);
-    // 문의 상세 페이지로 이동하거나 상세 내용 표시
-  };
+  const { user, isLoggedIn } = useAuth();
 
-  // 새 문의하기 버튼 클릭 핸들러
-  const handleNewInquiryClick = () => {
-    console.log('새 문의하기 클릭');
-    navigateToPageWithData && navigateToPageWithData(PAGES.CSPAGE1);
-  };
-
-const [inquiries, setInquiries] = useState([]); // 실제 데이터용
-const [loading, setLoading] = useState(true);   // 로딩 상태
-const [error, setError] = useState(null);       // 에러 상태
-
-   useEffect(() => {
+  // 처음 로딩 시 데이터 가져오기
+  useEffect(() => {
     window.scrollTo(0, 0);
 
-    const fetchNotifications = async () => {
+    const fetchInquiries = async () => {
       try {
+        setLoading(true);
+        setError(null);
+        
         const response = await axios.get('/api/api/selectAll', {
           params: { accountId: user?.user_id || 1 }
         });
-        setNotifications(response.data || []);
+        
+        // API 응답을 inquiries 형태로 변환
+        const formattedInquiries = (response.data || []).map((item, index) => ({
+          id: item.id || index + 1,
+          type: item.type || 'general',
+          icon: getIconByType(item.type || 'general'),
+          title: item.title || item.contents?.substring(0, 50) || 'Inquiry',
+          date: formatDate(item.created_at || item.date),
+          status: item.status || 'pending',
+          statusLabel: getStatusLabel(item.status || 'pending'),
+          contents: item.contents || '',
+          response: item.response || ''
+        }));
+        
+        setInquiries(formattedInquiries);
       } catch (error) {
-        console.error('getMyFavoriteList 목록 불러오기 실패:', error);
+        console.error('문의 목록 불러오기 실패:', error);
+        setError('문의 목록을 불러오는데 실패했습니다.');
+        
+        // 실패 시 기본 더미 데이터 사용
+        setInquiries(getDefaultInquiries());
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchNotifications();
-  }, []);
+    fetchInquiries();
+  }, [user?.user_id]);
 
+  // 아이콘 타입별 매핑
+  const getIconByType = (type) => {
+    switch(type) {
+      case 'reservation': return '⚠️';
+      case 'event': return 'ℹ️';
+      case 'payment': return '💳';
+      case 'technical': return '🔧';
+      default: return 'ℹ️';
+    }
+  };
 
-  const inquiries = [
+  // 상태 라벨 매핑
+  const getStatusLabel = (status) => {
+    switch(status) {
+      case 'processing': return 'Processing';
+      case 'answered': return 'Answered';
+      case 'pending': return 'Pending';
+      case 'closed': return 'Closed';
+      default: return 'Pending';
+    }
+  };
+
+  // 날짜 포맷팅
+  const formatDate = (dateString) => {
+    if (!dateString) return new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', month: 'long', day: 'numeric' 
+    });
+    
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', month: 'long', day: 'numeric' 
+    });
+  };
+
+  // 기본 더미 데이터 (API 실패 시 사용)
+  const getDefaultInquiries = () => [
     {
       id: 1,
       type: 'reservation',
@@ -93,6 +137,23 @@ const [error, setError] = useState(null);       // 에러 상태
     }
   ];
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    console.log('Search FAQs:', searchQuery);
+    // FAQ 검색 로직
+  };
+
+  const handleInquiryClick = (inquiry) => {
+    console.log('Inquiry clicked:', inquiry);
+    // 문의 상세 페이지로 이동하거나 상세 내용 표시
+  };
+
+  // 새 문의하기 버튼 클릭 핸들러
+  const handleNewInquiryClick = () => {
+    console.log('새 문의하기 클릭');
+    navigateToPageWithData && navigateToPageWithData(PAGES.CSPAGE1);
+  };
+
   const getStatusVariant = (status) => {
     switch(status) {
       case 'processing':
@@ -101,6 +162,8 @@ const [error, setError] = useState(null);       // 에러 상태
         return 'secondary';
       case 'pending':
         return 'primary';
+      case 'closed':
+        return 'secondary';
       default:
         return 'secondary';
     }
@@ -108,7 +171,7 @@ const [error, setError] = useState(null);       // 에러 상태
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         .cs2-container {
           max-width: 28rem;
           margin: 0 auto;
@@ -192,6 +255,30 @@ const [error, setError] = useState(null);       // 에러 상태
           align-self: flex-start;
         }
 
+        .search-section {
+          margin-top: 15px;
+          padding: 1.0rem;
+        }
+
+        .new-inquiry-section {
+          margin-bottom: 20px;
+          padding: 0 10px;
+        }
+
+        .loading-message, .error-message {
+          text-align: center;
+          padding: 2rem;
+          font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        .error-message {
+          color: #6b7280;
+        }
+
+        .loading-message {
+          color: #6b7280;
+        }
+
         @media (max-width: 480px) {
           .cs2-container {
             max-width: 100%;
@@ -208,80 +295,84 @@ const [error, setError] = useState(null);       // 에러 상태
             align-self: stretch;
           }
         }
-
-           .search-section {
-            margin-top: 15px;
-            padding: 1.0rem;
-        }
-
-        .new-inquiry-section{margin-bottom: 20px; }
       `}</style>
 
-       
       <div className="cs2-container">
         {/* Header */}
         <SketchHeader
           title="Customer Support"
           showBack={true}
           onBack={() => {
-            // goBack();
             navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
           }}
           rightButtons={[]}
         />
 
-         {/* Search Section */}
+        {/* Search Section */}
         <div className="search-section">
-         
           <form onSubmit={handleSearch}>
             <SketchInput
               type="text"
-              placeholder="Search FAQs" style={{ backGroundColor: 'white' }}
+              placeholder="Search FAQs"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </form>
         </div>
 
-
         {/* Inquiries Section */}
         <div className="inquiries-section">
-          {inquiries.map((inquiry, index) => (
-            <SketchDiv
-              key={inquiry.id}
-              className="inquiry-card"
-              onClick={() => handleInquiryClick(inquiry)}
-            >
-              <HatchPattern opacity={0.4} />
-              
-              <div className="inquiry-content">
-                <div className="inquiry-header">
-                  <div className="inquiry-icon">
-                    {inquiry.icon}
-                  </div>
-                  
-                  <div className="inquiry-details">
-                    <h3 className="inquiry-title">{inquiry.title}</h3>
-                    <p className="inquiry-date">{inquiry.date}</p>
-                  </div>
-                  
-                  <div className="inquiry-status">
-                    <SketchBtn 
-                      variant={getStatusVariant(inquiry.status)}
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log('Status clicked:', inquiry.status);
-                      }}
-                    >
-                      {inquiry.statusLabel}
-                    </SketchBtn>
+          {loading ? (
+            <div className="loading-message">
+              문의 목록을 불러오는 중...
+            </div>
+          ) : error ? (
+            <div className="error-message">
+              {error}
+            </div>
+          ) : inquiries.length === 0 ? (
+            <div className="loading-message">
+              등록된 문의가 없습니다.
+            </div>
+          ) : (
+            inquiries.map((inquiry, index) => (
+              <SketchDiv
+                key={inquiry.id}
+                className="inquiry-card"
+                onClick={() => handleInquiryClick(inquiry)}
+              >
+                <HatchPattern opacity={0.4} />
+                
+                <div className="inquiry-content">
+                  <div className="inquiry-header">
+                    <div className="inquiry-icon">
+                      {inquiry.icon}
+                    </div>
+                    
+                    <div className="inquiry-details">
+                      <h3 className="inquiry-title">{inquiry.title}</h3>
+                      <p className="inquiry-date">{inquiry.date}</p>
+                    </div>
+                    
+                    <div className="inquiry-status">
+                      <SketchBtn 
+                        variant={getStatusVariant(inquiry.status)}
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log('Status clicked:', inquiry.status);
+                        }}
+                      >
+                        {inquiry.statusLabel}
+                      </SketchBtn>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </SketchDiv>
-          ))}
+              </SketchDiv>
+            ))
+          )}
         </div>
+
         {/* 새 문의하기 버튼 섹션 */}
         <div className="new-inquiry-section">
           <SketchBtn 

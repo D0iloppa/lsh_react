@@ -58,7 +58,7 @@ const Payment = ({
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">>{`
        
 
        

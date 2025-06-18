@@ -57,7 +57,7 @@ const ShareExpPage = ({
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         .share-exp-container {
           max-width: 28rem;
           margin: 0 auto;

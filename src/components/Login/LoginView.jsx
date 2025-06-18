@@ -64,29 +64,13 @@ export default function LoginView() {
         </SketchDiv>
 
         {/* Footer */}
-       
-          <InitFooter />
-
-          
-          <InitFooter 
-            privacyHref="/privacy-policy"
-            termsHref="/terms-of-service"
-          />
-
           
           <InitFooter 
             className="custom-footer"
             privacyHref="/privacy"
             termsHref="/terms"
           />
-        {/* <footer className="login-footer">
-          <a href="#" className="sketch-link">
-            Privacy Policy
-          </a>
-          <a href="#" className="sketch-link">
-            Terms of Service
-          </a>
-        </footer> */}
+    
 
       </div>
     </div>

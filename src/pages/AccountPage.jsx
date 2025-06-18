@@ -102,7 +102,7 @@ const AccountPage = ({
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         .account-container {
           max-width: 28rem;
           margin: 0 auto;

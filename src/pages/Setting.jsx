@@ -48,7 +48,7 @@ const SettingsPage = ({
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         .settings-container {
           max-width: 28rem;
           margin: 0 auto;

@@ -92,7 +92,7 @@ const ImagePlaceholder = ({
       )}
     </div>
     
-    <style jsx>{`
+    <style jsx="true">{`
       .placeholder-image {
         border: 1px solid #1f2937;
         border-radius: 0.5rem;

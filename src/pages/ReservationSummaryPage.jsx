@@ -30,7 +30,7 @@ const ReserveSummaryPage = ({
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         .summary-container {
           max-width: 28rem;
           margin: 0 auto;

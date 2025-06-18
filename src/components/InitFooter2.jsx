@@ -17,7 +17,7 @@ const InitFooter = ({
         </div>
       </footer>
       
-      <style jsx>{`
+      <style jsx="true">{`
         .init-footer {
           position: fixed;
           bottom: 0;

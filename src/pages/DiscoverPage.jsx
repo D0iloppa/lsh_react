@@ -99,7 +99,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         .discover-container {
           max-width: 28rem;
           margin: 0 auto;

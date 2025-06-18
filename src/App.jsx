@@ -10,6 +10,9 @@ import WelcomePage from '@components/Welcome';
 import LoginView from '@components/Login';
 import RegisterView from '@components/Register';
 
+import TermsView from '@components/Terms';
+import PrivacyView from '@components/Privacy';
+
 import MainApp from '@layout/MainApp';
 
 const AppRoutes = () => {
@@ -63,6 +66,12 @@ const AppRoutes = () => {
           /* isLoggedIn ? <MainApp /> : <Navigate to="/login" replace /> */
         } 
       />
+
+      {/* Terms 페이지 */}
+      <Route path="/terms" element={<TermsView />} />
+
+      {/* Privacy 페이지 */}
+      <Route path="/privacy" element={<PrivacyView />} />
 
       {/* 404 페이지 */}
       <Route path="*" element={<div>404 Not Found</div>} />

@@ -15,7 +15,7 @@ const SketchHeader = ({
 }) => {
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         .page-header {
           width: 100%;
           padding: 1rem 1.25rem;

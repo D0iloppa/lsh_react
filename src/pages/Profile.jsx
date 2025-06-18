@@ -59,7 +59,7 @@ const Profile = ({
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
        
 
         .account-container {

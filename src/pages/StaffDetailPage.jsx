@@ -23,7 +23,7 @@ const StaffDetailPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         .discover-section {
           padding: 2rem 1.5rem;
           text-align: center;

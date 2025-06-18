@@ -11,7 +11,7 @@ const SketchBtn = ({
 }) => {
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
       .sketch-btn {
         width: 100%;
         padding: 0.75rem;

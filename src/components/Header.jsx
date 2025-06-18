@@ -55,7 +55,7 @@ const Header = ({
         </div>
       </header>
       
-      <style jsx>{`
+      <style jsx="true">{`
         .sketch-header {
               background: #f8f8f8;
                 border-bottom: 1px solid #333;

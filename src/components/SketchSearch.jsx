@@ -11,7 +11,7 @@ const SketchSearch = ({
 }) => {
   return (
     <div className={`search-container ${className}`}>
-      <style jsx>{`
+      <style jsx="true">{`
         .search-container {
           display: flex;
           gap: 0.75rem;

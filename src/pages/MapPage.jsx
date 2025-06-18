@@ -61,7 +61,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
 
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         .map-container {
           max-width: 28rem;
           margin: 0 auto;

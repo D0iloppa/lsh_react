@@ -22,7 +22,7 @@ const InfoCard = ({
 }) => {
   return (
     <>
-      <style jsx>{`
+      <style jsx="true">{`
         .info-card-container {
           position: relative;
           transition: transform 0.2s ease;
