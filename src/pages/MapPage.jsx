@@ -17,6 +17,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
 
   const fetchPlaces = async (keyword = '') => {
     try {
+         setSelectedVenue(null);
       const response = await axios.get(' /api/api/getVenueList', {
         params: {
           keyword: keyword
@@ -110,16 +111,20 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
         }
 
         .venue-info-overlay {
-          position: absolute;
-          bottom: 4.5rem;
-          left: 1rem;
-          right: 1rem;
-          background-color: white;
-          padding: 1rem;
-          transform: rotate(0.5deg);
-          box-shadow: 4px 4px 0px #1f2937;
-          z-index: 30;
+              position: absolute;
+              bottom: 4.5rem;
+              left: 1rem;
+              right: 1rem;
+              padding: 1rem;
+              background-color: white;
+              border: 1px solid #303946;
+              border-radius: 5px;
+              box-shadow: 0 0 1px #94fff9, 0 0 5px #94fff9, 0 0 30px #94fff9;
+              transform: rotate(0.5deg);
+              z-index: 30;
+              color: white;
         }
+
 
 
         .venue-info-content {
@@ -180,6 +185,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
         }
 
         .venues-count {
+          background: #94fff9;
           padding: 0.75rem;
           border: 1px solid #1f2937;
           border-radius: 5px;
@@ -251,7 +257,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
 
             <div className="map-venue-count-bottom">
               <SketchDiv className="venues-count sketch-div sketch-div--default">
-                <HatchPattern opacity={0.3} />
+                <HatchPattern opacity={0.4} />
                 <span className="count-text">{venueCount} venues found</span>
               </SketchDiv>
             </div>
@@ -283,7 +289,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
             </SketchDiv>
           )}
 
-            )}
+            
           </SketchDiv>
         </div>
       </div>

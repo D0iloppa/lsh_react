@@ -187,12 +187,12 @@ const ReserveSummaryPage = ({
         <div className="confirm-section">
           <SketchBtn 
             className="full-width" 
-            variant="primary" 
-            size="large"
+            variant="event" 
+            size="normal"
             onClick={handleConfirm}
-          >
+          ><HatchPattern opacity={0.4} />
             CONFIRM RESERVATION
-            <HatchPattern opacity={0.4} />
+            
           </SketchBtn>
         </div>
       </div>

@@ -21,7 +21,7 @@ const Tutorial2 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
       </div> */}
 
         <div className="">
-          <ImagePlaceholder  src={"/cdn/map-1.png"}  style={{ border: '1px solid #333', borderRadius: '5px'}}/>
+          <ImagePlaceholder  src={"/cdn/map-1.png"}  style={{ border: '1px solid #333', borderRadius: '5px',height: '685px'}}/>
 
           {/* 설명 텍스트 */}
           <p className="description-text">

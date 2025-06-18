@@ -145,17 +145,18 @@ const CocktailIcon = () => (
 
 
        <div className="relative" style={{ marginTop: '1rem' }}>
-          <HatchPattern opacity={0.3} />
+          <HatchPattern opacity={0.8} />
           
           <SketchBtn 
-            className="sketch-button" style={{ fontWeight: 'bold' , backgroundColor: '#f5ffed'}}
+            className="sketch-button"  
+            variant = 'event' 
             onClick={onNextScreen}
           >
             EXPLORE NOW
           </SketchBtn>
         </div>
         <div className="relative" style={{ marginTop: '1rem' }}>
-          <HatchPattern opacity={0.3} />
+          <HatchPattern opacity={0.4} />
           
           <SketchBtn 
             className="sketch-button" style={{ fontWeight: 'bold' }}

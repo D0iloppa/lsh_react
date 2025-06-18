@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Star, Heart } from 'lucide-react';
+import { Star, Heart, ArrowRight } from 'lucide-react';
 
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import SketchSearch from '@components/SketchSearch';
@@ -103,7 +103,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
           position: absolute;
           top: 8px;
           left: 8px;
-          background: white;
+          background: linear-gradient(135deg, #00f0ff, #fff0d8);
           border-radius: 4px;
           padding: 4px 8px;
           font-size: 0.75rem;
@@ -154,6 +154,32 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
         }
 
 
+        @keyframes spin {
+          0%, 100% {
+            transform: rotate(0deg);
+          }
+          50% {
+            transform: rotate(20deg);
+          }
+        }
+
+        .rating-badge .shining-star {
+          animation: spin 1s ease-in-out infinite;
+          transform-origin: center;
+        }
+
+        @keyframes move-right {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(4px); }
+            100% { transform: translateX(0); }
+          }
+
+          .animate-arrow {
+            animation: move-right 1s infinite;
+          }
+
+
+
       `}</style>
 
       <div className="homepage-container">
@@ -177,16 +203,27 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
               <ImagePlaceholder src={spot.image} alt={spot.name} />
               <div className="overlay-gradient"></div>
               <div className="rating-badge">
-                <Star size={14} style={{ marginRight: '4px', fill: 'yellow'}} />
+                <Star
+                  size={14}
+                  className="shining-star"
+                  style={{ marginRight: '4px', fill: '#ffe800' }}
+                />
                 {spot.rating}
               </div>
               <div className="heart-icon" onClick={() => toggleFavorite(spot.id)}>
-                <Heart fill={spot.isFavorite ? '#f43f5e' : 'none'} color="#f43f5e" />
+                <Heart fill={spot.isFavorite ? '#f43f5e' : 'white'} color="white" />
               </div>
               <div className="card-footer">
                 <SketchBtn className="discover-btn" onClick={() => handleDiscover(spot.id)}>
-                  {<HatchPattern opacity={0.3} />}
-                DISCOVER
+                  {<HatchPattern opacity={0.8} />}
+                     <div className="flex justify-center ">
+                      <span>DISCOVER</span>
+                      <ArrowRight
+                          size={20}
+                          strokeWidth={1.5}
+                          className="ml-6 text-gray-500 animate-arrow" style={{marginLeft: '10px'}}
+                        />
+                    </div>
               </SketchBtn>
               </div>
             </div>

@@ -60,6 +60,12 @@ const SketchBtn = ({
 
 
         /* Variants */
+        .sketch-btn.event {
+          color: #1f2937;
+          background: linear-gradient(135deg, #00f0ff, #fff0d8);
+        }
+
+
         .sketch-btn.primary {
           background-color: white;
           color: #1f2937;
@@ -71,14 +77,14 @@ const SketchBtn = ({
         }
 
         .sketch-btn.accent {
-          background-color: rgb(245, 255, 237);
+          background-color: #94fff9;
           color: #1f2937;
         }
 
         .sketch-btn.danger {
-         background-color: #ffa6a64f;
-          color: #595959;
-          // box-shadow: 2px 2px 0px rgb(255, 183, 183);
+         background-color:rgba(243, 27, 27, 0.66);
+          color:rgb(255, 255, 255);
+          // box-shadow: 2px 2px 0px rgb(255, 73, 73);
         }
 
         .sketch-btn.danger:hover:not(:disabled) {

@@ -138,7 +138,7 @@ const SettingsPage = ({
         }
 
         .toggle-switch.checked {
-          background-color: #10b981;
+          background-color: #94fff9;
         }
 
         .toggle-knob {
@@ -296,6 +296,7 @@ const SettingsPage = ({
           {/* Logout */}
           <div className="logout-section">
             <SketchBtn className="danger" onClick={handleLogout}>
+              <HatchPattern opacity={0.8} />
               Logout
             </SketchBtn>
           </div>

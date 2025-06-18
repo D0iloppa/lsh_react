@@ -152,13 +152,13 @@ const StaffDetailPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
 
         <div className="booking-form-section">
           <SketchBtn
-            className="full-width"
+            className="full-width" variant = 'event'
             onClick={() => {
               navigateToPageWithData(PAGES.RESERVATION, {});
             }}
           >
             Reserve Now
-            <HatchPattern opacity={0.4} />
+            <HatchPattern opacity={0.8} />
           </SketchBtn>
         </div>
       </div>

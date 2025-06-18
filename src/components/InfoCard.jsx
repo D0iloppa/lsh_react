@@ -48,8 +48,8 @@ const InfoCard = ({
         .info-card-image {
               border: 1px solid #333;
               border-radius: 5px;
-              width: 64px;
-              height: 64px;
+              width: 130px;
+              height: 100px;
               flex-shrink: 0;
               margin-top: auto;
               margin-bottom: auto;

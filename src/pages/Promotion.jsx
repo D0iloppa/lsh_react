@@ -6,7 +6,7 @@ import SketchDiv from '@components/SketchDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 import SketchHeader from '@components/SketchHeader'
-import { Share, Filter } from 'lucide-react';
+import { Share, Filter, Star, Heart, ArrowRight } from 'lucide-react';
 
 const PromotionsPage = ({ 
   navigateToPageWithData, 
@@ -354,11 +354,11 @@ const PromotionsPage = ({
                 />
               </div>
               <SketchBtn 
-                variant="secondary" 
+                variant="event" 
                 size="small"
                 onClick={handleApplyFilter}
                 className="filter-btn"
-              > <HatchPattern opacity={0.4} />
+              > <HatchPattern opacity={0.8} />
                 <Filter size={16} />
                 Apply
               </SketchBtn>

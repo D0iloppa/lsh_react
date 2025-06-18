@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import HatchPattern from '@components/HatchPattern';
 import SketchInput from '@components/SketchInput';
 import ImagePlaceholder from '@components/ImagePlaceholder';
@@ -62,6 +62,8 @@ const ViewReviewPage = ({
           margin: 0 auto;
           background-color: white;
           position: relative;
+
+          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .header {
@@ -104,12 +106,12 @@ const ViewReviewPage = ({
           font-size: 1.3rem;
           font-weight: bold;
           color: #1f2937;
-          margin-bottom: 1rem;
+          margin: 0;
         }
 
-        .venue-image-container {
-          margin-bottom: 1rem;
-        }
+        // .venue-image-container {
+        //   margin-bottom: 1rem;
+        // }
 
         .venue-image {
           width: 100%;
@@ -124,6 +126,7 @@ const ViewReviewPage = ({
           font-weight: bold;
           color: #d97706;
           margin-bottom: 0.5rem;
+          margin-top: 20px;
         }
 
         .venue-description {
@@ -132,15 +135,16 @@ const ViewReviewPage = ({
           line-height: 1.4;
         }
 
-        .reviews-section {
-          padding: 1.5rem;
-        }
+        // .reviews-section {
+        //   padding: 1.5rem;
+        // }
 
         .reviews-title {
           font-size: 1.2rem;
           font-weight: bold;
           color: #1f2937;
-          margin-bottom: 1.5rem;
+          margin: 0;
+          margin-top: 20px;
         }
 
         .review-card {
@@ -169,8 +173,8 @@ const ViewReviewPage = ({
         }
 
         .user-avatar {
-          width: 2.5rem;
-          height: 2.5rem;
+          width: 60px;
+          height: 60px;
           border: 2px solid #1f2937;
           border-radius: 50%;
           flex-shrink: 0;

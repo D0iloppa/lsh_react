@@ -37,9 +37,18 @@ export const validateForm = (email, password) => {
 export const loginPost = async (email, password) => {
     
     const demo_user = {
-        name : '테스트',
-        email : email
-    }
+        "user_id": 1,
+        "nickname": "user1",
+        "gender": "M",
+        "birth_year": 1988,
+        "birth_date": "1988-08-18",
+        "email": "user1@naver.com",
+        "phone": "010-1234-5678",
+        "profile_content_id": 8,
+        "created_at": "2025-06-17T16:10:51.416",
+        "updated_at": "2025-06-17T16:10:51.416"
+      }
+      
 
     return {
         success: true,

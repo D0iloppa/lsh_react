@@ -48,10 +48,10 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
       {/* Next Screen 버튼 */}
       <div className="relative" style={{ marginTop: '1rem' }}>
-          {<HatchPattern opacity={0.3} />}
+          {<HatchPattern opacity={0.8} />}
           
           <SketchBtn 
-            className="sketch-button" style={{ fontWeight: 'bold',  backgroundColor: '#f5ffed'}}
+            className="sketch-button"  variant = 'event' 
             onClick={onNextScreen}
           >
             Enjoy Letan ton Sheriff!

@@ -307,8 +307,8 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
         <div className="reserve-section">
           <SketchBtn 
             className="full-width" 
-            variant="primary" 
-            size="large"
+            variant="event" 
+            size="normal" 
             onClick={handleReserve}
           >
             RESERVE

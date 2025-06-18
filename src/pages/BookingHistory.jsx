@@ -261,11 +261,11 @@ const BookingHistoryPage = ({
                   
                   <div className="action-buttons">
                     <SketchBtn 
-                      variant="secondary" 
+                      variant="event" 
                       size="small"
                       onClick={() => handleRebook(booking)}
                     >
-                      <HatchPattern opacity={0.4} />
+                      <HatchPattern opacity={0.8} />
                       Rebook
                     </SketchBtn>
                     

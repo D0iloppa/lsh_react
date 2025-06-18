@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
+
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchMenuBtn from '@components/SketchMenuBtn';
@@ -9,12 +10,22 @@ import SketchHeader from '@components/SketchHeader'
 
 import { Star, Edit3 } from 'lucide-react';
 
+import { useAuth } from '../contexts/AuthContext';
+
 const Profile = ({ 
   navigateToPageWithData, 
   PAGES,
   goBack,
   ...otherProps 
 }) => {
+
+    useEffect(() => {
+      window.scrollTo(0, 0);
+    }, []);
+
+  const { user, isLoggedIn } = useAuth();
+  
+  console.log('welcome-profile', user);
 
   const handleBack = () => {
     // goBack();
@@ -84,7 +95,7 @@ const Profile = ({
           width: 4rem;
           height: 4rem;
           border-radius: 50%;
-          background: linear-gradient(135deg, #fbbf24,rgb(255, 219, 158));
+          background: linear-gradient(135deg, #94fff9,rgb(255, 219, 158));
           display: flex;
           align-items: center;
           justify-content: center;
@@ -288,7 +299,7 @@ const Profile = ({
         
         {/* Header */}
         <SketchHeader 
-          title="Account"
+          title="Profile"
           showBack={true}
           onBack={handleBack}
           rightButtons={[]}
@@ -297,7 +308,7 @@ const Profile = ({
         <div className="content-section">
           {/* Profile Info Section */}
           <SketchDiv className="profile-info">
-            <HatchPattern opacity={0.02} />
+            <HatchPattern opacity={0.4} />
             
             <div className="profile-header">
               <div className="profile-image">
@@ -309,10 +320,6 @@ const Profile = ({
                 <p>john.doe@example.com</p>
                 <p>Member since March 2024</p>
               </div>
-              
-              <button className="edit-btn">
-                <Edit3 size={16} />
-              </button>
             </div>
 
             <div className="profile-stats">

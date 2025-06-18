@@ -5,6 +5,7 @@ import ImagePlaceholder from '@components/ImagePlaceholder';
 import HatchPattern from '@components/HatchPattern';
 import SketchHeader from '@components/SketchHeader';
 import GoogleMapComponent from '@components/GoogleMapComponent';
+import SketchBtn from '@components/SketchBtn';
 
 const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const venueId = otherProps?.venueId || null;
@@ -128,9 +129,9 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
           border: 0; font-size: 1.5rem; background: none; cursor: pointer;
         }
         .stars { font-size: 1.2rem; }
-        .upcoming-events {
-          padding: 1rem; border-bottom: 1px solid #1f2937;
-        }
+        // .upcoming-events {
+        //   padding: 1rem; border-bottom: 1px solid #1f2937;
+        // }
         .section-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 1rem;}
         .events-grid {
           display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
@@ -143,9 +144,11 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
         }
         .top-girls-section { padding: 1rem;}
         .girls-rotation { width: 100%; }
-        .girl-slide { text-align: center; }
+        .girl-slide { text-align: center;  margin-top: 20px;}
         .girl-img {
-          width: 120px; height: 160px; object-fit: cover; border-radius: 0.5rem;
+          width: 220px;
+          height: 300px; 
+          object-fit: cover; border-radius: 0.5rem;
           margin: 0 auto 0.5rem;
         }
         .girl-name {
@@ -153,7 +156,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
           text-align: center; margin-bottom: 0.5rem;
         }
         .girl-detail-btn {
-          display: block; margin: 0 auto; padding: 0.5rem 1rem;
+          display: block; margin: 0 auto; padding: 0.3rem 2rem;
           border: 1px solid #1f2937; background-color: white; border-radius: 3px;
           font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
           cursor: pointer;
@@ -169,7 +172,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
           width: 100%;
           height: 250px;
           margin-top: 1rem;
-          border: 2px solid #1f2937;
+          border: 1px solid #666;
         }   
       `}</style>
 
@@ -230,7 +233,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
 
         <div className="top-girls-section">
           <div className="section-title">Top Staffs</div>
-          <RotationDiv interval={3000} showIndicators={true} pauseOnHover={true} className="girls-rotation">
+          <RotationDiv interval={5000} swipeThreshold={50} showIndicators={true}  pauseOnHover={true} className="girls-rotation">
             {topGirls.map((girl, index) => (
               <div key={index} className="girl-slide">
                 {girl.image_url ? (
@@ -239,9 +242,18 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
                   <ImagePlaceholder />
                 )}
                 <div className="girl-name">{girl.displayName}</div>
-                <button className="girl-detail-btn" onClick={() => handleDetail(girl)}>
+                {/* <button className="girl-detail-btn" onClick={() => handleDetail(girl)}>
                   Staff Detail
-                </button>
+                </button> */}
+
+                <SketchBtn
+                          type="text"
+                          className="sketch-button" size = 'small'
+                          variant = 'event' style={{ width: '130px' , marginBottom: '20px'}}
+                          onClick={() => handleDetail(girl)}
+                        >{<HatchPattern opacity={0.8} />}
+                            Staff Detail
+                        </SketchBtn>
               </div>
             ))}
           </RotationDiv>

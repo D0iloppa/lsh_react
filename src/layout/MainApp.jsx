@@ -44,11 +44,17 @@ import Setting from '@pages/Setting';
 
 
 
-
-
 import './MainApp.css';
 
 const MainApp = () => {
+
+
+    const { user, isLoggedIn } = useAuth();
+
+    // console.log('welcome', user);
+
+
+
     const {
         currentPage,
         navigateToPage,

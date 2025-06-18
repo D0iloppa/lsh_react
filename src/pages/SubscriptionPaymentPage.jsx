@@ -289,16 +289,17 @@ const SubscriptionPaymentPage = ({
             <HatchPattern opacity={0.4} />
           </SketchBtn>
         </div> */}
+        <div style={{padding: '20px'}}>
         <SketchBtn 
           className="full-width" style={{paddingBottom: '20px'}}
-          variant="primary" 
-          size="large"
+          variant="event" 
+          size="normal"
           onClick={handleConfirmPay}
         >
           Confirm & Pay
-          <HatchPattern opacity={0.4} />
+          <HatchPattern opacity={0.8} />
         </SketchBtn>
-      </div>
+      </div></div>
     </>
   );
 };

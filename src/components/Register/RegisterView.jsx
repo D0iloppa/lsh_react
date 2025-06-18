@@ -119,7 +119,7 @@ export default function RegisterView() {
 
       <SketchHeader 
               title="Register Member"
-              showBack={false}
+              showBack={true}
               onBack={() => console.log("뒤로가기")}
               rightButtons={[]}
             />
@@ -200,10 +200,9 @@ export default function RegisterView() {
         </button> */}
         <SketchBtn
           type="submit"
-          className="sketch-button"
+          className="sketch-button" variant = 'event'
           disabled={isLoading}
-        >
-          <HatchPattern opacity={0.3} />
+        >{<HatchPattern opacity={0.8} />}
           {isLoading ? 'Signing up...' : 'SIGN UP'}
         </SketchBtn>
       </form>

@@ -224,11 +224,11 @@ const CSPage1 = ({
                 <SketchBtn 
                   type="submit"
                   className="full-width" 
-                  variant="secondary" 
+                  variant="event" 
                   size="normal"
                 >
                   Submit
-                  <HatchPattern opacity={0.4} />
+                  <HatchPattern opacity={0.8} />
                 </SketchBtn>
               </form>
             </div>

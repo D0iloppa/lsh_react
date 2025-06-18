@@ -35,16 +35,12 @@ const initMap = () => {
     zoom: 18,
     disableDefaultUI: true,
     styles: [
-      { featureType: "landscape", elementType: "geometry", stylers: [{ color: "#a7c0cd" }] },
-      { featureType: "poi", elementType: "geometry", stylers: [{ color: "#1e2a38" }] },
-      { featureType: "man_made", elementType: "geometry.fill", stylers: [{ color: "#1e2a38" }] },
-      { featureType: "building", elementType: "geometry.fill", stylers: [{ color: "#1e2a38" }] },
-      { featureType: "road", elementType: "geometry", stylers: [{ color: "#90a4ae" }] },
-      { featureType: "road", elementType: "labels", stylers: [{ visibility: "off" }] },
-      { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] },
-      { featureType: "water", elementType: "geometry", stylers: [{ color: "#0a0a0a" }] },
-      { elementType: "labels.icon", stylers: [{ visibility: "off" }] }
-    ],
+		  { featureType: "road", elementType: "geometry", stylers: [{ color: "#FFFFFF" }] },
+		  { featureType: "road", elementType: "labels", stylers: [{ visibility: "off" }] },
+		  { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] },
+		  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0a0a0a" }] },
+		  { elementType: "labels.icon", stylers: [{ visibility: "off" }] }
+		],
     // 🔐 제어 비활성화 조건 추가
     draggable: !disableInteraction,
     scrollwheel: !disableInteraction,
@@ -86,13 +82,7 @@ const initMap = () => {
         },
         map: mapInstance.current,
         title: place.name,
-        icon: createHeartMarkerSvg(place.rating),
-        label: {
-          text: place.name,
-          color: "#ffffff",
-          fontSize: "12px",
-          fontWeight: "bold"
-        }
+        icon: createHeartMarkerSvg(place.rating)
       });
 
       marker.addListener("click", () => {
@@ -106,12 +96,12 @@ const initMap = () => {
   const createHeartMarkerSvg = (rating) => {
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48">
-        <path d="M24 42s-1.7-1.6-4.7-4.2c-5.3-4.7-11.3-10-11.3-15.8C8 15.6 12.5 12 17.5 12c2.5 0 4.8 1.1 6.5 2.9C26.7 13.1 29 12 31.5 12 36.5 12 41 15.6 41 22c0 5.8-6 11.1-11.3 15.8C25.7 40.4 24 42 24 42z" fill="#e91e63"/>
+        <path d="M24 42s-1.7-1.6-4.7-4.2c-5.3-4.7-11.3-10-11.3-15.8C8 15.6 12.5 12 17.5 12c2.5 0 4.8 1.1 6.5 2.9C26.7 13.1 29 12 31.5 12 36.5 12 41 15.6 41 22c0 5.8-6 11.1-11.3 15.8C25.7 40.4 24 42 24 42z" fill="#9C74EE"/>
         <text x="24" y="29" font-size="13" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold">${rating}</text>
       </svg>`;
     return {
       url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg),
-      scaledSize: new window.google.maps.Size(32, 32),
+      scaledSize: new window.google.maps.Size(45, 45),
       anchor: new window.google.maps.Point(32, 32),
       labelOrigin: new window.google.maps.Point(16, 42)
     };

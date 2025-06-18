@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 
 import SketchInput from '@components/SketchInput';
-
+import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 
 export default function LoginForm() {
@@ -98,8 +98,9 @@ export default function LoginForm() {
         <SketchBtn
           type="submit"
           className="sketch-button"
+          variant = 'event' 
           disabled={isLoading}
-        >
+        >{<HatchPattern opacity={0.8} />}
           {isLoading ? 'Logging in...' : 'LOGIN'}
         </SketchBtn>
       </form>
@@ -119,7 +120,17 @@ export default function LoginForm() {
       {/* Sign Up Link */}
       <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.875rem', color: '#6b7280' }}>
         Don't have an account?{' '}
-        <a href="#" className="sketch-link sketch-link--primary">Sign Up</a>
+        {/* <a href="#" className="sketch-link sketch-link--primary">Sign Up</a> */}
+         <a 
+          href="#" 
+          className="sketch-link sketch-link--primary"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate('/register');
+          }}
+        >
+          Sign Up
+        </a>
       </div>
     </>
   );
