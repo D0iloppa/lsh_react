@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
+
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import '@components/SketchComponents.css';
+import SketchInput from '@components/SketchInput';
 
 import SketchDiv from '@components/SketchDiv'
 
@@ -13,10 +17,51 @@ const CSPage2 = ({
   ...otherProps 
 }) => {
 
+const [searchQuery, setSearchQuery] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    console.log('Search FAQs:', searchQuery);
+    // FAQ 검색 로직
+  };
+
   const handleInquiryClick = (inquiry) => {
     console.log('Inquiry clicked:', inquiry);
     // 문의 상세 페이지로 이동하거나 상세 내용 표시
   };
+
+  // 새 문의하기 버튼 클릭 핸들러
+  const handleNewInquiryClick = () => {
+    console.log('새 문의하기 클릭');
+    navigateToPageWithData && navigateToPageWithData(PAGES.CSPAGE1);
+  };
+
+const [inquiries, setInquiries] = useState([]); // 실제 데이터용
+const [loading, setLoading] = useState(true);   // 로딩 상태
+const [error, setError] = useState(null);       // 에러 상태
+
+   useEffect(() => {
+    window.scrollTo(0, 0);
+
+    const fetchNotifications = async () => {
+      try {
+        const response = await axios.get('/api/api/selectAll', {
+          params: { accountId: user?.user_id || 1 }
+        });
+        setNotifications(response.data || []);
+      } catch (error) {
+        console.error('getMyFavoriteList 목록 불러오기 실패:', error);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
 
   const inquiries = [
     {
@@ -79,7 +124,7 @@ const CSPage2 = ({
         }
 
         .inquiries-section {
-          padding: 1.5rem;
+          padding: 10px;
         }
 
         .inquiry-card {
@@ -163,8 +208,16 @@ const CSPage2 = ({
             align-self: stretch;
           }
         }
+
+           .search-section {
+            margin-top: 15px;
+            padding: 1.0rem;
+        }
+
+        .new-inquiry-section{margin-bottom: 20px; }
       `}</style>
 
+       
       <div className="cs2-container">
         {/* Header */}
         <SketchHeader
@@ -177,6 +230,20 @@ const CSPage2 = ({
           rightButtons={[]}
         />
 
+         {/* Search Section */}
+        <div className="search-section">
+         
+          <form onSubmit={handleSearch}>
+            <SketchInput
+              type="text"
+              placeholder="Search FAQs" style={{ backGroundColor: 'white' }}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </form>
+        </div>
+
+
         {/* Inquiries Section */}
         <div className="inquiries-section">
           {inquiries.map((inquiry, index) => (
@@ -185,7 +252,7 @@ const CSPage2 = ({
               className="inquiry-card"
               onClick={() => handleInquiryClick(inquiry)}
             >
-              <HatchPattern opacity={0.03} />
+              <HatchPattern opacity={0.4} />
               
               <div className="inquiry-content">
                 <div className="inquiry-header">
@@ -214,6 +281,17 @@ const CSPage2 = ({
               </div>
             </SketchDiv>
           ))}
+        </div>
+        {/* 새 문의하기 버튼 섹션 */}
+        <div className="new-inquiry-section">
+          <SketchBtn 
+            variant="primary"
+            size="small"
+            onClick={handleNewInquiryClick}
+            className="new-inquiry-btn"
+          >
+            문의하기
+          </SketchBtn>
         </div>
       </div>
     </>

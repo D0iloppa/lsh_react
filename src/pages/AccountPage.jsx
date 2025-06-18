@@ -31,7 +31,7 @@ const AccountPage = ({
         navigateToPageWithData && navigateToPageWithData(PAGES.BOOKINGHISTORY);
         break;
       case 3: // Payment (제작 필요)
-        navigateToPageWithData && navigateToPageWithData(PAGES.BOOKINGHISTORY);
+        navigateToPageWithData && navigateToPageWithData(PAGES.PAYMENT);
         break;
       case 4: // Notifications
         navigateToPageWithData && navigateToPageWithData(PAGES.NOTIFICATIONS);
@@ -43,7 +43,7 @@ const AccountPage = ({
         navigateToPageWithData && navigateToPageWithData(PAGES.SETTING);
         break;
       case 7: // Support
-        navigateToPageWithData && navigateToPageWithData(PAGES.CSPAGE1);
+        navigateToPageWithData && navigateToPageWithData(PAGES.CSPAGE2);
         break;
     }
   };

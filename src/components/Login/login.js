@@ -34,8 +34,61 @@ export const validateForm = (email, password) => {
     };
 };
 
+import axios from 'axios';
+import qs from 'qs';
+
+const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
+
 export const loginPost = async (email, password) => {
+
+    const data =  qs.stringify({
+        login_type: "email",
+        email,
+        passwd: password
+      });
+
+    try {
+        const response = await axios.post(
+          `${API_HOST}/api/login`, 
+          data,
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
+          }
+        );
     
+
+        const { error=false, errMsg=false, user=false, staff=false } = response.data;
+
+        if(error){
+            return {
+                success: false,
+                errors: {
+                  general: errMsg || 'Invalid login'
+                }
+              };
+        }
+        // 서버에서 success와 user를 넘긴다고 가정
+        return {
+          success: true,
+          message: 'Login successful!',
+          user: user
+        };
+    
+      } catch (error) {
+        console.error('❌ Login failed:', error);
+    
+        return {
+          success: false,
+          errors: {
+            general: error.response?.data?.message || 'Invalid login'
+          }
+        };
+      }
+    
+
+    /*
     const demo_user = {
         "user_id": 1,
         "nickname": "user1",
@@ -55,21 +108,8 @@ export const loginPost = async (email, password) => {
         message: 'Login successful!',
         user : demo_user
     };
-
-    /*
-        // 임시 로직 (실제로는 API 응답 처리)
-        if (email === 'test@example.com' && password === 'password') {
-            return {
-                success: true,
-                message: 'Login successful!'
-            };
-        } else {
-            return {
-                success: false,
-                errors: { general: 'Invalid email or password' }
-            };
-        }
     */
+
 };
 
 // 로그인 핸들러

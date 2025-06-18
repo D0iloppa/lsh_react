@@ -12,7 +12,6 @@ const SketchBtn = ({
   return (
     <>
       <style jsx>{`
-
       .sketch-btn {
         width: 100%;
         padding: 0.75rem;
@@ -33,7 +32,7 @@ const SketchBtn = ({
         transform: rotate(0.3deg);
         box-sizing: border-box; /* 추가! */
 
-        font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+        font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
       }
       
       .sketch-btn:disabled {

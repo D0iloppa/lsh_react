@@ -7,7 +7,7 @@
     flex-direction: column;
     position: relative;
 
-    font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+    font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
   }
   
   .content-area {
@@ -38,7 +38,7 @@
   }
   
   .nav-item {
-    font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+    font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;

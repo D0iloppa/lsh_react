@@ -18,7 +18,9 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
   const fetchPlaces = async (keyword = '') => {
     try {
          setSelectedVenue(null);
-      const response = await axios.get(' /api/api/getVenueList', {
+
+      const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';  
+      const response = await axios.get(`${API_HOST}/api/getVenueList`, {
         params: {
           keyword: keyword
         }
@@ -64,7 +66,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
           max-width: 28rem;
           margin: 0 auto;
           background-color: white;
-          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
           position: relative;
         }
 

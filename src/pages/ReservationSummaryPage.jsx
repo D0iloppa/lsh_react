@@ -36,7 +36,7 @@ const ReserveSummaryPage = ({
           margin: 0 auto;
           background-color: white;
           min-height: 100vh;
-         font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+         font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
           position: relative;
         }
 

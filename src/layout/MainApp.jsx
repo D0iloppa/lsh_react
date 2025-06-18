@@ -25,6 +25,7 @@ import EventListPage from '@pages/EventListPage';
 import AccountPage from '@pages/AccountPage';
 
 import Profile from '@pages/Profile';
+import Payment from '@pages/Payment';
 
 
 import MapPage from '@pages/MapPage';
@@ -51,7 +52,7 @@ const MainApp = () => {
 
     const { user, isLoggedIn } = useAuth();
 
-    // console.log('welcome', user);
+    console.log('Welcome!', user);
 
 
 
@@ -125,6 +126,8 @@ const MainApp = () => {
                 return <Setting {...pageData} {...navigationProps} />;
             case PAGES.PROFILE:
                 return <Profile {...pageData} {...navigationProps} />;
+            case PAGES.PAYMENT:
+                return <Payment {...pageData} {...navigationProps} />;
             default:
                 return <HomePage {...navigationProps} />;
         }

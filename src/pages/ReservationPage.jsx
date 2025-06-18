@@ -59,7 +59,7 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
           min-height: 100vh;
           position: relative;
 
-          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .header {
@@ -152,7 +152,7 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
           background-color: white;
           cursor: pointer;
 
-          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .calendar-grid {

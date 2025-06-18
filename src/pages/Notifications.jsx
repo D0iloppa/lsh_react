@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 
 import SketchHeader from '@components/SketchHeader'
+
+import { useAuth } from '../contexts/AuthContext';
 
 const NotificationsPage = ({
   navigateToPageWithData,
@@ -102,35 +106,47 @@ const getIcon = () => {
     }
   };
 
-  const notifications = [
-    {
-    id: 1,
-    type: 'booking',
-    icon: <span style={{ filter: 'grayscale(1)', fontSize: '1.25rem' }}>🔔</span>,
-    message: 'New booking at Sky Lounge',
-    date: '24/05/2028',
-    time: '14:05',
-    isRead: false
-  },
-  {
-    id: 2,
-    type: 'promotion',
-    icon: <span style={{ filter: 'grayscale(1)', fontSize: '1.25rem' }}>💝</span>,
-    message: '50% off at Beach Club',
-    date: '24/05/2028',
-    time: '07:05',
-    isRead: true
-  },
-  {
-    id: 3,
-    type: 'alert',
-    icon: <span style={{ filter: 'grayscale(1)', fontSize: '1.25rem' }}>⚠️</span>,
-    message: 'Alert Event rescheduled',
-    date: '24/05/2028',
-    time: '16:05',
-    isRead: false
-  }
-  ];
+  const { user, isLoggedIn } = useAuth();
+  const [userInfo, setUserInfo] = useState({});
+  const [notifications, setNotifications] = useState([]);
+  const [filteredNotifications, setFilteredNotifications] = useState([]); // 초기 빈 배열로
+
+  // 버튼 클릭 시 필터링
+  const handleFilterType = (type) => {
+    if (type === 'ALL') {
+      setFilteredNotifications(notifications);
+    }  else {
+      const typeNum = parseInt(type, 10); // 문자열 → 숫자
+      setFilteredNotifications(
+        notifications.filter(item => item.notification_type === typeNum)
+      );
+    }
+  };
+
+  // 마운트 시 즐겨찾기 가져오기
+  useEffect(() => {
+    window.scrollTo(0, 0);
+
+    const fetchNotifications = async () => {
+      try {
+        const response = await axios.get('/api/api/getNotificationList', {
+          params: { user_id: user?.user_id || 1 }
+        });
+        setNotifications(response.data || []);
+      } catch (error) {
+        console.error('getMyFavoriteList 목록 불러오기 실패:', error);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
+  // favorites가 업데이트되면 filteredFavorites도 초기화
+  useEffect(() => {
+    setFilteredNotifications(notifications);
+  }, [notifications]);
+
+
 
   const handleClearAll = () => {
     console.log('Clear All notifications');
@@ -160,10 +176,6 @@ const getIcon = () => {
     }
   };
 
-  const filteredNotifications = selectedFilter === 'all'
-    ? notifications
-    : notifications.filter(n => n.type === selectedFilter);
-
   const filterButtons = [
     { type: 'booking', label: 'Booking' },
     { type: 'promotion', label: 'Promotion' },
@@ -173,13 +185,14 @@ const getIcon = () => {
   return (
     <>
       <style jsx>{`
+
         .notifications-container {
           max-width: 28rem;
           margin: 0 auto;
           background-color: white;
           position: relative;
 
-          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .header {
@@ -266,7 +279,7 @@ const getIcon = () => {
 
         .notification-message {
          
-          font-size: 0.95rem;
+          font-size: 0.75rem;
           color: #374151;
           margin: 0 0 0.25rem 0;
           font-weight: bold;
@@ -314,32 +327,48 @@ const getIcon = () => {
             // goBack();
             navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
           }}
-          rightButtons={[
-            <div
-            size="small"
-            onClick={handleClearAll}
-          >
-            Clear All
-          </div>
-          ]}
         />
 
         {/* Filter Section */}
         <div className="filter-section">
-          <div className="filter-label">Filter by Type</div>
-          <div className="filter-buttons">
-            {filterButtons.map((filter) => (
-              <SketchBtn
-                key={filter.type}
-                variant={selectedFilter === filter.type ? 'accent' : 'secondary'}
-                size="small"
-                onClick={() => handleFilterChange(filter.type)}
-              >
-                 {<HatchPattern opacity={0.4} />}
-                {filter.label}
-              </SketchBtn>
-            ))}
-          </div>
+          <div className="filter-label"></div>
+         <div className="filter-buttons">
+                         <SketchBtn 
+                         variant="secondary" 
+                         size="small"
+                         onClick={() => handleFilterType("ALL")}
+                       >
+                         <HatchPattern opacity={0.4} />
+                         ALL
+                       </SketchBtn>
+                       <SketchBtn 
+                         variant="secondary" 
+                         size="small"
+                         onClick={() => handleFilterType("1")}
+                       >
+                         <HatchPattern opacity={0.4} />
+                         BOOKING
+                       </SketchBtn>
+                       
+                       <SketchBtn 
+                         variant="secondary" 
+                         size="small"
+                         onClick={() => handleFilterType("2")}
+                       >
+                         <HatchPattern opacity={0.4} />
+                         PROMOTION
+                       </SketchBtn>
+                       
+                       <SketchBtn 
+                         variant="secondary" 
+                         size="small"
+                         onClick={() => handleFilterType("3")}
+                       >
+                         <HatchPattern opacity={0.4} />
+                         ALERT
+                       </SketchBtn>
+                     </div>
+         
         </div>
 
         {/* Notifications List */}
@@ -359,15 +388,28 @@ const getIcon = () => {
 
                 <div className="notification-details">
                   <p className="notification-message">
+                    {notification.title}
+                  </p>
+                  <p className="notification-message">
                     {notification.message}
                   </p>
                   <p className="notification-datetime">
-                    {notification.date} {notification.time}
+                    {notification.created_at
+                        ? new Date(notification.created_at).toLocaleString('ko-KR', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: false
+                          }).replace(/\./g, '-').replace(' ', ' ').replace(/- /g, '-')
+                        : ''}
                   </p>
                 </div>
 
                 <div className={`notification-status ${notification.isRead ? 'read' : 'unread'}`}>
-                  {notification.isRead ? 'read' : 'unread'}
+                  {notification.status}
                 </div>
               </div>
             </SketchDiv>

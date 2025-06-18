@@ -63,7 +63,7 @@ const ViewReviewPage = ({
           background-color: white;
           position: relative;
 
-          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .header {

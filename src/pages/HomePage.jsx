@@ -14,7 +14,9 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   useEffect(() => {
     const fetchHotspots = async () => {
       try {
-        const response = await axios.get('/api/api/getVenueList');
+        const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+
+        const response = await axios.get(`${API_HOST}/api/getVenueList`);
         const data = response.data || [];
         const transformed = data.map((item, index) => ({
           id: item.venue_id || index,
@@ -60,9 +62,11 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   return (
     <>
       <style jsx>{`
+
+      
         .homepage-container {
           background-color: #f9fafb;
-          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
         .hero-section {
           height: 117px;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
 
 import { useNavigate } from 'react-router-dom';
 
@@ -12,6 +12,11 @@ import '@components/SketchComponents.css';
 import './Welcome.css';
 
 const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
 
   const navigate = useNavigate();
 

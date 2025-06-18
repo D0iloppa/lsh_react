@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
+  
+
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchInput from '@components/SketchInput';
@@ -18,12 +22,6 @@ const CSPage1 = ({
     message: ''
   });
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    console.log('Search FAQs:', searchQuery);
-    // FAQ 검색 로직
-  };
-
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -31,15 +29,44 @@ const CSPage1 = ({
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Contact form submitted:', formData);
-    // 폼 제출 로직
-    // 성공 시 CS Page 2로 이동할 수도 있음
-    navigateToPageWithData && navigateToPageWithData(PAGES.CS_PAGE_2, { 
-      submittedForm: formData 
-    });
-  };
+
+  const { user, isLoggedIn } = useAuth();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // 폼 기본 제출 동작 방지
+  
+    try {
+      // INSERT 작업이므로 POST 메소드가 더 적절합니다
+      const response = await axios.post('/api/api/insertSupport', {
+        accountId: user?.user_id || 1,
+        name: formData.name,
+        email: formData.email,
+        contents: formData.message
+      });
+
+      // 성공 시 처리
+      console.log('문의 등록 성공:', response.data);
+      
+      // 성공한 경우에만 페이지 이동
+      navigateToPageWithData && navigateToPageWithData(PAGES.CS_PAGE_2, { 
+        submittedForm: formData,
+        success: true
+      });
+
+    } catch (error) {
+      console.error('문의 등록 실패:', error);
+      
+      // 에러 처리 - 사용자에게 알림 표시
+      alert('문의 등록에 실패했습니다. 다시 시도해주세요.');
+      
+      // 또는 에러와 함께 페이지 이동
+      // navigateToPageWithData && navigateToPageWithData(PAGES.CS_PAGE_2, { 
+      //   submittedForm: formData,
+      //   success: false,
+      //   error: error.message
+      // });
+    }
+};
 
   return (
     <>
@@ -67,14 +94,9 @@ const CSPage1 = ({
           margin: 0;
         }
 
-        .search-section {
-            margin-top: 15px;
-          padding: 1.0rem;
-        }
 
         .contact-form-section {
-        margin: auto;
-         width: 80%;
+         margin-top: 20px;
          border-top-left-radius: 12px 7px;
          border-top-right-radius: 6px 14px;
          border-bottom-right-radius: 10px 5px;
@@ -169,18 +191,6 @@ const CSPage1 = ({
           rightButtons={[]}
         />
 
-        {/* Search Section */}
-        <div className="search-section">
-         
-          <form onSubmit={handleSearch}>
-            <SketchInput
-              type="text"
-              placeholder="Search FAQs" style={{ backGroundColor: 'white' }}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </form>
-        </div>
 
         {/* Contact Form Section */}
         <div className="contact-form-section">

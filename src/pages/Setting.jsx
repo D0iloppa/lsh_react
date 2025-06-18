@@ -55,7 +55,7 @@ const SettingsPage = ({
           background-color: white;
           position: relative;
 
-           font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
 
@@ -97,7 +97,7 @@ const SettingsPage = ({
         }
 
         .language-select {
-        font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+        font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
            border-top-left-radius: 12px 7px;
           border-top-right-radius: 6px 14px;
           border-bottom-right-radius: 10px 5px;

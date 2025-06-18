@@ -48,7 +48,7 @@ const SketchMenuBtn = ({
           font-size: 1rem;
           color: #374151;
 
-          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .menu-arrow {

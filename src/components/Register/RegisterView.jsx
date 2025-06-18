@@ -1,26 +1,33 @@
 import React, { useState } from 'react';
+
+
+
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@contexts/AuthContext';
+import axios from 'axios';
 import SketchInput from '@components/SketchInput';
 import SketchBtn from '@components/SketchBtn';
 import Header from '@components/Header';
 import HatchPattern from '@components/HatchPattern';
 import InitFooter2 from '@components/InitFooter2';
+import SketchHeader from '@components/SketchHeader';
 
+import qs from 'qs';
 
-import SketchHeader from '@components/SketchHeader'
 
 export default function RegisterView() {
   const [formData, setFormData] = useState({
-    fullName: '',
     email: '',
-    password: ''
+    password: '',
+    rePassword: '',
+    nickname: '',
+    gender: '',
+    birth_date: '',
+    phone: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const { register } = useAuth(); // AuthContext 사용
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
@@ -42,10 +49,7 @@ export default function RegisterView() {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
-    }
-    
+    // Required fields validation
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -58,7 +62,74 @@ export default function RegisterView() {
       newErrors.password = 'Password must be at least 6 characters';
     }
     
+    if (!formData.rePassword) {
+      newErrors.rePassword = 'Please confirm your password';
+    } else if (formData.password !== formData.rePassword) {
+      newErrors.rePassword = 'Passwords do not match';
+    }
+
+    // Optional fields validation (format check only if provided)
+    if (formData.birth_date && !/^\d{4}-\d{2}-\d{2}$/.test(formData.birth_date)) {
+      newErrors.birth_date = 'Date format should be YYYY-MM-DD (e.g., 1988-08-18)';
+    }
+
+    if (formData.phone && !/^\d{3}-\d{4}-\d{4}$/.test(formData.phone)) {
+      newErrors.phone = 'Phone format should be 010-1234-5678';
+    }
+    
     return newErrors;
+  };
+
+  const registerUser = async (userData) => {
+    try {
+      // API 호스트 설정 (환경변수나 설정에서 가져오기)
+      const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+
+      console.log(API_HOST);
+      
+      const response = await axios.post(
+        `${API_HOST}/api/register`,
+        qs.stringify({
+          account_type: "user",
+          login_type: "email",
+          email: userData.email,
+          passwd: userData.password
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }
+      );
+
+      return {
+        success: true,
+        message: response.data.message || 'Registration successful! Please login.',
+        data: response.data
+      };
+    } catch (error) {
+      console.error("Registration error:", error);
+      
+      let errorMessage = 'Registration failed. Please try again.';
+      let errors = {};
+
+      if (error.response) {
+        // 서버에서 응답을 받은 경우
+        if (error.response.data) {
+          errorMessage = error.response.data.message || errorMessage;
+          errors = error.response.data.errors || {};
+        }
+      } else if (error.request) {
+        // 요청이 만들어졌지만 응답을 받지 못한 경우
+        errorMessage = 'Network error. Please check your connection.';
+      }
+
+      return {
+        success: false,
+        message: errorMessage,
+        errors: errors
+      };
+    }
   };
 
   const onSubmit = async (e) => {
@@ -70,7 +141,7 @@ export default function RegisterView() {
     const newErrors = validateForm();
     
     if (Object.keys(newErrors).length === 0) {
-      const result = await register(formData);
+      const result = await registerUser(formData);
       
       if (result.success) {
         setMessage(result.message);
@@ -79,7 +150,11 @@ export default function RegisterView() {
           navigate('/login');
         }, 2000); // 2초 후 이동 (성공 메시지 표시용)
       } else {
-        setErrors(result.errors);
+        if (result.errors && Object.keys(result.errors).length > 0) {
+          setErrors(result.errors);
+        } else {
+          setErrors({ general: result.message });
+        }
       }
     } else {
       setErrors(newErrors);
@@ -94,43 +169,14 @@ export default function RegisterView() {
     // 실제 구현 시 OAuth 처리
   };
 
-  const goBack = () => {
-    navigate(-1);
-  };
-
   return (
     <div className="register-container max-w-md mx-auto bg-white border-gray-800 p-6">
-      {/* 헤더
-      <Header 
-          className="custom-header"
-          hatchOpacity={0.4}
-        />
-
-      <h2
-        className=""
-        style={{
-          fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif", fontSize: '1.5rem', marginBottom: '5px'
-        }}
-      >
-        Register Member
-      </h2>
-      */
-      }
-
       <SketchHeader 
-              title="Register Member"
-              showBack={true}
-              onBack={() => console.log("뒤로가기")}
-              rightButtons={[]}
-            />
-      <h2
-        className=""
-        style={{
-          fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif", fontSize: '1.5rem', marginBottom: '5px'
-        }}
-      >
-        Register Member
-      </h2>
+        title="Register Member"
+        showBack={true}
+        onBack={() => navigate(-1)}
+        rightButtons={[]}
+      />
       
       <p style={{ 
         fontSize: '0.875rem', 
@@ -141,7 +187,7 @@ export default function RegisterView() {
         lineHeight: '1.4',
         fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"
       }}>
-        Join us to explore the vibrant nightlife of Vietnam. <br></br>
+        Join us to explore the vibrant nightlife of Vietnam. <br />
         Sign up now to receive exclusive updates on events and reservations.
       </p>
 
@@ -154,20 +200,8 @@ export default function RegisterView() {
           <div className="sketch-success-message">{message}</div>
         )}
 
-        {/* Full Name Input */}
-          <p style={{ margin:'0', fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Full Name</p>
-        <SketchInput
-          type="text"
-          name="fullName"
-          value={formData.fullName}
-          onChange={handleInputChange}
-          disabled={isLoading}
-          error={errors.fullName}
-          variant="text" style={{ marginBottom: '-8px' }} 
-        />
-
         {/* Email Input */}
-        <p style={{ margin:'0',fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>email</p>
+        <p style={{ margin:'0', fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Email *</p>
         <SketchInput
           type="email"
           name="email"
@@ -175,11 +209,12 @@ export default function RegisterView() {
           onChange={handleInputChange}
           disabled={isLoading}
           error={errors.email}
-          variant="email" style={{ marginBottom: '-8px' }} 
+          variant="email" 
+          style={{ marginBottom: '-8px' }} 
         />
 
         {/* Password Input */}
-        <p style={{ margin:'0',fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Password</p>
+        <p style={{ margin:'0', fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Password *</p>
         <SketchInput
           type="password"
           name="password"
@@ -188,21 +223,93 @@ export default function RegisterView() {
           disabled={isLoading}
           error={errors.password}
           variant="password"
+          style={{ marginBottom: '-8px' }} 
+        />
+
+        {/* Re-Password Input */}
+        <p style={{ margin:'0', fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Confirm Password *</p>
+        <SketchInput
+          type="password"
+          name="rePassword"
+          value={formData.rePassword}
+          onChange={handleInputChange}
+          disabled={isLoading}
+          error={errors.rePassword}
+          variant="password"
+          style={{ marginBottom: '-8px' }} 
+        />
+
+        {/* Nickname Input (Optional) */}
+        <p style={{ margin:'0', fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Nickname (optional)</p>
+        <SketchInput
+          type="text"
+          name="nickname"
+          value={formData.nickname}
+          onChange={handleInputChange}
+          disabled={isLoading}
+          error={errors.nickname}
+          variant="text"
+          style={{ marginBottom: '-8px' }} 
+        />
+
+        {/* Gender Select (Optional) */}
+        <p style={{ margin:'0', fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Gender (optional)</p>
+        <select
+          name="gender"
+          value={formData.gender}
+          onChange={handleInputChange}
+          disabled={isLoading}
+          style={{
+            width: '100%',
+            padding: '0.5rem',
+            border: '2px solid #374151',
+            borderRadius: '4px',
+            fontSize: '1rem',
+            fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif",
+            marginBottom: '1rem',
+            backgroundColor: '#fff'
+          }}
+        >
+          <option value="">Select Gender</option>
+          <option value="M">Male</option>
+          <option value="F">Female</option>
+        </select>
+
+        {/* Birth Date Input (Optional) */}
+        <p style={{ margin:'0', fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Birth Date (optional)</p>
+        <SketchInput
+          type="date"
+          name="birth_date"
+          value={formData.birth_date}
+          onChange={handleInputChange}
+          disabled={isLoading}
+          error={errors.birth_date}
+          variant="text"
+          placeholder="1988-08-18"
+          style={{ marginBottom: '-8px' }} 
+        />
+
+        {/* Phone Input (Optional) */}
+        <p style={{ margin:'0', fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Phone (optional)</p>
+        <SketchInput
+          type="tel"
+          name="phone"
+          value={formData.phone}
+          onChange={handleInputChange}
+          disabled={isLoading}
+          error={errors.phone}
+          variant="text"
+          placeholder="010-1234-5678"
         />
 
         {/* Sign Up Button */}
-        {/* <button
-          type="submit"
-          className="sketch-button"
-          disabled={isLoading}
-        >
-          {isLoading ? 'Signing up...' : 'SIGN UP'}
-        </button> */}
         <SketchBtn
           type="submit"
-          className="sketch-button" variant = 'event'
+          className="sketch-button" 
+          variant="event"
           disabled={isLoading}
-        >{<HatchPattern opacity={0.8} />}
+        >
+          <HatchPattern opacity={0.8} />
           {isLoading ? 'Signing up...' : 'SIGN UP'}
         </SketchBtn>
       </form>
@@ -259,20 +366,7 @@ export default function RegisterView() {
       </div>
 
       {/* 푸터 */}
-      {/* <div style={{ 
-        textAlign: 'center', 
-        marginTop: '3rem', 
-        padding: '1rem 0', 
-        borderTop: '2px solid #374151',
-        fontSize: '0.75rem',
-        color: '#6b7280'
-      }}>
-        © 2025. LeTanTon Sheriff All rights reserved.
-      </div> */}
       <InitFooter2 />
-      
-                
-                <InitFooter2 />
     </div>
   );
 }

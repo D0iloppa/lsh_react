@@ -1,5 +1,20 @@
 /* SketchComponents.css */
 
+@font-face {
+  font-family: 'BMHanna';
+  src: url('/cdn/font/BMHANNAAir_ttf.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'BMHANNAPro';
+  src: url('/cdn/font/BMHANNAPro.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
 /* ========== Sketch Div Styles ========== */
 .sketch-div {
         border-top-left-radius: 12px 7px;

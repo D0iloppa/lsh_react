@@ -50,7 +50,7 @@ const StaffDetailPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
         }
 
         .staff-detail-container {
-          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .profile-images-section {

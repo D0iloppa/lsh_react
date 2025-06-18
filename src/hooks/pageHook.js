@@ -21,7 +21,8 @@ const PAGES = {
   BOOKINGHISTORY: 'bookinghistory',
   FAVORITES: 'favorites',
   SETTING: 'setting',
-  PROFILE: 'profile'
+  PROFILE: 'profile',
+  PAYMENT: 'payment'
 };
 
 const usePageNavigation = (initialPage = PAGES.HOME, customData = {}) => {

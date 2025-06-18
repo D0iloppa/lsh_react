@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
+
 import SketchDiv from '@components/SketchDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import HatchPattern from '@components/HatchPattern';
@@ -9,6 +10,12 @@ import ProgressIndicator from './ProgressIndicator';
 
 // Tutorial2 메인 컴포넌트
 const Tutorial2 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
+
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
 
   return (
       <div className="tutorial-container">

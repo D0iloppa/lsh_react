@@ -24,7 +24,7 @@ const SketchSearch = ({
         }
         
         .search-input {
-          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
 
           width: 90%;
           padding: 0.75rem 1rem;

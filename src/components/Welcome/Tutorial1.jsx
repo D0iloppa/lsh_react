@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
 
 import SketchDiv from '@components/SketchDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
@@ -15,6 +15,13 @@ import SketchBtn from '@components/SketchBtn';
 import '@components/SketchComponents.css';
 
 const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
+
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+
 
   return (
   

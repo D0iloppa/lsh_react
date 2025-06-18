@@ -52,7 +52,7 @@ const SubscriptionPaymentPage = ({
           max-width: 28rem;
           margin: 0 auto;
           background-color: white;
-          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
           position: relative;
         }
 
@@ -144,7 +144,7 @@ const SubscriptionPaymentPage = ({
           cursor: pointer;
           transform: rotate(-0.2deg);
 
-          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .confirm-section {

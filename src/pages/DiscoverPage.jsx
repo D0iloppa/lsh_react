@@ -23,7 +23,9 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
       if (!venueId) return;
       setLoading(true);
       try {
-        const response = await axios.get('/api/api/getVenue', {
+        const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+
+        const response = await axios.get(`${API_HOST}/api/getVenue`, {
           params: { venue_id: venueId },
         });
         setVenueInfo(response.data || null);
@@ -37,7 +39,9 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
     const fetchTopGirls = async () => {
       if (!venueId) return;
       try {
-        const res = await axios.get('/api/api/getVenueStaffList', {
+
+        const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+        const res = await axios.get(`${API_HOST}/api/getVenueStaffList`, {
           params: { venue_id: venueId },
         });
         const staffList = res.data || [];
@@ -102,7 +106,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
           background-color: white;
           min-height: 100vh;
 
-          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
         .featured-section { padding-bottom: 60px; padding: 1rem; text-align: center;}
         .club-image-area {
@@ -158,7 +162,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
         .girl-detail-btn {
           display: block; margin: 0 auto; padding: 0.3rem 2rem;
           border: 1px solid #1f2937; background-color: white; border-radius: 3px;
-          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
           cursor: pointer;
         }
         @media (max-width: 480px) {

@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';  
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchHeader from '@components/SketchHeader';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
+
+import { useAuth } from '../contexts/AuthContext';
 
 const FavoritesPage = ({ 
   navigateToPageWithData, 
@@ -13,9 +17,43 @@ const FavoritesPage = ({
   const [sortBy, setSortBy] = useState('name');
   const [filter, setFilter] = useState('all');
 
+  const { user, isLoggedIn } = useAuth();
+  const [userInfo, setUserInfo] = useState({});
+  const [favorites, setFavorits] = useState([]);
+  const [filteredFavorites, setFilteredFavorites] = useState([]); // 초기 빈 배열로
+
+  // 버튼 클릭 시 필터링
+  const handleFilterType = (type) => {
+    if (type === 'ALL') {
+      setFilteredFavorites(favorites);
+    } else {
+      setFilteredFavorites(
+        favorites.filter(item => item.target_type === type.toLowerCase())
+      );
+    }
+  };
+
+  // 마운트 시 즐겨찾기 가져오기
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    const fetchFavorits = async () => {
+      try {
+        const response = await axios.get('/api/api/getMyFavoriteList', {
+          params: { user_id: user?.user_id || 1 }
+        });
+        const data = response.data || [];
+        setFavorits(data);
+        setFilteredFavorites(data); // 추가
+      } catch (error) {
+        console.error('getMyFavoriteList 목록 불러오기 실패:', error);
+      }
+    };
+
+    fetchFavorits();
   }, []);
+
+
 
   const handleProfile = () => {
     console.log('Profile 클릭');
@@ -76,34 +114,6 @@ const FavoritesPage = ({
   );
 };
 
-
-  const favorites = [
-    {
-      id: 1,
-      name: 'Elegant Lounge',
-      description: 'Vibrant atmosphere with live music.',
-      image: '/placeholder-venue1.jpg',
-      rating: 4.8,
-      category: 'lounge'
-    },
-    {
-      id: 2,
-      name: 'Cocktail Bar',
-      description: 'Famous for its craft cocktails.',
-      image: '/placeholder-venue2.jpg',
-      rating: 4.6,
-      category: 'bar'
-    },
-    {
-      id: 3,
-      name: 'Rooftop Views',
-      description: 'Stunning views of the city skyline.',
-      image: '/placeholder-venue3.jpg',
-      rating: 4.9,
-      category: 'rooftop'
-    }
-  ];
-
   return (
     <>
       <style jsx>{`
@@ -112,7 +122,7 @@ const FavoritesPage = ({
           margin: 0 auto;
           background-color: white;
           min-height: 100vh;
-          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
           position: relative;
         }
 
@@ -263,13 +273,14 @@ const FavoritesPage = ({
             align-self: center;
           }
         }
+          
       `}</style>
 
       <div className="favorites-container">
         {/* Header */}
         <SketchHeader
                   onClick={handleProfile}
-                  title={'PROFILE'}
+                  title={'FAVARITES'}
                   showBack={true}
                   onBack={() => console.log('뒤로가기')}
                   rightButtons={[]}
@@ -294,31 +305,42 @@ const FavoritesPage = ({
               <SketchBtn 
                 variant="secondary" 
                 size="small"
-                onClick={handleSort}
+                onClick={() => handleFilterType("ALL")}
               >
                 <HatchPattern opacity={0.4} />
-                SORT
+                ALL
               </SketchBtn>
+              
               <SketchBtn 
                 variant="secondary" 
                 size="small"
-                onClick={handleFilter}
+                onClick={() => handleFilterType("VENUE")}
               >
                 <HatchPattern opacity={0.4} />
-                FILTER
+                VENUE
+              </SketchBtn>
+              
+              <SketchBtn 
+                variant="secondary" 
+                size="small"
+                onClick={() => handleFilterType("STAFF")}
+              >
+                <HatchPattern opacity={0.4} />
+                STAFF
               </SketchBtn>
             </div>
+
           </div>
 
           {/* Favorites List */}
           <div className="favorites-list">
-            {favorites.map((venue, index) => (
-              <div key={venue.id} className="favorite-card">
+            {filteredFavorites.map((venue, index) => (
+              <div key={venue.venue_id} className="favorite-card">
                 <HatchPattern opacity={0.4} />
                 
                 <div className="card-content">
                   <ImagePlaceholder 
-                    src={venue.image} 
+                    src={venue.image_url} 
                     className="venue-image"
                   />
                   

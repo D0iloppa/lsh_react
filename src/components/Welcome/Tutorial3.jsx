@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
 
 import SketchDiv from '@components/SketchDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
@@ -10,6 +10,13 @@ import ProgressIndicator from './ProgressIndicator';
 import { Weight } from 'lucide-react';
 
 const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
+  
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+
   return (
 
 

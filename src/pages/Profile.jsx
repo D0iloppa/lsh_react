@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
@@ -6,54 +7,61 @@ import SketchMenuBtn from '@components/SketchMenuBtn';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 
-import SketchHeader from '@components/SketchHeader'
+import SketchHeader from '@components/SketchHeader';
 
 import { Star, Edit3 } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
 
-const Profile = ({ 
-  navigateToPageWithData, 
+const Profile = ({
+  navigateToPageWithData,
   PAGES,
   goBack,
-  ...otherProps 
+  ...otherProps
 }) => {
-
-    useEffect(() => {
-      window.scrollTo(0, 0);
-    }, []);
-
   const { user, isLoggedIn } = useAuth();
-  
-  console.log('welcome-profile', user);
+  const [userInfo, setUserInfo] = useState({});
+  const [userReviews, setUserReviews] = useState([]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+
+    const fetchUserInfo = async () => {
+      try {
+        const response = await axios.get('/api/api/getUserInfo', {
+          params: { user_id: user?.user_id || 1 }
+        });
+        setUserInfo(response.data || {});
+      } catch (error) {
+        console.error('유저 정보 불러오기 실패:', error);
+      }
+    };
+
+    const fetchUserReviews = async () => {
+    try {
+        const response = await axios.get('/api/api/getMyReviewList', {
+          params: { user_id: user?.user_id || 1 }
+        });
+        setUserReviews(response.data || []);
+      } catch (error) {
+        console.error('리뷰 목록 불러오기 실패:', error);
+      }
+    };
+
+    fetchUserInfo();
+    fetchUserReviews();
+
+  }, [user]);
 
   const handleBack = () => {
-    // goBack();
     navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
   };
-
-
-  // 샘플 리뷰 데이터
-  const userReviews = [
-    {
-      id: 1,
-      venueName: "Sky Lounge",
-      rating: 5,
-      comment: "Amazing atmosphere with friendly staff and great drinks.",
-      date: "2024-03-15"
-    },
-    {
-      id: 2,
-      venueName: "Neon Dreams Bar",
-      rating: 4,
-      comment: "Great music and vibe, but a bit crowded on weekends.",
-      date: "2024-03-10"
-    }
-  ];
 
   return (
     <>
       <style jsx>{`
+       
+
         .account-container {
           max-width: 28rem;
           margin: 0 auto;
@@ -68,7 +76,6 @@ const Profile = ({
           gap: 1.5rem;
         }
 
-        /* Profile Info Section */
         .profile-info {
           padding: 1.5rem;
           background-color: #fefefe;
@@ -95,7 +102,7 @@ const Profile = ({
           width: 4rem;
           height: 4rem;
           border-radius: 50%;
-          background: linear-gradient(135deg, #94fff9,rgb(255, 219, 158));
+          background: linear-gradient(135deg, #94fff9, rgb(255, 219, 158));
           display: flex;
           align-items: center;
           justify-content: center;
@@ -105,23 +112,6 @@ const Profile = ({
           border: 0.8px solid #666;
           transform: rotate(2deg);
           position: relative;
-        }
-
-        .profile-image::before {
-          content: '';
-          position: absolute;
-          top: -2px;
-          right: -2px;
-          width: 1rem;
-          height: 1rem;
-          background-color: #f3f4f6;
-          border: 0.8px solid #666;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          z-index: 1;
         }
 
         .profile-details h2 {
@@ -135,26 +125,6 @@ const Profile = ({
           margin: 0;
           color: #6b7280;
           font-size: 0.875rem;
-        }
-
-        .edit-btn {
-          margin-left: auto;
-          width: 2.5rem;
-          height: 2.5rem;
-          background-color: #f8fafc;
-          border: 0.8px solid #666;
-          border-radius: 6px 12px 8px 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transform: rotate(-1deg);
-          transition: all 0.2s;
-        }
-
-        .edit-btn:hover {
-          background-color: #e2e8f0;
-          transform: rotate(-1deg) scale(1.05);
         }
 
         .profile-stats {
@@ -184,7 +154,6 @@ const Profile = ({
           letter-spacing: 0.05em;
         }
 
-        /* Recent Reviews Section */
         .reviews-section {
           padding: 1.5rem;
           background-color: #fefefe;
@@ -224,21 +193,11 @@ const Profile = ({
           padding: 0;
         }
 
-        .view-all-btn:hover {
-          color: #374151;
-        }
-
         .review-item {
           display: flex;
           gap: 0.75rem;
           padding: 0.75rem 0;
           border-bottom: 1px dashed #e5e7eb;
-          position: relative;
-          z-index: 2;
-        }
-
-        .review-item:last-child {
-          border-bottom: none;
         }
 
         .review-content {
@@ -270,35 +229,41 @@ const Profile = ({
           font-size: 0.7rem;
           color: #9ca3af;
         }
+          .profile-image {
+              width: 100px;
+              height: 100px;
+              border-radius: 50%;
+              overflow: hidden;
+              background: linear-gradient(135deg, #94fff9, rgb(255, 219, 158));
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 1.25rem;
+              font-weight: bold;
+              color: white;
+              border: 0.8px solid #666;
+              transform: rotate(2deg);
+              position: relative;
+            }
 
-        /* Menu Section */
-        .menu-section {
-          padding: 0 1.5rem 1.5rem 1.5rem;
-        }
+            .profile-image img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+              border-radius: 50%;
+            }
 
-        .menu-item {
-          width: 100%;
-          margin-bottom: 0.75rem;
-        }
+            .icon-tiny {
+                width: 16px;
+                height: 16px;
+                margin-right: 4px;
+                vertical-align: middle;
+              }
 
-        .logout {
-          margin-top: 1rem;
-        }
-
-        .logout .menu-item {
-          border-color: #ef4444;
-          color: #dc2626;
-        }
-
-        .logout .menu-item:hover {
-          background-color: #fef2f2;
-        }
       `}</style>
 
       <div className="account-container">
-        
-        {/* Header */}
-        <SketchHeader 
+        <SketchHeader
           title="Profile"
           showBack={true}
           onBack={handleBack}
@@ -306,69 +271,94 @@ const Profile = ({
         />
 
         <div className="content-section">
-          {/* Profile Info Section */}
           <SketchDiv className="profile-info">
             <HatchPattern opacity={0.4} />
-            
+
             <div className="profile-header">
               <div className="profile-image">
-                JD
-              </div>
-              
+                <img src={userInfo.image_url} alt="profile" />
+            </div>
               <div className="profile-details">
-                <h2>John Doe</h2>
-                <p>john.doe@example.com</p>
-                <p>Member since March 2024</p>
+                <h2>{userInfo?.nickname || '닉네임 없음'}</h2>
+                <p>{userInfo?.email || '이메일 없음'}</p>
+                <p>{userInfo?.created_at
+                ? `Member since ${new Date(userInfo.created_at).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'long'
+                  })}`
+                : '가입일 정보 없음'}</p>
               </div>
             </div>
 
             <div className="profile-stats">
-              <div className="stat-item">
-                <span className="stat-number">12</span>
-                <span className="stat-label">Bookings</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-number">8</span>
-                <span className="stat-label">Reviews</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-number">15</span>
-                <span className="stat-label">Favorites</span>
-              </div>
+            <div className="stat-item">
+              <span className="stat-number">{userInfo?.booking_cnt ?? 0}</span>
+              <span className="stat-label">Bookings</span>
             </div>
+            <div className="stat-item">
+              <span className="stat-number">{userInfo?.review_cnt ?? 0}</span>
+              <span className="stat-label">Reviews</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">{userInfo?.favorites_cnt ?? 0}</span>
+              <span className="stat-label">Favorites</span>
+            </div>
+          </div>
           </SketchDiv>
 
-          {/* Recent Reviews Section */}
           <SketchDiv className="reviews-section">
             <HatchPattern opacity={0.02} />
-            
             <div className="section-header">
               <h3 className="section-title">Recent Reviews</h3>
-              <button className="view-all-btn" onClick={() => console.log('View all reviews')}>
-                View All
-              </button>
             </div>
 
             <div className="reviews-list">
               {userReviews.map((review) => (
                 <div key={review.id} className="review-item">
                   <div className="review-content">
-                    <div className="review-venue">{review.venueName}</div>
+                    <div className="review-venue">
+                      {review.target_type === 'venue' && (
+                        <svg className="icon-tiny" viewBox="0 0 24 24">
+                          <path d="M3 9L12 2L21 9V20A1 1 0 0 1 20 21H4A1 1 0 0 1 3 20V9Z" stroke="black" strokeWidth="1.5" fill="none"/>
+                          <path d="M9 21V12H15V21" stroke="black" strokeWidth="1.5" fill="none"/>
+                        </svg>
+                      )}
+                      {review.target_type === 'staff' && (
+                        <svg className="icon-tiny" viewBox="0 0 24 24">
+                          <circle cx="12" cy="7" r="4" stroke="black" strokeWidth="1.5" fill="none"/>
+                          <path d="M5.5 21a6.5 6.5 0 0 1 13 0" stroke="black" strokeWidth="1.5" fill="none"/>
+                        </svg>
+                      )}
+                      <span>{review.venue_name}</span>
+                    </div>
+
                     <div className="review-rating">
                       {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          size={12} 
+                        <Star
+                          key={i}
+                          size={12}
                           fill={i < review.rating ? '#fbbf24' : 'none'}
                           color={i < review.rating ? '#fbbf24' : '#d1d5db'}
                         />
                       ))}
-                      <span style={{fontSize: '0.75rem', color: '#6b7280', marginLeft: '0.25rem'}}>
+                      <span style={{ fontSize: '0.75rem', color: '#6b7280', marginLeft: '0.25rem' }}>
                         {review.rating}/5
                       </span>
                     </div>
-                    <div className="review-text">{review.comment}</div>
-                    <div className="review-date">{review.date}</div>
+                    <div className="review-text">{review.content}</div>
+                    <div className="review-date">
+                      {review.created_at
+                        ? new Date(review.created_at).toLocaleString('ko-KR', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: false
+                          }).replace(/\./g, '-').replace(' ', ' ').replace(/- /g, '-')
+                        : ''}
+                    </div>
                   </div>
                 </div>
               ))}

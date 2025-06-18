@@ -65,7 +65,7 @@ const ShareExpPage = ({
           position: relative;
           padding: 1.5rem;
 
-          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .review-main-section {
