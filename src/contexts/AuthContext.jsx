@@ -5,52 +5,64 @@ import { loginPost, validateForm } from '@components/Login/login'; // ← 로그
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem('isLoggedIn') === 'true';
+  });
+
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem('user');
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+
   const [loading, setLoading] = useState(false);
 
   // 로그인 함수 (Login 컴포넌트 로직 재활용)
-  const login = async (email, password) => {
-    try {
-      setLoading(true);
-      
-      // Login 컴포넌트의 유효성 검사 함수 사용
-      const validation = validateForm(email, password);
-      if (!validation.isValid) {
+    const login = async (email, password) => {
+      try {
+        setLoading(true);
+        
+        // Login 컴포넌트의 유효성 검사 함수 사용
+        const validation = validateForm(email, password);
+        if (!validation.isValid) {
+          return {
+            success: false,
+            errors: validation.errors
+          };
+        }
+
+        // Login 컴포넌트의 API 호출 함수 사용
+        const result = await loginPost(email, password);
+        
+        if (result.success) {
+          // 성공 시 상태 업데이트
+
+          localStorage.setItem('isLoggedIn', 'true');
+          localStorage.setItem('user', JSON.stringify(result.user));
+
+          setIsLoggedIn(true);
+          setUser(result.user);
+          console.log('로그인 성공:', result.user);
+        }
+        
+        return result;
+        
+      } catch (error) {
+        console.error('Login error:', error);
         return {
           success: false,
-          errors: validation.errors
+          errors: { general: 'Something went wrong. Please try again.' }
         };
+      } finally {
+        setLoading(false);
       }
-
-      // Login 컴포넌트의 API 호출 함수 사용
-      const result = await loginPost(email, password);
-      
-      if (result.success) {
-        // 성공 시 상태 업데이트
-        setIsLoggedIn(true);
-        setUser(result.user);
-        console.log('로그인 성공:', result.user);
-      }
-      
-      return result;
-      
-    } catch (error) {
-      console.error('Login error:', error);
-      return {
-        success: false,
-        errors: { general: 'Something went wrong. Please try again.' }
-      };
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
   // 로그아웃 함수
   const logout = () => {
     setIsLoggedIn(false);
     setUser(null);
-    console.log('로그아웃 완료');
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('user');
   };
 
   const value = {

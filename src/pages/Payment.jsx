@@ -21,13 +21,14 @@ const Payment = ({
   const { user, isLoggedIn } = useAuth();
   const [userInfo, setUserInfo] = useState({});
   const [userReviews, setUserReviews] = useState([]);
+  const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
 
   useEffect(() => {
     window.scrollTo(0, 0);
 
     const fetchUserInfo = async () => {
       try {
-        const response = await axios.get('/api/api/getUserInfo', {
+        const response = await axios.get(`${API_HOST}/api/getUserInfo`, {
           params: { user_id: user?.user_id || 1 }
         });
         setUserInfo(response.data || {});
@@ -38,7 +39,7 @@ const Payment = ({
 
     const fetchUserReviews = async () => {
     try {
-        const response = await axios.get('/api/api/getMyReviewList', {
+        const response = await axios.get(`${API_HOST}/api/getMyReviewList`, {
           params: { user_id: user?.user_id || 1 }
         });
         setUserReviews(response.data || []);
@@ -58,7 +59,7 @@ const Payment = ({
 
   return (
     <>
-      <style jsx="true">>{`
+      <style jsx="true">{`
        
 
        

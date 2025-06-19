@@ -99,7 +99,7 @@ const InitFooter = ({
         /* 반응형 */
         @media (max-width: 768px) {
           .init-footer {
-            padding: 22px 16px;
+            padding: 8px 16px;
           }
           
           .footer-content {

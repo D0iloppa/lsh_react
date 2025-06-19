@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchInput from '@components/SketchInput';
@@ -6,12 +8,23 @@ import SketchHeader from '@components/SketchHeader'
 import SketchDiv from '@components/SketchDiv'
 import '@components/SketchComponents.css';
 
+import { useAuth } from '../contexts/AuthContext';
+import qs from 'qs';
+
 const SettingsPage = ({ 
   navigateToPageWithData, 
   PAGES,
   ...otherProps 
 }) => {
-  const [language, setLanguage] = useState('English');
+
+
+  const { user, isLoggedIn } = useAuth();
+  const [userInfo, setUserInfo] = useState({});
+  const [userSetting, setSetting] = useState([]);
+  const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
+  
+
+  const [language, setLanguage] = useState('ko'); 
   const [receiveUpdates, setReceiveUpdates] = useState(true);
   const [eventAlerts, setEventAlerts] = useState(false);
   const [email, setEmail] = useState('user@example.com');
@@ -19,20 +32,89 @@ const SettingsPage = ({
   const [shareLocation, setShareLocation] = useState(false);
   const [showOnlineStatus, setShowOnlineStatus] = useState(true);
 
+  const languageMap = {
+    kr: '한국어',
+    en: 'English',
+    ja: '日本語',
+    vi: 'Tiếng Việt',
+  };
+
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+
+     const fetchSetting = async () => {
+      try {
+
+
+        const response = await axios.post(
+          `${API_HOST}/api/selectSetting`,
+          qs.stringify({ user_id: user?.user_id || 1 }),
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            }
+          }
+        );
+
+        const data = response.data || {};
+
+        console.log(data.update_alert);
+        setLanguage(data.language || 'ko');
+        setReceiveUpdates(data.update_alert ?? true); // boolean은 null check
+        setEventAlerts(data.event_alert ?? false);
+        setEmail(data.email || 'user@example.com');
+        setPhone(data.phone || '');
+        setShareLocation(data.location_sharing ?? false);
+        setShowOnlineStatus(data.online_status ?? true);
+
+      } catch (error) {
+        console.error('유저 정보 불러오기 실패:', error);
+      }
+    };
+
+
+  fetchSetting();
+
+
+  }, [user]);
 
   const handleBack = () => {
     console.log('Back 클릭');
     navigateToPageWithData && navigateToPageWithData(PAGES.HOME);
   };
 
-  const handleLogout = () => {
-    console.log('Logout 클릭');
-    // 로그아웃 로직
-    navigateToPageWithData && navigateToPageWithData(PAGES.LOGIN);
+  const handleSave = async () => {
+    try {
+      const payload = {
+        user_id: user?.user_id || 1,
+        language: language || '',
+        update_alert: receiveUpdates,
+        event_alert: eventAlerts,
+        email: email || '',
+        phone: phone || '',
+        location_sharing: shareLocation,
+        online_status: showOnlineStatus
+      };
+
+      console.log('저장할 정보:', payload);
+
+      await axios.post(
+        `${API_HOST}/api/updateSetting`,
+        qs.stringify(payload),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          }
+        }
+      );
+
+      alert('설정이 저장되었습니다.');
+    } catch (error) {
+      console.error('설정 저장 실패:', error);
+      alert('설정 저장 중 오류가 발생했습니다.');
+    }
   };
+
 
   const ToggleSwitch = ({ checked, onChange, label }) => (
     <div className="toggle-container">
@@ -138,7 +220,7 @@ const SettingsPage = ({
         }
 
         .toggle-switch.checked {
-          background-color: #94fff9;
+          background: linear-gradient(135deg, #00f0ff, #fff0d8);
         }
 
         .toggle-knob {
@@ -225,10 +307,9 @@ const SettingsPage = ({
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
               >
-                <option value="English">English</option>
-                <option value="Vietnamese">Tiếng Việt</option>
-                <option value="Korean">한국어</option>
-                <option value="Japanese">日本語</option>
+                <option value="vi">Tiếng Việt</option>
+                <option value="kr">한국어</option>
+                <option value="en">English</option>
               </select>
             </div>
           </SketchDiv>
@@ -256,13 +337,11 @@ const SettingsPage = ({
             <HatchPattern opacity={0.4} />
             <div className="section-content">
               <h2 className="section-title">Account Details</h2>
-              <div className="form-field">
+             <div className="form-field">
                 <label className="field-label">Email</label>
-                <SketchInput
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+                <span style={{ display: 'inline-block', padding: '0.5rem 0' }}>
+                  {email || '이메일 없음'}
+                </span>
               </div>
               <div className="form-field">
                 <label className="field-label">Phone Number</label>
@@ -295,9 +374,9 @@ const SettingsPage = ({
 
           {/* Logout */}
           <div className="logout-section">
-            <SketchBtn className="danger" onClick={handleLogout}>
+            <SketchBtn className="danger" onClick={handleSave}>
               <HatchPattern opacity={0.8} />
-              Logout
+              SAVE
             </SketchBtn>
           </div>
         </div>

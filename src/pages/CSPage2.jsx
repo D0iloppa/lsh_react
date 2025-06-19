@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'; // useEffect import 추가
 import axios from 'axios';
+import qs from 'qs';
+
 import { useAuth } from '../contexts/AuthContext';
 
 import HatchPattern from '@components/HatchPattern';
@@ -8,8 +10,10 @@ import '@components/SketchComponents.css';
 import SketchInput from '@components/SketchInput';
 
 import SketchDiv from '@components/SketchDiv'
-
+import { AlertCircle } from 'lucide-react';
 import SketchHeader from '@components/SketchHeader'
+
+import { CircleAlert  } from 'lucide-react';
 
 const CSPage2 = ({ 
   navigateToPageWithData, 
@@ -28,8 +32,9 @@ const CSPage2 = ({
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const { user, isLoggedIn } = useAuth();
+
+  const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
 
   // 처음 로딩 시 데이터 가져오기
   useEffect(() => {
@@ -39,17 +44,17 @@ const CSPage2 = ({
       try {
         setLoading(true);
         setError(null);
-        
-        const response = await axios.get('/api/api/selectAll', {
-          params: { accountId: user?.user_id || 1 }
+        const response = await axios.get(`${API_HOST}/api/selectSupportAll`, {
+          params: { user_id: user?.user_id || 1 }
+          
         });
+
+        console.log('문의 목록:', response.data);
         
         // API 응답을 inquiries 형태로 변환
         const formattedInquiries = (response.data || []).map((item, index) => ({
           id: item.id || index + 1,
-          type: item.type || 'general',
-          icon: getIconByType(item.type || 'general'),
-          title: item.title || item.contents?.substring(0, 50) || 'Inquiry',
+          title: item.contents?.substring(0, 50) || 'Inquiry',
           date: formatDate(item.created_at || item.date),
           status: item.status || 'pending',
           statusLabel: getStatusLabel(item.status || 'pending'),
@@ -75,22 +80,16 @@ const CSPage2 = ({
   // 아이콘 타입별 매핑
   const getIconByType = (type) => {
     switch(type) {
-      case 'reservation': return '⚠️';
-      case 'event': return 'ℹ️';
-      case 'payment': return '💳';
-      case 'technical': return '🔧';
-      default: return 'ℹ️';
+      case 'normal': <CircleAlert  />
     }
   };
 
   // 상태 라벨 매핑
   const getStatusLabel = (status) => {
     switch(status) {
-      case 'processing': return 'Processing';
-      case 'answered': return 'Answered';
-      case 'pending': return 'Pending';
-      case 'closed': return 'Closed';
-      default: return 'Pending';
+      case 0: return 'Processing';
+      case 1: return 'Answered';
+      default: return 'Processing';
     }
   };
 
@@ -111,7 +110,7 @@ const CSPage2 = ({
     {
       id: 1,
       type: 'reservation',
-      icon: '⚠️',
+      icon:  <CircleAlert  />,
       title: 'Reservation Inquiry',
       date: 'October 5, 2023',
       status: 'processing',
@@ -120,7 +119,7 @@ const CSPage2 = ({
     {
       id: 2,
       type: 'event',
-      icon: 'ℹ️',
+      icon:  <CircleAlert  />,
       title: 'Event Inquiry',
       date: 'September 30, 2023',
       status: 'answered',
@@ -129,7 +128,7 @@ const CSPage2 = ({
     {
       id: 3,
       type: 'other',
-      icon: 'ℹ️',
+      icon:  <CircleAlert  />,
       title: 'Other Inquiry',
       date: 'September 11, 2023',
       status: 'pending',
@@ -157,12 +156,8 @@ const CSPage2 = ({
   const getStatusVariant = (status) => {
     switch(status) {
       case 'processing':
-        return 'accent';
-      case 'answered':
-        return 'secondary';
+        return 'event';
       case 'pending':
-        return 'primary';
-      case 'closed':
         return 'secondary';
       default:
         return 'secondary';
@@ -223,7 +218,6 @@ const CSPage2 = ({
           display: flex;
           align-items: flex-start;
           gap: 0.75rem;
-          margin-bottom: 0.75rem;
         }
 
         .inquiry-icon {
@@ -346,7 +340,7 @@ const CSPage2 = ({
                 <div className="inquiry-content">
                   <div className="inquiry-header">
                     <div className="inquiry-icon">
-                      {inquiry.icon}
+                      <CircleAlert  style={{opacity: '0.6', color: '#1f2937'}}/>
                     </div>
                     
                     <div className="inquiry-details">
@@ -376,11 +370,11 @@ const CSPage2 = ({
         {/* 새 문의하기 버튼 섹션 */}
         <div className="new-inquiry-section">
           <SketchBtn 
-            variant="primary"
+            variant="event"
             size="small"
             onClick={handleNewInquiryClick}
             className="new-inquiry-btn"
-          >
+          ><HatchPattern opacity={0.4} />
             문의하기
           </SketchBtn>
         </div>

@@ -291,7 +291,7 @@ const SubscriptionPaymentPage = ({
         </div> */}
         <div style={{padding: '20px'}}>
         <SketchBtn 
-          className="full-width" style={{paddingBottom: '20px'}}
+          className="full-width"
           variant="event" 
           size="normal"
           onClick={handleConfirmPay}

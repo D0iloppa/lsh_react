@@ -21,6 +21,7 @@ const FavoritesPage = ({
   const [userInfo, setUserInfo] = useState({});
   const [favorites, setFavorits] = useState([]);
   const [filteredFavorites, setFilteredFavorites] = useState([]); // 초기 빈 배열로
+  const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
 
   // 버튼 클릭 시 필터링
   const handleFilterType = (type) => {
@@ -39,7 +40,7 @@ const FavoritesPage = ({
 
     const fetchFavorits = async () => {
       try {
-        const response = await axios.get('/api/api/getMyFavoriteList', {
+        const response = await axios.get(`${API_HOST}/api/getMyFavoriteList`, {
           params: { user_id: user?.user_id || 1 }
         });
         const data = response.data || [];

@@ -14,12 +14,28 @@ import SketchBtn from '@components/SketchBtn';
 
 import '@components/SketchComponents.css';
 
+
+import ApiClient from '@utils/ApiClient';
+
+
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+
+
 const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+   useEffect(() => {
+
+    
+
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      // setLanguage('en'); // 기본 언어 설정
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
+  }, [messages, currentLang]);
 
 
 
@@ -43,28 +59,32 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
       <div className="mb-6">
         <ImagePlaceholder 
            src={"/cdn/tuto1.png"}
-          className="w-60 h-48"  style={{ border: '2px solid #333', borderRadius: '5px', height: '270px'}}/>
+          className="w-60 h-48"  style={{ border: '2px solid #333', borderRadius: '5px', height: '250px'}}/>
       </div>
 
       {/* 제목 */}
-      <h1 className="sketch-title sketch-title--large" style={{ fontSize: '1.25rem', marginTop :'10px' }}>
-        Welcome to Le Thanh Ton Sheriff!
+      <h1 className="sketch-title sketch-title--large" style={{ fontSize: '1.20rem', marginTop :'10px', marginBottom: '10px' }}>
+        {
+          get('Tutorial1.1')
+          // messages?.['Tutorial1.1']?.msg_kr || 'Welcome to Le Thanh Ton Sheriff!'
+        }
       </h1>
 
       {/* 설명 텍스트 */}
       <p className="sketch-description text-center text-gray-600 leading-relaxed mb-8 transform rotate-1"
         style={{ fontSize: '15px', marginTop :'5px', marginBottom: '20px' }}
       >
-        Discover the best venues and hostesses in Ho Chi Minh 
-        City. Easy booking, real-time info, and exclusive 
-        promotions await you.
+        {
+          get('Tutorial1.2')
+          // messages?.['Tutorial1.2']?.msg_kr || 'Welcome to Le Thanh Ton Sheriff!'
+        }
       </p>
 
       {/* Elite Hostess Club 카드 */}
       <InfoCard 
-         title="Elite Hostess Club"
+         title={"Elite Hostess Club"}
          imageSrc="/cdn/content/mang.png"
-         description="Experience top-notch services with our elite hostesses."
+         description={  get('Tutorial1.5') }
          titleClassName="transform rotate-1"
          descriptionClassName="transform rotate-1"
          imageSize="w-24 h-24"
@@ -75,7 +95,7 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
       <InfoCard 
         title="Vibrant Lounge Bar"
         imageSrc="/cdn/content/qui.png"
-        description="Join us for a night full of fun and great vibes."
+        description={  get('Tutorial1.7') }
         titleClassName="transform -rotate-1"
         descriptionClassName="transform -rotate-1"
         className="mb-8"
@@ -89,7 +109,7 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
           className="sketch-button"
           onClick={onNextScreen}
         >
-          Next Screen
+          { get("btn.next.1") }
         </SketchBtn>
         {/* <HatchPattern /> */}
       </div>

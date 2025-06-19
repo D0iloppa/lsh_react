@@ -11,7 +11,7 @@ const SketchSearch = ({
 }) => {
   return (
     <div className={`search-container ${className}`}>
-      <style jsx="true">{`
+      <style jsx>{`
         .search-container {
           display: flex;
           gap: 0.75rem;
@@ -24,7 +24,7 @@ const SketchSearch = ({
         }
         
         .search-input {
-          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
 
           width: 90%;
           padding: 0.75rem 1rem;

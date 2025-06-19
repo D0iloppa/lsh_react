@@ -6,6 +6,8 @@ import SketchBtn from '@components/SketchBtn';
 import HatchPattern from '@components/HatchPattern';
 import SketchHeader from '@components/SketchHeader';
 
+import { ArrowLeft, BookOpenText } from 'lucide-react';
+
 import Terms_kr from './Terms_kr';
 import Terms_en from './Terms_en';
 
@@ -21,6 +23,18 @@ export default function TermsView() {
   const lang = 'en';
 
   return (
+
+     <>
+      <style jsx="true">{`
+        .teams-container {
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        h1 {margin-bottom:0px;}
+        h2{margin-top:3px;}
+
+       `}</style>
+
     <div className="min-h-screen bg-white flex flex-col">
       {/* 헤더 */}
       <SketchHeader 
@@ -29,20 +43,19 @@ export default function TermsView() {
       />
 
       {/* 메인 컨텐츠 */}
-      <div className="flex-1 px-6 py-8 flex flex-col">
+      <div className="teams-container flex-1 px-6 py-8 flex flex-col">
         {/* 제목 */}
-        <div className="text-center mb-8">
+        <div className="text-center" style={{color: '#1f2937'}}>
           <h1 className="text-xl font-medium text-gray-800 leading-relaxed">
-            Please Review to the
+            <BookOpenText style={{opacity: '0.6'}}/> Please Review to the
           </h1>
           <h2 className="text-xl font-medium text-gray-800 leading-relaxed">
             LeTanTon Sheriff Terms & Conditions
           </h2>
-        </div>
+        </div><HatchPattern />
 
         {/* 약관 내용 박스 */}
         <SketchDiv className="terms flex-1 mb-8 relative">
-          <HatchPattern />
           {(() => {
             switch(lang) {
               case 'kr':
@@ -59,13 +72,14 @@ export default function TermsView() {
         <div className="space-y-3">
           <SketchBtn
             onClick={handleBack}
-            variant="outline"
-            className="w-full border-2 border-gray-800 text-gray-800 bg-white hover:bg-gray-50"
+            variant="secondary"
+            className=""
           >
-            Back
+            <ArrowLeft size={15}/> Back
           </SketchBtn>
         </div>
       </div>
     </div>
+     </>
   );
 }

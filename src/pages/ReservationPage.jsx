@@ -25,8 +25,8 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
 
   // 시간 옵션
   const timeSlots = [
-    '20:00', '20:30', '21:00',
-    '21:30', '22:00', '22:30'
+    '19:00', '20:00', '21:00', '22:00',
+    '23:00', '24:00'
   ];
 
   const handleDateSelect = (date) => {

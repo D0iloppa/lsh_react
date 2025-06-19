@@ -11,11 +11,16 @@ import PopularVenue from '@components/PopularVenue';
 import '@components/SketchComponents.css';
 import './Welcome.css';
 
+
+
 const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    
   }, []);
+
+
 
 
   const navigate = useNavigate();

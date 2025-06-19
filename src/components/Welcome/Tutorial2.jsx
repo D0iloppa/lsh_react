@@ -5,16 +5,23 @@ import ImagePlaceholder from '@components/ImagePlaceholder';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import '@components/SketchComponents.css';
-
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ProgressIndicator from './ProgressIndicator';
 
 // Tutorial2 메인 컴포넌트
 const Tutorial2 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
-  
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      // setLanguage('en'); // 기본 언어 설정
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
+  }, [messages, currentLang]);
+  
 
 
   return (
@@ -28,12 +35,12 @@ const Tutorial2 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
       </div> */}
 
         <div className="">
-          <ImagePlaceholder  src={"/cdn/map-1.png"}  style={{ border: '1px solid #333', borderRadius: '5px',height: '685px'}}/>
+          <ImagePlaceholder  src={"/cdn/map-1.png"}  style={{ border: '1px solid #333', borderRadius: '5px',height: '635px'}}/>
 
           {/* 설명 텍스트 */}
           <p className="description-text">
-            Use the map above to explore various nightlife venues in Ho Chi Minh City. 
-            Click on a marker to learn more about each location and book your visit.
+            { get('Tutorial2.1') }
+            { get('Tutorial2.2') }
           </p>
 
           {/* Next Screen 버튼 */}
@@ -44,7 +51,7 @@ const Tutorial2 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
               className="sketch-button"
               onClick={onNextScreen}
             >
-              {isLast ? 'Get Started' : 'Next Screen'}
+              { get("btn.next.1") }
             </SketchBtn>
           </div>
         </div>

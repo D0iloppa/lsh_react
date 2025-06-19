@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import qs from 'qs';
+
 import { useAuth } from '../contexts/AuthContext';
   
 
@@ -31,17 +33,18 @@ const CSPage1 = ({
 
 
   const { user, isLoggedIn } = useAuth();
+  const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // 폼 기본 제출 동작 방지
   
     try {
-      // INSERT 작업이므로 POST 메소드가 더 적절합니다
-      const response = await axios.post('/api/api/insertSupport', {
-        accountId: user?.user_id || 1,
-        name: formData.name,
-        email: formData.email,
-        contents: formData.message
+      
+      const response = await axios.post(`${API_HOST}/api/insertSupport`, {
+          user_id: user?.user_id || 1,
+          name: formData.name,
+          email: formData.email,
+          contents: formData.message
       });
 
       // 성공 시 처리

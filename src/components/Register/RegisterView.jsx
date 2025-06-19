@@ -182,8 +182,9 @@ export default function RegisterView() {
         fontSize: '0.875rem', 
         color: '#6b7280', 
         textAlign: 'start', 
-        marginBottom: '1rem',
-        marginTop: '0',
+        marginBottom: '5px',
+        marginTop: '5px',
+        marginLeft: '5px',
         lineHeight: '1.4',
         fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"
       }}>
@@ -262,7 +263,7 @@ export default function RegisterView() {
           style={{
             width: '100%',
             padding: '0.5rem',
-            border: '2px solid #374151',
+            border: '1px solid #666',
             borderRadius: '4px',
             fontSize: '1rem',
             fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif",
@@ -315,7 +316,7 @@ export default function RegisterView() {
       </form>
 
       {/* 소셜 로그인 */}
-      <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+      <div style={{ textAlign: 'center', marginTop: '10px' }}>
         <p style={{marginBottom: '0', fontSize: '0.875rem', color: '#6b7280' }}>
           or sign up with
         </p>
@@ -351,7 +352,7 @@ export default function RegisterView() {
       </div>
 
       {/* Login Link */}
-      <div style={{ textAlign: 'center', marginTop: '5px', fontSize: '0.875rem', color: '#6b7280' }}>
+      <div style={{ textAlign: 'center', fontSize: '0.875rem', color: '#6b7280' }}>
         Already have an account?{' '}
         <a 
           href="#" 

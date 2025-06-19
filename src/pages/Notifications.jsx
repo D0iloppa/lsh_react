@@ -123,13 +123,15 @@ const getIcon = () => {
     }
   };
 
+const API_HOST = import.meta.env.VITE_API_HOST;
+
   // 마운트 시 즐겨찾기 가져오기
   useEffect(() => {
     window.scrollTo(0, 0);
 
     const fetchNotifications = async () => {
       try {
-        const response = await axios.get('/api/api/getNotificationList', {
+        const response = await axios.get(`${API_HOST}/api/getNotificationList`, {
           params: { user_id: user?.user_id || 1 }
         });
         setNotifications(response.data || []);

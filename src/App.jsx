@@ -1,7 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+
+
+import { MsgProvider, useMsg  } from '@contexts/MsgContext';
+
+import { AuthProvider, useAuth } from '@contexts/AuthContext';
 
 import PageView from './debug/PageView'
 
@@ -17,6 +21,8 @@ import MainApp from '@layout/MainApp';
 
 const AppRoutes = () => {
   const { isLoggedIn } = useAuth();
+  const { messages } = useMsg();
+
   const navigate = useNavigate();
 
   const handleWelcomeComplete = () => {
@@ -82,9 +88,11 @@ const AppRoutes = () => {
 function App() {
   return (
     <AuthProvider>
-      <Router basename="/lsh">
-        <AppRoutes />
-      </Router>
+      <MsgProvider>  {/* 👈 여기에 추가! */}
+        <Router basename="/lsh">
+          <AppRoutes />
+        </Router>
+      </MsgProvider>
     </AuthProvider>
   );
 }

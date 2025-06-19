@@ -83,7 +83,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
           font-size: 1.5rem;
           font-weight: bold;
           color: #374151;
-          margin-bottom: 1.5rem;
+          margin-top: 20px;
           transform: rotate(-0.5deg);
         }
         .content-section {

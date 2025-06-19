@@ -9,12 +9,17 @@ import SketchHeader from '@components/SketchHeader'
 
 import { User, History, CreditCard, Bell, Heart, Settings, HelpCircle, LogOut  } from 'lucide-react';
 
+import { useAuth } from '../contexts/AuthContext';
 
 const AccountPage = ({ 
   navigateToPageWithData, 
   PAGES,
   ...otherProps 
 }) => {
+
+    
+  
+  const { logout } = useAuth();
 
   const handleBack = () => {
     console.log('Back 클릭');
@@ -166,7 +171,13 @@ const AccountPage = ({
               icon={<LogOut size={20} />}
               name={'Logout'}
               hasArrow={false}
-              onClick={() => console.log('logout')}
+              onClick={() => {
+
+                console.log('logout')
+
+                logout();
+
+              }}
               className={`logout`}
             />
         </div>

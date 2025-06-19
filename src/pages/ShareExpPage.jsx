@@ -157,9 +157,9 @@ const ShareExpPage = ({
         }
 
         .star-button.filled {
-          background-color: #fbbf24;
-          color: #1f2937;
-          border-color: #f59e0b;
+              background: linear-gradient(135deg, #00f0ff, #fff0d8);
+              color: #1f2937;
+              border-color: #778eaf;
         }
 
         .star-button:hover {
