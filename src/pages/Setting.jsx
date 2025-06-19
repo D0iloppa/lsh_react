@@ -7,7 +7,7 @@ import SketchInput from '@components/SketchInput';
 import SketchHeader from '@components/SketchHeader'
 import SketchDiv from '@components/SketchDiv'
 import '@components/SketchComponents.css';
-
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '../contexts/AuthContext';
 import qs from 'qs';
 
@@ -38,9 +38,16 @@ const SettingsPage = ({
     ja: '日本語',
     vi: 'Tiếng Việt',
   };
-
+const { messages, isLoading, error, get, currentLang, availableLanguages, refresh } = useMsg();
   useEffect(() => {
     window.scrollTo(0, 0);
+
+     if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      // setLanguage('en'); // 기본 언어 설정
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
 
      const fetchSetting = async () => {
       try {
@@ -76,7 +83,7 @@ const SettingsPage = ({
   fetchSetting();
 
 
-  }, [user]);
+  }, [user, messages, currentLang]);
 
   const handleBack = () => {
     console.log('Back 클릭');
@@ -287,7 +294,7 @@ const SettingsPage = ({
       <div className="settings-container">
         {/* Header */}
         <SketchHeader 
-          title="Settings"
+          title={ get('Menu1.3') }
           showBack={true}
           onBack={() => console.log("뒤로가기")}
           rightButtons={[]}
@@ -301,7 +308,7 @@ const SettingsPage = ({
           <SketchDiv className="settings-section">
             <HatchPattern opacity={0.4} />
             <div className="section-content">
-              <h2 className="section-title">Language Selection</h2>
+              <h2 className="section-title">{get('Setting1.1')}</h2>
               <select 
                 className="language-select"
                 value={language}
@@ -318,16 +325,16 @@ const SettingsPage = ({
           <SketchDiv className="settings-section">
             <HatchPattern opacity={0.4} />
             <div className="section-content">
-              <h2 className="section-title">Notification Preferences</h2>
+              <h2 className="section-title">{get('Setting1.2')}</h2>
               <ToggleSwitch 
                 checked={receiveUpdates}
                 onChange={setReceiveUpdates}
-                label="Receive Updates"
+                label={get('Setting1.5')}
               />
               <ToggleSwitch 
                 checked={eventAlerts}
                 onChange={setEventAlerts}
-                label="Event Alerts"
+                label={get('Setting1.6')}
               />
             </div>
           </SketchDiv>
@@ -336,15 +343,15 @@ const SettingsPage = ({
           <SketchDiv className="settings-section">
             <HatchPattern opacity={0.4} />
             <div className="section-content">
-              <h2 className="section-title">Account Details</h2>
+              <h2 className="section-title">{get('Setting1.3')}</h2>
              <div className="form-field">
-                <label className="field-label">Email</label>
+                <label className="field-label">{get('title.text.1')}</label>
                 <span style={{ display: 'inline-block', padding: '0.5rem 0' }}>
                   {email || '이메일 없음'}
                 </span>
               </div>
               <div className="form-field">
-                <label className="field-label">Phone Number</label>
+                <label className="field-label">{get('title.text.13')}</label>
                 <SketchInput
                   type="tel"
                   value={phone}
@@ -358,16 +365,16 @@ const SettingsPage = ({
           <SketchDiv className="settings-section">
             <HatchPattern opacity={0.4} />
             <div className="section-content">
-              <h2 className="section-title">Privacy Settings</h2>
+              <h2 className="section-title">{get('Setting1.4')}</h2>
               <ToggleSwitch 
                 checked={shareLocation}
                 onChange={setShareLocation}
-                label="Share Location"
+                label={get('Setting1.7')}
               />
               <ToggleSwitch 
                 checked={showOnlineStatus}
                 onChange={setShowOnlineStatus}
-                label="Show Online Status"
+                label={get('Setting1.8')}
               />
             </div>
           </SketchDiv>
@@ -376,7 +383,7 @@ const SettingsPage = ({
           <div className="logout-section">
             <SketchBtn className="danger" onClick={handleSave}>
               <HatchPattern opacity={0.8} />
-              SAVE
+              {get('btn.save.1')}
             </SketchBtn>
           </div>
         </div>

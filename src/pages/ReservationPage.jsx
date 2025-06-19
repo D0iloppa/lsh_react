@@ -14,13 +14,18 @@ import {
   weeklyTableStyles  // CSS 스타일
 } from '@components/ReservationComponents';
 
-const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
+import { useAuth } from '../contexts/AuthContext';
+  
+
+const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps }) => {
   const { target, id } = otherProps || {};
+  const { user } = useAuth();
 
   // 상태들
   const [attendee, setAttendee] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
+  const [note, setNote] = useState('');
   const [baseDate] = useState(new Date()); // 오늘 날짜 고정
   const [scheduleData, setScheduleData] = useState({});
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
@@ -42,6 +47,10 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
     // ApiClient.get('/api/schedule');
   };
 
+  const handleBack = () => {
+    goBack();
+  }
+
   const handleDateSelect = (fullDate, dayNumber) => {
     setSelectedDate(fullDate);
     setSelectedTime('');
@@ -49,6 +58,8 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
 
   const handleReserve = () => {
     // 예약 처리 로직
+    console.log('reserve', user, target, id, attendee, selectedDate, selectedTime);
+    navigateToPageWithData(PAGES.RESERVATION_SUM, {user, attendee, selectedDate, selectedTime});
   };
 
   return (
@@ -236,7 +247,7 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
         <SketchHeader
           title={'Reservation'}
           showBack={true}
-          onBack={() => console.log('뒤로가기')}
+          onBack={() => handleBack() }
           rightButtons={[]}
         />
 
@@ -259,7 +270,7 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
             variant="event" 
             size="normal" 
             onClick={handleReserve}
-            disabled={!attendee || !selectedDate || !selectedTime}
+            // disabled={!attendee || !selectedDate || !selectedTime}
           >
             RESERVE
             <HatchPattern opacity={0.4} />

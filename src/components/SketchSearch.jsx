@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
 import { ArrowRight, MapPin } from 'lucide-react';
 
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+
 const SketchSearch = ({
+  
   searchQuery,
   setSearchQuery,
   handleSearch,
@@ -9,6 +12,18 @@ const SketchSearch = ({
   placeholder = "Enter venue or location",
   className = ""
 }) => {
+
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  
+    useEffect(() => {
+      if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        // setLanguage('en'); // 기본 언어 설정
+        console.log('Current language set to:', currentLang);
+        window.scrollTo(0, 0);
+      }
+    }, [messages, currentLang]);
+    
   return (
     <div className={`search-container ${className}`}>
       <style jsx>{`
@@ -21,10 +36,11 @@ const SketchSearch = ({
         .search-input-wrapper {
           flex: 1;
           position: relative;
+         
         }
         
         .search-input {
-          font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
 
           width: 90%;
           padding: 0.75rem 1rem;
@@ -52,7 +68,7 @@ const SketchSearch = ({
         
         .location-button {
               width: 50px;
-              height: 53px;
+              height: 43px;
               border: 1px solid #374151;
               background-color: white;
               display: flex;
@@ -72,7 +88,7 @@ const SketchSearch = ({
       <div className="search-input-wrapper">
         <input
           type="text"
-          placeholder={placeholder}
+          placeholder={get('Search1.1')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="search-input"

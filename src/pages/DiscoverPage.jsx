@@ -6,6 +6,7 @@ import HatchPattern from '@components/HatchPattern';
 import SketchHeader from '@components/SketchHeader';
 import GoogleMapComponent from '@components/GoogleMapComponent';
 import SketchBtn from '@components/SketchBtn';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const venueId = otherProps?.venueId || null;
@@ -16,9 +17,18 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
   const handleDetail = (girl) => {
     navigateToPageWithData(PAGES.STAFFDETAIL, girl);
   };
-
+const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   useEffect(() => {
     window.scrollTo(0, 0); 
+
+  if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      // setLanguage('en'); // 기본 언어 설정
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
+
+
     const fetchVenueInfo = async () => {
       if (!venueId) return;
       setLoading(true);
@@ -62,7 +72,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
 
     fetchVenueInfo();
     fetchTopGirls();
-  }, [venueId]);
+  }, [venueId, messages, currentLang]);
 
   const renderStars = (rating = 0) => {
     const stars = [];
@@ -209,13 +219,13 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
           </div>
 
           <div className="action-row">
-            <span className="make-text">Make a</span>
+            <span className="make-text">{get('DiscoverPage1.1')}</span>
             <button
               className="reserve-btn"
               onClick={() =>
                 navigateToPageWithData(PAGES.RESERVATION, {
                   target: 'venue',
-                  id: venueId || 123,
+                  id: venueId || 1,
                 })
               }
             >
@@ -236,7 +246,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
         </div>
 
         <div className="top-girls-section">
-          <div className="section-title">Top Staffs</div>
+          <div className="section-title">{get('DiscoverPage1.2')}</div>
           <RotationDiv interval={5000} swipeThreshold={50} showIndicators={true}  pauseOnHover={true} className="girls-rotation">
             {topGirls.map((girl, index) => (
               <div key={index} className="girl-slide">
@@ -256,7 +266,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
                           variant = 'event' style={{ width: '130px' , marginBottom: '20px'}}
                           onClick={() => handleDetail(girl)}
                         >{<HatchPattern opacity={0.8} />}
-                            Staff Detail
+                            {get('DiscoverPage1.3')}
                         </SketchBtn>
               </div>
             ))}

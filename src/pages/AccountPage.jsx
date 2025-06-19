@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchMenuBtn from '@components/SketchMenuBtn';
 import '@components/SketchComponents.css';
 
-
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import SketchHeader from '@components/SketchHeader'
 
 import { User, History, CreditCard, Bell, Heart, Settings, HelpCircle, LogOut  } from 'lucide-react';
@@ -17,9 +17,17 @@ const AccountPage = ({
   ...otherProps 
 }) => {
 
-    
-  
   const { logout } = useAuth();
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+  useEffect(() => {
+      if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        // setLanguage('en'); // 기본 언어 설정
+        console.log('Current language set to:', currentLang);
+        window.scrollTo(0, 0);
+      }
+    }, [messages, currentLang]);
 
   const handleBack = () => {
     console.log('Back 클릭');
@@ -57,49 +65,49 @@ const AccountPage = ({
     {
       id: 1,
       icon: <User size={20} />,
-      name: "Profile",
+      name: get('Menu1.5'),
       isRead: true,
       hasArrow: false
     },
     {
       id: 2,
       icon: <History size={20} />,
-      name: "Booking History",
+      name: get('Menu1.6'),
       isRead: true,
       hasArrow: false
     },
     {
       id: 3,
       icon: <CreditCard size={20} />,
-      name: "Payment",
+      name:  get('Menu1.7'),
       isRead: true,
       hasArrow: false
     },
     {
       id: 4,
       icon: <Bell size={20} />,
-      name: "Notifications",
+      name: get('Notification1.1'),
       isRead: false,
       hasArrow: false
     },
     {
       id: 5,
       icon: <Heart size={20} />,
-      name: "Favorites",
+      name: get('Menu1.8'),
       isRead: true,
       hasArrow: false
     },
     {
       id: 6,
       icon: <Settings size={20} />,
-      name: "Settings",
+      name: get('Menu1.3'),
       isRead: true,
       hasArrow: false
     },
     {
       id: 7,
       icon: <HelpCircle size={20} />,
-      name: "Support",
+      name: get('Menu1.9'),
       isRead: true,
       hasArrow: false
     }
@@ -147,7 +155,7 @@ const AccountPage = ({
         
         {/* Header */}
         <SketchHeader 
-          title="Account"
+          title= { get('Menu1.4') }
           showBack={true}
           onBack={() => console.log("뒤로가기")}
           rightButtons={[]}
@@ -169,7 +177,7 @@ const AccountPage = ({
           <SketchMenuBtn
               key={'logout'}
               icon={<LogOut size={20} />}
-              name={'Logout'}
+              name={get('Menu1.10')}
               hasArrow={false}
               onClick={() => {
 

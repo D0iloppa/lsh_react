@@ -7,19 +7,40 @@ import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import '@components/SketchComponents.css';
 
-const StaffDetailPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+
+const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps }) => {
   const [date, setDate] = useState('');
   const [partySize, setPartySize] = useState('');
   const girl = otherProps || {};
-
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const getAgeFromBirthYear = (birthYear) => {
     const currentYear = new Date().getFullYear();
     return birthYear ? currentYear - parseInt(birthYear, 10) : null;
   };
 
+  const handleBack = () => {
+    goBack();
+  }
+
+  const handleReserve = () => {
+
+    console.log(girl);
+    navigateToPageWithData(PAGES.RESERVATION, {
+      target: 'staff',
+      id: girl.staff_id || 123,
+    })
+  }
+
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+     if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      // setLanguage('en'); // 기본 언어 설정
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
+  }, [messages, currentLang]);
 
   return (
     <>
@@ -113,29 +134,40 @@ const StaffDetailPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
 
       <div className="staff-detail-container">
         <SketchHeader
-          title={'STAFF PROFILE'}
+          title={get('Menu1.2')}
           showBack={true}
-          onBack={() => console.log('뒤로가기')}
+          onBack={handleBack}
           rightButtons={[]}
         />
 
         <div className="profile-images-section">
           <RotationDiv 
-            interval={3000} 
-            showIndicators={true}
+            interval={5000} 
+            swipeThreshold={50} 
+            showIndicators={true}  
             pauseOnHover={true}
             className="profile-rotation"
           >
-            <div className="profile-slide">
-              <div className="dual-image-container">
-                <div className="image-left">
-                  <ImagePlaceholder
-                    src={girl.image_url || '/placeholder-girl1.jpg'}
-                    className="profile-image"
-                  />
+            {(() => {
+              const images = girl.images || [girl.image_url];
+              const hasMultipleImages = images.length > 1;
+              
+              // 이미지가 1개면 같은 이미지를 3-4번 복제
+              const slidesToShow = hasMultipleImages ? images : Array(4).fill(images[0]);
+              
+              return slidesToShow.map((imageUrl, index) => (
+                <div key={index} className="profile-slide">
+                  <div className="dual-image-container">
+                    <div className="image-left">
+                      <ImagePlaceholder
+                        src={imageUrl || '/placeholder-girl1.jpg'}
+                        className="profile-image"
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              ));
+            })()}
           </RotationDiv>
         </div>
 
@@ -144,7 +176,7 @@ const StaffDetailPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
           <div className="staff-age">
             {girl.birth_year ? `Age ${getAgeFromBirthYear(girl.birth_year)}` : 'Age N/A'}
           </div>
-          <div className="staff-specialty">Specialty Mixology Customer Relations</div>
+          <div className="staff-specialty">{get('StaffDetail1.1')}</div>
           <div className="staff-description">
             {girl.description || 'No description available.'}
           </div>
@@ -153,11 +185,9 @@ const StaffDetailPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
         <div className="booking-form-section">
           <SketchBtn
             className="full-width" variant = 'event'
-            onClick={() => {
-              navigateToPageWithData(PAGES.RESERVATION, {});
-            }}
+            onClick={handleReserve}
           >
-            Reserve Now
+            {get('btn.reserve.1')}
             <HatchPattern opacity={0.8} />
           </SketchBtn>
         </div>

@@ -7,6 +7,7 @@ import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
 import SketchInput from '@components/SketchInput';
 import GoogleMapComponent from '@components/GoogleMapComponent';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSearch = () => {}, initialKeyword = '' }) => {
   const [searchQuery, setSearchQuery] = useState(initialKeyword); 
@@ -37,14 +38,23 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
       console.error('장소 목록 불러오기 실패:', error);
     }
   };
-  
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
   useEffect(() => {
+
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      // setLanguage('en'); // 기본 언어 설정
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
+
     if (initialKeyword) {
       fetchPlaces(initialKeyword); // 초기 keyword로 검색
     } else {
       fetchPlaces();
     }
-  }, [initialKeyword]);
+  }, [initialKeyword, messages, currentLang]);
 
   const handleSearch = (e) => {
     fetchPlaces(searchQuery);
@@ -260,7 +270,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
             <div className="map-venue-count-bottom">
               <SketchDiv className="venues-count sketch-div sketch-div--default">
                 <HatchPattern opacity={0.4} />
-                <span className="count-text">{venueCount} venues found</span>
+                <span className="count-text">{venueCount} {get('MapPage1.1')}</span>
               </SketchDiv>
             </div>
 

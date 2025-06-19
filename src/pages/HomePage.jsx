@@ -1,17 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Star, Heart, ArrowRight } from 'lucide-react';
-
+import GoogleMapComponent from '@components/GoogleMapComponent';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import SketchSearch from '@components/SketchSearch';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+
 const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAGES }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [hotspots, setHotspots] = useState([]);
-
+const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   useEffect(() => {
+    if (messages && Object.keys(messages).length > 0) {
+          console.log('✅ Messages loaded:', messages);
+          // setLanguage('en'); // 기본 언어 설정
+          console.log('Current language set to:', currentLang);
+          window.scrollTo(0, 0);
+        }
+
     const fetchHotspots = async () => {
       try {
         const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
@@ -31,7 +40,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
       }
     };
     fetchHotspots();
-  }, []);
+  }, [messages, currentLang]);
 
   const handleSearch = () => {
     navigateToMap({
@@ -80,7 +89,8 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
           border-bottom-left-radius: 8px 11px;
         }
         .hero-title {
-          font-size: 1.5rem;
+          text-align: center;
+          font-size: 1.55rem;
           font-weight: bold;
           color: #374151;
           margin-top: 20px;
@@ -190,7 +200,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
         {/* Hero Section */}
         <section className="hero-section">
           <HatchPattern opacity={0.3} />
-          <h1 className="hero-title">Explore LeTanTon bars and beautiful Staffs</h1>
+          <h1 className="hero-title">{get('HomePage1.1')}</h1>
           <SketchSearch
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
@@ -201,7 +211,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
 
         {/* Hotspots */}
         <section className="content-section">
-          <h2 className="section-title" style={{margin: '0', marginTop: '26px', fontSize: '21px'}}>Hotspots near you</h2>
+          <h2 className="section-title" style={{margin: '0', marginTop: '26px', fontSize: '21px'}}>{get('HomePage1.2')}</h2>
           {hotspots.map((spot) => (
             <div className="card" key={spot.id}>
               <ImagePlaceholder src={spot.image} alt={spot.name} />
@@ -221,7 +231,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
                 <SketchBtn className="discover-btn" onClick={() => handleDiscover(spot.id)}>
                   {<HatchPattern opacity={0.8} />}
                      <div className="flex justify-center ">
-                      <span>DISCOVER</span>
+                      <span>{get('HomePage1.3')}</span>
                       <ArrowRight
                           size={20}
                           strokeWidth={1.5}

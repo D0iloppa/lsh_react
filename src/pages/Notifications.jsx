@@ -5,7 +5,7 @@ import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
-
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import SketchHeader from '@components/SketchHeader'
 
 import { useAuth } from '../contexts/AuthContext';
@@ -124,10 +124,17 @@ const getIcon = () => {
   };
 
 const API_HOST = import.meta.env.VITE_API_HOST;
-
+const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   // 마운트 시 즐겨찾기 가져오기
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      // setLanguage('en'); // 기본 언어 설정
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
 
     const fetchNotifications = async () => {
       try {
@@ -141,7 +148,7 @@ const API_HOST = import.meta.env.VITE_API_HOST;
     };
 
     fetchNotifications();
-  }, []);
+  }, [messages, currentLang]);
 
   // favorites가 업데이트되면 filteredFavorites도 초기화
   useEffect(() => {
@@ -214,7 +221,7 @@ const API_HOST = import.meta.env.VITE_API_HOST;
         }
 
         .filter-section {
-          display: flex;
+          // display: flex;
           padding: 17px 10px;
           border-bottom: 2px solid #e5e7eb;
         }
@@ -323,7 +330,7 @@ const API_HOST = import.meta.env.VITE_API_HOST;
       <div className="notifications-container">
         {/* Header */}
         <SketchHeader
-          title="Notifications"
+          title={ get('Notification1.1') }
           showBack={true}
           onBack={() => {
             // goBack();
@@ -341,7 +348,7 @@ const API_HOST = import.meta.env.VITE_API_HOST;
                          onClick={() => handleFilterType("ALL")}
                        >
                          <HatchPattern opacity={0.4} />
-                         ALL
+                         {get('btn.all.1')}
                        </SketchBtn>
                        <SketchBtn 
                          variant="secondary" 
@@ -349,7 +356,7 @@ const API_HOST = import.meta.env.VITE_API_HOST;
                          onClick={() => handleFilterType("1")}
                        >
                          <HatchPattern opacity={0.4} />
-                         BOOKING
+                         {get('btn.booking.1')}
                        </SketchBtn>
                        
                        <SketchBtn 
@@ -358,7 +365,7 @@ const API_HOST = import.meta.env.VITE_API_HOST;
                          onClick={() => handleFilterType("2")}
                        >
                          <HatchPattern opacity={0.4} />
-                         PROMOTION
+                         {get('btn.promotion.1')}
                        </SketchBtn>
                        
                        <SketchBtn 
@@ -367,7 +374,7 @@ const API_HOST = import.meta.env.VITE_API_HOST;
                          onClick={() => handleFilterType("3")}
                        >
                          <HatchPattern opacity={0.4} />
-                         ALERT
+                         {get('btn.alert.1')}
                        </SketchBtn>
                      </div>
          

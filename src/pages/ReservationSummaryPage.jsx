@@ -7,6 +7,7 @@ import SketchHeader from '@components/SketchHeader';
 
 const ReserveSummaryPage = ({ 
   navigateToPageWithData, 
+  goBack,
   PAGES, 
   reservationData = {
     date: '15th Nov',
@@ -27,6 +28,10 @@ const ReserveSummaryPage = ({
     // 예약 확정 로직
     navigateToPageWithData && navigateToPageWithData(PAGES.SUBSCRIPTION_PAY, { confirmed: true });
   };
+
+  const handleBack = () => {
+    goBack();
+  }
 
   return (
     <>
@@ -145,7 +150,7 @@ const ReserveSummaryPage = ({
         <SketchHeader
                   title={'Booking Summary'}
                   showBack={true}
-                  onBack={() => console.log('뒤로가기')}
+                  onBack={() => handleBack()}
                   rightButtons={[]}
                 />
         {/* <div className="header">
