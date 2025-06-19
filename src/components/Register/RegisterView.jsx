@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 
 
@@ -13,8 +13,25 @@ import SketchHeader from '@components/SketchHeader';
 
 import qs from 'qs';
 
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+
 
 export default function RegisterView() {
+
+  const { messages, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();  
+  
+  useEffect(() => {
+  window.scrollTo(0, 0);
+  
+  
+      if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        // setLanguage('en'); // 기본 언어 설정
+        console.log('Current language set to:', currentLang);
+        window.scrollTo(0, 0);
+      }
+    }, [messages, currentLang]);
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -172,7 +189,7 @@ export default function RegisterView() {
   return (
     <div className="register-container max-w-md mx-auto bg-white border-gray-800 p-6">
       <SketchHeader 
-        title="Register Member"
+        title={  get('Menu1.1') }
         showBack={true}
         onBack={() => navigate(-1)}
         rightButtons={[]}
@@ -186,10 +203,10 @@ export default function RegisterView() {
         marginTop: '5px',
         marginLeft: '5px',
         lineHeight: '1.4',
-        fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"
+        fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"
       }}>
-        Join us to explore the vibrant nightlife of Vietnam. <br />
-        Sign up now to receive exclusive updates on events and reservations.
+        {get('Register1.1')}
+        {get('Register1.2')}
       </p>
 
       <form onSubmit={onSubmit}>
@@ -202,7 +219,7 @@ export default function RegisterView() {
         )}
 
         {/* Email Input */}
-        <p style={{ margin:'0', fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Email *</p>
+        <p style={{ margin:'0', fontSize: '13px', fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.1')} *</p>
         <SketchInput
           type="email"
           name="email"
@@ -215,7 +232,7 @@ export default function RegisterView() {
         />
 
         {/* Password Input */}
-        <p style={{ margin:'0', fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Password *</p>
+        <p style={{ margin:'0', fontSize: '13px', fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.2')} *</p>
         <SketchInput
           type="password"
           name="password"
@@ -228,7 +245,7 @@ export default function RegisterView() {
         />
 
         {/* Re-Password Input */}
-        <p style={{ margin:'0', fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Confirm Password *</p>
+        <p style={{ margin:'0', fontSize: '13px', fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.3')} *</p>
         <SketchInput
           type="password"
           name="rePassword"
@@ -241,7 +258,7 @@ export default function RegisterView() {
         />
 
         {/* Nickname Input (Optional) */}
-        <p style={{ margin:'0', fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Nickname (optional)</p>
+        <p style={{ margin:'0', fontSize: '13px', fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.4')}</p>
         <SketchInput
           type="text"
           name="nickname"
@@ -254,7 +271,7 @@ export default function RegisterView() {
         />
 
         {/* Gender Select (Optional) */}
-        <p style={{ margin:'0', fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Gender (optional)</p>
+        <p style={{ margin:'0', fontSize: '13px', fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.5')}</p>
         <select
           name="gender"
           value={formData.gender}
@@ -266,18 +283,18 @@ export default function RegisterView() {
             border: '1px solid #666',
             borderRadius: '4px',
             fontSize: '1rem',
-            fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif",
             marginBottom: '1rem',
-            backgroundColor: '#fff'
+            backgroundColor: '#fff',
+            fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"
           }}
         >
-          <option value="">Select Gender</option>
-          <option value="M">Male</option>
-          <option value="F">Female</option>
+          <option value="">{get('title.text.6')}</option>
+          <option value="M">{get('title.text.7')}</option>
+          <option value="F">{get('title.text.8')}</option>
         </select>
 
         {/* Birth Date Input (Optional) */}
-        <p style={{ margin:'0', fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Birth Date (optional)</p>
+        <p style={{ margin:'0', fontSize: '13px', fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.9')}</p>
         <SketchInput
           type="date"
           name="birth_date"
@@ -291,8 +308,8 @@ export default function RegisterView() {
         />
 
         {/* Phone Input (Optional) */}
-        <p style={{ margin:'0', fontFamily: "'Kalam', 'Comic Sans MS', cursive, sans-serif"}}>Phone (optional)</p>
-        <SketchInput
+        <p style={{ margin:'0', fontSize: '13px', fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.10')}</p>
+        <SketchInput style={{ fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif" }}
           type="tel"
           name="phone"
           value={formData.phone}
@@ -311,14 +328,14 @@ export default function RegisterView() {
           disabled={isLoading}
         >
           <HatchPattern opacity={0.8} />
-          {isLoading ? 'Signing up...' : 'SIGN UP'}
+          {get('title.text.11')}
         </SketchBtn>
       </form>
 
       {/* 소셜 로그인 */}
-      <div style={{ textAlign: 'center', marginTop: '10px' }}>
+      <div style={{ textAlign: 'center', marginTop: '10px' , fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>
         <p style={{marginBottom: '0', fontSize: '0.875rem', color: '#6b7280' }}>
-          or sign up with
+          {get('title.text.12')}
         </p>
         
         <div style={{ display: 'flex', justifyContent: 'center'}}>

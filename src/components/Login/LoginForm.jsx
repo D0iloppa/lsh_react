@@ -1,20 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // import { handleLogin, handleForgotPassword } from './login';
 
 import { useAuth } from '@contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import SketchInput from '@components/SketchInput';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 
 export default function LoginForm() {
+
+const { messages, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+  useEffect(() => {
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      // setLanguage('en'); // 기본 언어 설정
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
+  }, [messages, currentLang]);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
+  
 
   const { login, loading } = useAuth(); // ← AuthContext 사용
   const navigate = useNavigate();
@@ -61,7 +74,7 @@ export default function LoginForm() {
 
   return (
     <>
-      <h2 className="sketch-title">Login</h2>
+      <h2 className="sketch-title">{ get('Login1.1') }</h2>
       
       <form onSubmit={onSubmit}>
         {/* General Error/Success Message */}
@@ -75,7 +88,7 @@ export default function LoginForm() {
         {/* Email Input */}
         <SketchInput
           type="email"
-          placeholder="Email"
+          placeholder={get('title.text.1')}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isLoading}
@@ -86,7 +99,7 @@ export default function LoginForm() {
         {/* Password Input */}
         <SketchInput
           type="password"
-          placeholder="Password"
+          placeholder={get('title.text.2')}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           disabled={isLoading}
@@ -101,7 +114,7 @@ export default function LoginForm() {
           variant = 'event' 
           disabled={isLoading}
         >{<HatchPattern opacity={0.8} />}
-          {isLoading ? 'Logging in...' : 'LOGIN'}
+          { get('Login1.1') }
         </SketchBtn>
       </form>
 
@@ -113,13 +126,13 @@ export default function LoginForm() {
           disabled={isLoading}
           className="sketch-btn sketch-btn--secondary"
         >
-          Forgot Password?
+          { get('Login1.2') }
         </button>
       </div>
 
       {/* Sign Up Link */}
-      <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.875rem', color: '#6b7280' }}>
-        Don't have an account?{' '}
+      <div style={{ textAlign: 'center', fontSize: '0.875rem', color: '#6b7280', marginTop: '10px' }}>
+        { get('Login1.3') }{' '}
         {/* <a href="#" className="sketch-link sketch-link--primary">Sign Up</a> */}
          <a 
           href="#" 
@@ -129,7 +142,7 @@ export default function LoginForm() {
             navigate('/register');
           }}
         >
-          Sign Up
+          { get('Welcome1.3') }
         </a>
       </div>
     </>

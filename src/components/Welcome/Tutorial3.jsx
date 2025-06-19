@@ -11,17 +11,19 @@ import { Weight } from 'lucide-react';
 
 const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
   
-  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();    
 
   useEffect(() => {
-       if (messages && Object.keys(messages).length > 0) {
-      console.log('✅ Messages loaded:', messages);
-      // setLanguage('en'); // 기본 언어 설정
-      console.log('Current language set to:', currentLang);
-      window.scrollTo(0, 0);
-    }
-  }, []);
-
+  window.scrollTo(0, 0);
+  
+  
+      if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        // setLanguage('en'); // 기본 언어 설정
+        console.log('Current language set to:', currentLang);
+        window.scrollTo(0, 0);
+      }
+    }, [messages, currentLang]);
 
   return (
 
@@ -41,14 +43,12 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
       <SketchDiv variant="container">
         <HatchPattern opacity={0.3} />
         <div style={{ position: 'relative', zIndex: 10 }}>
-          <h3 className="welcome-title">
-            Welcome to Our Venue Booking System
+          <h3 className="welcome-title" style={{fontSize: '17px'}}>
+            {get('Tutorial3.1')}
           </h3>
           <p className="welcome-description">
-            Whether you're planning a night out or organizing an event,
-            our platform allows you to effortlessly select the perfect venue,
-            choose the right staff, and schedule your event at your convenience.
-            Enjoy a seamless booking experience and make your occasion unforgettable!
+            {get('Tutorial3.2')}
+            {get('Tutorial3.3')}
           </p>
         </div>
       </SketchDiv>
@@ -67,7 +67,7 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
             className="sketch-button"  variant = 'event' 
             onClick={onNextScreen}
           >
-            Enjoy Letan ton Sheriff!
+            {get('Tutorial3.4')}
           </SketchBtn>
           {/* <HatchPattern /> */}
         </div>

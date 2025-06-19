@@ -1,65 +1,80 @@
-import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
-
+import React, { useState, useEffect } from 'react';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
+import SketchDiv from '@components/SketchDiv';
+
 import '@components/SketchComponents.css';
 import SketchHeader from '@components/SketchHeader';
+import ApiClient from '@utils/ApiClient';
 
-
+// 새로운 컴포넌트 import
+import { 
+  ReservationForm, 
+  generateTimeSlots,
+  weeklyTableStyles  // CSS 스타일
+} from '@components/ReservationComponents';
 
 const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
+  const { target, id } = otherProps || {};
+
+  // 상태들
   const [attendee, setAttendee] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
+  const [baseDate] = useState(new Date()); // 오늘 날짜 고정
+  const [scheduleData, setScheduleData] = useState({});
+  const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
 
-  // 달력 데이터 (예시)
-  const calendarDays = [
-    'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa',
-    '', '', '', '', '', 1, 2,
-    3, 4, 5, 6, 7, 8, 9,
-    10, 11, 12, 13, 14, 15, 16,
-    17, 18, 19, 20, 21, 22, 23,
-    24, 25, 26, 27, 28, 29, 30,
-    31, '', '', '', '', '', ''
-  ];
-
-  // 시간 옵션
-  const timeSlots = [
-    '19:00', '20:00', '21:00', '22:00',
-    '23:00', '24:00'
-  ];
-
-  const handleDateSelect = (date) => {
-    if (date && typeof date === 'number') {
-      setSelectedDate(date);
-    }
-  };
-
-  const handleTimeSelect = (time) => {
-    setSelectedTime(time);
-  };
-
-  const handleReserve = () => {
-    console.log('Reservation:', { attendee, selectedDate, selectedTime });
-
-    navigateToPageWithData(PAGES.RESERVATION_SUM, {attendee, selectedDate, selectedTime})
-  };
+  // 시간 슬롯 생성
+  const timeSlots = generateTimeSlots();
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
-  
+    if (target && id) {
+      loadScheduleData();
+    }
+  }, [target, id]);
+
+  const loadScheduleData = async () => {
+    // 스케줄 데이터 로딩 로직
+    console.log('load',target, id);
+
+    // ApiClient.get('/api/schedule');
+  };
+
+  const handleDateSelect = (fullDate, dayNumber) => {
+    setSelectedDate(fullDate);
+    setSelectedTime('');
+  };
+
+  const handleReserve = () => {
+    // 예약 처리 로직
+  };
+
   return (
     <>
       <style jsx="true">{`
+        ${weeklyTableStyles}  /* 주간 테이블 CSS 추가 */
+        
+        
+        .sketch-btn.disabled {
+          opacity: 0.4 !important;
+          background-color: #f3f4f6 !important;
+          color: #9ca3af !important;
+          cursor: not-allowed !important;
+          pointer-events: none !important;
+        }
+
+        .sketch-btn.disabled:hover {
+          background-color: #f3f4f6 !important;
+          border-color: #e5e7eb !important;
+        }
+
         .reservation-container {
           max-width: 28rem;
           margin: 0 auto;
           background-color: white;
-          min-height: 100vh;
           position: relative;
-
-          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .header {
@@ -85,7 +100,6 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
         }
 
         .main-title {
-        
           font-size: 1.2rem;
           font-weight: bold;
           margin: 0;
@@ -93,7 +107,6 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
         }
 
         .sub-title {
-         
           font-size: 0.9rem;
           color: #6b7280;
           margin: 0.25rem 0 0 0;
@@ -105,14 +118,6 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
 
         .form-step {
           margin-bottom: 2rem;
-
-          //  border-top-left-radius: 12px 7px;
-          // border-top-right-radius: 6px 14px;
-          // border-bottom-right-radius: 10px 5px;
-          // border-bottom-left-radius: 8px 11px;
-          // width: 100%;
-          // padding: 0.75rem;
-          // border: 1px solid #1f2937;
         }
 
         .step-number {
@@ -130,7 +135,6 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
         }
 
         .step-label {
-         
           font-size: 1rem;
           font-weight: bold;
           color: #1f2937;
@@ -148,10 +152,8 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
           width: 100%;
           padding: 0.75rem;
           border: 1px solid #1f2937;
-          /* border-radius: 3px; */
           background-color: white;
           cursor: pointer;
-
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
@@ -168,7 +170,6 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
           align-items: center;
           justify-content: center;
           font-size: 0.8rem;
-          
         }
 
         .calendar-header {
@@ -187,7 +188,13 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
 
         .calendar-date.selected {
           background-color: #1f2937;
+          border-radius: 2px;
           color: white;
+        }
+
+        .calendar-date.disabled {
+          opacity: 0.3;
+          cursor: not-allowed;
         }
 
         .time-grid {
@@ -202,13 +209,19 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
         }
 
         .form-step-3 { 
-            padding: 8px;
-            border: 1px solid #333;
-            border-top-left-radius: 12px 7px;
-              border-top-right-radius: 6px 14px;
-              border-bottom-right-radius: 10px 5px;
-              border-bottom-left-radius: 8px 11px;}
+          padding: 8px;
+          border: 1px solid #333;
+          border-top-left-radius: 12px 7px;
+          border-top-right-radius: 6px 14px;
+          border-bottom-right-radius: 10px 5px;
+          border-bottom-left-radius: 8px 11px;
+        }
 
+        .loading-overlay {
+          position: relative;
+          opacity: 0.6;
+          pointer-events: none;
+        }
 
         @media (max-width: 480px) {
           .reservation-container {
@@ -220,102 +233,38 @@ const ReservationPage = ({ navigateToPageWithData, PAGES, ...otherProps }) => {
       `}</style>
 
       <div className="reservation-container">
-        {/* Header */}
-         <SketchHeader
-                  title={'Reservation'}
-                  showBack={true}
-                  onBack={() => console.log('뒤로가기')}
-                  rightButtons={[]}
-                />
-        {/* <div className="header">
-          <button className="back-button">
-            &lt;
-          </button>
-          <div className="header-content">
-            <h1 className="main-title">Reserve Your Night Out</h1>
-            <p className="sub-title">Hanoi Night Market</p>
-          </div>
-        </div> */}
+        <SketchHeader
+          title={'Reservation'}
+          showBack={true}
+          onBack={() => console.log('뒤로가기')}
+          rightButtons={[]}
+        />
 
-        {/* Form Section */}
-        <div className="form-section">
-          {/* Step 1: Attendee */}
-          <div className="form-step">
-            <div className="step-label">
-              <span className="step-number">1</span>
-              Attendee
-            </div>
-            <select 
-              className="attendee-select"
-              value={attendee}
-              onChange={(e) => setAttendee(e.target.value)}
-            >
-              <option value="">Select number of people</option>
-              <option value="1">1 person</option>
-              <option value="2">2 people</option>
-              <option value="3">3 people</option>
-              <option value="4">4 people</option>
-              <option value="5">5+ people</option>
-            </select>
-          </div>
+        <ReservationForm
+          attendee={attendee}
+          onAttendeeChange={setAttendee}
+          baseDate={baseDate}
+          selectedDate={selectedDate}
+          onDateSelect={handleDateSelect}
+          timeSlots={timeSlots}
+          selectedTime={selectedTime}
+          onTimeSelect={setSelectedTime}
+          disabledDates={[]} // 비활성화할 날짜들
+          disabledTimes={[]} // 비활성화할 시간들
+        />
 
-          {/* Step 2: Select Date */}
-          <div className="form-step">
-            <div className="step-label">
-              <span className="step-number">2</span>
-              Select
-            </div>
-            <div className="calendar-grid">
-              {calendarDays.map((day, index) => (
-                <div 
-                  key={index} 
-                  className={`calendar-day ${
-                    index < 7 ? 'calendar-header' : 
-                    day && typeof day === 'number' ? 'calendar-date' : ''
-                  } ${selectedDate === day ? 'selected' : ''}`}
-                  onClick={() => handleDateSelect(day)}
-                >
-                  {day}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Step 3: Choose Time */}
-          <div className="form-step-3">
-            <div className="step-label">
-              <span className="step-number">3</span>
-              Choose
-            </div>
-            <div className="time-grid">
-              {timeSlots.map((time, index) => (
-                <SketchBtn
-                  key={index}
-                  variant={selectedTime === time ? 'accent' : 'secondary'}
-                  size="small"
-                  onClick={() => handleTimeSelect(time)}
-                >
-                   <HatchPattern opacity={0.4} />
-                  {time}
-                </SketchBtn>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Reserve Button */}
         <div className="reserve-section">
           <SketchBtn 
             className="full-width" 
             variant="event" 
             size="normal" 
             onClick={handleReserve}
+            disabled={!attendee || !selectedDate || !selectedTime}
           >
             RESERVE
             <HatchPattern opacity={0.4} />
           </SketchBtn>
         </div>
-
       </div>
     </>
   );

@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import SketchDiv from '@components/SketchDiv';
 import SketchBtn from '@components/SketchBtn';
 import HatchPattern from '@components/HatchPattern';
 import SketchHeader from '@components/SketchHeader';
-
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { ArrowLeft, BookOpenText } from 'lucide-react';
 
 import Terms_kr from './Terms_kr';
@@ -21,6 +21,17 @@ export default function TermsView() {
   };
 
   const lang = 'en';
+
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  
+    useEffect(() => {
+      if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        // setLanguage('en'); // 기본 언어 설정
+        console.log('Current language set to:', currentLang);
+        window.scrollTo(0, 0);
+      }
+    }, [messages, currentLang]);
 
   return (
 
@@ -38,20 +49,20 @@ export default function TermsView() {
     <div className="min-h-screen bg-white flex flex-col">
       {/* 헤더 */}
       <SketchHeader 
-        title="Terms & Conditions"
+         title={get('Footer1.2')}
         onBack={handleBack}
       />
 
       {/* 메인 컨텐츠 */}
       <div className="teams-container flex-1 px-6 py-8 flex flex-col">
         {/* 제목 */}
-        <div className="text-center" style={{color: '#1f2937'}}>
-          <h1 className="text-xl font-medium text-gray-800 leading-relaxed">
-            <BookOpenText style={{opacity: '0.6'}}/> Please Review to the
+        <div className="text-center" style={{color: '#1f2937' , fontSize: '13px'}}>
+          <h1 className="text-xl font-medium text-gray-800 leading-relaxed" style={{ marginBottom:'20px'}}>
+            <BookOpenText style={{opacity: '0.6'}}/>  { get('Terms1.1') }
           </h1>
-          <h2 className="text-xl font-medium text-gray-800 leading-relaxed">
+          {/* <h2 className="text-xl font-medium text-gray-800 leading-relaxed">
             LeTanTon Sheriff Terms & Conditions
-          </h2>
+          </h2> */}
         </div><HatchPattern />
 
         {/* 약관 내용 박스 */}
@@ -75,7 +86,7 @@ export default function TermsView() {
             variant="secondary"
             className=""
           >
-            <ArrowLeft size={15}/> Back
+            <ArrowLeft size={15}/> { get("btn.back.1") }
           </SketchBtn>
         </div>
       </div>

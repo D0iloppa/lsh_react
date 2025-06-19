@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchInput from '@components/SketchInput';
@@ -8,12 +10,35 @@ import '@components/SketchComponents.css';
 import SketchHeader from '@components/SketchHeader'
 import { Share, Filter, Star, Heart, ArrowRight } from 'lucide-react';
 
+import { useAuth } from '../contexts/AuthContext';
+
 const PromotionsPage = ({ 
   navigateToPageWithData, 
   PAGES,
   ...otherProps 
 }) => {
   const [filterQuery, setFilterQuery] = useState('');
+  const {user, isLoggedIn } = useAuth();
+  const [promotions, setPromotion] = useState({});
+  const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
+    
+    useEffect(() => {
+    window.scrollTo(0, 0);
+
+    const fetchPromotion = async () => {
+      try {
+        const response = await axios.get(`${API_HOST}/api/getPromotion`, {
+          params: {  }
+        });
+        setPromotion(response.data || {});
+      } catch (error) {
+        console.error('프로모션 정보 불러오기 실패:', error);
+      }
+    };
+
+    fetchPromotion();
+
+  }, [user]);
 
   const handleHome = () => {
     console.log('Home 클릭');
@@ -41,33 +66,6 @@ const PromotionsPage = ({
     console.log('Share clicked:', promotion);
     // 공유 기능
   };
-
-  const promotions = [
-    {
-      id: 1,
-      title: 'Rooftop Bash',
-      date: 'Dec 14, 2023',
-      time: '9 PM',
-      location: 'Hanoi Sky Bar',
-      image: '/cdn/mang.png'
-    },
-    {
-      id: 2,
-      title: 'Jazz Night',
-      date: 'Dec 15, 2023',
-      time: '8 PM',
-      location: 'Saigon Lounge',
-      image: '/cdn/qui.png'
-    },
-    {
-      id: 3,
-      title: 'Beach Party',
-      date: 'Dec 16, 2023',
-      time: '6 PM',
-      location: 'Da Nang Beach Club',
-      image: '/cdn/skybar.png'
-    }
-  ];
 
   return (
     <>
@@ -333,7 +331,7 @@ const PromotionsPage = ({
       <div className="promotions-container">
         {/* Header */}
         <SketchHeader 
-          title="Event List"
+          title="Promotions"
           showBack={false}
           onBack={() => console.log("뒤로가기")}
           rightButtons={[]}
@@ -348,7 +346,7 @@ const PromotionsPage = ({
               <div className="filter-input">
                 <SketchInput
                   type="text"
-                  placeholder="Filter by category"
+                  placeholder="Search keyword"
                   value={filterQuery}
                   onChange={(e) => setFilterQuery(e.target.value)}
                 />
@@ -377,7 +375,7 @@ const PromotionsPage = ({
                   
                   <div className="promotion-content">
                     <ImagePlaceholder 
-                      src={promotion.image} 
+                      src={promotion.image_url} 
                       alt={promotion.title}
                       className="promotion-image"
                     />

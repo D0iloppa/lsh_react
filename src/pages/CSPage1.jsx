@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import qs from 'qs';
 
@@ -33,23 +33,53 @@ const CSPage1 = ({
 
 
   const { user, isLoggedIn } = useAuth();
+  const [userInfo, setUserInfo] = useState({});
+
+
   const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+
+    const fetchUserInfo = async () => {
+      try {
+        const response = await axios.get(`${API_HOST}/api/getUserInfo`, {
+          params: { user_id: user?.user_id || 1 }
+        });
+        setUserInfo(response.data || {});
+      } catch (error) {
+        console.error('유저 정보 불러오기 실패:', error);
+      }
+    };
+
+    fetchUserInfo();
+  }, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // 폼 기본 제출 동작 방지
   
     try {
       
-      const response = await axios.post(`${API_HOST}/api/insertSupport`, {
-          user_id: user?.user_id || 1,
-          name: formData.name,
-          email: formData.email,
-          contents: formData.message
-      });
+       const payload = {
+              user_id: user?.user_id || 1,
+              name: userInfo.nickname,
+              email: userInfo.email,
+              contents: formData.message
+            };
+
+            await axios.post(
+              `${API_HOST}/api/insertSupport`,
+              qs.stringify(payload),
+              {
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+                }
+              }
+            );
 
       // 성공 시 처리
-      console.log('문의 등록 성공:', response.data);
-      
+       alert('문의사항등록이 완료되었습니다.');
+
       // 성공한 경우에만 페이지 이동
       navigateToPageWithData && navigateToPageWithData(PAGES.CS_PAGE_2, { 
         submittedForm: formData,
@@ -80,7 +110,7 @@ const CSPage1 = ({
           background-color: white;
           position: relative;
 
-           font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .header {
@@ -136,13 +166,12 @@ const CSPage1 = ({
         }
 
         .message-textarea {
-        font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
          border-top-left-radius: 12px 7px;
          border-top-right-radius: 6px 14px;
          border-bottom-right-radius: 10px 5px;
          border-bottom-left-radius: 8px 11px;
           width: 91%;
-          min-height: 120px;
+          min-height: 180px;
           padding: 0.75rem;
           background-color: white;
           resize: vertical;
@@ -202,26 +231,10 @@ const CSPage1 = ({
           <div className="contact-form">
             <div className="form-content">
               <form onSubmit={handleSubmit}>
-                
                 <div className="form-field">
-                 
-                  <SketchInput
-                    type="text"
-                    placeholder="Name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    required
-                  /> 
-                </div>
-
-                <div className="form-field">
-                  <SketchInput
-                    type="email"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    required
-                  />
+                  <span style={{ display: 'inline-block', padding: '0.5rem 0' }}>
+                    {userInfo.nickname || '아이디'} ({userInfo.email || '이메일 없음'})
+                  </span>
                 </div>
 
                 <div className="form-field">

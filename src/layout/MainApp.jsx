@@ -57,7 +57,7 @@ const MainApp = () => {
     const navigationItems = [
         { id: PAGES.HOME, icon: Home, label: 'Home' },
         { id: PAGES.SEARCH, icon: Search, label: 'Search' },
-        { id: PAGES.EVENTS, icon: Calendar, label: 'Event list' },
+        { id: PAGES.EVENTS, icon: Calendar, label: 'Promotions' },
         { id: PAGES.ACCOUNT, icon: User, label: 'Account' }
     ];
 

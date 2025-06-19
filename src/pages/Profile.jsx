@@ -309,7 +309,7 @@ const Profile = ({
           <SketchDiv className="reviews-section">
             <HatchPattern opacity={0.02} />
             <div className="section-header">
-              <h3 className="section-title">Recent Reviews</h3>
+              <h3 className="section-title">My Reviews</h3>
             </div>
 
             <div className="reviews-list">

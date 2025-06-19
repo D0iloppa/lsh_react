@@ -10,15 +10,25 @@ import PopularVenue from '@components/PopularVenue';
 
 import '@components/SketchComponents.css';
 import './Welcome.css';
-
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 
 const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();    
+
   useEffect(() => {
     window.scrollTo(0, 0);
+
     
-  }, []);
+      if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        // setLanguage('en'); // 기본 언어 설정
+        console.log('Current language set to:', currentLang);
+        window.scrollTo(0, 0);
+      }
+    
+  }, [messages, currentLang]);
 
 
 
@@ -127,7 +137,7 @@ const CocktailIcon = () => (
               <h2 className="brand-subtitle">All Girlsbars Here</h2>
               
               <p className="brand-description">
-                Discover and book new bars and hostesses
+                {get('Welcome1.1')}
               </p>
             </div>
       </div>
@@ -162,7 +172,7 @@ const CocktailIcon = () => (
             variant = 'event' 
             onClick={onNextScreen}
           >
-            EXPLORE NOW
+            {get('Welcome1.2')}
           </SketchBtn>
         </div>
         <div className="relative" style={{ marginTop: '1rem' }}>
@@ -172,7 +182,7 @@ const CocktailIcon = () => (
             className="sketch-button" style={{ fontWeight: 'bold' }}
             onClick={onCreateAccount}
           >
-            CREATE AN ACCOUNT
+            {get('Welcome1.3')}
           </SketchBtn>
         </div>
     </div>

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { useNavigate } from 'react-router-dom';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 import HatchPattern from '@components/HatchPattern';
 
@@ -11,14 +12,25 @@ const InitFooter = ({
   hatchOpacity = 0.3,
   ...props 
 }) => {
-
-
   const navigate = useNavigate();
+  
+  // 컴포넌트 최상위에서 hooks 사용
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  
+  // useEffect도 컴포넌트 최상위에서 사용
+  useEffect(() => {
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
+  }, [messages, currentLang]);
 
   const navigateTo = (href) => {
     navigate(href);
   };
 
+    
   return (
     <>
       <footer className={`init-footer ${className}`} {...props}>
@@ -31,7 +43,7 @@ const InitFooter = ({
             }}
             className="sketch-link"
           >
-            Privacy Policy
+            { get('Footer1.1') }
           </a>
           <span className="divider">|</span>
           <a 
@@ -41,7 +53,7 @@ const InitFooter = ({
             }}
             className="sketch-link"
           >
-            Terms of Service
+            { get('Footer1.2') }
           </a>
         </div>
       </footer>

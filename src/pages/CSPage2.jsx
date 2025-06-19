@@ -172,6 +172,8 @@ const CSPage2 = ({
           margin: 0 auto;
           background-color: white;
           position: relative;
+
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .page-title {
@@ -231,7 +233,6 @@ const CSPage2 = ({
         }
 
         .inquiry-title {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 1rem;
           font-weight: bold;
           color: #1f2937;
@@ -239,7 +240,6 @@ const CSPage2 = ({
         }
 
         .inquiry-date {
-          font-family: 'Comic Sans MS', cursive, sans-serif;
           font-size: 0.85rem;
           color: #6b7280;
           margin: 0;
@@ -262,7 +262,6 @@ const CSPage2 = ({
         .loading-message, .error-message {
           text-align: center;
           padding: 2rem;
-          font-family: 'Comic Sans MS', cursive, sans-serif;
         }
 
         .error-message {
