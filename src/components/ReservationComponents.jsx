@@ -202,10 +202,35 @@ export const getYearMonthDisplay = (date) => {
 // 시간 슬롯 생성 함수 (기본: 0~24시간)
 export const generateTimeSlots = (startHour = 0, endHour = 24) => {
   const timeSlots = [];
-  for (let hour = startHour; hour <= endHour; hour++) {
-    const timeString = hour.toString().padStart(2, '0') + ':00';
-    timeSlots.push(timeString);
+
+  // 0 ~ 23 범위 제한
+  startHour = startHour % 24;
+  endHour = endHour % 24;
+
+  if (startHour === endHour) {
+    return timeSlots; // 0시간
   }
+
+  if (startHour < endHour) {
+    // 같은 날 내 예약
+    for (let hour = startHour; hour < endHour; hour++) {
+      const timeString = hour.toString().padStart(2, '0') + ':00';
+      timeSlots.push(timeString);
+    }
+  } else {
+    // 다음날로 넘어감
+    // 예: 17 → 23
+    for (let hour = startHour; hour < 24; hour++) {
+      const timeString = hour.toString().padStart(2, '0') + ':00';
+      timeSlots.push(timeString);
+    }
+    // 예: 0 → 2
+    for (let hour = 0; hour < endHour; hour++) {
+      const timeString = hour.toString().padStart(2, '0') + ':00';
+      timeSlots.push(timeString);
+    }
+  }
+
   return timeSlots;
 };
 

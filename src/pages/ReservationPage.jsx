@@ -120,9 +120,6 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
       endTime: null
     });
 
-    // 메모는 유지 (사용자가 입력한 내용 보존)
-    // setMemo(''); // 필요시 메모도 초기화
-
     console.log('check-schedule', scheduleData);
 
     const {venueInfo = false, scheduleList = []}  = scheduleData;
@@ -151,9 +148,13 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
       if (fullDate === today) {
         const currentHour = new Date().getHours();
         console.log('🕐 Current hour:', currentHour, 'for date:', fullDate);
+
+        let _open_time = venueInfo.open_time
+        _open_time = _open_time.split(':')[0];
+        _open_time = Number.parseInt(_open_time);
         
         // 현재 시간까지 비활성화
-        for (let hour = 0; hour <= currentHour; hour++) {
+        for (let hour = _open_time; hour <= currentHour; hour++) {
           const timeString = hour.toString().padStart(2, '0') + ':00';
           disabledTimes.push(timeString);
         }
@@ -184,8 +185,12 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
         console.log('📋 Available times from schedule list:', uniqueAvailableTimes);
         
         if (uniqueAvailableTimes.length > 0) {
-          // 전체 시간대 생성 (00:00~24:00)
-          const allPossibleTimes = generateTimeSlots(0, 24);
+          // 전체 시간대 생성 (venue의 운영시간 기준으로 변경)
+          const allPossibleTimes = generateTimeSlots(
+            parseInt(venueInfo.open_time.split(':')[0]), 
+            parseInt(venueInfo.close_time.split(':')[0])
+          );
+          console.log('🕐 All possible times format:', allPossibleTimes.slice(0, 3)); // 형식 확인용
           
           // 가능한 시간 리스트에 없는 시간들을 비활성화
           allPossibleTimes.forEach(timeSlot => {
@@ -197,16 +202,25 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
           console.log('🚫 Times not in available list:', 
             allPossibleTimes.filter(time => !uniqueAvailableTimes.includes(time))
           );
+          console.log('✅ Available times that match:', 
+            allPossibleTimes.filter(time => uniqueAvailableTimes.includes(time))
+          );
         } else {
           console.warn('⚠️ No valid times found in schedule list for', fullDate);
           // 가능한 시간이 없으면 모든 시간 비활성화
-          const allTimes = generateTimeSlots(0, 24);
+          const allTimes = generateTimeSlots(
+            parseInt(venueInfo.open_time.split(':')[0]), 
+            parseInt(venueInfo.close_time.split(':')[0])
+          );
           disabledTimes.push(...allTimes);
         }
       } else {
         console.log('ℹ️ No schedule found for', fullDate);
         // 스케줄이 없으면 모든 시간 비활성화
-        const allTimes = generateTimeSlots(0, 24);
+        const allTimes = generateTimeSlots(
+          parseInt(venueInfo.open_time.split(':')[0]), 
+          parseInt(venueInfo.close_time.split(':')[0])
+        );
         disabledTimes.push(...allTimes);
       }
     
