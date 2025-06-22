@@ -8,7 +8,7 @@ import SketchBtn from '@components/SketchBtn';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ProgressIndicator from './ProgressIndicator';
 import { Weight } from 'lucide-react';
-
+import LoadingScreen from '@components/LoadingScreen';
 const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
   
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();    
@@ -32,13 +32,12 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
     <div className="tutorial-container max-w-md mx-auto bg-white min-h-screenp-6">
 
     {/* 진행 표시기 */}
-    {/* <div className="content-area">
-      <ProgressIndicator 
-          currentStep={currentStep} 
-          totalSteps={totalSteps} 
-        />
-    </div> */}
-
+      <div className="pi-div">
+          <ProgressIndicator 
+              currentStep={currentStep} 
+              totalSteps={totalSteps} 
+            />
+        </div>
 
       <SketchDiv variant="container">
         <HatchPattern opacity={0.3} />
@@ -69,6 +68,11 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
           >
             {get('Tutorial3.4')}
           </SketchBtn>
+            <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
+
           {/* <HatchPattern /> */}
         </div>
     </div>

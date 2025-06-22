@@ -6,12 +6,15 @@ import SketchBtn from '@components/SketchBtn';
 import SketchHeader from '@components/SketchHeader';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 import { useAuth } from '../contexts/AuthContext';
+import LoadingScreen from '@components/LoadingScreen';
 
 const FavoritesPage = ({ 
   navigateToPageWithData, 
   PAGES,
+  goBack,
   ...otherProps 
 }) => {
   const [sortBy, setSortBy] = useState('name');
@@ -33,10 +36,18 @@ const FavoritesPage = ({
       );
     }
   };
-
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   // 마운트 시 즐겨찾기 가져오기
   useEffect(() => {
     window.scrollTo(0, 0);
+
+  if (messages && Object.keys(messages).length > 0) {
+              console.log('✅ Messages loaded:', messages);
+              // setLanguage('en'); // 기본 언어 설정
+              console.log('Current language set to:', currentLang);
+              window.scrollTo(0, 0);
+            }
+
 
     const fetchFavorits = async () => {
       try {
@@ -52,7 +63,7 @@ const FavoritesPage = ({
     };
 
     fetchFavorits();
-  }, []);
+  }, [messages, currentLang]);
 
 
 
@@ -281,9 +292,9 @@ const FavoritesPage = ({
         {/* Header */}
         <SketchHeader
                   onClick={handleProfile}
-                  title={'FAVARITES'}
+                  title={get('Menu1.8')}
                   showBack={true}
-                  onBack={() => console.log('뒤로가기')}
+                  onBack={goBack}
                   rightButtons={[]}
                 />
         {/* <div className="header">
@@ -301,7 +312,7 @@ const FavoritesPage = ({
         <div className="content-section">
           {/* Section Header */}
           <div className="section-header">
-            <h1 className="section-title">Favorites</h1>
+            <h1 className="section-title">{get('Menu1.8')}</h1>
             <div className="filter-buttons">
               <SketchBtn 
                 variant="secondary" 
@@ -309,7 +320,7 @@ const FavoritesPage = ({
                 onClick={() => handleFilterType("ALL")}
               >
                 <HatchPattern opacity={0.4} />
-                ALL
+                {get('btn.all.1')}
               </SketchBtn>
               
               <SketchBtn 
@@ -318,7 +329,7 @@ const FavoritesPage = ({
                 onClick={() => handleFilterType("VENUE")}
               >
                 <HatchPattern opacity={0.4} />
-                VENUE
+                {get('title.text.15')}
               </SketchBtn>
               
               <SketchBtn 
@@ -327,7 +338,7 @@ const FavoritesPage = ({
                 onClick={() => handleFilterType("STAFF")}
               >
                 <HatchPattern opacity={0.4} />
-                STAFF
+                {get('title.text.16')}
               </SketchBtn>
             </div>
 
@@ -359,8 +370,12 @@ const FavoritesPage = ({
                       size="small"
                       onClick={() => handleBook(venue)}
                     >
-                      Book Now
+                      {get('btn.booking.2')}
                     </SketchBtn>
+                      <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
                   </div>
                 </div>
               </div>

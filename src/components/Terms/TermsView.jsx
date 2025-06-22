@@ -7,6 +7,7 @@ import HatchPattern from '@components/HatchPattern';
 import SketchHeader from '@components/SketchHeader';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { ArrowLeft, BookOpenText } from 'lucide-react';
+import LoadingScreen from '@components/LoadingScreen';
 
 import Terms_kr from './Terms_kr';
 import Terms_en from './Terms_en';
@@ -86,8 +87,12 @@ export default function TermsView() {
             variant="secondary"
             className=""
           >
-            <ArrowLeft size={15}/> { get("btn.back.1") }
+            { get("btn.back.1") }
           </SketchBtn>
+                          <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
         </div>
       </div>
     </div>

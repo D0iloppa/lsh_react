@@ -4,10 +4,12 @@ import SketchBtn from '@components/SketchBtn';
 import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
 import SketchHeader from '@components/SketchHeader';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 const SubscriptionPaymentPage = ({ 
   navigateToPageWithData, 
-  PAGES, 
+  PAGES,
+  goBack, 
   ...otherProps 
 }) => {
   const [subscriptionType, setSubscriptionType] = useState('subscription');
@@ -40,10 +42,17 @@ const SubscriptionPaymentPage = ({
     console.log('Payment confirmed:', paymentData);
     navigateToPageWithData && navigateToPageWithData(PAGES.SHARE_EXP, { paymentSuccess: true });
   };
-
+   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg(); 
    useEffect(() => {
       window.scrollTo(0, 0);
-    }, []);
+
+      if (messages && Object.keys(messages).length > 0) {
+            console.log('✅ Messages loaded:', messages);
+            // setLanguage('en'); // 기본 언어 설정
+            console.log('Current language set to:', currentLang);
+            window.scrollTo(0, 0);
+          }
+    }, [messages, currentLang]);
 
   return (
     <>
@@ -176,9 +185,9 @@ const SubscriptionPaymentPage = ({
         {/* Header */}
        
                 <SketchHeader
-                  title={'Confirm reservation'}
+                  title={get('SubscripPay1.1')}
                   showBack={true}
-                  onBack={() => console.log('뒤로가기')}
+                  onBack={goBack}
                   rightButtons={[]}
                 />
         {/* <div className="header">
@@ -192,7 +201,7 @@ const SubscriptionPaymentPage = ({
         <div className="content-section">
           {/* Select Subscription Type */}
           <div className="section">
-            <div className="section-title">Select Subscription Type</div>
+            <div className="section-title">{get('SubscripPay1.2')}</div>
             <div className="subscription-tabs">
               <SketchBtn
                 variant={subscriptionType === 'subscription' ? 'primary' : 'secondary'}
@@ -200,7 +209,7 @@ const SubscriptionPaymentPage = ({
                 className="no-rotate"
                 onClick={() => handleSubscriptionTypeChange('subscription')}
               >
-                Subscription
+                {get('SubscripPay1.3')}
               </SketchBtn>
               <SketchBtn
                 variant={subscriptionType === 'ticket' ? 'primary' : 'secondary'}
@@ -208,19 +217,19 @@ const SubscriptionPaymentPage = ({
                 className="no-rotate"
                 onClick={() => handleSubscriptionTypeChange('ticket')}
               >
-                One-Day Ticket
+                {get('SubscripPay1.4')}
               </SketchBtn>
             </div>
           </div>
 
           {/* Subscription Details */}
           <div className="section">
-            <div className="section-title">Subscription Details</div>
+            <div className="section-title">{get('SubscripPay1.5')}</div>
             
             <div className="form-field">
               <SketchInput
                 type="text"
-                placeholder="Enter Start Date"
+                placeholder={get('SubscripPay1')}
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
               />
@@ -232,7 +241,7 @@ const SubscriptionPaymentPage = ({
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
               >
-                <option value="">Duration (Days)</option>
+                <option value="">{get('SubscripPay1.6')}</option>
                 <option value="7">7 Days</option>
                 <option value="30">30 Days</option>
                 <option value="90">90 Days</option>

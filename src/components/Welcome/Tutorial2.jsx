@@ -7,6 +7,8 @@ import SketchBtn from '@components/SketchBtn';
 import '@components/SketchComponents.css';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ProgressIndicator from './ProgressIndicator';
+import LoadingScreen from '@components/LoadingScreen';
+
 
 // Tutorial2 메인 컴포넌트
 const Tutorial2 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
@@ -27,15 +29,15 @@ const Tutorial2 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
   return (
       <div className="tutorial-container">
       {/* 진행 표시기 */}
-      {/* <div className="content-area">
-        <ProgressIndicator 
-            currentStep={currentStep} 
-            totalSteps={totalSteps} 
-          />
-      </div> */}
+      <div className="pi-div">
+          <ProgressIndicator 
+              currentStep={currentStep} 
+              totalSteps={totalSteps} 
+            />
+      </div>
 
         <div className="">
-          <ImagePlaceholder  src={"/cdn/map-1.png"}  style={{ border: '1px solid #333', borderRadius: '5px',height: '635px'}}/>
+          <ImagePlaceholder  src={"/cdn/tuto2.png"}  style={{ border: '1px solid #333', borderRadius: '5px',height: '425px'}}/>
 
           {/* 설명 텍스트 */}
           <p className="description-text">
@@ -53,6 +55,10 @@ const Tutorial2 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
             >
               { get("btn.next.1") }
             </SketchBtn>
+            <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
           </div>
         </div>
       </div>

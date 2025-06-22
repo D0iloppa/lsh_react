@@ -1,3 +1,7 @@
+import React, { useState, useRef, useCallback } from 'react';
+import SketchBtn from '@components/SketchBtn';
+import HatchPattern from '@components/HatchPattern';
+
 // 주간 테이블 CSS 스타일 (이 스타일을 부모 컴포넌트에 추가하세요)
 export const weeklyTableStyles = `
   .weekly-table {
@@ -82,12 +86,87 @@ export const weeklyTableStyles = `
   .weekly-day.today.selected .day-date {
     color: white;
   }
-`;
 
-import React, { useState } from 'react';
-import SketchBtn from '@components/SketchBtn';
-import HatchPattern from '@components/HatchPattern';
-import SketchDiv from '@components/SketchDiv';
+  .selection-info {
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .selection-info small {
+    color: #6b7280;
+    font-size: 11px;
+  }
+  
+  .selected-count {
+    color: #3b82f6;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  .time-slot.drag-preview {
+    transform: scale(0.98);
+  }
+  
+  .selected-times-summary {
+    margin-top: 12px;
+    padding: 8px;
+    background-color: #f9fafb;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #374151;
+  }
+  
+  .clear-selection {
+    margin-left: 12px;
+    padding: 4px 8px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+  }
+
+  .clear-selection:hover {
+    background-color: #f3f4f6;
+  }
+
+  .duration-selector {
+    margin-top: 16px;
+    padding: 12px;
+    background-color: #f9fafb;
+    border-radius: 8px;
+  }
+
+  .duration-label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #374151;
+  }
+
+  .duration-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+  }
+
+  .duration-info {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6b7280;
+  }
+
+  .selection-warning {
+    margin-top: 12px;
+    padding: 8px;
+    background-color: #fef3c7;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #92400e;
+  }
+`;
 
 // 주간 테이블 생성 유틸리티 함수 (오늘부터 7일간)
 export const generateWeeklyDays = (baseDate) => {
@@ -95,18 +174,17 @@ export const generateWeeklyDays = (baseDate) => {
   const weekDays = [];
   const dayHeaders = ['일', '월', '화', '수', '목', '금', '토'];
   
-  // 오늘부터 시작해서 7일간 생성
   for (let i = 0; i < 7; i++) {
     const currentDate = new Date(today);
     currentDate.setDate(today.getDate() + i);
     
-    const dayOfWeek = currentDate.getDay(); // 0=일요일, 1=월요일, ...
+    const dayOfWeek = currentDate.getDay();
     
     weekDays.push({
       dayName: dayHeaders[dayOfWeek],
       date: currentDate.getDate(),
-      fullDate: currentDate.toISOString().split('T')[0], // YYYY-MM-DD 형태
-      isToday: i === 0, // 첫 번째 날이 오늘
+      fullDate: currentDate.toISOString().split('T')[0],
+      isToday: i === 0,
       dayOfWeek: dayOfWeek
     });
   }
@@ -121,17 +199,154 @@ export const getYearMonthDisplay = (date) => {
   return `${year}.${month}`;
 };
 
-// 시간 슬롯 생성 함수
-export const generateTimeSlots = () => {
+// 시간 슬롯 생성 함수 (기본: 0~24시간)
+export const generateTimeSlots = (startHour = 0, endHour = 24) => {
   const timeSlots = [];
-  for (let hour = 18; hour <= 24; hour++) {
+  for (let hour = startHour; hour <= endHour; hour++) {
     const timeString = hour.toString().padStart(2, '0') + ':00';
     timeSlots.push(timeString);
   }
   return timeSlots;
 };
 
-// 1. 년월 표시 컴포넌트 (선택 불가, 표시만)
+// Duration 관련 유틸리티 함수들
+const getEndTime = (startTime, duration) => {
+  const [hour] = startTime.split(':').map(Number);
+  const endHour = hour + duration;
+  return `${endHour.toString().padStart(2, '0')}:00`;
+};
+
+const canSelectDuration = (startTime, duration, disabledTimes) => {
+  const [startHour] = startTime.split(':').map(Number);
+  
+  // 연속된 시간들이 모두 사용 가능한지 체크
+  for (let i = 0; i < duration; i++) {
+    const checkHour = startHour + i;
+    const checkTime = `${checkHour.toString().padStart(2, '0')}:00`;
+    
+    if (disabledTimes.includes(checkTime)) {
+      return false;
+    }
+  }
+  
+  return true;
+};
+
+// 이용 시간 선택 컴포넌트
+const DurationSelector = ({ 
+  startTime, 
+  maxDuration, 
+  selectedDuration, 
+  onDurationChange,
+  disabledTimes = [],
+  messages = {} // 다국어 메시지 추가
+}) => {
+  if (!startTime) return null;
+
+  const durations = [];
+  for (let i = 1; i <= maxDuration; i++) {
+    durations.push(i);
+  }
+
+  return (
+    <div className="duration-selector">
+      <div className="duration-label">
+        {startTime}{messages.durationSelectLabel || '부터 이용 시간 선택'}
+      </div>
+      <div className="duration-grid">
+        {durations.map(duration => {
+          const isDisabled = !canSelectDuration(startTime, duration, disabledTimes);
+          return (
+            <SketchBtn
+              key={duration}
+              variant={selectedDuration === duration ? 'accent' : 'secondary'}
+              onClick={() => onDurationChange(duration)}
+              disabled={isDisabled}
+              style={{ fontSize: '12px', padding: '6px 12px', minHeight: '32px' }}
+            >
+              {duration}{messages.hourUnit || '시간'}
+            </SketchBtn>
+          );
+        })}
+      </div>
+      {selectedDuration && (
+        <div className="duration-info">
+          {messages.reservationTimeLabel || '예약 시간'}: {startTime} - {getEndTime(startTime, selectedDuration)}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// 시간 슬롯 필터링 함수 (특정 범위만 추출)
+export const filterTimeSlots = (allTimeSlots, startTime, endTime) => {
+  const startHour = parseInt(startTime.split(':')[0]);
+  const endHour = parseInt(endTime.split(':')[0]);
+  
+  return allTimeSlots.filter(timeSlot => {
+    const hour = parseInt(timeSlot.split(':')[0]);
+    return hour >= startHour && hour <= endHour;
+  });
+};
+
+// 특정 시간대를 비활성화하는 함수
+export const getDisabledTimeSlots = (scheduleData, selectedDate, bookedTimes = []) => {
+  const disabledTimes = [];
+  
+  if (bookedTimes && bookedTimes.length > 0) {
+    disabledTimes.push(...bookedTimes);
+  }
+  
+  if (scheduleData && selectedDate && scheduleData[selectedDate]) {
+    const daySchedule = scheduleData[selectedDate];
+    
+    if (daySchedule.timeSlots) {
+      Object.keys(daySchedule.timeSlots).forEach(time => {
+        const timeSlot = daySchedule.timeSlots[time];
+        if (timeSlot.available === false || timeSlot.reserved === true) {
+          disabledTimes.push(time);
+        }
+      });
+    }
+  }
+  
+  return [...new Set(disabledTimes)];
+};
+
+// 영업시간 외 시간대를 비활성화하는 함수
+export const getBusinessHoursDisabledTimes = (allTimeSlots, businessStart = 9, businessEnd = 22) => {
+  return allTimeSlots.filter(timeSlot => {
+    const hour = parseInt(timeSlot.split(':')[0]);
+    return hour < businessStart || hour > businessEnd;
+  });
+};
+
+// 시간대별 상태 확인 함수
+export const getTimeSlotStatus = (timeSlot, scheduleData, selectedDate, disabledTimes = []) => {
+  if (disabledTimes.includes(timeSlot)) {
+    return 'disabled';
+  }
+  
+  if (scheduleData && selectedDate && scheduleData[selectedDate]) {
+    const daySchedule = scheduleData[selectedDate];
+    
+    if (daySchedule.timeSlots && daySchedule.timeSlots[timeSlot]) {
+      const slotData = daySchedule.timeSlots[timeSlot];
+      
+      if (slotData.reserved === true) {
+        return 'reserved';
+      }
+      
+      if (slotData.available === false) {
+        return 'unavailable';
+      }
+    }
+  }
+  
+  return 'available';
+};
+
+// 년월 표시 컴포넌트
 export const YearMonthDisplay = ({ date }) => {
   const yearMonth = getYearMonthDisplay(date);
 
@@ -150,22 +365,22 @@ export const YearMonthDisplay = ({ date }) => {
   );
 };
 
-// 2. 참석자 선택 컴포넌트
-export const AttendeeSelector = ({ value, onChange }) => {
+// 참석자 선택 컴포넌트
+export const AttendeeSelector = ({ value, onChange, messages = {} }) => {
   const attendeeOptions = [
-    { value: '', label: 'Select number of people' },
-    { value: '1', label: '1 person' },
-    { value: '2', label: '2 people' },
-    { value: '3', label: '3 people' },
-    { value: '4', label: '4 people' },
-    { value: '5', label: '5+ people' }
+    { value: '', label: messages.selectPeople || 'Select number of people' },
+    { value: '1', label: messages.onePerson || '1 person' },
+    { value: '2', label: messages.twoPeople || '2 people' },
+    { value: '3', label: messages.threePeople || '3 people' },
+    { value: '4', label: messages.fourPeople || '4 people' },
+    { value: '5', label: messages.fivePlusePeople || '5+ people' }
   ];
 
   return (
     <div className="form-step">
       <div className="step-label">
         <span className="step-number">1</span>
-        Attendee
+        {messages.attendeeLabel || 'Attendee'}
       </div>
       <select 
         className="attendee-select"
@@ -182,12 +397,13 @@ export const AttendeeSelector = ({ value, onChange }) => {
   );
 };
 
-// 3. 주간 테이블 컴포넌트
+// 주간 테이블 컴포넌트
 export const WeeklyTableComponent = ({ 
   baseDate, 
   selectedDate, 
   onDateSelect, 
-  disabledDates = [] 
+  disabledDates = [],
+  messages = {} // 다국어 메시지 추가
 }) => {
   const weekDays = generateWeeklyDays(baseDate);
   
@@ -209,7 +425,7 @@ export const WeeklyTableComponent = ({
     <div className="form-step">
       <div className="step-label">
         <span className="step-number">2</span>
-        Select Date
+        {messages.selectDateLabel || 'Select Date'}
       </div>
       
       <YearMonthDisplay date={baseDate} />
@@ -236,38 +452,189 @@ export const WeeklyTableComponent = ({
   );
 };
 
-// 4. 시간 선택 컴포넌트
-export const TimeSlotSelector = ({ 
+// Duration-based 시간 선택 컴포넌트 (새로운 방식)
+export const DurationBasedTimeSelector = ({ 
   timeSlots = [], 
-  selectedTime, 
+  selectedStartTime = '', 
+  selectedDuration = null,
   onTimeSelect, 
-  disabledTimes = [] 
+  disabledTimes = [],
+  maxDuration = 6, // 최대 6시간까지 선택 가능
+  messages = {} // 다국어 메시지 추가
 }) => {
-  const handleTimeSelect = (time) => {
-    if (!disabledTimes.includes(time)) {
-      onTimeSelect(time);
+  const [startTime, setStartTime] = useState(selectedStartTime);
+  const [duration, setDuration] = useState(selectedDuration);
+
+  React.useEffect(() => {
+    setStartTime(selectedStartTime);
+    setDuration(selectedDuration);
+  }, [selectedStartTime, selectedDuration]);
+
+  const handleTimeClick = (time) => {
+    if (disabledTimes.includes(time)) return;
+    
+    // 새로운 시작 시간 선택시 기간 초기화
+    setStartTime(time);
+    setDuration(null);
+    
+    // 부모 컴포넌트에 시작 시간만 전달
+    onTimeSelect({
+      startTime: time,
+      duration: null,
+      endTime: null
+    });
+  };
+
+  const handleDurationChange = (newDuration) => {
+    setDuration(newDuration);
+    
+    // 부모 컴포넌트에 완전한 예약 정보 전달
+    onTimeSelect({
+      startTime: startTime,
+      duration: newDuration,
+      endTime: getEndTime(startTime, newDuration)
+    });
+  };
+
+  const getTimeSlotVariant = (time) => {
+    if (disabledTimes.includes(time)) return 'disabled';
+    if (startTime === time) return 'accent';
+    
+    // 선택된 시간 범위 하이라이트
+    if (startTime && duration) {
+      const [startHour] = startTime.split(':').map(Number);
+      const [timeHour] = time.split(':').map(Number);
+      
+      if (timeHour >= startHour && timeHour < startHour + duration) {
+        return 'primary';
+      }
     }
+    
+    return 'secondary';
   };
 
   return (
     <div className="form-step-3">
       <div className="step-label">
         <span className="step-number">3</span>
-        Choose Time
+        {messages.timeAndDurationLabel || '시간 및 이용시간 선택'}
+        {startTime && duration && (
+          <div style={{ marginLeft: '10px', fontSize: '12px', color: '#3b82f6' }}>
+            {startTime} - {getEndTime(startTime, duration)} ({duration}{messages.hourUnit || '시간'})
+          </div>
+        )}
       </div>
-      <div className="time-grid">
+
+      <div 
+        className="time-grid" 
+        style={{ userSelect: 'none' }}
+      >
         {timeSlots.map((time, index) => (
           <SketchBtn
             key={index}
-            variant={selectedTime === time ? 'accent' : 'secondary'}
+            variant={getTimeSlotVariant(time)}
+            size="small"
+            onClick={() => handleTimeClick(time)}
+            disabled={disabledTimes.includes(time)}
+            style={{
+              opacity: disabledTimes.includes(time) ? 0.5 : 1,
+              position: 'relative'
+            }}
+          >
+            <HatchPattern 
+              opacity={startTime === time ? 0.6 : 0.4} 
+            />
+            {time}
+          </SketchBtn>
+        ))}
+      </div>
+
+      <DurationSelector
+        startTime={startTime}
+        maxDuration={maxDuration}
+        selectedDuration={duration}
+        onDurationChange={handleDurationChange}
+        disabledTimes={disabledTimes}
+        messages={messages}
+      />
+
+      {startTime && !duration && (
+        <div className="selection-warning">
+          {messages.selectDurationWarning || "시작 시간을 선택했습니다. 이용 시간을 선택해주세요."}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// 기존 TimeSlotSelector 컴포넌트 (호환성 유지)
+export const TimeSlotSelector = ({ 
+  timeSlots = [], 
+  selectedTimes = [],
+  onTimeSelect, 
+  disabledTimes = [],
+  selectionMode = 'single',
+  allowDrag = false,
+  messages = {} // 다국어 메시지 추가
+}) => {
+  // 기존 API와의 호환성을 위한 처리
+  const currentSelectedTimes = Array.isArray(selectedTimes) ? selectedTimes : 
+    selectedTimes ? [selectedTimes] : [];
+
+  const handleTimeSelect = (time, event) => {
+    if (disabledTimes.includes(time)) return;
+
+    let newSelectedTimes;
+
+    switch (selectionMode) {
+      case 'single':
+        newSelectedTimes = [time];
+        break;
+        
+      default:
+        newSelectedTimes = [time];
+    }
+
+    // 기존 API와 호환성 유지
+    if (selectionMode === 'single') {
+      onTimeSelect(newSelectedTimes[0] || '');
+    } else {
+      onTimeSelect(newSelectedTimes);
+    }
+  };
+
+  const getTimeSlotVariant = (time) => {
+    if (disabledTimes.includes(time)) return 'disabled';
+    if (currentSelectedTimes.includes(time)) return 'accent';
+    return 'secondary';
+  };
+
+  return (
+    <div className="form-step-3">
+      <div className="step-label">
+        <span className="step-number">3</span>
+        {messages.chooseTimeLabel || 'Choose Time'}
+      </div>
+
+      <div 
+        className="time-grid" 
+        style={{ userSelect: 'none' }}
+      >
+        {timeSlots.map((time, index) => (
+          <SketchBtn
+            key={index}
+            variant={getTimeSlotVariant(time)}
             size="small"
             onClick={() => handleTimeSelect(time)}
             disabled={disabledTimes.includes(time)}
             style={{
-              opacity: disabledTimes.includes(time) ? 0.5 : 1
+              opacity: disabledTimes.includes(time) ? 0.5 : 1,
+              position: 'relative'
             }}
           >
-            <HatchPattern opacity={0.4} />
+            <HatchPattern 
+              opacity={currentSelectedTimes.includes(time) ? 0.6 : 0.4} 
+            />
             {time}
           </SketchBtn>
         ))}
@@ -276,24 +643,77 @@ export const TimeSlotSelector = ({
   );
 };
 
-// 5. 통합 예약 폼 컴포넌트
+// 메모 입력 컴포넌트
+export const MemoSelector = ({ value, onChange, messages = {} }) => {
+  return (
+    <div className="form-step"
+          style={{
+            marginTop:"20px"
+          }}
+    >
+      <div className="step-label">
+        <span className="step-number">4</span>
+        {messages.memoLabel || 'Memo'}
+      </div>
+      <textarea
+        className="memo-textarea"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={messages.memoPlaceholder || '추가 요청사항이나 메모를 입력해주세요...'}
+        rows={3}
+        style={{
+          width: '100%',
+          padding: '12px',
+          border: '2px solid #e5e7eb',
+          borderRadius: '8px',
+          fontSize: '14px',
+          fontFamily: 'inherit',
+          resize: 'vertical',
+          minHeight: '80px',
+          boxSizing: 'border-box'
+        }}
+      />
+      {value && (
+        <div style={{ 
+          marginTop: '4px', 
+          fontSize: '12px', 
+          color: '#6b7280',
+          textAlign: 'right'
+        }}>
+          {value.length} / 500
+        </div>
+      )}
+    </div>
+  );
+};
+
+// 통합 예약 폼 컴포넌트 (Duration 모드 지원)
 export const ReservationForm = ({
   attendee,
   onAttendeeChange,
-  baseDate, // year, month 대신 baseDate 사용
+  baseDate,
   selectedDate,
   onDateSelect,
   timeSlots,
-  selectedTime,
+  selectedTime, // 기존 API 유지
+  selectedTimes, // 새로운 API 추가
   onTimeSelect,
+  memo, // 메모 값 추가
+  onMemoChange, // 메모 변경 핸들러 추가
   disabledDates = [],
-  disabledTimes = []
+  disabledTimes = [],
+  timeSelectionMode = 'single',
+  allowDrag = false,
+  useDurationMode = false, // 새로운 prop
+  maxDuration = 6, // Duration 모드의 최대 시간
+  messages = {} // 다국어 메시지 추가
 }) => {
   return (
     <div className="form-section">
       <AttendeeSelector 
         value={attendee}
         onChange={onAttendeeChange}
+        messages={messages}
       />
       
       <WeeklyTableComponent
@@ -301,37 +721,36 @@ export const ReservationForm = ({
         selectedDate={selectedDate}
         onDateSelect={onDateSelect}
         disabledDates={disabledDates}
+        messages={messages}
       />
       
-      <TimeSlotSelector
-        timeSlots={timeSlots}
-        selectedTime={selectedTime}
-        onTimeSelect={onTimeSelect}
-        disabledTimes={disabledTimes}
+      {useDurationMode ? (
+        <DurationBasedTimeSelector
+          timeSlots={timeSlots}
+          selectedStartTime={selectedTimes?.startTime || ''}
+          selectedDuration={selectedTimes?.duration || null}
+          onTimeSelect={onTimeSelect}
+          disabledTimes={disabledTimes}
+          maxDuration={maxDuration}
+          messages={messages}
+        />
+      ) : (
+        <TimeSlotSelector
+          timeSlots={timeSlots}
+          selectedTimes={selectedTimes || selectedTime}
+          onTimeSelect={onTimeSelect}
+          disabledTimes={disabledTimes}
+          selectionMode={timeSelectionMode}
+          allowDrag={allowDrag}
+          messages={messages}
+        />
+      )}
+
+      <MemoSelector
+        value={memo}
+        onChange={onMemoChange}
+        messages={messages}
       />
-
-
-        <div style={{ marginTop:"15px", marginBottom: "5px", padding: "5px" }}>
-            <div className="step-label">
-                <span className="step-number">4</span>
-                Note
-            </div>
-
-            <SketchDiv>
-                <textarea 
-                placeholder="메모를 입력하세요..."
-                style={{
-                    width: "100%",
-                    minHeight: "80px",
-                    border: "none",
-                    background: "transparent",
-                    resize: "vertical",
-                    padding: "10px"
-                }}
-                />
-            </SketchDiv>
-        </div>
-
     </div>
   );
 };

@@ -8,6 +8,7 @@ import HatchPattern from '@components/HatchPattern';
 import SketchInput from '@components/SketchInput';
 import GoogleMapComponent from '@components/GoogleMapComponent';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import LoadingScreen from '@components/LoadingScreen';
 
 const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSearch = () => {}, initialKeyword = '' }) => {
   const [searchQuery, setSearchQuery] = useState(initialKeyword); 
@@ -234,6 +235,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
               <GoogleMapComponent
                 places={places}
                 onMarkerClick={(venue) => setSelectedVenue(venue)}
+                onMapClick={() => setSelectedVenue(null)}
               />
             </div>
 
@@ -285,17 +287,17 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
               <HatchPattern opacity={0.1} />
               <div className="venue-info-content">
                 <div className="venue-info-header">
-                  <span className="venue-star">⭐</span>
+                  <span className="venue-star"></span>
                   <h3 className="venue-name">{selectedVenue.name}</h3>
                 </div>
                 <div className="venue-details">
-                  <span className="venue-rating">🎵 5</span>
-                  <span className="venue-people">👥 10</span>
+                  <span className="venue-people">🗺️ {selectedVenue.address}</span>
                 </div>
-                <div className="venue-price-info">
-                  <span className="venue-price">$30</span>
-                  <span className="venue-entry">entry</span>
-                  <span className="venue-stars">⭐{selectedVenue.rating}/5</span>
+                <div className="venue-details">
+                  <span className="venue-people">📞 {selectedVenue.phone}</span>
+                </div>
+                <div className="venue-details">
+                  <span className="venue-people">👥 {selectedVenue.staff_cnt} / ⭐{selectedVenue.rating}/5</span>
                 </div>
               </div>
             </SketchDiv>
@@ -303,6 +305,10 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
 
             
           </SketchDiv>
+            <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
         </div>
       </div>
     </>

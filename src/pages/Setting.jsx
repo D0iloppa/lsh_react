@@ -10,10 +10,12 @@ import '@components/SketchComponents.css';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '../contexts/AuthContext';
 import qs from 'qs';
+import LoadingScreen from '@components/LoadingScreen';
 
 const SettingsPage = ({ 
   navigateToPageWithData, 
   PAGES,
+  goBack,
   ...otherProps 
 }) => {
 
@@ -296,7 +298,7 @@ const { messages, isLoading, error, get, currentLang, availableLanguages, refres
         <SketchHeader 
           title={ get('Menu1.3') }
           showBack={true}
-          onBack={() => console.log("뒤로가기")}
+          onBack={goBack}
           rightButtons={[]}
         />
         
@@ -386,6 +388,10 @@ const { messages, isLoading, error, get, currentLang, availableLanguages, refres
               {get('btn.save.1')}
             </SketchBtn>
           </div>
+           <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
         </div>
       </div>
     </>

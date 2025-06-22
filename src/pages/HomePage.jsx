@@ -1,92 +1,135 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Star, Heart, ArrowRight } from 'lucide-react';
+import { Star, Heart, ArrowRight, MapPin } from 'lucide-react';
 import GoogleMapComponent from '@components/GoogleMapComponent';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import SketchSearch from '@components/SketchSearch';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 
-import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useMsg } from '@contexts/MsgContext';
+import LoadingScreen from '@components/LoadingScreen';
 
 const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAGES }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [hotspots, setHotspots] = useState([]);
-const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  const [originalHotspots, setOriginalHotspots] = useState([]);
+  const { messages, get, currentLang, isLoading } = useMsg();
+  const { user } = useAuth();
+  const [favorites, setFavorits] = useState([]);
+
   useEffect(() => {
-    if (messages && Object.keys(messages).length > 0) {
-          console.log('✅ Messages loaded:', messages);
-          // setLanguage('en'); // 기본 언어 설정
-          console.log('Current language set to:', currentLang);
-          window.scrollTo(0, 0);
-        }
+    const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
 
-    const fetchHotspots = async () => {
+    const fetchFavorits = async () => {
       try {
-        const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+        const response = await axios.get(`${API_HOST}/api/getMyFavoriteList`, {
+          params: { user_id: user?.user_id || 1 }
+        });
+        return response.data || [];
+      } catch (error) {
+        console.error('getMyFavoriteList 목록 불러오기 실패:', error);
+        return [];
+      }
+    };
 
+    const fetchHotspots = async (favoritesData) => {
+      try {
         const response = await axios.get(`${API_HOST}/api/getVenueList`);
         const data = response.data || [];
+
+        const favoriteVenueIds = new Set(
+          favoritesData.filter((fav) => fav.target_type === 'venue').map((fav) => fav.target_id)
+        );
+
         const transformed = data.map((item, index) => ({
           id: item.venue_id || index,
           name: item.name || 'Unknown',
           rating: parseFloat(item.rating || 0).toFixed(1),
           image: item.image_url,
-          isFavorite: false,
+          address: item.address || '', // 주소 필드 추가
+          opening_hours: (item.open_time + "~" + item.close_time) || '정보 없음',
+          isFavorite: favoriteVenueIds.has(item.venue_id),
         }));
+
+        setOriginalHotspots(transformed);
         setHotspots(transformed);
       } catch (error) {
         console.error('장소 정보 가져오기 실패:', error);
       }
     };
-    fetchHotspots();
+
+    const initialize = async () => {
+      if (messages && Object.keys(messages).length > 0) {
+        window.scrollTo(0, 0);
+      }
+
+      const favoritesData = await fetchFavorits();
+      setFavorits(favoritesData);
+      await fetchHotspots(favoritesData);
+    };
+
+    initialize();
   }, [messages, currentLang]);
 
   const handleSearch = () => {
-    navigateToMap({
-      initialKeyword:searchQuery,
-      searchFrom: 'home',
-    });
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) {
+      setHotspots(originalHotspots);
+      return;
+    }
+    const filtered = originalHotspots.filter((spot) =>
+      spot.name.toLowerCase().includes(query)
+    );
+    setHotspots(filtered);
   };
 
   const handleLocationClick = () => {
-    navigateToMap({
-      initialKeyword:searchQuery,
-      searchFrom: 'home',
-    });
+    handleSearch();
   };
 
   const handleDiscover = (venueId) => {
-  navigateToPageWithData(PAGES.DISCOVER, { venueId });
-};
+    navigateToPageWithData(PAGES.DISCOVER, { venueId });
+  };
 
-  const toggleFavorite = (id) => {
+  const toggleFavorite = async (spotTmp) => {
+    const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
     setHotspots((prev) =>
       prev.map((spot) =>
-        spot.id === id ? { ...spot, isFavorite: !spot.isFavorite } : spot
+        spot.id === spotTmp.id ? { ...spot, isFavorite: !spot.isFavorite } : spot
       )
     );
+
+    const isNowFavorite = !spotTmp.isFavorite;
+
+    try {
+      const url = `${API_HOST}/api/${isNowFavorite ? 'insertFavorite' : 'deleteFavorite'}`;
+      await axios.get(url, {
+        params: {
+          user_id: user?.user_id || 1,
+          target_type: 'venue',
+          target_id: spotTmp.id,
+        },
+      });
+    } catch (error) {
+      console.error('API 호출 실패:', error);
+    }
   };
 
   return (
     <>
-      <style jsx="true">{`
-
-      
+      <style jsx>{`
         .homepage-container {
-          background-color: #f9fafb;
-          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+          background: #f9fafb;
+          font-family: 'BMHanna', 'Comic Sans MS';
         }
         .hero-section {
           height: 117px;
-          border: 1px solid #333;
-          position: relative;
           padding: 2rem 1.5rem;
-          background-color: white;
-          border-top-left-radius: 12px 7px;
-          border-top-right-radius: 6px 14px;
-          border-bottom-right-radius: 10px 5px;
-          border-bottom-left-radius: 8px 11px;
+          background: white;
+          border-radius: 12px;
+          border: 1px solid #333;
         }
         .hero-title {
           text-align: center;
@@ -94,24 +137,17 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
           font-weight: bold;
           color: #374151;
           margin-top: 20px;
-          transform: rotate(-0.5deg);
         }
         .content-section {
           padding: 1rem 1.5rem;
         }
         .card {
-         border: 1px solid #333;
-          position: relative;
+          border: 1px solid #333;
           border-radius: 10px;
           overflow: hidden;
           background: white;
-          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
           margin-bottom: 1.5rem;
-        }
-        .card img {
-          width: 100%;
-          height: auto;
-          display: block;
+          position: relative;
         }
         .rating-badge {
           position: absolute;
@@ -121,83 +157,86 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
           border-radius: 4px;
           padding: 4px 8px;
           font-size: 0.75rem;
+          z-index: 2;
           display: flex;
           align-items: center;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-          z-index: 2; /* 그라디언트보다 위에 표시 */
-
         }
         .heart-icon {
           position: absolute;
           top: 8px;
           right: 8px;
           cursor: pointer;
-          z-index: 2; /* 그라디언트보다 위에 표시 */
-
+          z-index: 2;
         }
         .card-footer {
           padding: 1rem;
           background: #f3f4f6;
           text-align: right;
         }
-        .discover-btn {
+        .discover-btn-small {
           background: black;
           color: white;
-          border: none;
-          padding: 0.5rem 1rem;
+          padding: 4px 10px;
+          font-size: 13px;
           border-radius: 4px;
           font-weight: bold;
           cursor: pointer;
+          margin-left: auto;
         }
-
-        .overlay-gradient {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 60%; /* 상단 60% 영역에 그라디언트 적용 */
-          background: linear-gradient(
-             to bottom, 
-             rgba(0, 0, 0, 0.5) 0%,    /* 상단: 30% 불투명 검은색 */
-             rgba(0, 0, 0, 0.15) 40%,  /* 중간: 40% 불투명 검은색 */
-             rgba(0, 0, 0, 0) 100%     /* 하단: 완전 투명 */
-           );
-          z-index: 1;
-          pointer-events: none; /* 클릭 이벤트가 하위 요소로 전달되도록 */
-          border-radius: inherit; /* 카드의 border-radius 상속 */
+        .compact-card {
+          display: flex;
+          gap: 1rem;
+          padding: 1rem;
+          border: 1px solid #ccc;
+          border-radius: 10px;
+          background: white;
+          margin-bottom: 1rem;
         }
-
-
-        @keyframes spin {
-          0%, 100% {
-            transform: rotate(0deg);
-          }
-          50% {
-            transform: rotate(20deg);
-          }
+        .compact-image {
+          width: 125px;
+          height: 125px;
+          overflow: hidden;
+          border-radius: 8px;
+          flex-shrink: 0;
         }
-
-        .rating-badge .shining-star {
-          animation: spin 1s ease-in-out infinite;
-          transform-origin: center;
+        .compact-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
-
-        @keyframes move-right {
-            0% { transform: translateX(0); }
-            50% { transform: translateX(4px); }
-            100% { transform: translateX(0); }
-          }
-
-          .animate-arrow {
-            animation: move-right 1s infinite;
-          }
-
-
-
+        .compact-right {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+        .compact-title {
+          font-weight: bold;
+          font-size: 16px;
+          margin-bottom: 4px;
+        }
+        .compact-hours {
+          font-size: 13px;
+          color: #666;
+        }
+        .compact-bottom {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 10px;
+        }
+        .compact-rating {
+          display: flex;
+          align-items: center;
+          font-size: 14px;
+          color: #555;
+        }
+        .compact-rating svg {
+          margin-right: 4px;
+          fill: #ffe800;
+        }
       `}</style>
 
       <div className="homepage-container">
-        {/* Hero Section */}
         <section className="hero-section">
           <HatchPattern opacity={0.3} />
           <h1 className="hero-title">{get('HomePage1.1')}</h1>
@@ -209,38 +248,62 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
           />
         </section>
 
-        {/* Hotspots */}
         <section className="content-section">
-          <h2 className="section-title" style={{margin: '0', marginTop: '26px', fontSize: '21px'}}>{get('HomePage1.2')}</h2>
-          {hotspots.map((spot) => (
-            <div className="card" key={spot.id}>
-              <ImagePlaceholder src={spot.image} alt={spot.name} />
-              <div className="overlay-gradient"></div>
-              <div className="rating-badge">
-                <Star
-                  size={14}
-                  className="shining-star"
-                  style={{ marginRight: '4px', fill: '#ffe800' }}
-                />
-                {spot.rating}
+          <h2 style={{ margin: 0, marginTop: '26px', fontSize: '21px' }}>{get('HomePage1.2')}</h2>
+          {hotspots.map((spot, idx) => (
+            idx < 3 ? (
+              <div className="card" key={spot.id}>
+                <ImagePlaceholder src={spot.image} alt={spot.name} />
+                <div className="rating-badge">
+                  <Star size={14} style={{ marginRight: '4px', fill: '#ffe800' }} />
+                  {spot.rating}
+                </div>
+                <div className="heart-icon" onClick={() => toggleFavorite(spot)}>
+                  <Heart fill={spot.isFavorite ? '#f43f5e' : 'white'} color="white" />
+                </div>
+                <div style={{ padding: '0.75rem 1rem' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '6px' }}>{spot.name}</div>
+                  <div style={{ fontSize: '14px', color: '#333', marginBottom: '4px' }}>
+                    🗺️ {spot.address}
+                  </div>
+                  <div style={{ fontSize: '14px', color: '#555' }}>🕒 {spot.opening_hours}</div>
+                </div>
+                <div className="card-footer">
+                  <SketchBtn className="discover-btn-small" onClick={() => handleDiscover(spot.id)}>
+                    {get('HomePage1.3')} <ArrowRight size={16} style={{ marginLeft: 5 }} />
+                  </SketchBtn>
+                </div>
               </div>
-              <div className="heart-icon" onClick={() => toggleFavorite(spot.id)}>
-                <Heart fill={spot.isFavorite ? '#f43f5e' : 'white'} color="white" />
-              </div>
-              <div className="card-footer">
-                <SketchBtn className="discover-btn" onClick={() => handleDiscover(spot.id)}>
-                  {<HatchPattern opacity={0.8} />}
-                     <div className="flex justify-center ">
-                      <span>{get('HomePage1.3')}</span>
-                      <ArrowRight
-                          size={20}
-                          strokeWidth={1.5}
-                          className="ml-6 text-gray-500 animate-arrow" style={{marginLeft: '10px'}}
-                        />
+            ) : (
+              <div className="compact-card" key={spot.id}>
+                <div className="compact-image">
+                  <img src={spot.image} alt={spot.name} />
+                </div>
+                <div className="compact-right">
+                  <div className="compact-title">{spot.name}</div>
+                  <div className="compact-hours">
+                    🗺️ {spot.address}
+                  </div>
+                  <div className="compact-hours">🕒 {spot.opening_hours}</div>
+                  <div className="compact-bottom">
+                    <div className="compact-rating">
+                      <Star size={14} /> {spot.rating}
                     </div>
-              </SketchBtn>
+                    <SketchBtn
+                      className="discover-btn-small"
+                      onClick={() => handleDiscover(spot.id)}
+                      style={{ marginLeft: 6, width: '84px', height: '30px', display: 'flex', alignItems: 'center' }}
+                    >
+                      {get('HomePage1.3')}
+                    </SketchBtn>
+                      <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
+                  </div>
+                </div>
               </div>
-            </div>
+            )
           ))}
         </section>
       </div>

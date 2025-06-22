@@ -5,9 +5,8 @@ import SketchBtn from '@components/SketchBtn';
 import SketchInput from '@components/SketchInput';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
-
-
-
+import LoadingScreen from '@components/LoadingScreen';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 const ShareExpPage = ({ 
   navigateToPageWithData, 
   PAGES,
@@ -15,8 +14,11 @@ const ShareExpPage = ({
     name: 'Modern Bar',
     image: '/placeholder-venue.jpg'
   },
+  goBack,
   ...otherProps 
 }) => {
+
+   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();    
   const [cardNumber, setCardNumber] = useState('');
   const [venueRating, setVenueRating] = useState(0);
   const [girlRating, setGirlRating] = useState(0);
@@ -193,9 +195,8 @@ const ShareExpPage = ({
         <SketchHeader
           title={'Confirm and pay'}
           showBack={true}
-          onBack={() => console.log('뒤로가기')}
-          rightButto
-          ns={[]}
+          onBack={goBack}
+          rightButtons={[]}
         />
       <div className="share-exp-container">
         {/* Main Review Section */}
@@ -260,6 +261,10 @@ const ShareExpPage = ({
             My Review
           </SketchBtn> */}
         </div>
+         <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
       </div>
     </>
   );

@@ -51,7 +51,8 @@ const AppRoutes = () => {
       <Route 
         path="/login" 
         element={
-          isLoggedIn ? <Navigate to="/main" replace /> : <LoginView />
+          <LoginView />
+          /* isLoggedIn ? <Navigate to="/main" replace /> : <LoginView /> */
         } 
       />
 

@@ -12,7 +12,7 @@ const ProgressIndicator = ({
     <>
       <style jsx="true">{`
         .progress-container {
-          margin-bottom: 1.5rem;
+          // margin-bottom: 1.5rem;
         }
         
         .progress-indicator {

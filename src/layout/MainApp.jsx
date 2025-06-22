@@ -1,13 +1,13 @@
 // src/layout/MainApp.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, Search, Calendar, User } from 'lucide-react';
+import { Home, Search, Calendar, User, Map } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
-
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 import { PAGE_COMPONENTS, DEFAULT_PAGE } from '../config/pages.config';
 import HatchPattern from '@components/HatchPattern';
-
+import LoadingScreen from '@components/LoadingScreen';
 
 import './MainApp.css';
 
@@ -15,8 +15,18 @@ const MainApp = () => {
 
 
     const { user, isLoggedIn } = useAuth();
+    const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+    
+    //console.log('Welcome!', user);
 
-    console.log('Welcome!', user);
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+        if (messages && Object.keys(messages).length > 0) {
+                window.scrollTo(0, 0);
+              }
+    
+      }, [messages, currentLang]);
 
     const {
         currentPage,
@@ -30,7 +40,7 @@ const MainApp = () => {
         goBack,
         PAGES
     } = usePageNavigation(); 
-
+    
     const navigationProps = {
         navigateToMap,
         navigateToSearch,
@@ -51,17 +61,22 @@ const MainApp = () => {
         
         return <PageComponent {...pageData} {...navigationProps} />;
     };
-
+    const handleMapClick = () => {
+        navigateToMap({
+            searchFrom: 'home',
+        });
+    };
 
     // 네비게이션 메뉴들
     const navigationItems = [
-        { id: PAGES.HOME, icon: Home, label: 'Home' },
-        { id: PAGES.SEARCH, icon: Search, label: 'Search' },
-        { id: PAGES.EVENTS, icon: Calendar, label: 'Promotions' },
-        { id: PAGES.ACCOUNT, icon: User, label: 'Account' }
+        { id: PAGES.HOME, icon: Home, label: get('Footer1.3') },
+        { id: PAGES.SEARCH, icon: Search, label: get('btn.searchMap.1.1') },
+        { id: PAGES.EVENTS, icon: Calendar, label: get('btn.promotion.1') },
+        { id: PAGES.ACCOUNT, icon: User, label: get('Menu1.4') }
     ];
 
     return (
+        
         <div className="main-app-container">
             {/* 메인 콘텐츠 영역 (스크롤 가능) */}
             <main className="content-area">
@@ -84,6 +99,19 @@ const MainApp = () => {
                     ))}
                 </div>
             </nav>
+
+            {currentPage == 'HOME' && (
+                <section className="bottom-map-section">
+                    <div className="map-icon-container" onClick={handleMapClick}>
+                    <Map size={20} /> <span style={{marginLeft: '5px'}}>{get('Main1.1')}</span>
+                    </div>
+                </section>
+                )}
+
+                                <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
         </div>
     );
 };

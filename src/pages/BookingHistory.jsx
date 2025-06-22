@@ -4,66 +4,120 @@ import SketchBtn from '@components/SketchBtn';
 import SketchHeader from '@components/SketchHeader';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+
+import ApiClient from '@utils/ApiClient';
+import LoadingScreen from '@components/LoadingScreen';
+import { useAuth } from '@contexts/AuthContext';
 
 const BookingHistoryPage = ({ 
   navigateToPageWithData, 
   PAGES,
+  goBack,
   ...otherProps 
 }) => {
 
+  const { user, isLoggedIn } = useAuth();
+
+  // 상태
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [historyData, setHistoryData] = useState({});
+  const [bookings, setBookings] = useState([]); // 🎯 추가: API 데이터용 상태
+
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+  // 상태 라벨 변환 함수
+  const getStatusLabel = (status) => {
+    const statusMap = {
+      'pending': get('status.pending') || 'Pending',
+      'confirmed': get('status.confirmed') || 'Confirmed', 
+      'canceled': get('status.canceled') || 'Canceled',
+      'completed': get('status.completed') || 'Completed'
+    };
+    return statusMap[status] || status;
+  };
+  
   const handleRebook = (booking) => {
     console.log('Rebook clicked:', booking);
     navigateToPageWithData && navigateToPageWithData(PAGES.RESERVATION, {
-      rebookingData: booking
+      target: booking.targetType,
+      id: booking.targetId
     });
   };
 
   const handleReview = (booking) => {
     console.log('Review clicked:', booking);
     navigateToPageWithData && navigateToPageWithData(PAGES.SHARE_EXPERIENCE, {
-      venueData: {
-        name: booking.venueName,
-        image: booking.image
-      }
+      target: booking.targetType,
+      target_id: booking.targetId
     });
   };
 
   useEffect(() => {
+    const initializeData = async () => {
       window.scrollTo(0, 0);
-    }, []);
+  
+      if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        console.log('Current language set to:', currentLang);
+      }
+  
+      // historyData 로딩 완료까지 기다리기
+      try {
+        await loadBookingHistory(); // Promise 리턴하도록 수정 필요
+        console.log('📋 Booking history loaded');
+      } catch (error) {
+        console.error('❌ Failed to load booking history:', error);
+      }
+    };
+  
+    initializeData();
+  }, [messages, currentLang]); // historyData 의존성 제거
 
-  const bookings = [
-    {
-      id: 1,
-      venueName: 'Skyline Lounge',
-      hostName: 'Alex Nguyen',
-      date: 'Oct 16, 2023',
-      time: '8:00 PM',
-      status: 'confirmed',
-      statusLabel: 'Confirmed',
-      image: '/placeholder-venue1.jpg'
-    },
-    {
-      id: 2,
-      venueName: 'Neon Dreams Bar',
-      hostName: 'Linh Tran',
-      date: 'Sep 14, 2023',
-      time: '9:00 PM',
-      status: 'completed',
-      statusLabel: 'Completed',
-      image: '/placeholder-venue2.jpg'
-    },
-    {
-      id: 3,
-      venueName: 'Chic Lounge',
-      hostName: 'Minh Vu',
-      date: 'Aug 21, 2023',
-      time: '9:00 PM',
-      status: 'canceled',
-      statusLabel: 'Canceled',
-      image: '/placeholder-venue3.jpg'
-    }
-  ];
+  const loadBookingHistory = () => {
+    return new Promise((resolve, reject) => {
+      console.log('[Loading] booking-history', user.user_id);
+      
+      setIsLoadingHistory(true);
+      
+      ApiClient.postForm('/api/bookingHistory', {  // data
+        user_id: user.user_id
+      })
+      .then(response => {
+        console.log('✅ History loaded:', response);
+        
+        // 🎯 API 데이터를 bookings 형태로 변환
+        const formattedBookings = (response.data || []).map(item => ({
+          id: item.reservation_id,
+          targetName: item.target_name,
+          hostName: item.venue_name,
+          date: item.date,
+          time: item.time,
+          status: item.status,
+          statusLabel: getStatusLabel(item.status),
+          image: item.content_url || '/placeholder-venue.jpg',
+          // 추가 데이터 (필요시 사용)
+          targetType: item.target,
+          targetId: item.target_id,
+          note: item.note,
+          attendee: item.attendee,
+          reservedAt: item.reserved_at
+        }));
+        
+        setBookings(formattedBookings); // 🔥 여기서 bookings 설정!
+        setHistoryData(response.data || {});
+        setIsLoadingHistory(false);
+        resolve(response); // 성공 시 resolve
+      })
+      .catch(error => {
+        console.error('❌ Failed to load History:', error);
+        setBookings([]); // 에러시 빈 배열
+        setHistoryData({});
+        setIsLoadingHistory(false);
+        reject(error); // 실패 시 reject
+      });
+    });
+  }
 
   const getStatusColor = (status) => {
     switch(status) {
@@ -73,6 +127,8 @@ const BookingHistoryPage = ({
         return '#6b7280'; // 회색
       case 'canceled':
         return '#dc2626'; // 빨간색
+      case 'pending':
+        return '#f59e0b'; // 주황색
       default:
         return '#6b7280';
     }
@@ -194,6 +250,18 @@ const BookingHistoryPage = ({
           gap: 0.5rem;
         }
 
+        .loading-container {
+          text-align: center;
+          padding: 2rem;
+          color: #6b7280;
+        }
+
+        .empty-container {
+          text-align: center;
+          padding: 2rem;
+          color: #6b7280;
+        }
+
         @media (max-width: 480px) {
           .booking-history-container {
             max-width: 100%;
@@ -221,85 +289,79 @@ const BookingHistoryPage = ({
 
       <div className="booking-history-container">
         {/* Header */}
-         <SketchHeader
-            title={'Booking History'}
-            showBack={true}
-            onBack={() => console.log('뒤로가기')}
-            rightButtons={[]}
-          />
-        {/* <div className="header">
-          <h1 className="page-title">Booking History</h1>
-        </div> */}
+        <SketchHeader
+          title={get('Menu1.6')}
+          showBack={true}
+          onBack={goBack}
+          rightButtons={[]}
+        />
 
         {/* Bookings Section */}
         <div className="bookings-section">
-          {bookings.map((booking, index) => (
-            <div key={booking.id} className="booking-card">
-              <HatchPattern opacity={0.4} />
-              
-              <div className="booking-content">
-                <ImagePlaceholder 
-                  src={booking.image} 
-                  className="booking-image"
-                />
+          {isLoadingHistory ? (
+            <div className="loading-container">
+              <p>Loading booking history...</p>
+            </div>
+          ) : bookings.length === 0 ? (
+            <div className="empty-container">
+              <p>{get('BookingHis1.3') || 'No booking history found'}</p>
+            </div>
+          ) : (
+            bookings.map((booking, index) => (
+              <div key={booking.id} className="booking-card">
+                <HatchPattern opacity={0.4} />
                 
-                <div className="booking-details">
-                  <h3 className="venue-name">{booking.venueName}</h3>
-                  <p className="host-info">Hosted by {booking.hostName}</p>
-                  <p className="booking-datetime">
-                    Date {booking.date}, {booking.time}
-                  </p>
-                </div>
-
-                <div className="booking-actions">
-                  <div 
-                    className="booking-status"
-                    style={{ color: getStatusColor(booking.status) }}
-                  >
-                    {booking.statusLabel}
-                  </div>
+                <div className="booking-content">
+                  <ImagePlaceholder 
+                    src={booking.image} 
+                    className="booking-image"
+                  />
                   
-                  <div className="action-buttons">
-                    <SketchBtn 
-                      variant="event" 
-                      size="small"
-                      onClick={() => handleRebook(booking)}
+                  <div className="booking-details">
+                    <h3 className="venue-name">{booking.targetName}</h3>
+                    <p className="host-info">{get('BookingHis1.1')}: {booking.hostName}</p>
+                    <p className="booking-datetime">
+                      {get('BookingSum1.2')}: {booking.date}, {booking.time}
+                    </p>
+                  </div>
+
+                  <div className="booking-actions">
+                    <div 
+                      className="booking-status"
+                      style={{ color: getStatusColor(booking.status) }}
                     >
-                      <HatchPattern opacity={0.8} />
-                      Rebook
-                    </SketchBtn>
+                      {booking.statusLabel}
+                    </div>
                     
-                    <SketchBtn 
-                      variant="primary" 
-                      size="small"
-                      onClick={() => handleReview(booking)}
-                    >
-                      <HatchPattern opacity={0.4} />
-                      Review
-                    </SketchBtn>
+                    <div className="action-buttons">
+                      <SketchBtn 
+                        variant="event" 
+                        size="small"
+                        onClick={() => handleRebook(booking)}
+                      >
+                        <HatchPattern opacity={0.8} />
+                        {get('BookingHis1.2')}
+                      </SketchBtn>
+                      
+                      <SketchBtn 
+                        variant="primary" 
+                        size="small"
+                        onClick={() => handleReview(booking)}
+                      >
+                        <HatchPattern opacity={0.4} />
+                        {get('Profile1.1')}
+                      </SketchBtn>
+                                      <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
-
-        {/* Footer Copyright */}
-        {/* <div style={{ 
-          padding: '1rem', 
-          textAlign: 'center', 
-          borderTop: '2px solid #e5e7eb',
-          backgroundColor: '#f9fafb'
-        }}>
-          <p style={{ 
-            fontFamily: "'Comic Sans MS', cursive, sans-serif",
-            fontSize: '0.8rem',
-            color: '#6b7280',
-            margin: 0
-          }}>
-            © 2023 LeTanTon Sheriff. All rights reserved.
-          </p>
-        </div> */}
       </div>
     </>
   );

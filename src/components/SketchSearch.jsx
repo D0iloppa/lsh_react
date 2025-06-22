@@ -97,9 +97,9 @@ const SketchSearch = ({
         <ArrowRight className="search-arrow" size={20} />
       </div>
 
-      <button className="location-button" onClick={handleLocationClick}>
+      {/* <button className="location-button" onClick={handleLocationClick}>
         <MapPin size={20} />
-      </button>
+      </button> */}
     </div>
   );
 };

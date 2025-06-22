@@ -14,10 +14,13 @@ import { AlertCircle } from 'lucide-react';
 import SketchHeader from '@components/SketchHeader'
 
 import { CircleAlert  } from 'lucide-react';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import LoadingScreen from '@components/LoadingScreen';
 
 const CSPage2 = ({ 
   navigateToPageWithData, 
   PAGES,
+  goBack,
   ...otherProps 
 }) => {
 
@@ -35,10 +38,17 @@ const CSPage2 = ({
   const { user, isLoggedIn } = useAuth();
 
   const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
-
+  const { messages, isLoading, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   // 처음 로딩 시 데이터 가져오기
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    if (messages && Object.keys(messages).length > 0) {
+            console.log('✅ Messages loaded:', messages);
+            // setLanguage('en'); // 기본 언어 설정
+            console.log('Current language set to:', currentLang);
+            window.scrollTo(0, 0);
+          }
 
     const fetchInquiries = async () => {
       try {
@@ -75,7 +85,7 @@ const CSPage2 = ({
     };
 
     fetchInquiries();
-  }, [user?.user_id]);
+  }, [user?.user_id, messages, currentLang]);
 
   // 아이콘 타입별 매핑
   const getIconByType = (type) => {
@@ -87,9 +97,9 @@ const CSPage2 = ({
   // 상태 라벨 매핑
   const getStatusLabel = (status) => {
     switch(status) {
-      case 0: return 'Processing';
-      case 1: return 'Answered';
-      default: return 'Processing';
+      case 0: return get('CustomSupport1.4');
+      case 1: return get('CustomSupport1.5');
+      default: return get('CustomSupport1.4');
     }
   };
 
@@ -295,9 +305,7 @@ const CSPage2 = ({
         <SketchHeader
           title="Customer Support"
           showBack={true}
-          onBack={() => {
-            navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
-          }}
+          onBack={goBack}
           rightButtons={[]}
         />
 
@@ -306,7 +314,7 @@ const CSPage2 = ({
           <form onSubmit={handleSearch}>
             <SketchInput
               type="text"
-              placeholder="Search FAQs"
+              placeholder={get('CustomSupport1.1')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -317,7 +325,7 @@ const CSPage2 = ({
         <div className="inquiries-section">
           {loading ? (
             <div className="loading-message">
-              문의 목록을 불러오는 중...
+              {get('CustomSupport1.2')}
             </div>
           ) : error ? (
             <div className="error-message">
@@ -325,7 +333,7 @@ const CSPage2 = ({
             </div>
           ) : inquiries.length === 0 ? (
             <div className="loading-message">
-              등록된 문의가 없습니다.
+              {get('CustomSupport1.3')}
             </div>
           ) : (
             inquiries.map((inquiry, index) => (
@@ -361,7 +369,9 @@ const CSPage2 = ({
                     </div>
                   </div>
                 </div>
+                
               </SketchDiv>
+              
             ))
           )}
         </div>
@@ -374,8 +384,12 @@ const CSPage2 = ({
             onClick={handleNewInquiryClick}
             className="new-inquiry-btn"
           ><HatchPattern opacity={0.4} />
-            문의하기
+            {get('btn.contact.1')}
           </SketchBtn>
+            <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
         </div>
       </div>
     </>

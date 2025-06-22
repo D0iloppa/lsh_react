@@ -7,6 +7,7 @@ import SketchHeader from '@components/SketchHeader';
 import GoogleMapComponent from '@components/GoogleMapComponent';
 import SketchBtn from '@components/SketchBtn';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import LoadingScreen from '@components/LoadingScreen';
 
 const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const venueId = otherProps?.venueId || null;
@@ -60,7 +61,7 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
           const currentYear = new Date().getFullYear();
           const age = birthYear ? currentYear - birthYear : '?';
           return {
-            ...girl,
+            ...girl, 
             displayName: `${girl.name} (${age})`,
           };
         });
@@ -194,7 +195,7 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
         <SketchHeader
           title={venueInfo?.name || 'Discover'}
           showBack={true}
-          onBack={() => goBack()}
+          onBack={goBack}
           rightButtons={[]}
         />
 
@@ -247,7 +248,7 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
 
         <div className="top-girls-section">
           <div className="section-title">{get('DiscoverPage1.2')}</div>
-          <RotationDiv interval={5000} swipeThreshold={50} showIndicators={true}  pauseOnHover={true} className="girls-rotation">
+          <RotationDiv interval={500000000} swipeThreshold={50} showIndicators={true}  pauseOnHover={true} className="girls-rotation">
             {topGirls.map((girl, index) => (
               <div key={index} className="girl-slide">
                 {girl.image_url ? (
@@ -271,6 +272,10 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
               </div>
             ))}
           </RotationDiv>
+                          <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
         </div>
       </div>
     </>

@@ -3,6 +3,7 @@ import SketchDiv from '@components/SketchDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import HatchPattern from '@components/HatchPattern';
 import { Heart, Star } from 'lucide-react';
+import LoadingScreen from '@components/LoadingScreen';
 
 const InfoCard = ({
   title,
@@ -122,6 +123,7 @@ const InfoCard = ({
           </div>
         </div>
       </SketchDiv>
+      
     </>
   );
 };

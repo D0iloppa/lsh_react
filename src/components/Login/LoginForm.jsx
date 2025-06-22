@@ -8,6 +8,8 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import SketchInput from '@components/SketchInput';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
+import InitFooter from '@components/InitFooter';
+import LoadingScreen from '@components/LoadingScreen';
 
 export default function LoginForm() {
 
@@ -45,7 +47,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
       // 로그인 성공 시 메인 페이지로 이동
       setTimeout(() => {
         navigate('/main');
-      }, 1000); // 1초 후 이동 (성공 메시지 표시용)
+      }, 300); // 0.3초 후 이동 (성공 메시지 표시용)
     } else {
       setErrors(result.errors);
     }
@@ -145,6 +147,12 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
           { get('Welcome1.3') }
         </a>
       </div>
+                          <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
+
+     
     </>
   );
 }

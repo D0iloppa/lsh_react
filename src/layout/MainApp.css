@@ -87,3 +87,33 @@
   .nav-item.active:nth-child(2) { transform: rotate(-1deg) scale(1.1); }
   .nav-item.active:nth-child(3) { transform: rotate(1.3deg) scale(1.1); }
   .nav-item.active:nth-child(4) { transform: rotate(-1.7deg) scale(1.1); }
+
+  /* 하단 지도 아이콘 스타일 */
+.bottom-map-section {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+
+.map-icon-container {
+    opacity: 0.8;
+    border: 1px solid #666;
+    border-radius: 20px;
+    width: 84px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);;
+    background: linear-gradient(135deg, #00f0ff, #fff0d8);
+}
+
+.map-icon-container:hover {
+  background: #f3f4f6;
+}
+
+
+  

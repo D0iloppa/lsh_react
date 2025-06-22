@@ -4,21 +4,29 @@ import SketchBtn from '@components/SketchBtn';
 import SketchMenuBtn from '@components/SketchMenuBtn';
 import '@components/SketchComponents.css';
 
+import { useNavigate } from 'react-router-dom';
+
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import SketchHeader from '@components/SketchHeader'
 
 import { User, History, CreditCard, Bell, Heart, Settings, HelpCircle, LogOut  } from 'lucide-react';
-
+import LoadingScreen from '@components/LoadingScreen';
 import { useAuth } from '../contexts/AuthContext';
 
 const AccountPage = ({ 
   navigateToPageWithData, 
   PAGES,
+  goBack,
   ...otherProps 
 }) => {
 
+
+  const navigate = useNavigate();
+
   const { logout } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+
 
   useEffect(() => {
       if (messages && Object.keys(messages).length > 0) {
@@ -157,7 +165,7 @@ const AccountPage = ({
         <SketchHeader 
           title= { get('Menu1.4') }
           showBack={true}
-          onBack={() => console.log("뒤로가기")}
+          onBack={goBack}
           rightButtons={[]}
         />
 
@@ -179,17 +187,21 @@ const AccountPage = ({
               icon={<LogOut size={20} />}
               name={get('Menu1.10')}
               hasArrow={false}
-              onClick={() => {
+              onClick={async () => {
 
                 console.log('logout')
 
-                logout();
+                await logout();
+                navigate('/login'); 
 
               }}
               className={`logout`}
             />
         </div>
-
+                <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
         
 
       </div>

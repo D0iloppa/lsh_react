@@ -10,8 +10,9 @@ import '@components/SketchComponents.css';
 import SketchHeader from '@components/SketchHeader';
 
 import { Star, Edit3 } from 'lucide-react';
-
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '../contexts/AuthContext';
+import LoadingScreen from '@components/LoadingScreen';
 
 const Profile = ({
   navigateToPageWithData,
@@ -23,8 +24,17 @@ const Profile = ({
   const [userInfo, setUserInfo] = useState({});
   const [userReviews, setUserReviews] = useState([]);
   const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        // setLanguage('en'); // 기본 언어 설정
+        console.log('Current language set to:', currentLang);
+        window.scrollTo(0, 0);
+      }
 
     const fetchUserInfo = async () => {
       try {
@@ -51,7 +61,7 @@ const Profile = ({
     fetchUserInfo();
     fetchUserReviews();
 
-  }, [user]);
+  }, [user, messages, currentLang]);
 
   const handleBack = () => {
     navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
@@ -264,7 +274,7 @@ const Profile = ({
 
       <div className="account-container">
         <SketchHeader
-          title="Profile"
+          title={get('Menu1.12')}
           showBack={true}
           onBack={handleBack}
           rightButtons={[]}
@@ -293,15 +303,15 @@ const Profile = ({
             <div className="profile-stats">
             <div className="stat-item">
               <span className="stat-number">{userInfo?.booking_cnt ?? 0}</span>
-              <span className="stat-label">Bookings</span>
+              <span className="stat-label">{get('BookingSum1.1')}</span>
             </div>
             <div className="stat-item">
               <span className="stat-number">{userInfo?.review_cnt ?? 0}</span>
-              <span className="stat-label">Reviews</span>
+              <span className="stat-label">{get('Profile1.1')}</span>
             </div>
             <div className="stat-item">
               <span className="stat-number">{userInfo?.favorites_cnt ?? 0}</span>
-              <span className="stat-label">Favorites</span>
+              <span className="stat-label">{get('Menu1.8')}</span>
             </div>
           </div>
           </SketchDiv>
@@ -309,7 +319,7 @@ const Profile = ({
           <SketchDiv className="reviews-section">
             <HatchPattern opacity={0.02} />
             <div className="section-header">
-              <h3 className="section-title">My Reviews</h3>
+              <h3 className="section-title">{get('Profile1.2')}</h3>
             </div>
 
             <div className="reviews-list">
@@ -364,6 +374,10 @@ const Profile = ({
               ))}
             </div>
           </SketchDiv>
+            <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
         </div>
       </div>
     </>

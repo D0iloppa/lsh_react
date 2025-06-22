@@ -4,17 +4,18 @@ import qs from 'qs';
 
 import { useAuth } from '../contexts/AuthContext';
   
-
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
-
+import LoadingScreen from '@components/LoadingScreen';
 import SketchHeader from '@components/SketchHeader'
 
 const CSPage1 = ({ 
   navigateToPageWithData, 
   PAGES,
+  goBack,
   ...otherProps 
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,9 +38,17 @@ const CSPage1 = ({
 
 
   const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
-
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    if (messages && Object.keys(messages).length > 0) {
+            console.log('✅ Messages loaded:', messages);
+            // setLanguage('en'); // 기본 언어 설정
+            console.log('Current language set to:', currentLang);
+            window.scrollTo(0, 0);
+          }
+
 
     const fetchUserInfo = async () => {
       try {
@@ -53,7 +62,7 @@ const CSPage1 = ({
     };
 
     fetchUserInfo();
-  }, [user]);
+  }, [user, messages, currentLang]);
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // 폼 기본 제출 동작 방지
@@ -213,20 +222,16 @@ const CSPage1 = ({
         {/* Header */}
 
         <SketchHeader
-          title="Customer Support"
+          title={get('btn.contact.1')}
           showBack={true}
-          onBack={() => {
-            // goBack();
-            navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
-          }}
-          
+          onBack={goBack}
           rightButtons={[]}
         />
 
 
         {/* Contact Form Section */}
         <div className="contact-form-section">
-          <div className="section-title">Contact Form</div>
+          <div className="section-title">{get('CustomSupport1.6')}</div>
           
           <div className="contact-form">
             <div className="form-content">
@@ -253,9 +258,13 @@ const CSPage1 = ({
                   variant="event" 
                   size="normal"
                 >
-                  Submit
+                  {get('btn.submit.1	')}
                   <HatchPattern opacity={0.8} />
                 </SketchBtn>
+                                <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
               </form>
             </div>
           </div>
@@ -264,7 +273,7 @@ const CSPage1 = ({
         {/* Footer */}
         <div className="footer" style={{backgroundColor: '#f9fafb'}}>
           <p className="operating-hours">
-            Operating Hours: Mon-Fri 9 PM - 5 PM
+            {get('CustomSupport1.7')}: Mon-Fri 9 PM - 5 PM
           </p>
         </div>
       </div>

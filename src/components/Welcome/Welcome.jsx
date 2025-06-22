@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
 
 import { useNavigate } from 'react-router-dom';
-
+import { Ban} from 'lucide-react';
 import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import RotationDiv from '@components/RotationDiv';
 import PopularVenue from '@components/PopularVenue';
-
+import ProgressIndicator from './ProgressIndicator';
+import InitFooter from '@components/InitFooter';
 import '@components/SketchComponents.css';
 import './Welcome.css';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
-
+import LoadingScreen from '@components/LoadingScreen';
 
 const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
@@ -103,6 +104,15 @@ const CocktailIcon = () => (
 
   return (
     <div className="welcome-container max-w-md mx-auto bg-white">
+      {/* 진행 표시기 */}
+      <div className="pi-div">
+        <ProgressIndicator 
+            currentStep={currentStep} 
+            totalSteps={totalSteps} 
+          />
+      </div>
+
+
       {/* 상단 회전 영역 */}
       <div className="rotation-section">
         <RotationDiv 
@@ -131,6 +141,7 @@ const CocktailIcon = () => (
                <div className="logo-container">
                 <CocktailIcon />
                 <h1 className="sketch-title sketch-title--large">LeTanTon Sheriff</h1>
+                <span style={{ fontSize: '20px',  marginLeft: '-8px' }}>🔞</span>
               </div>
               </div>
               
@@ -185,6 +196,17 @@ const CocktailIcon = () => (
             {get('Welcome1.3')}
           </SketchBtn>
         </div>
+
+         <InitFooter 
+                    className="custom-footer"
+                    privacyHref="/privacy"
+                    termsHref="/terms"
+                  />
+                    <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
+
     </div>
     
   );

@@ -237,7 +237,7 @@ const SketchHeader = ({
 
         {/* 가운데: 타이틀 */}
         <div className="center-section">
-          <h1 className="page-title">{title}</h1>
+          <h1 className="page-title">{title}</h1><span style={{ fontSize: '20px',  marginLeft: '5px', lineHeight: '1.5', display:'none' }}>🔞</span>
         </div>
 
         {/* 오른쪽: 버튼들 (옵션) */}

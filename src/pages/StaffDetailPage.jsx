@@ -6,6 +6,7 @@ import SketchHeader from '@components/SketchHeader';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import '@components/SketchComponents.css';
+import LoadingScreen from '@components/LoadingScreen';
 
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
@@ -142,7 +143,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
 
         <div className="profile-images-section">
           <RotationDiv 
-            interval={5000} 
+            interval={50000000} 
             swipeThreshold={50} 
             showIndicators={true}  
             pauseOnHover={true}
@@ -191,6 +192,10 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
             <HatchPattern opacity={0.8} />
           </SketchBtn>
         </div>
+         <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
       </div>
     </>
   );

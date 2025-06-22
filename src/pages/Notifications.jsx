@@ -9,10 +9,12 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import SketchHeader from '@components/SketchHeader'
 
 import { useAuth } from '../contexts/AuthContext';
+import LoadingScreen from '@components/LoadingScreen';
 
 const NotificationsPage = ({
   navigateToPageWithData,
   PAGES,
+  goBack,
   ...otherProps
 }) => {
   const [selectedFilter, setSelectedFilter] = useState('all');
@@ -332,10 +334,7 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
         <SketchHeader
           title={ get('Notification1.1') }
           showBack={true}
-          onBack={() => {
-            // goBack();
-            navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
-          }}
+          onBack={goBack}
         />
 
         {/* Filter Section */}
@@ -422,7 +421,12 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
                 </div>
               </div>
             </SketchDiv>
+            
           ))}
+            <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
         </div>
       </div>
     </>

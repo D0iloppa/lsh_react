@@ -2,6 +2,8 @@
 import React, { createContext, useContext, useState } from 'react';
 import { loginPost, validateForm } from '@components/Login/login'; // ← 로그인 로직 재활용
 
+import ApiClient from '@utils/ApiClient';
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -58,11 +60,24 @@ export const AuthProvider = ({ children }) => {
     };
 
   // 로그아웃 함수
-  const logout = () => {
-    setIsLoggedIn(false);
-    setUser(null);
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('user');
+  const logout = async () => {
+
+      try {
+        const response = await ApiClient.postForm('/api/logout', {
+          user: 'logout'
+        });
+
+        console.log(response);
+    
+      } catch (error) {
+        console.error('❌ Failed to logout:', error);
+      } finally {
+        // 성공, 실패 상관없이 실행
+        setIsLoggedIn(false);
+        setUser(null);
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('user');
+      }
   };
 
   const value = {

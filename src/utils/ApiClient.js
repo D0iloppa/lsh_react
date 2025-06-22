@@ -28,6 +28,24 @@ const ApiClient = {
     return axiosInstance.put(endpoint, data, config).then(response => response.data);
   },
 
+  // form-data 전용 POST 메서드 추가
+  postForm(endpoint, data = {}, config = {}) {
+    const formData = new URLSearchParams();
+    
+    // 객체를 URLSearchParams로 변환
+    Object.keys(data).forEach(key => {
+      formData.append(key, data[key]);
+    });
+    
+    return axiosInstance.post(endpoint, formData, {
+      ...config,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        ...config.headers
+      }
+    }).then(response => response.data);
+  },
+
   // DELETE 요청
   delete(endpoint, config = {}) {
     return axiosInstance.delete(endpoint, config).then(response => response.data);

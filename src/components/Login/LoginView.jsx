@@ -5,7 +5,7 @@ import './LoginView.css';
 import '@components/SketchComponents.css';
 import InitFooter from '@components/InitFooter';
 import HatchPattern from '@components/HatchPattern';
-
+import LoadingScreen from '@components/LoadingScreen';
 
 // 칵테일 아이콘 컴포넌트
 const CocktailIcon = () => (
@@ -70,7 +70,7 @@ export default function LoginView() {
             privacyHref="/privacy"
             termsHref="/terms"
           />
-    
+
 
       </div>
     </div>

@@ -7,7 +7,7 @@ import HatchPattern from '@components/HatchPattern';
 import SketchHeader from '@components/SketchHeader';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
-
+import LoadingScreen from '@components/LoadingScreen';
 
 import Privacy_kr from './Privacy_kr';
 import Privacy_en from './Privacy_en';
@@ -86,8 +86,12 @@ export default function TermsView() {
             variant="secondary"
             className=""
           ><HatchPattern opacity={0.8} />
-            <ArrowLeft size={15}/> { get("btn.back.1") }
+            { get("btn.back.1") }
           </SketchBtn>
+                          <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
         </div>
       </div>
     </div>

@@ -66,7 +66,7 @@
     border: 0.8px solid #666;
     outline: none;
     transition: border-color 0.2s;
-    font-size: 1rem;
+    font-size: 13px;
     font-family: inherit;
     box-sizing: border-box; /* 이게 중요! */
   }
@@ -91,15 +91,23 @@
     border-bottom-right-radius: 6px 10px;
     border-bottom-left-radius: 10px 5px;
     transform: rotate(0.5deg);
+    font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
   }
   
-  .sketch-input--password {
-    border-top-left-radius: 10px 6px;
-    border-top-right-radius: 5px 12px;
-    border-bottom-right-radius: 8px 4px;
-    border-bottom-left-radius: 12px 9px;
-    transform: rotate(-0.4deg);
-  }
+.sketch-input--password {
+  border-top-left-radius: 10px 6px;
+  border-top-right-radius: 5px 12px;
+  border-bottom-right-radius: 8px 4px;
+  border-bottom-left-radius: 12px 9px;
+  /* transform: rotate(-0.1deg); ← 이것도 삭제! */
+  color: #374151 !important;
+  font-family: Arial, sans-serif !important; /* ← 폰트도 강제 변경 */
+}
+
+.sketch-input--password::placeholder {
+  font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+  color: #6b7280 !important;
+}
   
   .sketch-input--default {
     border-top-left-radius: 6px 8px;

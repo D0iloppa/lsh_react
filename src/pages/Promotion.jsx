@@ -11,6 +11,8 @@ import SketchHeader from '@components/SketchHeader';
 import { MapPin, Filter } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import LoadingScreen from '@components/LoadingScreen';
 
 const PromotionsPage = ({
   navigateToPageWithData,
@@ -23,9 +25,16 @@ const PromotionsPage = ({
   const [promotions, setPromotions] = useState([]);
   const [originalPromotions, setOriginalPromotions] = useState([]);
   const API_HOST = import.meta.env.VITE_API_HOST;
-
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        // setLanguage('en'); // 기본 언어 설정
+        console.log('Current language set to:', currentLang);
+        window.scrollTo(0, 0);
+      }
 
     const fetchPromotion = async () => {
       try {
@@ -39,7 +48,7 @@ const PromotionsPage = ({
     };
 
     fetchPromotion();
-  }, [user]);
+  }, [user, messages, currentLang]);
 
   const handleApplyFilter = () => {
     const keyword = filterQuery.toLowerCase();
@@ -288,7 +297,7 @@ const PromotionsPage = ({
         `}</style>
 
       <div className="promotions-container">
-        <SketchHeader title="Promotions" showBack={false} rightButtons={[]} />
+        <SketchHeader title={get('btn.promotion.1')} showBack={false} rightButtons={[]} />
 
         <div className="content-section">
           <SketchDiv className="filter-section">
@@ -297,7 +306,7 @@ const PromotionsPage = ({
               <div className="filter-input">
                 <SketchInput
                   type="text"
-                  placeholder="Search keyword"
+                  placeholder={get('Promotion1.1')}
                   value={filterQuery}
                   onChange={(e) => setFilterQuery(e.target.value)}
                   onKeyDown={(e) => {
@@ -315,7 +324,7 @@ const PromotionsPage = ({
               >
                 <HatchPattern opacity={0.8} />
                 <Filter size={16} />
-                SEARCH
+                {get('btn.search.1')}
               </SketchBtn>
             </div>
           </SketchDiv>
@@ -337,18 +346,18 @@ const PromotionsPage = ({
                     <div className="promotion-info">
                       <h3 className="promotion-title">{promotion.title}</h3>
                       <div className="promotion-detail">
-                        <span className="detail-label">Venue:</span>
+                        <span className="detail-label">{get('title.text.14')}:</span>
                         <span>{promotion.venue_name}</span>
                       </div>
                       <div className="promotion-details">
                         <div className="promotion-detail">
-                          <span className="detail-label">Date:</span>
+                          <span className="detail-label">{get('BookingSum1.2')}:</span>
                           <span>
                             {promotion.start_date}~{promotion.end_date}
                           </span>
                         </div>
                         <div className="promotion-detail">
-                          <span className="detail-label">Info:</span>
+                          <span className="detail-label">{get('Promotion1.2')}:</span>
                           <span>{promotion.description}</span>
                         </div>
                       </div>
@@ -360,7 +369,7 @@ const PromotionsPage = ({
                             size="medium"
                             onClick={() => handleBookNow(promotion)}
                           >
-                            Book Now
+                            {get('btn.booking.2')}
                           </SketchBtn>
                         </div>
                         <button
@@ -378,11 +387,15 @@ const PromotionsPage = ({
               <SketchDiv className="promotion-card">
                 <HatchPattern opacity={0.02} />
                 <div className="empty-state">
-                  <h3>No Events Found</h3>
-                  <p>Try adjusting your filter or check back later for new events.</p>
+                  <h3>{get('Promotion1.3')}</h3>
+                  <p>{get('Promotion1.4')}</p>
                 </div>
               </SketchDiv>
             )}
+              <LoadingScreen 
+        isVisible={isLoading} 
+        // loadingText="Loading" 
+/>
           </div>
         </div>
       </div>

@@ -16,6 +16,7 @@ const ViewReviewPage = ({
     description: 'A chic rooftop bar offering panoramic views.',
     image: '/placeholder-venue.jpg'
   },
+  goBack,
   ...otherProps 
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -219,10 +220,7 @@ const ViewReviewPage = ({
         <SketchHeader
           title="LeTanTon Sheriff"
           showBack={false}
-          onBack={() => {
-            // goBack();
-            navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
-          }}
+          onBack={goBack}
           rightButtons={[]}
         />
 
