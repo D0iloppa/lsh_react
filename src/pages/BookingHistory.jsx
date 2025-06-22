@@ -65,6 +65,34 @@ const BookingHistoryPage = ({
     }
   };
 
+  const calculateActualEndTime = (startTime, durationHours) => {
+    if (!startTime || !durationHours) return '';
+    
+    // 시간 파싱
+    const [hours, minutes, seconds] = startTime.split(':').map(Number);
+    
+    // 시작 시간을 분으로 변환
+    const totalStartMinutes = hours * 60 + minutes;
+    
+    // duration을 분으로 변환하고 더하기
+    const totalEndMinutes = totalStartMinutes + (durationHours * 60);
+    
+    // 24시간을 넘어가는지 계산
+    const endHours = Math.floor(totalEndMinutes / 60);
+    const endMinutes = totalEndMinutes % 60;
+    
+    // 다음날 표시 처리
+    if (endHours >= 24) {
+      const nextDayHours = endHours - 24;
+      return `${nextDayHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}+1`;
+    } else {
+      return `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+  };
+
+
+
+
   useEffect(() => {
     const initializeData = async () => {
       window.scrollTo(0, 0);
@@ -105,8 +133,8 @@ const BookingHistoryPage = ({
           hostName: item.venue_name,
           date: item.date,
           time: item.time,
-          end_time: item.end_time,
-          timeDisplay: formatTimeDisplay(item.time, item.end_time),
+          end_time: calculateActualEndTime(item.end_time || item.time, 1),
+          timeDisplay: formatTimeDisplay(item.time, calculateActualEndTime(item.end_time || item.time, 1)),
           status: item.status,
           statusLabel: getStatusLabel(item.status),
           image: item.content_url || '/placeholder-venue.jpg',
