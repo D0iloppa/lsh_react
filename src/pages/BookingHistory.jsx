@@ -53,6 +53,18 @@ const BookingHistoryPage = ({
     });
   };
 
+  const formatTimeDisplay = (startTime, endTime) => {
+    if (!startTime) return '';
+    
+    if (endTime && endTime !== startTime) {
+      // 시작시간과 종료시간이 모두 있는 경우
+      return `${startTime} - ${endTime}`;
+    } else {
+      // 시작시간만 있는 경우 (기존 방식)
+      return startTime;
+    }
+  };
+
   useEffect(() => {
     const initializeData = async () => {
       window.scrollTo(0, 0);
@@ -93,6 +105,8 @@ const BookingHistoryPage = ({
           hostName: item.venue_name,
           date: item.date,
           time: item.time,
+          end_time: item.end_time,
+          timeDisplay: formatTimeDisplay(item.time, item.end_time),
           status: item.status,
           statusLabel: getStatusLabel(item.status),
           image: item.content_url || '/placeholder-venue.jpg',
@@ -132,6 +146,18 @@ const BookingHistoryPage = ({
       default:
         return '#6b7280';
     }
+  };
+
+
+  const calculateDuration = (startTime, endTime) => {
+    if (!startTime || !endTime) return '';
+    
+    const start = new Date(`2000-01-01 ${startTime}`);
+    const end = new Date(`2000-01-01 ${endTime}`);
+    const diffMs = end - start;
+    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+    
+    return `${diffHours}${get('Reservation.HourUnit') || '시간'}`;
   };
 
   return (
@@ -231,6 +257,13 @@ const BookingHistoryPage = ({
           margin: 0;
         }
 
+        .booking-time {
+          font-size: 0.85rem;
+          color: #6b7280;
+          margin: 0;
+          margin-top: 5px;
+        }
+
         .booking-actions {
           display: flex;
           flex-direction: column;
@@ -320,9 +353,19 @@ const BookingHistoryPage = ({
                   <div className="booking-details">
                     <h3 className="venue-name">{booking.targetName}</h3>
                     <p className="host-info">{get('BookingHis1.1')}: {booking.hostName}</p>
+
                     <p className="booking-datetime">
-                      {get('BookingSum1.2')}: {booking.date}, {booking.time}
+                      {get('BookingSum1.2')}: {booking.date}
                     </p>
+                    <p className="booking-time">
+                      {get('BookingSum1.3')}: {booking.timeDisplay + ' '}
+                      {booking.end_time && booking.end_time !== booking.time && (
+                        <span className="duration-info">
+                          ({calculateDuration(booking.time, booking.end_time)})
+                        </span>
+                      )}
+                    </p>
+
                   </div>
 
                   <div className="booking-actions">
