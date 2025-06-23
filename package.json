@@ -1,7 +1,7 @@
 {
-  "name": "lsh_react",
+  "name": "lsh-staff-app",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0-staff",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -31,5 +31,7 @@
     "postcss": "^8.5.5",
     "tailwindcss": "^4.1.10",
     "vite": "^6.3.5"
-  }
+  },
+  "description": "LeTanTon Sheriff - Staff Application",
+  "homepage": "https://github.com/D0iloppa/lsh_react/tree/staff-app"
 }
