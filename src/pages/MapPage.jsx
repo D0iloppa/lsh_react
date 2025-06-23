@@ -94,7 +94,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
       <style jsx>{`
         .map-container { max-width: 28rem; margin: 0 auto; font-family: 'BMHanna', sans-serif; background-color: white; }
         .map-container-area { height: 85vh; position: relative; }
-        .map-content-area { width: 100%; height: 100%; background: #f8fafc; position: relative; overflow: hidden; }
+        .map-content-area { height: 100%; background: #f8fafc; position: relative; overflow: hidden; }
         .map-component-placeholder { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
         .map-search-overlay { position: absolute; top: 1rem; left: 1rem; right: 1rem; z-index: 50; }
         .map-filter-selects {
@@ -159,7 +159,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
           height: 230px;
           background: #ffffff;
           z-index: 40;
-          border-top: 2px solid #1f2937;
+          border-top: 1px solid #1f2937;
           box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
         }
         .venue-list-scroll {
@@ -230,11 +230,11 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
                   value={staffLanguageFilter}
                   onChange={(e) => setStaffLanguageFilter(e.target.value)}
                 >
-                  <option value="ALL">사용가능 언어</option>
-                  <option value="kr">한국어</option>
-                  <option value="en">영어</option>
-                  <option value="ja">일본어</option>
-                  <option value="vi">베트남어</option>
+                  <option value="ALL">{get('language.filter.all')}</option>
+                  <option value="kr">{get('language.name.korean')}</option>
+                  <option value="en">{get('language.name.english')}</option>
+                  <option value="ja">{get('language.name.japanese')}</option>
+                  <option value="vi">{get('language.name.vietnamese')}</option>
                 </select>
               </div>
 

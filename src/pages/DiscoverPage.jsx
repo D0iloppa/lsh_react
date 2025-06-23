@@ -11,6 +11,7 @@ import LoadingScreen from '@components/LoadingScreen';
 import {Star, Clock, Users, Phone, CreditCard, MessageCircle} from 'lucide-react';
 
 const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
+
   const venueId = otherProps?.venueId || null;
   const [venueInfo, setVenueInfo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -295,7 +296,9 @@ useEffect(() => {
 
           <div className="top-sum">
             <div className="stars">{renderStars(venueInfo?.rating)}</div>
-            <div style={{color: '#0072ff'}}>리뷰 25개 모두 보기 > </div>
+            <div style={{color: '#0072ff'}}  onClick={() =>
+                         navigateToPageWithData(PAGES.VIEWREVIEW)
+                        }>리뷰 25개 모두 보기 > </div>
           </div>
 
           <div className="section-title" style={{textAlign:'start'}}>{get('DiscoverPage1.6')}</div>
@@ -375,7 +378,7 @@ useEffect(() => {
                 </SketchBtn>
               </div>
             </div>
-          {/* <div className="action-row">
+           <div className="action-row">
             <SketchBtn 
                           className="sketch-button enter-button"  
                           variant="event" 
@@ -388,7 +391,7 @@ useEffect(() => {
                       ><HatchPattern opacity={0.8} />
                           {get('DiscoverPage1.1')}
                         </SketchBtn>
-          </div> */}
+          </div> 
                           <LoadingScreen 
                                     variant="cocktail"
                                     loadingText="Loading..."
