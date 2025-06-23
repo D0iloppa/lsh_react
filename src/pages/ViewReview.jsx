@@ -260,7 +260,7 @@ const ViewReviewPage = ({
         <SketchHeader
           title={get('Profile1.1')}
           showBack={true}
-          onBack={handleBack}
+          onBack={goBack}
           rightButtons={[]}
         />
 
