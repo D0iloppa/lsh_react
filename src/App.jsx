@@ -90,7 +90,7 @@ function App() {
   return (
     <AuthProvider>
       <MsgProvider>  {/* 👈 여기에 추가! */}
-        <Router basename="/lsh">
+        <Router basename="/lsh_staff">
           <AppRoutes />
         </Router>
       </MsgProvider>

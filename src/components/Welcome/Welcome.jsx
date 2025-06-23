@@ -152,26 +152,7 @@ const CocktailIcon = () => (
             </div>
       </div>
 
-      {/* 액션 버튼들 */}
-      {/* <div className="action-buttons-section">
-        <SketchDiv 
-          className="action-btn explore-btn"
-          variant="button"
-          onClick={onNextScreen}
-        >
-          <HatchPattern opacity={0.15} />
-          <span className="btn-text">EXPLORE NOW</span>
-        </SketchDiv>
-        
-        <SketchDiv 
-          className="action-btn create-account-btn"
-          variant="button"
-          onClick={onCreateAccount}
-        >
-          <HatchPattern opacity={0.15} />
-          <span className="btn-text">CREATE AN ACCOUNT</span>
-        </SketchDiv>
-      </div> */}
+
 
 
        <div className="relative" style={{ marginTop: '1rem' }}>
@@ -182,7 +163,7 @@ const CocktailIcon = () => (
             variant = 'event' 
             onClick={onExpore}
           >
-            {get('Welcome1.2')}
+            {'STAFF'}
           </SketchBtn>
         </div>
         <div className="relative" style={{ marginTop: '1rem' }}>
@@ -192,7 +173,7 @@ const CocktailIcon = () => (
             className="sketch-button" style={{ fontWeight: 'bold' }}
             onClick={onCreateAccount}
           >
-            {get('Welcome1.3')}
+            {'MANAGER'}
           </SketchBtn>
         </div>
 
