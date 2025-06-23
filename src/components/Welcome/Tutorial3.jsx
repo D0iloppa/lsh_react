@@ -54,8 +54,12 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
 
       {/* 메인 이미지 */}
-      <div className="mt-20">
-        <ImagePlaceholder src={"/cdn/content/tuto-2.png"} className="w-full h-48" style={{ border: '1px solid #333', borderRadius: '5px'}} />
+      <div className="">
+        <ImagePlaceholder src={"/cdn/tuto-2.png"} className="w-full h-48" style={{ width: '335px', height:'330px', border: '1px solid #333', padding: '10px', borderTopLeftRadius: '15px 8px',
+        borderTopRightRadius: '8px 20px',
+        borderBottomRightRadius: '12px 6px',
+        borderBottomLeftRadius: '6px 15px',
+        transform: 'rotate(-1.2deg)' }} />
       </div>
 
       {/* Next Screen 버튼 */}

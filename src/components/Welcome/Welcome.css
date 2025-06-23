@@ -297,4 +297,9 @@
       padding: 14px 18px;
       font-size: 15px;
     }
+
+    .rotation-div.edge-left::before, .rotation-div.edge-right::after {
+      backdrop-filter: none !important;
+      background-color: rgba(255,255,255, 0.0) !important; 
+    }
   }

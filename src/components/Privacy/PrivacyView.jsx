@@ -32,7 +32,7 @@ export default function TermsView() {
     navigate(-1); // 이전 페이지로 이동
   };
 
-  const lang = 'en';
+  const lang = currentLang;
 
   return (
       <>

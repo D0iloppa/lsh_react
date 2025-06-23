@@ -148,7 +148,7 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
         />
 
         {/* Next Screen 버튼 */}
-        <div className="relative" style={{ marginTop: '1rem' }}>
+        <div className="relative" style={{ marginTop: '20px' }}>
           <HatchPattern opacity={0.3} />
           
           <SketchBtn 

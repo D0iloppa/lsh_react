@@ -21,7 +21,7 @@ export default function TermsView() {
     navigate(-1); // 이전 페이지로 이동
   };
 
-  const lang = 'en';
+
 
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   
@@ -34,6 +34,8 @@ export default function TermsView() {
       }
     }, [messages, currentLang]);
 
+  const lang = currentLang;
+  
   return (
 
      <>

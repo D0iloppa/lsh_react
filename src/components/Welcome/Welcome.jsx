@@ -61,9 +61,15 @@ const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
     }
   ];
 
+  const onExpore = () => {
+    navigate('/login');
+  };
+
   const onCreateAccount = () => {
     navigate('/register');
   };
+
+
 
 const CocktailIcon = () => (
   <svg 
@@ -104,13 +110,6 @@ const CocktailIcon = () => (
 
   return (
     <div className="welcome-container max-w-md mx-auto bg-white">
-      {/* 진행 표시기 */}
-      <div className="pi-div">
-        <ProgressIndicator 
-            currentStep={currentStep} 
-            totalSteps={totalSteps} 
-          />
-      </div>
 
 
       {/* 상단 회전 영역 */}
@@ -181,7 +180,7 @@ const CocktailIcon = () => (
           <SketchBtn 
             className="sketch-button"  
             variant = 'event' 
-            onClick={onNextScreen}
+            onClick={onExpore}
           >
             {get('Welcome1.2')}
           </SketchBtn>
