@@ -306,7 +306,9 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
             style={{ marginTop: 0, marginBottom: 0 }}
           />
           <div className="filter-selects">
-            <select className="select-box" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+            <select 
+              style={{'display':'none'}}
+              className="select-box" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
               <option value="ALL">{get('main.filter.category.all')}</option>
               <option value="BAR">{get('main.filter.category.bar')}</option>
               <option value="RESTAURANT">{get('main.filter.category.restaurant')}</option>

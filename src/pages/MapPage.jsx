@@ -212,7 +212,9 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
                 handleLocationClick={() => {}}
               />
               <div className="map-filter-selects">
-                <select className="select-box" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+                <select 
+                  style={{'display':'none'}}
+                  className="select-box" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
                   <option value="ALL">유형 전체</option>
                   <option value="BAR">BAR</option>
                   <option value="RESTAURANT">RESTAURANT</option>

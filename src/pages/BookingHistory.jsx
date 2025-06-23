@@ -68,6 +68,8 @@ const BookingHistoryPage = ({
     }
   };
 
+
+
    
 
   const handleReview = (booking) => {
@@ -87,7 +89,11 @@ const BookingHistoryPage = ({
     
     if (reviewState.action === 'view') {
       // 기존 리뷰 보기/수정 페이지로 이동
-      // navigate to review view/edit page
+
+      navigateToPageWithData && navigateToPageWithData(PAGES.PROFILE);
+
+      // navigateToPageWithData && navigateToPageWithData(PAGES.VIEWREVIEW);
+      
     } else if (reviewState.action === 'create') {
       navigateToPageWithData && navigateToPageWithData(PAGES.SHARE_EXP, {
         reservation_id: booking.id,

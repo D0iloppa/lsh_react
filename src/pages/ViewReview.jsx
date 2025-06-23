@@ -10,6 +10,7 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import LoadingScreen from '@components/LoadingScreen';
 import {Filter, Martini} from 'lucide-react';
+import axios from 'axios';
 
 const ViewReviewPage = ({ 
   navigateToPageWithData, 
@@ -30,14 +31,44 @@ const ViewReviewPage = ({
    console.log("venueId", venueId)
    const [userImages, setUserImages] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState('latest'); // 정렬 순서
+  const [targetTypeFilter, setTargetTypeFilter] = useState('ALL'); // 타겟 타입 필터
+  const [originalReviews, setOriginalReviews] = useState([]); // 원본 데이터 보관
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
-const API_HOST = import.meta.env.VITE_API_HOST;
-     useEffect(() => {
-    if (messages && Object.keys(messages).length > 0) {
-      console.log('✅ Messages loaded:', messages);
-      window.scrollTo(0, 0);
-    }
-  }, [messages, currentLang]);
+  const API_HOST = import.meta.env.VITE_API_HOST;
+      useEffect(() => {
+      if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        window.scrollTo(0, 0);
+      }
+    }, [messages, currentLang]);
+
+    const applyFiltersAndSort = () => {
+      let filtered = [...originalReviews];
+      
+      // 타겟 타입 필터링
+      if (targetTypeFilter !== 'ALL') {
+        filtered = filtered.filter(review => review.target_type === targetTypeFilter);
+      }
+      
+      // 날짜 정렬
+      filtered.sort((a, b) => {
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
+        
+        if (sortOrder === 'latest') {
+          return dateB - dateA; // 최신순
+        } else {
+          return dateA - dateB; // 과거순
+        }
+      });
+      
+      setReviews(filtered);
+    };
+
+useEffect(() => {
+  applyFiltersAndSort();
+}, [sortOrder, targetTypeFilter, originalReviews]);
 
   // ViewReview
   useEffect(() => {
@@ -51,6 +82,8 @@ const API_HOST = import.meta.env.VITE_API_HOST;
     });
     
     const reviewsData = response.data || [];
+    //console.log("reviewsData", reviewsData)
+    setOriginalReviews(reviewsData);
     setReviews(reviewsData);
     
     // 유니크한 user_id들 추출
@@ -58,8 +91,8 @@ const API_HOST = import.meta.env.VITE_API_HOST;
     
     // 모든 유저 정보를 병렬로 요청
     const userPromises = userIds.map(userId => 
-      ApiClient.get('/api/getUserInfo', {
-        user_id: userId
+      axios.get(`${API_HOST}/api/getUserInfo`, {
+        params: { user_id: userId }
       }).catch(error => {
         console.error(`유저 ${userId} 정보 실패:`, error);
         return { data: { image_url: '/placeholder-user.jpg' } };
@@ -282,6 +315,20 @@ const API_HOST = import.meta.env.VITE_API_HOST;
           margin: 0;
         }
 
+        .review-type{margin-bottom: 10px;
+          padding: 2px;
+          border-radius: 10px;
+          width: 50px;
+          text-align: center;}
+
+        .review-type.venue {
+          background: #b8fbff;
+        }
+
+        .review-type.staff {
+         background: #ffffaa;
+        }
+
         @media (max-width: 480px) {
           .view-review-container {
             max-width: 100%;
@@ -303,17 +350,24 @@ const API_HOST = import.meta.env.VITE_API_HOST;
 
         {/* Search Section */}
         <div className="map-filter-selects">
-        <select class="select-box">
-          <option value="ALL">최신순</option>
-          <option value="BAR">최신순</option>
-          <option value="RESTAURANT">과거순</option>
+          <select 
+            className="select-box"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+          >
+            <option value="latest">최신순</option>
+            <option value="oldest">과거순</option>
           </select>
-          <select class="select-box">
+          <select 
+            className="select-box"
+            value={targetTypeFilter}
+            onChange={(e) => setTargetTypeFilter(e.target.value)}
+          >
             <option value="ALL">유형 전체</option>
-          <option value="BAR">매장</option>
-          <option value="RESTAURANT">Staff</option>
+            <option value="venue">매장</option>
+            <option value="staff">Staff</option>
           </select>
-          </div>
+        </div>
         {/* <div className="search-section">
           <form onSubmit={handleSearch}>
             <SketchInput
@@ -349,9 +403,13 @@ const API_HOST = import.meta.env.VITE_API_HOST;
                   <div className="review-header">
                     <ImagePlaceholder 
                       src={userImages[review.user_id] || '/placeholder-user.jpg'}
-                      className="user-avatar"
+                      className="user-avatar" alt="profile"
                     />
-                    <div className="user-info">
+                    <div>
+                    <div className={`review-type ${review.target_type}`}>
+                    {review.target_type === 'venue' ? '매장' : 'Staff'}
+                  </div>
+                    <div className="user-info"></div>
                       <h3 className="user-name">{review.user_name}</h3>
                       <p className="review-meta">
                         {renderStars(review.rating)} stars - {new Date(review.created_at).toLocaleDateString()}

@@ -92,12 +92,16 @@ const ShareExpPage = ({
             className={`star-button ${rating >= star ? 'filled' : 'empty'}`}
             onClick={() => onRatingChange(star)}
           >
-            ○
+            ★
           </button>
         ))}
       </div>
     </div>
   );
+
+
+
+
 
   return (
     <>
@@ -176,31 +180,55 @@ const ShareExpPage = ({
 
         .star-button {
           background: none;
-          border: 2px solid #1f2937;
-          border-radius: 50%;
+          border: none; /* 테두리 제거하여 별 모양이 더 명확하게 */
           width: 2rem;
           height: 2rem;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          font-size: 1.2rem;
+          font-size: 1.5rem; /* 별이 더 크게 보이도록 */
           transition: all 0.2s;
+          position: relative;
         }
 
         .star-button.empty {
-          background-color: white;
-          color: #6b7280;
+          color: #d1d5db; /* 회색 빈 별 */
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         .star-button.filled {
-          background: linear-gradient(135deg, #00f0ff, #fff0d8);
-          color: #1f2937;
-          border-color: #778eaf;
+          color: #fbbf24; /* 노란색 채워진 별 */
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2), 
+                      0 0 10px rgba(251, 191, 36, 0.3); /* 발광 효과 */
+          filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.2));
         }
 
         .star-button:hover {
           transform: scale(1.1);
+          filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+        }
+
+        .star-button.filled:hover {
+          color: #f59e0b; /* 호버 시 더 진한 노란색 */
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3), 
+                      0 0 15px rgba(245, 158, 11, 0.5);
+        }
+
+        /* 호버 시 미리보기 효과 (마우스 오버한 별까지 채워지는 효과) */
+        .stars-container:hover .star-button {
+          color: #d1d5db;
+        }
+
+        .stars-container .star-button:hover,
+        .stars-container .star-button:hover ~ .star-button {
+          color: #d1d5db;
+        }
+
+        .stars-container .star-button:hover {
+          color: #fbbf24;
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2), 
+                      0 0 10px rgba(251, 191, 36, 0.4);
         }
 
         .review-textarea-section {
