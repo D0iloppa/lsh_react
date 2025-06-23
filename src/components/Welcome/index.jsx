@@ -11,6 +11,11 @@ import Welcome from './Welcome';
 const WelcomeTutorial = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isTutorial, setIsTutorial] = useState(false); // Intro는 튜토리얼이 아님
+  
+  // 터치 이벤트용 state
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // 모든 단계 컴포넌트들
   const allSteps = [
@@ -24,6 +29,10 @@ const WelcomeTutorial = ({ onComplete }) => {
   const tutorialSteps = allSteps.slice(1, 4); // Tutorial1 ~ Tutorial3
 
   const handleNext = () => {
+    if (isTransitioning) return; // 전환 중에는 동작 방지
+    
+    setIsTransitioning(true);
+    
     if (currentStep === 0) {
       // Intro에서 Tutorial1으로
       setCurrentStep(1);
@@ -41,9 +50,18 @@ const WelcomeTutorial = ({ onComplete }) => {
       // Welcome 페이지에서 완료
       onComplete?.();
     }
+    
+    // 전환 애니메이션 시간 후 상태 초기화
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 300);
   };
 
   const handlePrev = () => {
+    if (isTransitioning) return; // 전환 중에는 동작 방지
+    
+    setIsTransitioning(true);
+    
     if (isTutorial && currentStep > 1) {
       // Tutorial1~3에서 이전으로
       setCurrentStep(currentStep - 1);
@@ -52,6 +70,48 @@ const WelcomeTutorial = ({ onComplete }) => {
       setCurrentStep(0);
       setIsTutorial(false);
     }
+    
+    // 전환 애니메이션 시간 후 상태 초기화
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 300);
+  };
+
+  // 터치 이벤트 핸들러들
+  const handleTouchStart = (e) => {
+    if (!isTutorial) return; // 튜토리얼 단계에서만 작동
+    
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isTutorial) return; // 튜토리얼 단계에서만 작동
+    
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!isTutorial || !touchStart || !touchEnd || isTransitioning) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50; // 왼쪽으로 스와이프 (다음)
+    const isRightSwipe = distance < -50; // 오른쪽으로 스와이프 (이전)
+    
+    // 최소 스와이프 거리 체크
+    if (Math.abs(distance) < 50) return;
+
+    if (isLeftSwipe && currentStep < 3) {
+      // 왼쪽 스와이프 = 다음 페이지
+      handleNext();
+    } else if (isRightSwipe && currentStep > 1) {
+      // 오른쪽 스와이프 = 이전 페이지
+      handlePrev();
+    }
+    
+    // 터치 상태 초기화
+    setTouchStart(null);
+    setTouchEnd(null);
   };
 
   // Welcome 페이지의 독립적인 네비게이션
@@ -95,7 +155,22 @@ const WelcomeTutorial = ({ onComplete }) => {
     }
   };
 
-  return <CurrentComponent {...getComponentProps()} />;
+  return (
+    <div 
+      className={`tutorial-container ${isTutorial ? 'tutorial-swipe-enabled' : ''}`}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      style={{
+        touchAction: 'pan-y', // 세로 스크롤은 유지, 가로 스와이프만 감지
+        transition: isTransitioning ? 'transform 0.3s ease-out' : 'none',
+        userSelect: 'none', // 텍스트 선택 방지
+        WebkitUserSelect: 'none'
+      }}
+    >
+      <CurrentComponent {...getComponentProps()} />
+    </div>
+  );
 };
 
 export default WelcomeTutorial;

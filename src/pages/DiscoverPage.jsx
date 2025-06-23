@@ -9,6 +9,7 @@ import SketchBtn from '@components/SketchBtn';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
 import {Star, Clock, Users, Phone, CreditCard, MessageCircle} from 'lucide-react';
+import ApiClient from '@utils/ApiClient';
 
 const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
@@ -102,6 +103,25 @@ useEffect(() => {
     fetchVenueInfo();
     fetchTopGirls();
   }, [venueId, messages, currentLang]);
+
+
+  useEffect(() => {
+    const loadVenueReview = async (venueId) => {
+        if (!venueId) return;
+        const response = await ApiClient.postForm('/api/getVenueReviewList', {  // data
+          venue_id: venueId
+        });
+
+        console.log('responseReive', response)
+
+        return response;
+      }
+
+      loadVenueReview();
+  });
+ 
+
+
 
   const renderStars = (rating = 0) => {
   const stars = [];
@@ -297,7 +317,7 @@ useEffect(() => {
           <div className="top-sum">
             <div className="stars">{renderStars(venueInfo?.rating)}</div>
             <div style={{color: '#0072ff'}}  onClick={() =>
-                         navigateToPageWithData(PAGES.VIEWREVIEW)
+                         navigateToPageWithData(PAGES.VIEWREVIEW, {venueId})
                         }>리뷰 25개 모두 보기 > </div>
           </div>
 
@@ -343,7 +363,7 @@ useEffect(() => {
               {<HatchPattern opacity={0.4} />}
               <div className="reservation-footer-content">
                 <div>
-                <div className="club-name" style={{ fontSize:'17px', maxWidth: '160px'}}>{venueInfo?.name || 'Club One'}</div>
+                <div className="club-name" style={{ color: '#374151', fontSize:'17px', maxWidth: '160px'}}>{venueInfo?.name || 'Club One'}</div>
                 <div>
                   <Clock size={13} style={{ marginRight: '4px' }} />
                   {venueInfo && venueInfo.open_time && venueInfo.close_time

@@ -1,95 +1,238 @@
-    .tutorial-container {
-      max-width: 28rem;
-      margin: 0 auto;
-      background-color: white;
-      position: relative;
+/* 기존 Tutorial.css 스타일들 */
+.tutorial-container {
+  max-width: 28rem;
+  margin: 0 auto;
+  background-color: white;
+  position: relative;
+  font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+  
+  /* 스와이프 기능을 위한 추가 스타일 */
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
 
-      font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
-    }
-    
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem;
-      border-bottom: 2px solid #374151;
-      background-color: #f9fafb;
-    }
-    
-    .logo-section {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-shrink: 0;
-    }
-    
-    .logo-icon {
-      width: 24px;
-      height: 24px;
-      transform: rotate(12deg);
-    }
-    
-    .logo-text {
-      font-weight: bold;
-      color: #374151;
-      font-size: 1rem;
-    }
-    
-    .search-input {
-      flex: 1;
-      padding: 0.5rem;
-      border: 1px solid #6b7280;
-      border-radius: 4px 8px 4px 6px;
-      color: #6b7280;
-      background-color: white;
-      transform: rotate(0.2deg);
-    }
-    
-    .search-input:focus {
-      outline: none;
-      border-color: #374151;
-    }
-    
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 2px solid #374151;
+  background-color: #f9fafb;
+}
 
-    
-    .description-text {
-      text-align: start;
-      color: #374151;
-      line-height: 1.5;
-      margin: 1rem 0 2rem 0;
-      transform: rotate(-0.3deg);
-    }
-    
-    .next-button-container {
-      position: relative;
-      margin-top: 2rem;
-    }
-    
-    .progress-indicator {
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-    
-    .progress-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background-color: #d1d5db;
-    }
-    
-    .progress-dot.active {
-      background-color: #374151;
-    }
-    
-    .progress-text {
-      text-align: center;
-      font-size: 0.875rem;
-      color: #6b7280;
-      margin-bottom: 1.5rem;
-    }
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
 
-    .mt-20{
-      margin-top: 20px;
-    }
+.logo-icon {
+  width: 24px;
+  height: 24px;
+  transform: rotate(12deg);
+}
+
+.logo-text {
+  font-weight: bold;
+  color: #374151;
+  font-size: 1rem;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #6b7280;
+  border-radius: 4px 8px 4px 6px;
+  color: #6b7280;
+  background-color: white;
+  transform: rotate(0.2deg);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #374151;
+}
+
+.description-text {
+  text-align: start;
+  color: #374151;
+  line-height: 1.5;
+  margin: 1rem 0 2rem 0;
+  transform: rotate(-0.3deg);
+}
+
+.next-button-container {
+  position: relative;
+  margin-top: 2rem;
+}
+
+.progress-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #d1d5db;
+}
+
+.progress-dot.active {
+  background-color: #374151;
+}
+
+.progress-text {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+/* ===== 스와이프 기능을 위한 추가 스타일들 ===== */
+
+.tutorial-swipe-enabled {
+  cursor: grab;
+}
+
+.tutorial-swipe-enabled:active {
+  cursor: grabbing;
+}
+
+/* 터치 디바이스에서 스크롤 바운스 효과 제거 */
+.tutorial-swipe-enabled {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: none;
+}
+
+/* 스와이프 힌트 애니메이션 (선택사항) */
+.tutorial-container::before {
+  content: '';
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tutorial-swipe-enabled::before {
+  opacity: 1;
+  animation: swipeHint 2s ease-in-out infinite;
+}
+
+@keyframes swipeHint {
+  0%, 100% {
+    transform: translateX(-50%) scaleX(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateX(-50%) scaleX(1.5);
+    opacity: 0.6;
+  }
+}
+
+/* 모바일에서 터치 하이라이트 제거 */
+.tutorial-container * {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* 전환 애니메이션 */
+.tutorial-container.transitioning {
+  pointer-events: none; /* 전환 중 터치 이벤트 방지 */
+}
+
+/* 반응형 - 데스크톱에서는 스와이프 힌트 숨김 */
+@media (min-width: 768px) {
+  .tutorial-container::before {
+    display: none;
+  }
+}
+
+.tutorial-swipe-enabled {
+  cursor: grab;
+}
+
+.tutorial-swipe-enabled:active {
+  cursor: grabbing;
+}
+
+/* 터치 디바이스에서 스크롤 바운스 효과 제거 */
+.tutorial-swipe-enabled {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: none;
+}
+
+/* 스와이프 힌트 애니메이션 (선택사항) */
+.tutorial-container::before {
+  content: '';
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tutorial-swipe-enabled::before {
+  opacity: 1;
+  animation: swipeHint 2s ease-in-out infinite;
+}
+
+@keyframes swipeHint {
+  0%, 100% {
+    transform: translateX(-50%) scaleX(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateX(-50%) scaleX(1.5);
+    opacity: 0.6;
+  }
+}
+
+/* 모바일에서 터치 하이라이트 제거 */
+.tutorial-container * {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* 전환 애니메이션 */
+.tutorial-container.transitioning {
+  pointer-events: none; /* 전환 중 터치 이벤트 방지 */
+}
+
+/* 반응형 - 데스크톱에서는 스와이프 힌트 숨김 */
+@media (min-width: 768px) {
+  .tutorial-container::before {
+    display: none;
+  }
+}

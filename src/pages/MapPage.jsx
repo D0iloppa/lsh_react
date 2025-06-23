@@ -223,7 +223,6 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
                   <option value="RATING_4">4+ 이상</option>
                   <option value="RATING_3">3+ 이상</option>
                 </select>
-
             
                 <select
                   className="select-box"

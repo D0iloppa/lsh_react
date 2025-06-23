@@ -10,6 +10,17 @@
     gap: 0.5rem;
   }
 
+  .rotation-items-container{
+    display: flex;
+    width: 100%;
+    will-change: transform;
+    max-height: 130px;
+  }
+
+  .tutorial-container{
+    min-height: 115vh;
+  }
+
   /* 상단 회전 영역 */
   .rotation-section {
     position: relative;
@@ -78,9 +89,14 @@
    }
 
   /* 브랜드 섹션 */
-  /* .brand-section {
-    padding: 0 20px 20px 20px;
-  } */
+  .brand-section {
+    padding: 0 16px 16px 16px;
+  }
+
+  .intro-description-section{
+    padding: 20px;
+    font-size: 14px;
+  }
   
   .brand-info {
     position: relative;
@@ -235,10 +251,6 @@
     .arrow-line-1,
     .arrow-line-3 {
       width: 14px;
-    }
-    
-    .brand-section {
-      padding: 0 16px 60px 16px;
     }
     
     .brand-info {

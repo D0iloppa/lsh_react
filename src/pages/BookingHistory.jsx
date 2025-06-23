@@ -148,7 +148,8 @@ const BookingHistoryPage = ({
         console.log('✅ Messages loaded:', messages);
         console.log('Current language set to:', currentLang);
       }
-  
+      
+
       // historyData 로딩 완료까지 기다리기
       try {
         await loadBookingHistory(); // Promise 리턴하도록 수정 필요
@@ -160,6 +161,8 @@ const BookingHistoryPage = ({
   
     initializeData();
   }, [messages, currentLang]); // historyData 의존성 제거
+
+  
 
   const loadBookingHistory = () => {
     return new Promise((resolve, reject) => {

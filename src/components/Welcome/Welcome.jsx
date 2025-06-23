@@ -174,6 +174,32 @@ const CocktailIcon = () => (
         </SketchDiv>
       </div> */}
 
+         {/* 설명 섹션 */}
+         <div className="intro-description-section">
+          <p className="description">
+            {get('Intro.description')}
+          </p>
+          
+          {/* 기능 리스트 */}
+          <div className="features-list">
+            <div className="feature-item">
+              {get('Intro.feature1')}
+            </div>
+            <div className="feature-item">
+              {get('Intro.feature2')}
+            </div>
+            <div className="feature-item">
+              {get('Intro.feature3')}
+            </div>
+            <div className="feature-item">
+              {get('Intro.feature4')}
+            </div>
+            <div className="feature-item">
+              {get('Intro.feature5')}
+            </div>
+          </div>
+        </div>
+
 
        <div className="relative" style={{ marginTop: '1rem' }}>
           <HatchPattern opacity={0.8} />

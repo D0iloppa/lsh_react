@@ -6,6 +6,7 @@ import '@components/SketchComponents.css';
 
 import SketchHeader from '@components/SketchHeader'
 import SketchDiv from '@components/SketchDiv'
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 const ViewReviewPage = ({ 
   navigateToPageWithData, 
@@ -19,11 +20,26 @@ const ViewReviewPage = ({
   goBack,
   ...otherProps 
 }) => {
+ 
+  const venueId = otherProps?.venueId || null;
+   console.log("venueId", venueId)
   const [searchQuery, setSearchQuery] = useState('');
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+     useEffect(() => {
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      window.scrollTo(0, 0);
+    }
+  }, [messages]);
 
   const handleNotifications = () => {
     console.log('Notifications 클릭');
     navigateToPageWithData && navigateToPageWithData(PAGES.NOTIFICATIONS);
+  };
+
+    const handleBack = (venueId) => {
+    navigateToPageWithData(PAGES.DISCOVER, { venueId });
   };
 
   const handleSearch = (e) => {
@@ -98,6 +114,30 @@ const ViewReviewPage = ({
           padding: 1rem;
           border-bottom: 2px solid #e5e7eb;
         }
+        .select-box {
+          padding: 8px 12px;
+          border: 1px solid #333;
+          border-radius: 8px;
+          background: white;
+          font-size: 14px;
+          min-width: 135px;
+          appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg fill='black' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.5 7l4.5 4 4.5-4'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 10px center;
+          background-size: 12px;
+        }
+        .map-filter-selects {
+          display: flex;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          gap: 12px;
+          margin-top: 0.5rem;
+          padding-right: 1rem;
+          scrollbar-width: none;
+          margin-bottom: 10px;
+        }
+        .map-filter-selects::-webkit-scrollbar { display: none; }
 
         .venue-section {
           padding: 1.5rem;
@@ -218,14 +258,26 @@ const ViewReviewPage = ({
         {/* Header */}
 
         <SketchHeader
-          title="LeTanTon Sheriff"
-          showBack={false}
-          onBack={goBack}
+          title={get('Profile1.1')}
+          showBack={true}
+          onBack={handleBack}
           rightButtons={[]}
         />
 
         {/* Search Section */}
-        <div className="search-section">
+        <div className="map-filter-selects">
+        <select class="select-box"><
+          option value="ALL">최신순</option>
+          <option value="BAR">최신순</option>
+          <option value="RESTAURANT">과거순</option>
+          </select>
+          <select class="select-box"><
+          option value="ALL">유형 전체</option>
+          <option value="BAR">매장</option>
+          <option value="RESTAURANT">Staff</option>
+          </select>
+          </div>
+        {/* <div className="search-section">
           <form onSubmit={handleSearch}>
             <SketchInput
               type="text"
@@ -234,7 +286,7 @@ const ViewReviewPage = ({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </form>
-        </div>
+        </div> */}
 
         {/* Venue Information */}
         <SketchDiv className="venue-section">

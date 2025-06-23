@@ -3,12 +3,13 @@ import React, { useEffect, useRef, useState } from 'react';
 const GoogleMapComponent = ({
   places = [],
   onMarkerClick = () => {},
-  onMapClick = () => {},   // ✅ 1. 지도 클릭 콜백 추가
+  onMapClick = () => {},
   disableInteraction = false
 }) => {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const markersRef = useRef([]);
+  const myLocationMarker = useRef(null);
   const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
@@ -34,7 +35,7 @@ const GoogleMapComponent = ({
     if (!window.google || !window.google.maps) return;
 
     const baseOptions = {
-      center: { lat: 10.782865, lng: 106.701439 },
+      center: { lat: 10.782865, lng: 106.701439 }, // 레탄톤 초기 중심
       zoom: 18,
       disableDefaultUI: true,
       styles: [
@@ -54,7 +55,6 @@ const GoogleMapComponent = ({
     mapInstance.current = new window.google.maps.Map(mapRef.current, baseOptions);
     setMapReady(true);
 
-    // ✅ 2. 지도 클릭 시 콜백 호출
     mapInstance.current.addListener('click', () => {
       onMapClick();
     });
@@ -96,6 +96,7 @@ const GoogleMapComponent = ({
   useEffect(() => {
     if (!mapReady || !places) return;
 
+    // 기존 마커 제거
     markersRef.current.forEach(marker => marker.setMap(null));
     markersRef.current = [];
 
@@ -130,6 +131,44 @@ const GoogleMapComponent = ({
       markersRef.current.push(marker);
     });
   }, [places, mapReady]);
+
+  // ✅ 내 위치 마커 추가 (베트남 경계 체크 포함)
+  useEffect(() => {
+    if (!mapReady || !window.google || !mapInstance.current) return;
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+
+        // ✅ 베트남 대략적 경계 판단
+        const isInVietnam = latitude >= 8 && latitude <= 24 && longitude >= 102 && longitude <= 110;
+
+        const center = isInVietnam
+          ? { lat: latitude, lng: longitude }
+          : { lat: 10.7810752, lng: 106.7052086 }; // 레탄톤 거리 중심
+
+        // 지도 중심 이동
+        mapInstance.current.setCenter(center);
+
+        // 기존 위치 마커 제거
+        if (myLocationMarker.current) {
+          myLocationMarker.current.setMap(null);
+        }
+
+        // 사람 아이콘 마커 추가
+        myLocationMarker.current = new window.google.maps.Marker({
+          position: center,
+          map: mapInstance.current,
+          icon: {
+            url: '/cdn/person_icon.png',
+            scaledSize: new window.google.maps.Size(48, 48),
+            anchor: new window.google.maps.Point(24, 48)
+          },
+          title: '내 위치'
+        });
+      });
+    }
+  }, [mapReady]);
 
   return <div id="map" ref={mapRef} style={{ width: '100%', height: '100%' }} />;
 };

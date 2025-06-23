@@ -30,6 +30,13 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    // 당분간 test계정 바인딩 force
+    setEmail('test@test.com');
+    setPassword('dnpfzjs1!');
+    
+  }, []);
   
 
   const { login, loading } = useAuth(); // ← AuthContext 사용
