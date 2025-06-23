@@ -261,10 +261,11 @@ const CSPage1 = ({
                   {get('btn.submit.1	')}
                   <HatchPattern opacity={0.8} />
                 </SketchBtn>
-                                <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+                               <LoadingScreen 
+                                         variant="cocktail"
+                                         loadingText="Loading..."
+                                         isVisible={isLoading} 
+                                       />
               </form>
             </div>
           </div>

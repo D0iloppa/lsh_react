@@ -6,7 +6,10 @@ import SketchBtn from '@components/SketchBtn';
 import InitFooter from '@components/InitFooter';
 import '@components/SketchComponents.css';
 import { useMsg } from '@contexts/MsgContext';
+import ImagePlaceholder from '@components/ImagePlaceholder';
 import LoadingScreen from '@components/LoadingScreen';
+
+import { AlertCircle } from 'lucide-react';
 
 const Intro = ({ onNextScreen }) => {
   const { messages, isLoading, error, get, currentLang } = useMsg();
@@ -66,10 +69,12 @@ const Intro = ({ onNextScreen }) => {
           background-color: white;
           display: flex;
           flex-direction: column;
+
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .brand-section {
-          padding-top: 2rem;
+          padding-top: 10px;
           text-align: center;
         }
 
@@ -94,7 +99,7 @@ const Intro = ({ onNextScreen }) => {
         }
 
         .intro-image-section {
-          padding: 2rem 1rem;
+          padding: 0 1rem;
           display: flex;
           justify-content: center;
         }
@@ -120,7 +125,7 @@ const Intro = ({ onNextScreen }) => {
 
         .intro-title-section {
           text-align: center;
-          padding: 0 1rem 2rem;
+          padding: 0 1rem 0;
         }
 
         .main-title {
@@ -133,15 +138,15 @@ const Intro = ({ onNextScreen }) => {
 
         .intro-description-section {
           padding: 0 1rem;
-          margin-bottom: 2rem;
+          
         }
 
         .description {
           text-align: center;
-          margin-bottom: 1.5rem;
-          font-size: 0.9rem;
+          font-size: 16px;
           line-height: 1.4;
           color: #555;
+          margin-top: 0px;
         }
 
         .features-list {
@@ -161,7 +166,7 @@ const Intro = ({ onNextScreen }) => {
         }
 
         .intro-enter-section {
-          padding: 0 1rem 1rem;
+          padding: 0 1rem 0;
           display: flex;
           justify-content: center;
         }
@@ -181,13 +186,13 @@ const Intro = ({ onNextScreen }) => {
 
         .age-verification {
           text-align: center;
-          padding: 1rem;
+          padding: 0.5rem;
           font-size: 0.75rem;
           color: #666;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 0.5rem;
+          gap: 3px;
         }
 
         .warning-icon {
@@ -205,11 +210,12 @@ const Intro = ({ onNextScreen }) => {
           }
 
           .brand-section {
-            padding-top: 1.5rem;
+            padding-top: 10px;
+            padding-bottom: 0;
           }
 
           .intro-image-section {
-            padding: 1.5rem 1rem;
+            padding: 0 1rem;
           }
 
           .intro-main-image {
@@ -218,11 +224,11 @@ const Intro = ({ onNextScreen }) => {
           }
 
           .main-title {
-            font-size: 1.1rem;
+            font-size: 23px;
           }
 
           .description {
-            font-size: 0.85rem;
+            font-size: 16px;
           }
 
           .features-list {
@@ -233,7 +239,7 @@ const Intro = ({ onNextScreen }) => {
       `}</style>
 
       <div className="intro-container">
-        
+        <HatchPattern opacity={0.2} />
         {/* 브랜드 헤더 */}
         <div className="brand-section">
           <div className="brand-content">
@@ -241,7 +247,7 @@ const Intro = ({ onNextScreen }) => {
               <div className="logo-container">
                 <CocktailIcon />
                 <h1 className="sketch-title sketch-title--large">LeTanTon Sheriff</h1>
-                <span className="age-badge">🔞</span>
+                <span className="age-badge"><ImagePlaceholder src="/cdn/age.png" style={{lineHeight: '0.5', marginLeft: '5px', width:'26px'}}/></span>
               </div>
             </div>
           </div>
@@ -249,22 +255,7 @@ const Intro = ({ onNextScreen }) => {
 
         {/* 메인 이미지 영역 */}
         <div className="intro-image-section">
-          <SketchDiv className="intro-main-image">
-            <HatchPattern opacity={0.1} />
-            <div className="image-placeholder">
-              <svg 
-                width="80" 
-                height="80" 
-                viewBox="0 0 100 100" 
-                stroke="#666" 
-                strokeWidth="2"
-                fill="none"
-              >
-                <line x1="20" y1="20" x2="80" y2="80" />
-                <line x1="80" y1="20" x2="20" y2="80" />
-              </svg>
-            </div>
-          </SketchDiv>
+          <ImagePlaceholder src="/cdn/tuto1.png" style={{height: '190px', width: '320px', border: '2px solid #333', borderRadius: '5px'}}/>
         </div>
 
        {/* 메인 타이틀 */}
@@ -316,18 +307,20 @@ const Intro = ({ onNextScreen }) => {
 
         {/* 나이 확인 */}
         <div className="age-verification">
-          <span className="warning-icon">⚠️</span>
+          <span className="warning-icon"><AlertCircle size={16} opacity={0.8}/></span>
           <span className="verification-text">{get('Intro.ageVerification')}</span>
         </div>
 
         {/* Footer */}
-        <InitFooter 
+        {/* <InitFooter 
           className="custom-footer"
           privacyHref="/privacy"
           termsHref="/terms"
-        />
+        /> */}
 
         <LoadingScreen 
+          variant="cocktail"
+          loadingText="Loading..."
           isVisible={isLoading} 
         />
       </div>

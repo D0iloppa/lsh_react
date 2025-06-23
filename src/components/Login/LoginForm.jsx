@@ -8,6 +8,7 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import SketchInput from '@components/SketchInput';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
+
 import InitFooter from '@components/InitFooter';
 import LoadingScreen from '@components/LoadingScreen';
 
@@ -144,13 +145,14 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
             navigate('/register');
           }}
         >
-          { get('Welcome1.3') }
+          { get('Welcome1.4') }
         </a>
       </div>
-                          <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+                          {/* <LoadingScreen 
+          variant="cocktail"
+          loadingText="Loading..."
+          isVisible={isLoading} 
+        /> */}
 
      
     </>

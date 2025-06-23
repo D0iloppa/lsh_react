@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
+import AgreementCheckbox from '@components/AgreementCheckbox';
 
 import '@components/SketchComponents.css';
 import SketchHeader from '@components/SketchHeader';
@@ -45,6 +46,46 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   const [scheduleData, setScheduleData] = useState({});
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
+  
+  // 체크박스 상태들
+  const [agreements, setAgreements] = useState({
+    allTerms: false,
+    ageConfirm: false,
+    personalInfo: false,
+    thirdParty: false
+  });
+
+  // 체크박스 변경 핸들러
+  const handleAgreementChange = (key, checked) => {
+     if (key === 'allTerms') {
+      // 전체 동의를 클릭했을 때 모든 항목을 같은 상태로 변경
+      setAgreements({
+        allTerms: checked,
+        ageConfirm: checked,
+        personalInfo: checked,
+        thirdParty: checked
+      });
+    } else {
+      // 개별 항목을 클릭했을 때
+      const newAgreements = {
+        ...agreements,
+        [key]: checked
+      };
+      
+      // 개별 항목들이 모두 체크되었는지 확인하여 전체 동의도 업데이트
+      const individualItems = ['ageConfirm', 'personalInfo', 'thirdParty'];
+      const allIndividualChecked = individualItems.every(item => newAgreements[item]);
+      
+      newAgreements.allTerms = allIndividualChecked;
+      
+      setAgreements(newAgreements);
+    }
+  };
+
+// 모든 체크박스가 체크되었는지 확인
+const isAllAgreed = () => {
+  return Object.values(agreements).every(value => value === true);
+};
 
   const [timeSlots, setTimeSlots] = useState([]);
   const [disabledTimes, setDisabledTimes] = useState([]);
@@ -344,6 +385,20 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
       return; // 유효성 검사 실패 시 예약 진행하지 않음
     }
 
+    // 동의사항 확인 추가
+    if (!isAllAgreed()) {
+      alert('중요정보 사항에 모두 동의해주세요.');
+      // Important-info 섹션으로 스크롤
+      const importantInfoElement = document.querySelector('.Important-info');
+      if (importantInfoElement) {
+        importantInfoElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }
+      return;
+    }
+
     // Duration 방식의 예약 처리 로직
     const legacyData = {
       user,
@@ -570,7 +625,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
         }
 
         .reserve-section {
-          padding: 0 1.5rem 1.5rem;
+          padding: 1rem 1.5rem 1.5rem;
         }
 
         .form-step-3 { 
@@ -592,6 +647,8 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
           border-color: #ef4444 !important;
           box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
         }
+
+        .Important-info{padding: 1.5rem; background: #f3f3f3; border-radius: 6px; font-size: 18px;}
 
         @media (max-width: 480px) {
           .reservation-container {
@@ -627,6 +684,17 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
           maxDuration={4} // 최대 4시간까지 선택 가능
           messages={getReservationMessages()} // 다국어 메시지 전달
         />
+        <div className='Important-info'>
+    <div style={{ marginBottom: '1rem', fontWeight: 'bold' }}>
+      {get('Reservation.ImportantInfo')}
+    </div>
+    
+        <AgreementCheckbox 
+  agreements={agreements}
+  onAgreementChange={handleAgreementChange}
+  showRequired={true}
+/>
+    </div>
 
         <div className="reserve-section">
           <SketchBtn 
@@ -641,8 +709,10 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
         </div>
         
         <LoadingScreen 
-          isVisible={isLoading} 
-        />
+                  variant="cocktail"
+                  loadingText="Loading..."
+                  isVisible={isLoading} 
+                />
       </div>
     </>
   );

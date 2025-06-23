@@ -14,11 +14,10 @@ const WelcomeTutorial = ({ onComplete }) => {
 
   // 모든 단계 컴포넌트들
   const allSteps = [
-    Intro,       // 0: 인트로 (독립)
+    Welcome,     // 0: Welcome 페이지 (독립)
     Tutorial1,   // 1: 첫 번째 튜토리얼  
     Tutorial2,   // 2: 두 번째 튜토리얼
-    Tutorial3,   // 3: 세 번째 튜토리얼
-    Welcome,     // 4: Welcome 페이지 (독립)
+    Tutorial3   // 3: 세 번째 튜토리얼
   ];
 
   // 튜토리얼 단계만 (Tutorial1 ~ Tutorial3)

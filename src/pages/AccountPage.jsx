@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import SketchHeader from '@components/SketchHeader'
 
-import { User, History, CreditCard, Bell, Heart, Settings, HelpCircle, LogOut  } from 'lucide-react';
+import { User, History, CreditCard, Bell, Heart, Settings, HelpCircle, LogOut, MessageCircle   } from 'lucide-react';
 import LoadingScreen from '@components/LoadingScreen';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -25,7 +25,7 @@ const AccountPage = ({
 
   const { logout } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
-
+  const [showChatButton, setShowChatButton] = useState(true);
 
 
   useEffect(() => {
@@ -40,6 +40,14 @@ const AccountPage = ({
   const handleBack = () => {
     console.log('Back 클릭');
     navigateToPageWithData && navigateToPageWithData(PAGES.HOME);
+  };
+
+  const handleChatClick = () => {
+    // 채팅 페이지로 이동하거나 채팅 기능 연결
+    console.log('채팅 버튼 클릭');
+    // navigateToPageWithData && navigateToPageWithData(PAGES.CHAT);
+    // 또는 외부 채팅 서비스 연결
+    // window.open('https://chat-service.com', '_blank');
   };
 
   const menuBtnClick = (menu_id) => {
@@ -156,6 +164,37 @@ const AccountPage = ({
           /*margin-top:100px;*/
         }
 
+        .chat-button {
+          position: fixed;
+          bottom: 110px; /* 하단 네비게이션 위에 위치 */
+          right: 20px;
+          width: 50px;
+          height: 50px;
+          background: #1f2937;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+          z-index: 1000;
+          transition: all 0.3s ease;
+          border: 2px solid #333;
+        }
+
+        .chat-button:hover {
+          transform: scale(1.1);
+          background: #374151;
+        }
+
+        .chat-button:active {
+          transform: scale(0.95);
+        }
+
+        .chat-icon {
+          color: white;
+        }
+
 
       `}</style>
 
@@ -198,10 +237,21 @@ const AccountPage = ({
               className={`logout`}
             />
         </div>
-                <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+        {/* 고정 채팅 버튼 */}
+        <div className="chat-button" onClick={handleChatClick}>
+          <MessageCircle size={24} className="chat-icon" />
+        </div>
+
+        <LoadingScreen 
+          variant="cocktail"
+          loadingText="Loading..."
+          isVisible={isLoading} 
+        />
+               <LoadingScreen 
+                         variant="cocktail"
+                         loadingText="Loading..."
+                         isVisible={isLoading} 
+                       />
         
 
       </div>

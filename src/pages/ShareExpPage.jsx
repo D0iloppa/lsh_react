@@ -2,42 +2,74 @@ import React, { useState, useEffect } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
-import SketchInput from '@components/SketchInput';
+import SketchTextarea from '@components/SketchTextarea';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 import LoadingScreen from '@components/LoadingScreen';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+
 const ShareExpPage = ({ 
   navigateToPageWithData, 
   PAGES,
-  venueData = {
-    name: 'Modern Bar',
-    image: '/placeholder-venue.jpg'
-  },
+  pageData = {},
   goBack,
   ...otherProps 
 }) => {
 
-   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();    
-  const [cardNumber, setCardNumber] = useState('');
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();    
   const [venueRating, setVenueRating] = useState(0);
-  const [girlRating, setGirlRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
 
-  const handleMyReviews = () => {
-    console.log('My Reviews 클릭');
-    navigateToPageWithData && navigateToPageWithData(PAGES.MY_REVIEWS);
-  };
+  // pageData에서 필요한 정보 추출
+  const {
+    reservation_id,
+    image = '/placeholder-venue.jpg',
+    user_id,
+    target,
+    target_id,
+    targetName = 'Venue Name',
+    hostName
+  } = otherProps;
+
+  useEffect(() => {
+    const initializeData = async () => {
+      window.scrollTo(0, 0);
+  
+      // pageData 콘솔 출력
+      console.log('📋 ShareExpPage pageData:', otherProps);
+
+      if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        console.log('🌐 Current language set to:', currentLang);
+      }
+    };
+
+    initializeData();
+  }, [messages, currentLang, pageData]);
 
   const handleSubmitReview = () => {
+    if (venueRating === 0) {
+      alert('평점을 선택해주세요.');
+      return;
+    }
+    
+    if (!reviewText.trim()) {
+      alert('리뷰를 작성해주세요.');
+      return;
+    }
+
     const reviewData = {
-      venue: venueData.name,
-      cardNumber,
-      venueRating,
-      girlRating,
+      reservation_id,
+      user_id,
+      target,
+      target_id,
+      rating: venueRating,
+      review_text: reviewText,
       timestamp: new Date().toISOString()
     };
-    console.log('Review submitted:', reviewData);
-    // 리뷰 제출 로직
+    
+    console.log('📝 Review submitted:', reviewData);
+    // 리뷰 제출 API 호출 로직
   };
 
   const StarRating = ({ rating, onRatingChange, label }) => (
@@ -66,7 +98,6 @@ const ShareExpPage = ({
           background-color: white;
           position: relative;
           padding: 1.5rem;
-
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
@@ -102,31 +133,26 @@ const ShareExpPage = ({
           flex: 1;
           display: flex;
           flex-direction: column;
-          justify-content: space-between;
+          justify-content: center;
         }
 
         .venue-name {
-         
           font-size: 1.1rem;
           font-weight: bold;
           color: #1f2937;
-          margin-bottom: 1rem;
+          margin-bottom: 0.5rem;
         }
 
-        .card-input-section {
-          flex: 1;
+        .host-name {
+          font-size: 0.9rem;
+          color: #6b7280;
         }
 
         .rating-section {
           margin-bottom: 1.5rem;
         }
 
-        .rating-section:last-of-type {
-          margin-bottom: 0;
-        }
-
         .rating-label {
-         
           font-size: 0.95rem;
           font-weight: bold;
           color: #1f2937;
@@ -150,7 +176,6 @@ const ShareExpPage = ({
           cursor: pointer;
           font-size: 1.2rem;
           transition: all 0.2s;
-         
         }
 
         .star-button.empty {
@@ -159,16 +184,28 @@ const ShareExpPage = ({
         }
 
         .star-button.filled {
-              background: linear-gradient(135deg, #00f0ff, #fff0d8);
-              color: #1f2937;
-              border-color: #778eaf;
+          background: linear-gradient(135deg, #00f0ff, #fff0d8);
+          color: #1f2937;
+          border-color: #778eaf;
         }
 
         .star-button:hover {
           transform: scale(1.1);
         }
 
-        .my-review-section {
+        .review-textarea-section {
+          margin-bottom: 1.5rem;
+        }
+
+        .textarea-label {
+          font-size: 0.95rem;
+          font-weight: bold;
+          color: #1f2937;
+          margin-bottom: 0.5rem;
+          display: block;
+        }
+
+        .submit-section {
           text-align: center;
         }
 
@@ -192,14 +229,14 @@ const ShareExpPage = ({
         }
       `}</style>
 
-        <SketchHeader
-          title={'Confirm and pay'}
-          showBack={true}
-          onBack={goBack}
-          rightButtons={[]}
-        />
+      <SketchHeader
+        title={get('Review2.3')} // '리뷰 등록'
+        showBack={true}
+        onBack={goBack}
+        rightButtons={[]}
+      />
+      
       <div className="share-exp-container">
-        {/* Main Review Section */}
         <div className="review-main-section">
           <HatchPattern opacity={0.4} />
           <div className="review-content">
@@ -207,64 +244,54 @@ const ShareExpPage = ({
             <div className="review-header">
               <div className="venue-image">
                 <ImagePlaceholder 
-                  src={venueData.image} 
+                  src={image} 
                   className="venue-image"
                 />
               </div>
               
               <div className="venue-info">
-                <div className="venue-name">{venueData.name}</div>
-                
-                <div className="card-input-section">
-                  <SketchInput
-                    type="text"
-                    placeholder="Card Number"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
-                  />
-                </div>
+                <div className="venue-name">{targetName}</div>
+                {hostName && <div className="host-name">{hostName}</div>}
               </div>
             </div>
 
-            {/* Rating Sections */}
+            {/* Rating Section */}
             <StarRating 
               rating={venueRating}
               onRatingChange={setVenueRating}
-              label="Rate the venue"
+              label={get('Review2.1')} // '장소 평가'
             />
-            
-            <StarRating 
-              rating={girlRating}
-              onRatingChange={setGirlRating}
-              label="Rate the Girl"
-            />
+
+            {/* Review Text Section */}
+            <div className="review-textarea-section">
+              <label className="textarea-label">{get('Review2.2')}</label>
+              <SketchTextarea
+                placeholder={get('Review2.2')}
+                value={reviewText}
+                onChange={(e) => setReviewText(e.target.value)}
+                rows={4}
+              />
+            </div>
           </div>
         </div>
 
-        {/* My Review Button */}
-        <div className="my-review-section">
-        <SketchBtn
-            className="full-width"
-            onClick={() => {
-              //navigateToPageWithData(PAGES.RESERVATION, {});
-            }}
+        {/* Submit Button */}
+        <div className="submit-section">
+          <SketchBtn 
+            variant="primary" 
+            size="large"
+            onClick={handleSubmitReview}
           >
-            My reviews
             <HatchPattern opacity={0.4} />
+            {get('Review2.3')} {/* '리뷰 등록' */}
           </SketchBtn>
-
-          {/* <SketchBtn 
-            variant="secondary" 
-            size="medium"
-            onClick={handleMyReviews}
-          >
-            My Review
-          </SketchBtn> */}
         </div>
-         <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+
+        <LoadingScreen 
+          variant="cocktail"
+          loadingText="Loading..."
+          isVisible={isLoading} 
+        />
       </div>
     </>
   );

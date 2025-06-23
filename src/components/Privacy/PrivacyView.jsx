@@ -89,9 +89,10 @@ export default function TermsView() {
             { get("btn.back.1") }
           </SketchBtn>
                           <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+          variant="cocktail"
+          loadingText="Loading..."
+          isVisible={isLoading} 
+        />
         </div>
       </div>
     </div>

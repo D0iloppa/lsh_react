@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
 
 import { useNavigate } from 'react-router-dom';
-import { Ban} from 'lucide-react';
+import { Ban } from 'lucide-react';
 import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
@@ -10,6 +10,7 @@ import PopularVenue from '@components/PopularVenue';
 import ProgressIndicator from './ProgressIndicator';
 import InitFooter from '@components/InitFooter';
 import '@components/SketchComponents.css';
+import ImagePlaceholder from '@components/ImagePlaceholder';
 import './Welcome.css';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
@@ -140,7 +141,7 @@ const CocktailIcon = () => (
                <div className="logo-container">
                 <CocktailIcon />
                 <h1 className="sketch-title sketch-title--large">LeTanTon Sheriff</h1>
-                <span style={{ fontSize: '20px',  marginLeft: '-8px' }}>🔞</span>
+                <span style={{ fontSize: '20px',  marginLeft: '-8px' }}><ImagePlaceholder src="/cdn/age.png" style={{lineHeight: '0.5', marginLeft: '5px', width:'26px'}}/></span>
               </div>
               </div>
               
@@ -190,7 +191,7 @@ const CocktailIcon = () => (
           
           <SketchBtn 
             className="sketch-button" style={{ fontWeight: 'bold' }}
-            onClick={onCreateAccount}
+            onClick={onNextScreen}
           >
             {get('Welcome1.3')}
           </SketchBtn>
@@ -201,10 +202,11 @@ const CocktailIcon = () => (
                     privacyHref="/privacy"
                     termsHref="/terms"
                   />
-                    <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+                   <LoadingScreen 
+                             variant="cocktail"
+                             loadingText="Loading..."
+                             isVisible={isLoading} 
+                           />
 
     </div>
     

@@ -45,12 +45,59 @@ const BookingHistoryPage = ({
     });
   };
 
+  const getReviewButtonState = (booking) => {
+    if (booking.review_cnt > 0) {
+      return {
+        text: get('Review1.1'), // '내 리뷰'
+        disabled: false,
+        action: 'view' // 리뷰 보기
+      };
+    } else if (booking.isReviewable) {
+      return {
+        text: get('Review1.2'), // '리뷰 등록'
+        disabled: false,
+        action: 'create' // 리뷰 작성
+      };
+    } else {
+      return {
+        text: get('Review1.2'), // '리뷰 등록'
+        disabled: true,
+        action: null
+      };
+    }
+  };
+
+   
+
   const handleReview = (booking) => {
+    const reviewState = getReviewButtonState(booking);
+    
+    if (reviewState.disabled) {
+      return; // 비활성화된 경우 아무것도 하지 않음
+    }
+
+    /*
     console.log('Review clicked:', booking);
     navigateToPageWithData && navigateToPageWithData(PAGES.SHARE_EXPERIENCE, {
       target: booking.targetType,
       target_id: booking.targetId
     });
+    */
+    
+    if (reviewState.action === 'view') {
+      // 기존 리뷰 보기/수정 페이지로 이동
+      // navigate to review view/edit page
+    } else if (reviewState.action === 'create') {
+      navigateToPageWithData && navigateToPageWithData(PAGES.SHARE_EXP, {
+        reservation_id: booking.id,
+        image:booking.image,
+        user_id: user.user_id,
+        target: booking.targetType,
+        target_id: booking.targetId,
+        targetName: booking.targetName,
+        hostName: booking.hostName,
+      });
+    }
   };
 
   const formatTimeDisplay = (startTime, endTime) => {
@@ -143,7 +190,9 @@ const BookingHistoryPage = ({
           targetId: item.target_id,
           note: item.note,
           attendee: item.attendee,
-          reservedAt: item.reserved_at
+          reservedAt: item.reserved_at,
+          review_cnt:item.review_cnt,
+          isReviewable:item.isReviewable
         }));
         
         setBookings(formattedBookings); // 🔥 여기서 bookings 설정!
@@ -417,15 +466,19 @@ const BookingHistoryPage = ({
                       <SketchBtn 
                         variant="primary" 
                         size="small"
+                        disabled={getReviewButtonState(booking).disabled}
                         onClick={() => handleReview(booking)}
                       >
                         <HatchPattern opacity={0.4} />
-                        {get('Profile1.1')}
+                        {getReviewButtonState(booking).text}
                       </SketchBtn>
-                                      <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+
+
+                      <LoadingScreen 
+                                variant="cocktail"
+                                loadingText="Loading..."
+                                isVisible={isLoading} 
+                              />
                     </div>
                   </div>
                 </div>

@@ -418,8 +418,10 @@ const ReserveSummaryPage = ({
         </div>
 
         <LoadingScreen 
-          isVisible={isLoading || isConfirming} 
-        />
+                  variant="cocktail"
+                  loadingText="Loading..."
+                  isVisible={isLoading} 
+                />
       </div>
     </>
   );

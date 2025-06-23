@@ -1,12 +1,12 @@
+// 전체 상단 import는 동일
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Star, Heart, ArrowRight, MapPin } from 'lucide-react';
+import { Users, Star, Heart, ArrowRight, Clock, MapPin, CreditCard } from 'lucide-react';
 import GoogleMapComponent from '@components/GoogleMapComponent';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import SketchSearch from '@components/SketchSearch';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
-
 import { useAuth } from '../contexts/AuthContext';
 import { useMsg } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
@@ -15,6 +15,15 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   const [searchQuery, setSearchQuery] = useState('');
   const [hotspots, setHotspots] = useState([]);
   const [originalHotspots, setOriginalHotspots] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState('ALL');
+  const [sortRating, setSortRating] = useState('RATING_ALL');
+  const [sortPrice, setSortPrice] = useState('PRICE_ALL');
+  const [sortStaff, setSortStaff] = useState('STAFF_ALL');
+  const [staffLanguageFilter, setStaffLanguageFilter] = useState('ALL');
+
+
+
+  const [isReservationOnly, setIsReservationOnly] = useState(false); // ✅ 이 변수만 사용
   const { messages, get, currentLang, isLoading } = useMsg();
   const { user } = useAuth();
   const [favorites, setFavorits] = useState([]);
@@ -24,23 +33,25 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
 
     const fetchFavorits = async () => {
       try {
-        const response = await axios.get(`${API_HOST}/api/getMyFavoriteList`, {
+        const res = await axios.get(`${API_HOST}/api/getMyFavoriteList`, {
           params: { user_id: user?.user_id || 1 }
         });
-        return response.data || [];
-      } catch (error) {
-        console.error('getMyFavoriteList 목록 불러오기 실패:', error);
+        return res.data || [];
+      } catch (err) {
+        console.error('즐겨찾기 실패:', err);
         return [];
       }
     };
 
     const fetchHotspots = async (favoritesData) => {
       try {
-        const response = await axios.get(`${API_HOST}/api/getVenueList`);
-        const data = response.data || [];
+        const res = await axios.get(`${API_HOST}/api/getVenueList`);
+        const data = res.data || [];
 
-        const favoriteVenueIds = new Set(
-          favoritesData.filter((fav) => fav.target_type === 'venue').map((fav) => fav.target_id)
+        const favoriteIds = new Set(
+          favoritesData
+            .filter((f) => f.target_type === 'venue')
+            .map((f) => f.target_id)
         );
 
         const transformed = data.map((item, index) => ({
@@ -48,46 +59,77 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
           name: item.name || 'Unknown',
           rating: parseFloat(item.rating || 0).toFixed(1),
           image: item.image_url,
-          address: item.address || '', // 주소 필드 추가
-          opening_hours: (item.open_time + "~" + item.close_time) || '정보 없음',
-          isFavorite: favoriteVenueIds.has(item.venue_id),
+          address: item.address || '',
+          opening_hours: `${item.open_time}~${item.close_time}` || '정보 없음',
+          isFavorite: favoriteIds.has(item.venue_id),
+          cat_nm: item.cat_nm || 'UNKNOWN',
+          created_at: new Date(item.created_at || '2000-01-01'),
+          price: item.price || 0,
+          staff_cnt: item.staff_cnt || 0,
+          is_reservation: item.is_reservation === true,
+          staff_languages: item.staff_languages || '', // ✅ 이 줄 추가
         }));
 
         setOriginalHotspots(transformed);
         setHotspots(transformed);
-      } catch (error) {
-        console.error('장소 정보 가져오기 실패:', error);
+      } catch (err) {
+        console.error('장소 정보 실패:', err);
       }
     };
 
-    const initialize = async () => {
+    const init = async () => {
       if (messages && Object.keys(messages).length > 0) {
         window.scrollTo(0, 0);
       }
-
       const favoritesData = await fetchFavorits();
       setFavorits(favoritesData);
       await fetchHotspots(favoritesData);
     };
 
-    initialize();
+    init();
   }, [messages, currentLang]);
 
-  const handleSearch = () => {
-    const query = searchQuery.trim().toLowerCase();
-    if (!query) {
-      setHotspots(originalHotspots);
-      return;
+  const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort) => {
+    let filtered = [...originalHotspots];
+
+    if (query.trim()) {
+      filtered = filtered.filter((spot) =>
+        spot.name.toLowerCase().includes(query.toLowerCase())
+      );
     }
-    const filtered = originalHotspots.filter((spot) =>
-      spot.name.toLowerCase().includes(query)
-    );
+
+    if (category !== 'ALL') {
+      filtered = filtered.filter((spot) => spot.cat_nm === category);
+    }
+
+    if (ratingSort === 'RATING_5') filtered = filtered.filter((spot) => parseFloat(spot.rating) >= 5);
+    else if (ratingSort === 'RATING_4') filtered = filtered.filter((spot) => parseFloat(spot.rating) >= 4);
+    else if (ratingSort === 'RATING_3') filtered = filtered.filter((spot) => parseFloat(spot.rating) >= 3);
+
+    if (priceSort === 'PRICE_LOW') filtered.sort((a, b) => a.price - b.price);
+    else if (priceSort === 'PRICE_HIGH') filtered.sort((a, b) => b.price - a.price);
+
+    if (staffSort === 'STAFF_10') filtered = filtered.filter((spot) => spot.staff_cnt >= 10);
+    else if (staffSort === 'STAFF_5') filtered = filtered.filter((spot) => spot.staff_cnt >= 5);
+    else if (staffSort === 'STAFF_3') filtered = filtered.filter((spot) => spot.staff_cnt >= 3);
+
+    // ✅ 예약 가능 필터 조건 추가
+    if (isReservationOnly) {
+      filtered = filtered.filter((spot) => spot.is_reservation === true);
+    }
+
+    if (staffLanguageFilter !== 'ALL') {
+      filtered = filtered.filter((v) =>
+        typeof v.staff_languages === 'string' && v.staff_languages.includes(staffLanguageFilter)
+      );
+    }
+
     setHotspots(filtered);
   };
 
-  const handleLocationClick = () => {
-    handleSearch();
-  };
+  useEffect(() => {
+    filterAndSortHotspots(searchQuery, categoryFilter, sortRating, sortPrice, sortStaff);
+  }, [searchQuery, categoryFilter, sortRating, sortPrice, sortStaff, isReservationOnly,staffLanguageFilter]); // ✅ 여기도 의존성 추가
 
   const handleDiscover = (venueId) => {
     navigateToPageWithData(PAGES.DISCOVER, { venueId });
@@ -120,13 +162,37 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   return (
     <>
       <style jsx>{`
+      
+        .filter-selects {
+          display: flex;
+          gap: 12px;
+          margin: 12px 0 0;
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+        .filter-selects::-webkit-scrollbar {
+          display: none;
+        }
+        .select-box {
+          padding: 8px 12px;
+          border: 1px solid #333;
+          border-radius: 8px;
+          background: white;
+          font-size: 14px;
+          color: #333;
+          appearance: none;
+          min-width: 130px;
+          background-image: url("data:image/svg+xml,%3Csvg fill='black' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.5 7l4.5 4 4.5-4'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 10px center;
+          background-size: 12px;
+        }
         .homepage-container {
           background: #f9fafb;
           font-family: 'BMHanna', 'Comic Sans MS';
         }
         .hero-section {
-          height: 117px;
-          padding: 2rem 1.5rem;
+          padding: 2rem 1.5rem 1.5rem;
           background: white;
           border-radius: 12px;
           border: 1px solid #333;
@@ -136,10 +202,10 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
           font-size: 1.55rem;
           font-weight: bold;
           color: #374151;
-          margin-top: 20px;
+          margin-bottom: 1rem;
         }
         .content-section {
-          padding: 1rem 1.5rem;
+          padding: 20px 10px;
         }
         .card {
           border: 1px solid #333;
@@ -183,57 +249,48 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
           cursor: pointer;
           margin-left: auto;
         }
-        .compact-card {
-          display: flex;
-          gap: 1rem;
-          padding: 1rem;
-          border: 1px solid #ccc;
-          border-radius: 10px;
-          background: white;
-          margin-bottom: 1rem;
+
+        .search-container  {
+          margin-top: 0 !important;
+          margin-bottom: 0 !important;
         }
-        .compact-image {
-          width: 125px;
-          height: 125px;
-          overflow: hidden;
+
+        @keyframes shake {
+          0% { transform: rotate(0deg); }
+          25% { transform: rotate(-15deg); }
+          50% { transform: rotate(15deg); }
+          75% { transform: rotate(-3deg); }
+          100% { transform: rotate(0deg); }
+        }
+           .checkbox-label {
+          padding: 8px 12px;
+          border: 1px solid #333;
           border-radius: 8px;
-          flex-shrink: 0;
-        }
-        .compact-image img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        .compact-right {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-        }
-        .compact-title {
-          font-weight: bold;
-          font-size: 16px;
-          margin-bottom: 4px;
-        }
-        .compact-hours {
-          font-size: 13px;
-          color: #666;
-        }
-        .compact-bottom {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-top: 10px;
-        }
-        .compact-rating {
-          display: flex;
-          align-items: center;
+          background: white;
           font-size: 14px;
-          color: #555;
+          color: #333;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          white-space: nowrap;
         }
-        .compact-rating svg {
-          margin-right: 4px;
-          fill: #ffe800;
+
+         .checkbox-label {
+          padding: 8px 12px;
+          border: 0px solid #333;
+          border-radius: 8px;
+          background: white;
+          font-size: 14px;
+          color: #333;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          white-space: nowrap;
+          margin-top:5px;
+          margin-left:-10px;
+          margin-bottom:-15px;
         }
+
       `}</style>
 
       <div className="homepage-container">
@@ -243,69 +300,181 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
           <SketchSearch
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
-            handleSearch={handleSearch}
-            handleLocationClick={handleLocationClick}
+            handleSearch={() =>
+              filterAndSortHotspots(searchQuery, categoryFilter, sortRating, sortPrice, sortStaff)
+            }
+            style={{ marginTop: 0, marginBottom: 0 }}
           />
-        </section>
+          <div className="filter-selects">
+            <select className="select-box" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+              <option value="ALL">{get('main.filter.category.all')}</option>
+              <option value="BAR">{get('main.filter.category.bar')}</option>
+              <option value="RESTAURANT">{get('main.filter.category.restaurant')}</option>
+            </select>
+            <select className="select-box" value={sortRating} onChange={(e) => setSortRating(e.target.value)}>
+              <option value="RATING_ALL">{get('main.filter.rating.all')}</option>
+              <option value="RATING_5">{get('main.filter.rating.5plus')}</option>
+              <option value="RATING_4">{get('main.filter.rating.4plus')}</option>
+              <option value="RATING_3">{get('main.filter.rating.3plus')}</option>
+            </select>
+            <select className="select-box" value={sortPrice} onChange={(e) => setSortPrice(e.target.value)}>
+              <option value="PRICE_ALL">{get('main.filter.price.all')}</option>
+              <option value="PRICE_HIGH">{get('main.filter.price.high')}</option>
+              <option value="PRICE_LOW">{get('main.filter.price.low')}</option>
+            </select>
+             <select
+                  className="select-box"
+                  value={staffLanguageFilter}
+                  onChange={(e) => setStaffLanguageFilter(e.target.value)}
+                >
+                  <option value="ALL">{get('language.filter.all')}</option>
+                  <option value="kr">{get('language.name.korean')}</option>
+                  <option value="en">{get('language.name.english')}</option>
+                  <option value="ja">{get('language.name.japanese')}</option>
+                  <option value="vi">{get('language.name.vietnamese')}</option>
+                </select>
+          </div>
 
-        <section className="content-section">
-          <h2 style={{ margin: 0, marginTop: '26px', fontSize: '21px' }}>{get('HomePage1.2')}</h2>
-          {hotspots.map((spot, idx) => (
-            idx < 3 ? (
-              <div className="card" key={spot.id}>
-                <ImagePlaceholder src={spot.image} alt={spot.name} />
-                <div className="rating-badge">
-                  <Star size={14} style={{ marginRight: '4px', fill: '#ffe800' }} />
-                  {spot.rating}
-                </div>
-                <div className="heart-icon" onClick={() => toggleFavorite(spot)}>
-                  <Heart fill={spot.isFavorite ? '#f43f5e' : 'white'} color="white" />
-                </div>
-                <div style={{ padding: '0.75rem 1rem' }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '6px' }}>{spot.name}</div>
-                  <div style={{ fontSize: '14px', color: '#333', marginBottom: '4px' }}>
-                    🗺️ {spot.address}
-                  </div>
-                  <div style={{ fontSize: '14px', color: '#555' }}>🕒 {spot.opening_hours}</div>
-                </div>
-                <div className="card-footer">
-                  <SketchBtn className="discover-btn-small" onClick={() => handleDiscover(spot.id)}>
-                    {get('HomePage1.3')} <ArrowRight size={16} style={{ marginLeft: 5 }} />
-                  </SketchBtn>
-                </div>
-              </div>
-            ) : (
-              <div className="compact-card" key={spot.id}>
-                <div className="compact-image">
-                  <img src={spot.image} alt={spot.name} />
-                </div>
-                <div className="compact-right">
-                  <div className="compact-title">{spot.name}</div>
-                  <div className="compact-hours">
-                    🗺️ {spot.address}
-                  </div>
-                  <div className="compact-hours">🕒 {spot.opening_hours}</div>
-                  <div className="compact-bottom">
-                    <div className="compact-rating">
-                      <Star size={14} /> {spot.rating}
-                    </div>
-                    <SketchBtn
-                      className="discover-btn-small"
-                      onClick={() => handleDiscover(spot.id)}
-                      style={{ marginLeft: 6, width: '84px', height: '30px', display: 'flex', alignItems: 'center' }}
-                    >
-                      {get('HomePage1.3')}
-                    </SketchBtn>
-                      <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
-                  </div>
-                </div>
-              </div>
-            )
-          ))}
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={isReservationOnly}
+              onChange={(e) => setIsReservationOnly(e.target.checked)}
+              style={{ transform: 'scale(1.1)' }}
+            />
+            {get('main.filter.reservation.available')}
+          </label>
         </section>
+        
+
+       <section className="content-section">
+  {hotspots.map((spot, index) => {
+    const isOverlayStyle = index >= 3;
+
+    // 시간 처리
+    const formatTime = (t) => {
+      if (!t || typeof t !== 'string') return '';
+      const [h, m] = t.split(':');
+      return `${h}:${m}`;
+    };
+
+    const openTime = formatTime(spot.opening_hours?.split('~')[0]);
+    const closeTime = formatTime(spot.opening_hours?.split('~')[1]);
+    const openHoursText = `${openTime} ~ ${closeTime}`;
+
+    return (
+      <div
+        className="card"
+        key={spot.id}
+        onClick={() => handleDiscover(spot.id)}
+        style={{
+          cursor: 'pointer',
+          display: isOverlayStyle ? 'flex' : 'block',
+          flexDirection: isOverlayStyle ? 'row' : 'initial',
+          alignItems: isOverlayStyle ? 'center' : 'initial',
+          gap: isOverlayStyle ? '1rem' : '0',
+          padding: isOverlayStyle ? '1rem' : '0',
+          position: 'relative',
+        }}
+      >
+        {/* 이미지 */}
+        <div
+          style={{
+            flex: isOverlayStyle ? '0 0 100px' : '1',
+            width: isOverlayStyle ? '100px' : '100%',
+            height: isOverlayStyle ? '100px' : '200px',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            position: 'relative',
+          }}
+        >
+          <img
+            src={spot.image}
+            alt={spot.name}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              borderRadius: '8px',
+            }}
+          />
+
+          {/* 공통 하트 위치 */}
+          <div
+            className="heart-icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFavorite(spot);
+            }}
+            style={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              cursor: 'pointer',
+              zIndex: 2,
+            }}
+          >
+            <Heart fill={spot.isFavorite ? '#f43f5e' : 'white'} color="white" />
+          </div>
+
+          {/* 평점 뱃지 (1~3번째만) */}
+          {!isOverlayStyle && (
+            <div className="rating-badge">
+              <Star size={16} style={{ marginRight: '4px', fill: '#ffe800', animation: 'shake 1s ease-in-out infinite'}} />
+              {spot.rating}
+            </div>
+          )}
+        </div>
+
+        {/* 텍스트 영역 */}
+        <div style={{ flex: '1', position: 'relative' }}>
+          <div style={{ padding: isOverlayStyle ? '0' : '0.75rem 1rem' }}>
+            <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{spot.name}</div>
+
+            <div style={{ fontSize: '14px', color: '#333', marginTop: '6px' }}>
+              <MapPin size={14}/> {spot.address}
+            </div>
+            <div style={{ fontSize: '14px', color: '#555', marginTop: '4px' }}>
+              <Clock size={14}/> {openHoursText}  / <Users size={14}/> {spot.staff_cnt} staff
+            </div>
+
+            {/* 평점 (4번째부터만) */}
+            {isOverlayStyle && (
+              <div
+                style={{
+                  fontSize: '14px',
+                  marginTop: '4px',
+                  color: '#333',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                <Star size={14} style={{ fill: '#ffe800' }} />
+                {spot.rating}
+              </div>
+            )}
+          </div>
+
+          {/* 💰 가격: 모든 카드 우측 하단 고정 */}
+          <div
+             style={{
+              position: 'absolute',
+              right: isOverlayStyle ? '0rem' : '1rem',
+              bottom: isOverlayStyle ? '0rem' : '1rem',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              color: '#222',
+            }}
+          >
+            <CreditCard size={18} style={{marginBottom: '-4px'}}/> ${spot.price}
+          </div>
+        </div>
+      </div>
+    );
+  })}
+</section>
+
       </div>
     </>
   );

@@ -386,10 +386,11 @@ const CSPage2 = ({
           ><HatchPattern opacity={0.4} />
             {get('btn.contact.1')}
           </SketchBtn>
-            <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+           <LoadingScreen 
+                     variant="cocktail"
+                     loadingText="Loading..."
+                     isVisible={isLoading} 
+                   />
         </div>
       </div>
     </>

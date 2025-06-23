@@ -8,7 +8,7 @@ import SketchDiv from '@components/SketchDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 import SketchHeader from '@components/SketchHeader';
-import { MapPin, Filter } from 'lucide-react';
+import { MapPin, Filter, Star } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
@@ -231,14 +231,23 @@ const PromotionsPage = ({
             background-color: #e0f2fe;
           }
 
-          .promotion-card.featured::before {
-            content: '⭐';
-            position: absolute;
-            top: 0.95rem;
-            right: 0.95rem;
-            font-size: 1.5rem;
-            z-index: 3;
+          .featured-star {
+                position: absolute;
+                top: 0.95rem;
+                right: 0.95rem;
+                z-index: 3;
+                width: 28px;
+                height: 28px;
+                stroke: #ffffff;
           }
+          // .promotion-card.featured::before {
+          //   content: '⭐';
+          //   position: absolute;
+          //   top: 0.95rem;
+          //   right: 0.95rem;
+          //   font-size: 1.5rem;
+          //   z-index: 3;
+          // }
 
           .empty-state {
             text-align: center;
@@ -337,6 +346,17 @@ const PromotionsPage = ({
                   className={`promotion-card ${index === 0 ? 'featured' : ''}`}
                 >
                   <HatchPattern opacity={0.4} />
+
+                 {/* featured일 때만 별 아이콘 표시 */}
+                  {index === 0 && (
+                    <Star 
+                      size={24} 
+                      className="featured-star" 
+                      fill="#fbbf24" 
+                      color="#fbbf24"
+                    />
+                  )}
+
                   <div className="promotion-content">
                     <ImagePlaceholder
                       src={promotion.image_url}
@@ -393,9 +413,10 @@ const PromotionsPage = ({
               </SketchDiv>
             )}
               <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+                        variant="cocktail"
+                        loadingText="Loading..."
+                        isVisible={isLoading} 
+                      />
           </div>
         </div>
       </div>

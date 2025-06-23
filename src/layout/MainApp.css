@@ -98,7 +98,6 @@
 }
 
 .map-icon-container {
-    opacity: 0.8;
     border: 1px solid #666;
     border-radius: 20px;
     width: 84px;
@@ -107,13 +106,35 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);;
-    background: linear-gradient(135deg, #00f0ff, #fff0d8);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: #374151;
+    color:white;
 }
 
 .map-icon-container:hover {
   background: #f3f4f6;
 }
 
+.scroll-up-btn {
+    position: fixed;
+    bottom: 100px;
+    right: 11px;
+    background: #374151;
+    color:white;
+    border: 1px solid #666;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+}
+
+.scroll-up-btn:active {
+  transform: scale(0.95);
+}
 
   

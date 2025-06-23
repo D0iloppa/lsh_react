@@ -158,9 +158,10 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
             {get("btn.next.1")}
           </SketchBtn>
           <LoadingScreen 
-         isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+                    variant="cocktail"
+                    loadingText="Loading..."
+                    isVisible={isLoading} 
+                  />
         </div>
       </div>
     </>

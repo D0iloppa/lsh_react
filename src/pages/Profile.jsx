@@ -375,9 +375,10 @@ const Profile = ({
             </div>
           </SketchDiv>
             <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+                      variant="cocktail"
+                      loadingText="Loading..."
+                      isVisible={isLoading} 
+                    />
         </div>
       </div>
     </>

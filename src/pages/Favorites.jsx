@@ -372,10 +372,11 @@ const FavoritesPage = ({
                     >
                       {get('btn.booking.2')}
                     </SketchBtn>
-                      <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+                     <LoadingScreen 
+                               variant="cocktail"
+                               loadingText="Loading..."
+                               isVisible={isLoading} 
+                             />
                   </div>
                 </div>
               </div>

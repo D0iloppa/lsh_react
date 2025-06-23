@@ -1,7 +1,7 @@
 // src/layout/MainApp.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, Search, Calendar, User, Map } from 'lucide-react';
+import { Home, Search, Calendar, User, Map, ChevronUp } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
@@ -13,7 +13,9 @@ import './MainApp.css';
 
 const MainApp = () => {
 
-
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
     const { user, isLoggedIn } = useAuth();
     const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
     
@@ -108,10 +110,17 @@ const MainApp = () => {
                 </section>
                 )}
 
-                                <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+            {currentPage == 'HOME' && (
+                 <button className="scroll-up-btn" onClick={scrollToTop}>
+                    <ChevronUp size={24} />
+                    </button>
+                    )}
+
+                               <LoadingScreen 
+                                         variant="cocktail"
+                                         loadingText="Loading..."
+                                         isVisible={isLoading} 
+                                       />
         </div>
     );
 };

@@ -385,10 +385,11 @@ export default function RegisterView() {
       {/* 푸터 */}
       <InitFooter2 />
 
-        <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+       <LoadingScreen 
+                 variant="cocktail"
+                 loadingText="Loading..."
+                 isVisible={isLoading} 
+               />
     </div>
   );
 }

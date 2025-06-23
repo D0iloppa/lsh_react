@@ -389,9 +389,10 @@ const { messages, isLoading, error, get, currentLang, availableLanguages, refres
             </SketchBtn>
           </div>
            <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+                     variant="cocktail"
+                     loadingText="Loading..."
+                     isVisible={isLoading} 
+                   />
         </div>
       </div>
     </>

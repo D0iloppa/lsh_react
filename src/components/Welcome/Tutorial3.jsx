@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
 
+
+import { useNavigate } from 'react-router-dom';
 import SketchDiv from '@components/SketchDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import HatchPattern from '@components/HatchPattern';
@@ -25,6 +27,15 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
       }
     }, [messages, currentLang]);
 
+    const navigate = useNavigate();
+
+
+    const onExpore = () => {
+      navigate('/login');
+    };
+
+
+    
   return (
 
 
@@ -55,7 +66,7 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
       {/* 메인 이미지 */}
       <div className="">
-        <ImagePlaceholder src={"/cdn/tuto-2.png"} className="w-full h-48" style={{ width: '335px', height:'330px', border: '1px solid #333', padding: '10px', borderTopLeftRadius: '15px 8px',
+        <ImagePlaceholder src={"/cdn/tuto-2.png"} className="w-full h-48" style={{ width: '335px', height:'310px', border: '1px solid #333', padding: '10px', borderTopLeftRadius: '15px 8px',
         borderTopRightRadius: '8px 20px',
         borderBottomRightRadius: '12px 6px',
         borderBottomLeftRadius: '6px 15px',
@@ -68,14 +79,15 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
           
           <SketchBtn 
             className="sketch-button"  variant = 'event' 
-            onClick={onNextScreen}
+            onClick={onExpore}
           >
             {get('Tutorial3.4')}
           </SketchBtn>
-            <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+           <LoadingScreen 
+                     variant="cocktail"
+                     loadingText="Loading..."
+                     isVisible={isLoading} 
+                   />
 
           {/* <HatchPattern /> */}
         </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2, Coffee, Heart } from 'lucide-react';
+import { Loader2, Coffee, Heart, Wine, Martini } from 'lucide-react';
 import HatchPattern from '@components/HatchPattern';
 
 const LoadingScreen = ({ 
@@ -21,6 +21,10 @@ const LoadingScreen = ({
         return <Heart size={32} className="loading-icon heart-icon" />;
       case "simple":
         return <div className="simple-spinner"></div>;
+        
+        case "cocktail":
+      return <Martini size={32} className="loading-icon cocktail-icon" />;
+      
       default:
         return <Loader2 size={32} className="loading-icon spinner-icon" />;
     }
@@ -208,11 +212,8 @@ const LoadingScreen = ({
           </div>
           
           <div className="loading-text">
-            {/* {loadingText}
-            <span className="loading-dots"><svg width="16" height="16" viewBox="0 0 24 24" className="cocktail-icon">
-                <path d="M5 7V5a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v2l-6 6v8h2a1 1 0 0 1 0 2H9a1 1 0 0 1 0-2h2v-8L5 7z" fill="currentColor"/>
-                <circle cx="12" cy="4" r="1" fill="#3b82f6"/>
-              </svg>...</span> */}
+          {loadingText}
+            <span className="loading-dots">...</span> 
           </div>
           
           {subText && (

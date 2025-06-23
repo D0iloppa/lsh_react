@@ -8,17 +8,41 @@ import GoogleMapComponent from '@components/GoogleMapComponent';
 import SketchBtn from '@components/SketchBtn';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
+import {Star, Clock, Users, Phone, CreditCard, MessageCircle} from 'lucide-react';
 
 const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const venueId = otherProps?.venueId || null;
   const [venueInfo, setVenueInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [topGirls, setTopGirls] = useState([]);
+  const [showFooter, setShowFooter] = useState(true);
 
   const handleDetail = (girl) => {
     navigateToPageWithData(PAGES.STAFFDETAIL, girl);
   };
 const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+  // 스크롤 이벤트용 별도 useEffect
+useEffect(() => {
+  const handleScroll = () => {
+    const scrollY = window.scrollY;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    
+    const scrollPercentage = scrollY / (documentHeight - windowHeight);
+    
+    if (scrollPercentage > 0.5) {
+      setShowFooter(false);
+    } else {
+      setShowFooter(true);
+    }
+  };
+
+  window.addEventListener('scroll', handleScroll);
+  return () => window.removeEventListener('scroll', handleScroll);
+}, []); // 의존성 배열 비움
+
+
   useEffect(() => {
     window.scrollTo(0, 0); 
 
@@ -39,6 +63,9 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
         const response = await axios.get(`${API_HOST}/api/getVenue`, {
           params: { venue_id: venueId },
         });
+
+        console.log("response", response.data)
+
         setVenueInfo(response.data || null);
       } catch (error) {
         console.error('Venue 정보 가져오기 실패:', error);
@@ -76,20 +103,23 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
   }, [venueId, messages, currentLang]);
 
   const renderStars = (rating = 0) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      let color = '#d1d5db';
-      if (rating >= i) {
-        color = '#fbbf24';
-      } else if (rating >= i - 0.5) {
-        color = '#fde68a';
-      }
-      stars.push(
-        <span key={i} style={{ color }}>{'★'}</span>
-      );
+  const stars = [];
+  for (let i = 1; i <= 5; i++) {
+    let color = '#d1d5db'; // 기본 회색 (gray-300)
+    if (rating >= i) {
+      color = '#fbbf24'; // 노란색 (yellow-400)
+    } else if (rating >= i - 0.5) {
+      color = '#fde68a'; // 연노란색 (yellow-200)
     }
-    return stars;
-  };
+
+    stars.push(
+      <span key={i}>
+        <Star color={color} fill={color} size={20}/>
+      </span>
+    );
+  }
+  return stars;
+};
 
   const CalendarIcon = ({ size = 24, color = '#333' }) => (
   <svg
@@ -131,10 +161,10 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
           font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;
           word-break: break-word; white-space: normal;
         }
-        .club-location { font-size: 0.9rem; color: #6b7280; }
-        .top-venues-text { font-size: 1.2rem; font-weight: bold; }
+        .club-location { font-size: 0.9rem; color: #6b7280;  margin-bottom: 15px;}
+        .top-venues-text { font-size: 1.2rem; font-weight: bold; margin-bottom: 8px;}
         .description {
-          font-size: 0.9rem; color: #4b5563; line-height: 1.4; margin-bottom: 2rem;
+          font-size: 0.9rem; color: #4b5563; line-height: 1.4; margin-bottom: 1rem;
         }
         .action-row {
           display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
@@ -158,7 +188,7 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
           color: #6b7280; 
         }
         .top-girls-section { padding: 1rem;}
-        .girls-rotation { width: 100%; }
+        .girls-rotation { width: 100%; margin-bottom: 30px;}
         .girl-slide { text-align: center;  margin-top: 20px;}
         .girl-img {
           width: 220px;
@@ -189,6 +219,31 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
           margin-top: 1rem;
           border: 1px solid #666;
         }   
+          .reservation-footer {
+          position: fixed;
+          bottom: 88px;
+          left: 0;
+          right: 0;
+          background: white;
+          padding: 10px 10px 12px 15px;
+          z-index: 1000;
+          transform: translateY(0);
+          transition: transform 0.3s ease-in-out;
+          box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .reservation-footer.hidden {
+          transform: translateY(100%);
+        }
+
+        .reservation-footer-content {
+          // max-width: 7rem;
+          margin: 0 auto;
+          display: flex;
+         justify-content: space-between;
+        }
+
+        .top-sum {margin-top: 25px; display: flex; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 8px; border-bottom: 1px solid #cecece;}
       `}</style>
 
       <div className="discover-container">
@@ -200,41 +255,50 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
         />
 
         <div className="featured-section">
-          <div className="club-image-area">
-            {loading ? (
-              <div className="club-name">Loading...</div>
-            ) : venueInfo?.image_url ? (
-              <img src={venueInfo.image_url} alt="venue" />
-            ) : (
-              <div className="club-name">No Image</div>
-            )}
+            <div className="club-image-area">
+              {loading ? (
+                <div className="club-name">Loading...</div>
+              ) : venueInfo?.image_url ? (
+                <img src={venueInfo.image_url} alt="venue" />
+              ) : (
+                <div className="club-name">No Image</div>
+              )}
+            </div>
+
+            <div className="club-name">{venueInfo?.name || 'Club One'}</div>
+
+            <div className='sum-info text-start'>
+            <div className="club-location">{venueInfo?.address || venueInfo?.location || 'in Vietnam'}</div>
+            <div className="top-venues-text">{venueInfo?.description || get('DiscoverPage1.4')}</div>
+            
+            <div className="description">
+              {venueInfo?.description ||
+                get('DiscoverPage1.5')}
+            </div>
+
+            <div className="phone" style={{marginBottom: '5px'}}>
+              <span style={{color: '#858585'}}><Phone size={14}/> tell: </span> {venueInfo?.phone ||'-'}
+            </div>
+
+            <div style={{marginBottom: '5px'}}>
+              <span style={{color: '#858585'}}><Users size={14}/>  Staff Count: </span>
+              {venueInfo && venueInfo.staff_cnt !== undefined ? (
+                  <span>{venueInfo.staff_cnt} {get('text.cnt1')}</span>
+                ) : (
+                  <span>-</span>
+                )}
+            </div>
+            <div>
+              <span style={{color: '#858585'}}><CreditCard size={14}/> Price: </span> {venueInfo?.price ||'-'}
+            </div>
           </div>
 
-          <div className="club-name">{venueInfo?.name || 'Club One'}</div>
-          <div className="club-location">{venueInfo?.address || venueInfo?.location || 'in Vietnam'}</div>
-          <div className="top-venues-text">{venueInfo?.description || 'Top Venues'}</div>
-
-          <div className="description">
-            {venueInfo?.description ||
-              'Discover the best nightlife spots in Vietnam, from vibrant bars to chic lounges, all available for easy booking.'}
-          </div>
-
-          <div className="action-row">
-            <span className="make-text">{get('DiscoverPage1.1')}</span>
-            <button
-              className="reserve-btn"
-              onClick={() =>
-                navigateToPageWithData(PAGES.RESERVATION, {
-                  target: 'venue',
-                  id: venueId || 1,
-                })
-              }
-            >
-              <CalendarIcon />
-            </button>
+          <div className="top-sum">
             <div className="stars">{renderStars(venueInfo?.rating)}</div>
+            <div style={{color: '#0072ff'}}>리뷰 25개 모두 보기 > </div>
           </div>
 
+          <div className="section-title" style={{textAlign:'start'}}>{get('DiscoverPage1.6')}</div>
           <div className="map-section">
             <GoogleMapComponent
               places={venueInfo ? [venueInfo] : []}
@@ -264,7 +328,7 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
                 <SketchBtn
                           type="text"
                           className="sketch-button" size = 'small'
-                          variant = 'event' style={{ width: '130px' , marginBottom: '20px'}}
+                          variant = 'primary' style={{ width: '130px' , marginBottom: '20px'}}
                           onClick={() => handleDetail(girl)}
                         >{<HatchPattern opacity={0.8} />}
                             {get('DiscoverPage1.3')}
@@ -272,10 +336,64 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
               </div>
             ))}
           </RotationDiv>
+            <div className={`reservation-footer ${showFooter ? '' : 'hidden'}`}>
+              {<HatchPattern opacity={0.4} />}
+              <div className="reservation-footer-content">
+                <div>
+                <div className="club-name" style={{ fontSize:'17px', maxWidth: '160px'}}>{venueInfo?.name || 'Club One'}</div>
+                <div>
+                  <Clock size={13} style={{ marginRight: '4px' }} />
+                  {venueInfo && venueInfo.open_time && venueInfo.close_time
+                    ? `${venueInfo.open_time} - ${venueInfo.close_time}`
+                    : '-'}
+                </div>
+                </div>
+                 <SketchBtn 
+                  className="sketch-button enter-button"  
+                  variant="event" 
+                  style={{ width: '45px', height: '39px', marginTop: '10px', background:'#374151', color:'white'}}
+                  // onClick={() =>
+                  //   navigateToPageWithData(PAGES.RESERVATION, {
+                  //     target: 'venue',
+                  //     id: venueId || 1,
+                  //   })
+                  // }
+                ><MessageCircle size={16}/></SketchBtn>
+                <SketchBtn 
+                  className="sketch-button enter-button"  
+                  variant="event" 
+                  style={{ width: '85px', height: '39px', marginTop: '10px', marginLeft:'-55px'}}
+                  onClick={() =>
+                    navigateToPageWithData(PAGES.RESERVATION, {
+                      target: 'venue',
+                      id: venueId || 1,
+                    })
+                  }
+                >
+                  <HatchPattern opacity={0.8} />
+                  {get('DiscoverPage1.1')}
+                </SketchBtn>
+              </div>
+            </div>
+          {/* <div className="action-row">
+            <SketchBtn 
+                          className="sketch-button enter-button"  
+                          variant="event" 
+                          onClick={() =>
+                          navigateToPageWithData(PAGES.RESERVATION, {
+                            target: 'venue',
+                            id: venueId || 1,
+                          })
+                        }
+                      ><HatchPattern opacity={0.8} />
+                          {get('DiscoverPage1.1')}
+                        </SketchBtn>
+          </div> */}
                           <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+                                    variant="cocktail"
+                                    loadingText="Loading..."
+                                    isVisible={isLoading} 
+                                  />
         </div>
       </div>
     </>

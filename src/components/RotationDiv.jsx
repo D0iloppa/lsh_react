@@ -32,7 +32,7 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
         console.log('✅ Messages loaded:', messages);
         // setLanguage('en'); // 기본 언어 설정
         console.log('Current language set to:', currentLang);
-        window.scrollTo(0, 0);
+        //window.scrollTo(0, 0);
       }
 
     const timer = setInterval(() => {

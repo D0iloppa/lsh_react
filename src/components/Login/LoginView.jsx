@@ -6,6 +6,7 @@ import '@components/SketchComponents.css';
 import InitFooter from '@components/InitFooter';
 import HatchPattern from '@components/HatchPattern';
 import LoadingScreen from '@components/LoadingScreen';
+import ImagePlaceholder from '@components/ImagePlaceholder';
 
 // 칵테일 아이콘 컴포넌트
 const CocktailIcon = () => (
@@ -53,7 +54,7 @@ export default function LoginView() {
         <header className="login-header">
           <div className="logo-container">
             <CocktailIcon />
-            <h1 className="sketch-title sketch-title--large">LeTanTon Sheriff</h1>
+            <h1 className="sketch-title sketch-title--large" style={{display:'flex'}}>LeTanTon Sheriff <ImagePlaceholder src="/cdn/age.png" style={{lineHeight: '0.5', marginLeft: '8px', width:'26px'}}/></h1>
           </div>
         </header>
 

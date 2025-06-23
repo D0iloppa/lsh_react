@@ -193,9 +193,10 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
           </SketchBtn>
         </div>
          <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+                   variant="cocktail"
+                   loadingText="Loading..."
+                   isVisible={isLoading} 
+                 />
       </div>
     </>
   );

@@ -673,7 +673,8 @@ export const MemoSelector = ({ value, onChange, messages = {} }) => {
   return (
     <div className="form-step"
           style={{
-            marginTop:"20px"
+            marginTop:"20px",
+            marginBottom: "0"
           }}
     >
       <div className="step-label">
