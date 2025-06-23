@@ -7,6 +7,9 @@ import '@components/SketchComponents.css';
 import SketchHeader from '@components/SketchHeader'
 import SketchDiv from '@components/SketchDiv'
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import ApiClient from '@utils/ApiClient';
+import LoadingScreen from '@components/LoadingScreen';
+import {Filter, Martini} from 'lucide-react';
 
 const ViewReviewPage = ({ 
   navigateToPageWithData, 
@@ -22,16 +25,71 @@ const ViewReviewPage = ({
 }) => {
  
   const venueId = otherProps?.venueId || null;
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(false);
    console.log("venueId", venueId)
+   const [userImages, setUserImages] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
-
+const API_HOST = import.meta.env.VITE_API_HOST;
      useEffect(() => {
     if (messages && Object.keys(messages).length > 0) {
       console.log('✅ Messages loaded:', messages);
       window.scrollTo(0, 0);
     }
-  }, [messages]);
+  }, [messages, currentLang]);
+
+  // ViewReview
+  useEffect(() => {
+  const loadVenueReviews = async () => {
+  if (!venueId) return;
+  
+  try {
+    setLoading(true);
+    const response = await ApiClient.postForm('/api/getVenueReviewList', {
+      venue_id: venueId
+    });
+    
+    const reviewsData = response.data || [];
+    setReviews(reviewsData);
+    
+    // 유니크한 user_id들 추출
+    const userIds = [...new Set(reviewsData.map(review => review.user_id))];
+    
+    // 모든 유저 정보를 병렬로 요청
+    const userPromises = userIds.map(userId => 
+      ApiClient.get('/api/getUserInfo', {
+        user_id: userId
+      }).catch(error => {
+        console.error(`유저 ${userId} 정보 실패:`, error);
+        return { data: { image_url: '/placeholder-user.jpg' } };
+      })
+    );
+    
+    const userResponses = await Promise.all(userPromises);
+    
+    const userImagesData = {};
+    userIds.forEach((userId, index) => {
+      userImagesData[userId] = userResponses[index].data?.image_url || '/placeholder-user.jpg';
+    });
+
+  console.log("userImagesData", userImagesData)
+    
+    setUserImages(userImagesData);
+    
+  } catch (error) {
+    console.error('리뷰 로딩 실패:', error);
+    setReviews([]);
+  } finally {
+    setLoading(false);
+  }
+};
+  
+
+  loadVenueReviews();
+}, [venueId]);
+
+
 
   const handleNotifications = () => {
     console.log('Notifications 클릭');
@@ -47,25 +105,6 @@ const ViewReviewPage = ({
     console.log('Search:', searchQuery);
     // 검색 로직
   };
-
-  const reviews = [
-    {
-      id: 1,
-      userName: 'Sarah Nguyen',
-      userImage: '/placeholder-user1.jpg',
-      rating: 5,
-      date: 'March 2023',
-      comment: 'Amazing atmosphere with friendly staff and great drinks. Highly recommend!'
-    },
-    {
-      id: 2,
-      userName: 'Minh Tran',
-      userImage: '/placeholder-user2.jpg',
-      rating: 4,
-      date: 'February 2023',
-      comment: 'Great music and vibe, but a bit crowded on weekends.'
-    }
-  ];
 
   const renderStars = (rating) => {
     return '⭐'.repeat(rating);
@@ -216,8 +255,6 @@ const ViewReviewPage = ({
         .user-avatar {
           width: 60px;
           height: 60px;
-          border: 2px solid #1f2937;
-          border-radius: 50%;
           flex-shrink: 0;
         }
 
@@ -266,13 +303,13 @@ const ViewReviewPage = ({
 
         {/* Search Section */}
         <div className="map-filter-selects">
-        <select class="select-box"><
-          option value="ALL">최신순</option>
+        <select class="select-box">
+          <option value="ALL">최신순</option>
           <option value="BAR">최신순</option>
           <option value="RESTAURANT">과거순</option>
           </select>
-          <select class="select-box"><
-          option value="ALL">유형 전체</option>
+          <select class="select-box">
+            <option value="ALL">유형 전체</option>
           <option value="BAR">매장</option>
           <option value="RESTAURANT">Staff</option>
           </select>
@@ -288,45 +325,46 @@ const ViewReviewPage = ({
           </form>
         </div> */}
 
-        {/* Venue Information */}
-        <SketchDiv className="venue-section">
-          <h1 className="venue-title">{venueData.name}</h1>
-          
-          <div className="venue-image-container">
-            <ImagePlaceholder 
-              src={venueData.image} 
-              className=""
-            />
-          </div>
-
-          <div className="venue-subtitle">{venueData.subtitle}</div>
-          <p className="venue-description">{venueData.description}</p>
-        </SketchDiv>
-
         {/* User Reviews */}
         <div className="reviews-section">
-          <h2 className="reviews-title">User Reviews</h2>
           
-          {reviews.map((review, index) => (
-            <SketchDiv key={review.id} className="review-card">
-              <HatchPattern opacity={0.03} />
-              <div className="review-content">
-                <div className="review-header">
-                  <ImagePlaceholder 
-                    src={review.userImage} 
-                    className="user-avatar"
-                  />
-                  <div className="user-info">
-                    <h3 className="user-name">{review.userName}</h3>
-                    <p className="review-meta">
-                      {renderStars(review.rating)} stars - {review.date}
-                    </p>
+          {loading ? (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              textAlign: 'center', 
+              color: 'gray',
+              height: '200px'
+            }}>
+              <Martini size={15}/>
+              <span>리뷰 로딩 중...</span>
+            </div>
+          ) : reviews.length > 0 ? (
+            reviews.map((review, index) => (
+              <SketchDiv key={review.review_id} className="review-card">
+                <HatchPattern opacity={0.03} />
+                <div className="review-content">
+                  <div className="review-header">
+                    <ImagePlaceholder 
+                      src={userImages[review.user_id] || '/placeholder-user.jpg'}
+                      className="user-avatar"
+                    />
+                    <div className="user-info">
+                      <h3 className="user-name">{review.user_name}</h3>
+                      <p className="review-meta">
+                        {renderStars(review.rating)} stars - {new Date(review.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
+                  <p className="review-text">{review.content}</p>
                 </div>
-                <p className="review-text">{review.comment}</p>
-              </div>
-            </SketchDiv>
-          ))}
+              </SketchDiv>
+            ))
+          ) : (
+            <div style={{textAlign: 'center', color:'gray'}}>리뷰가 없습니다.</div>
+          )}
         </div>
       </div>
     </>

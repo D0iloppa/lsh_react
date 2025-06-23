@@ -1,9 +1,39 @@
 import React, { useState, useRef, useCallback } from 'react';
 import SketchBtn from '@components/SketchBtn';
+import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
 
 // 주간 테이블 CSS 스타일 (이 스타일을 부모 컴포넌트에 추가하세요)
 export const weeklyTableStyles = `
+
+  .reserve-info {
+    padding: 10px;
+    margin-bottom:10px;
+  }
+
+  .summary-item {
+      font-size: 0.95rem;
+      color: #374151;
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+    }
+
+    .summary-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .summary-label {
+      font-weight: bold;
+      color: #1f2937;
+      flex-shrink: 0;
+    }
+
+    .summary-value {
+        margin-left:10px;
+      }
+
   .weekly-table {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -257,7 +287,8 @@ const canSelectDuration = (startTime, duration, disabledTimes) => {
   return true;
 };
 
-// 이용 시간 선택 컴포넌트
+// 
+// 시간 선택 컴포넌트
 const DurationSelector = ({ 
   startTime, 
   maxDuration, 
@@ -732,10 +763,20 @@ export const ReservationForm = ({
   allowDrag = false,
   useDurationMode = false, // 새로운 prop
   maxDuration = 6, // Duration 모드의 최대 시간
-  messages = {} // 다국어 메시지 추가
+  messages = {}, // 다국어 메시지 추가,
+  getTargetLabel = () => {}
 }) => {
   return (
     <div className="form-section">
+
+
+      <SketchDiv className="reserve-info">
+          <div className="summary-item">
+            <span className="summary-label">{messages['targetLabel']}:</span>
+            <span className="summary-value">{getTargetLabel()}</span>
+          </div>
+      </SketchDiv>
+
       <AttendeeSelector 
         value={attendee}
         onChange={onAttendeeChange}

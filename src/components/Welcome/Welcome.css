@@ -14,7 +14,7 @@
     display: flex;
     width: 100%;
     will-change: transform;
-    max-height: 130px;
+    /* max-height: 130px; */
   }
 
   .tutorial-container{

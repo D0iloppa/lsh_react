@@ -52,7 +52,9 @@ const ReserveSummaryPage = ({
         attendee, 
         duration,
         endTime, 
-        memo
+        memo,
+        venueToItem,
+        targetName
       } = reserve_data;
 
       // API 요청을 위한 payload 준비
@@ -65,7 +67,8 @@ const ReserveSummaryPage = ({
         start_time: selectedTime,
         end_time: endTime,
         duration: duration,
-        note: memo || ''
+        note: memo || '',
+        venueToItem
       };
 
       setReservationPayload(api_payload);
@@ -74,7 +77,7 @@ const ReserveSummaryPage = ({
       // 화면 표시용 데이터 준비
       const display_data = {
         target: target,
-        targetName: getTargetDisplayName(target, target_id),
+        targetName: targetName,
         date: formatDate(selectedDate),
         startTime: selectedTime,
         endTime: endTime,

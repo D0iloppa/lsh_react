@@ -18,6 +18,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
   const [loading, setLoading] = useState(false);
   const [topGirls, setTopGirls] = useState([]);
   const [showFooter, setShowFooter] = useState(true);
+  const [reviewCount, setReviewCount] = useState(0);
 
   const handleDetail = (girl) => {
     navigateToPageWithData(PAGES.STAFFDETAIL, girl);
@@ -105,20 +106,28 @@ useEffect(() => {
   }, [venueId, messages, currentLang]);
 
 
-  useEffect(() => {
-    const loadVenueReview = async (venueId) => {
-        if (!venueId) return;
-        const response = await ApiClient.postForm('/api/getVenueReviewList', {  // data
-          venue_id: venueId
-        });
+useEffect(() => {
+  const loadVenueReview = async () => {
+    if (!venueId) return;
+    
+    try {
+      const response = await ApiClient.postForm('/api/getVenueReviewList', {
+        venue_id: venueId
+      });
+      
+      //console.log('responseReview', response.data);
+      
+      // 상태에 저장하거나 사용하기
+      // setReviews(response.data);
+      setReviewCount(response.data?.length || 0);
+    } catch (error) {
+      setReviewCount(0);
+      console.error('리뷰 로딩 실패:', error);
+    }
+  };
 
-        console.log('responseReive', response)
-
-        return response;
-      }
-
-      loadVenueReview();
-  });
+  loadVenueReview();
+}, [venueId]); // venueId가 변경될 때만 실행
  
 
 
@@ -310,15 +319,17 @@ useEffect(() => {
                 )}
             </div>
             <div>
-              <span style={{color: '#858585'}}><CreditCard size={14}/> Price: </span> {venueInfo?.price ||'-'}
+              <span style={{color: '#858585'}}><CreditCard size={14}/> Price: </span> $ {venueInfo?.price ||'-'}
             </div>
           </div>
 
           <div className="top-sum">
             <div className="stars">{renderStars(venueInfo?.rating)}</div>
-            <div style={{color: '#0072ff'}}  onClick={() =>
-                         navigateToPageWithData(PAGES.VIEWREVIEW, {venueId})
-                        }>리뷰 25개 모두 보기 > </div>
+            <div style={{color: '#0072ff'}} onClick={() =>
+              navigateToPageWithData(PAGES.VIEWREVIEW, {venueId})
+            }>
+              리뷰 <span className='reviewCnt'>{reviewCount}</span>개 모두 보기 >
+            </div>
           </div>
 
           <div className="section-title" style={{textAlign:'start'}}>{get('DiscoverPage1.6')}</div>

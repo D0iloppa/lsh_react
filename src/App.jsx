@@ -50,8 +50,8 @@ const AppRoutes = () => {
       <Route 
         path="/login" 
         element={
-          <LoginView />
-          /* isLoggedIn ? <Navigate to="/main" replace /> : <LoginView /> */
+          /*<LoginView />*/
+          isLoggedIn ? <Navigate to="/main" replace /> : <LoginView />
         } 
       />
 
@@ -68,8 +68,8 @@ const AppRoutes = () => {
       <Route 
         path="/main" 
         element={
-          <MainApp />
-          /* isLoggedIn ? <MainApp /> : <Navigate to="/login" replace /> */
+          /*<MainApp />*/
+          isLoggedIn ? <MainApp /> : <Navigate to="/login" replace /> 
         } 
       />
 

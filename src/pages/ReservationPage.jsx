@@ -46,6 +46,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   const [scheduleData, setScheduleData] = useState({});
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
+  const [targetName, setTargetName] = useState('');
   
   // 체크박스 상태들
   const [agreements, setAgreements] = useState({
@@ -119,6 +120,17 @@ const isAllAgreed = () => {
       setShouldAutoSelect(false);
     }
   }, [scheduleData, shouldAutoSelect]);
+
+  const getTargetLabel = () => {
+    const {staff={}} = otherProps;
+    const {venueInfo = false, scheduleList = []}  = scheduleData;
+    console.log('gtl', otherProps);
+
+    let _targetName = (target=='staff') ? staff.name : venueInfo.name;
+    setTargetName(_targetName)
+    return _targetName;
+
+  }
 
   const loadScheduleData = () => {
     return new Promise((resolve, reject) => {
@@ -405,12 +417,14 @@ const isAllAgreed = () => {
       user_id : user.user_id,
       target: target,
       target_id: id,
+      venueToItem: (target=='venue') ? true : false,
       attendee,
       selectedDate,
       selectedTime: reservationData.startTime,
       duration: reservationData.duration,
       endTime: reservationData.endTime,
-      memo: memo 
+      memo: memo ,
+      targetName
     };
     
     navigateToPageWithData(PAGES.RESERVATION_SUM, {
@@ -458,7 +472,9 @@ const isAllAgreed = () => {
       attendeeRequired: get('Validation.AttendeeRequired') || '참석자 수를 선택해주세요.',
       dateRequired: get('Validation.DateRequired') || '날짜를 선택해주세요.',
       startTimeRequired: get('Validation.StartTimeRequired') || '시작 시간을 선택해주세요.',
-      durationRequired: get('Validation.DurationRequired') || '이용 시간을 선택해주세요.'
+      durationRequired: get('Validation.DurationRequired') || '이용 시간을 선택해주세요.',
+
+      targetLabel:get('BookingSum.Target')
     };
   };
 
@@ -683,6 +699,7 @@ const isAllAgreed = () => {
           useDurationMode={true} // Duration 모드 활성화
           maxDuration={4} // 최대 4시간까지 선택 가능
           messages={getReservationMessages()} // 다국어 메시지 전달
+          getTargetLabel={getTargetLabel}
         />
         <div className='Important-info'>
     <div style={{ marginBottom: '1rem', fontWeight: 'bold' }}>
@@ -690,10 +707,10 @@ const isAllAgreed = () => {
     </div>
     
         <AgreementCheckbox 
-  agreements={agreements}
-  onAgreementChange={handleAgreementChange}
-  showRequired={true}
-/>
+          agreements={agreements}
+          onAgreementChange={handleAgreementChange}
+          showRequired={true}
+        />
     </div>
 
         <div className="reserve-section">

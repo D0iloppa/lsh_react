@@ -41,7 +41,8 @@ const BookingHistoryPage = ({
     console.log('Rebook clicked:', booking);
     navigateToPageWithData && navigateToPageWithData(PAGES.RESERVATION, {
       target: booking.targetType,
-      id: booking.targetId
+      id: (booking.targetType == 'venue') ? booking.venue_id : booking.targetId,
+      staff: (booking.targetType == 'staff') ? { name : booking.targetName} : {}
     });
   };
 
@@ -194,6 +195,7 @@ const BookingHistoryPage = ({
           note: item.note,
           attendee: item.attendee,
           reservedAt: item.reserved_at,
+          venue_id:item.venue_id,
           review_cnt:item.review_cnt,
           isReviewable:item.isReviewable
         }));
