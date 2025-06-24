@@ -7,7 +7,7 @@ import SketchInput from '@components/SketchInput';
 import SketchDiv from '@components/SketchDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
-import SketchHeader from '@components/SketchHeader';
+import SketchHeader from '@components/SketchHeaderMain';
 import { MapPin, Filter, Star } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
@@ -15,9 +15,11 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
 
 const PromotionsPage = ({
+  navigateToPage,
   navigateToPageWithData,
   navigateToMap,
   PAGES,
+  goBack,
   ...otherProps
 }) => {
   const [filterQuery, setFilterQuery] = useState('');
@@ -26,6 +28,11 @@ const PromotionsPage = ({
   const [originalPromotions, setOriginalPromotions] = useState([]);
   const API_HOST = import.meta.env.VITE_API_HOST;
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+  const handleBack = () =>{
+    navigateToPage(PAGES.HOME);
+  }
+
   useEffect(() => {
     window.scrollTo(0, 0);
 
@@ -59,10 +66,13 @@ const PromotionsPage = ({
   };
 
   const handleBookNow = (promotion) => {
-    navigateToPageWithData &&
-      navigateToPageWithData(PAGES.RESERVATION, {
-        selectedEvent: promotion,
-      });
+
+
+    navigateToPageWithData && navigateToPageWithData(PAGES.RESERVATION, {
+      target: promotion.target_type,
+      id: (promotion.target_type == 'venue') ? promotion.venue_id : promotion.target_id,
+      staff: (promotion.target_type == 'staff') ? { name : promotion.venue_name}  : {}
+    });
   };
 
   const handleShare = (promotion) => {
@@ -306,7 +316,8 @@ const PromotionsPage = ({
         `}</style>
 
       <div className="promotions-container">
-        <SketchHeader title={get('btn.promotion.1')} showBack={false} rightButtons={[]} />
+        <SketchHeader title={get('btn.promotion.1')} showBack={true} onBack={handleBack}
+          rightButtons={[]} />
 
         <div className="content-section">
           <SketchDiv className="filter-section">

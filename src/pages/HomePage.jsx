@@ -1,7 +1,7 @@
 // 전체 상단 import는 동일
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Users, Star, Heart, ArrowRight, Clock, MapPin, CreditCard } from 'lucide-react';
+import { Users, Star, Heart, ArrowRight, Clock, MapPin,  MoveLeft } from 'lucide-react';
 import GoogleMapComponent from '@components/GoogleMapComponent';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import SketchSearch from '@components/SketchSearch';
@@ -10,6 +10,7 @@ import SketchBtn from '@components/SketchBtn';
 import { useAuth } from '../contexts/AuthContext';
 import { useMsg } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
+import { useNavigate } from 'react-router-dom';
 
 const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAGES }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -20,9 +21,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   const [sortPrice, setSortPrice] = useState('PRICE_ALL');
   const [sortStaff, setSortStaff] = useState('STAFF_ALL');
   const [staffLanguageFilter, setStaffLanguageFilter] = useState('ALL');
-
-
-
+  const navigate = useNavigate();
   const [isReservationOnly, setIsReservationOnly] = useState(false); // ✅ 이 변수만 사용
   const { messages, get, currentLang, isLoading } = useMsg();
   const { user } = useAuth();
@@ -88,6 +87,11 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
 
     init();
   }, [messages, currentLang]);
+
+  const handleGoBack = () => {
+    navigate(-1); // 브라우저 히스토리에서 한 단계 뒤로
+  };
+  
 
   const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort) => {
     let filtered = [...originalHotspots];
@@ -292,7 +296,23 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
         }
 
       `}</style>
-
+{/* <button onClick={handleGoBack} style={{
+        position: 'fixed',
+        bottom: '145px',
+        right: '11px',
+        zIndex: 1000,
+        background: 'white',
+        border: '1px solid #333',
+        borderRadius: '50%',
+        width: '40px',
+        height: '40px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer'
+      }}>
+        < MoveLeft size={16} />
+      </button> */}
       <div className="homepage-container">
         <section className="hero-section">
           <HatchPattern opacity={0.3} />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef  } from 'react';
 import axios from 'axios';
 import RotationDiv from '@components/RotationDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
@@ -8,8 +8,11 @@ import GoogleMapComponent from '@components/GoogleMapComponent';
 import SketchBtn from '@components/SketchBtn';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
-import {Star, Clock, Users, Phone, CreditCard, MessageCircle} from 'lucide-react';
+import { Star, Clock, Users, Phone, CreditCard, MessageCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import ApiClient from '@utils/ApiClient';
+
+import { overlay } from 'overlay-kit';
+
 
 const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
@@ -23,33 +26,33 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
   const handleDetail = (girl) => {
     navigateToPageWithData(PAGES.STAFFDETAIL, girl);
   };
-const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
-
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  const [staffList, setStaffList] = useState([]);
   // 스크롤 이벤트용 별도 useEffect
-useEffect(() => {
-  const handleScroll = () => {
-    const scrollY = window.scrollY;
-    const windowHeight = window.innerHeight;
-    const documentHeight = document.documentElement.scrollHeight;
-    
-    const scrollPercentage = scrollY / (documentHeight - windowHeight);
-    
-    if (scrollPercentage > 0.5) {
-      setShowFooter(false);
-    } else {
-      setShowFooter(true);
-    }
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
 
-  window.addEventListener('scroll', handleScroll);
-  return () => window.removeEventListener('scroll', handleScroll);
-}, []); // 의존성 배열 비움
+      const scrollPercentage = scrollY / (documentHeight - windowHeight);
+
+      if (scrollPercentage > 0.5) {
+        setShowFooter(false);
+      } else {
+        setShowFooter(true);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []); // 의존성 배열 비움
 
 
   useEffect(() => {
-    window.scrollTo(0, 0); 
+    window.scrollTo(0, 0);
 
-  if (messages && Object.keys(messages).length > 0) {
+    if (messages && Object.keys(messages).length > 0) {
       console.log('✅ Messages loaded:', messages);
       // setLanguage('en'); // 기본 언어 설정
       console.log('Current language set to:', currentLang);
@@ -105,147 +108,499 @@ useEffect(() => {
     //fetchTopGirls();
   }, [venueId, messages, currentLang]);
 
-useEffect(() => {
-  const fetchAllData = async () => {
-    if (!venueId) return;
-    
-    try {
-      // 1. 먼저 staff 리스트를 가져옴
-      const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
-      const res = await axios.get(`${API_HOST}/api/getVenueStaffList`, {
-        params: { venue_id: venueId },
-      });
-      const staffList = res.data || [];
-      
-      // 2. staff 리스트가 있을 때만 availCnt 호출
-      if (staffList.length > 0) {
-        const top3WithAvailCnt = await Promise.all(
-          staffList.slice(0, 3).map(async (girl) => {
-            const birthYear = parseInt(girl.birth_year, 10);
-            const currentYear = new Date().getFullYear();
-            const age = birthYear ? currentYear - birthYear : '?';
-            
-            // 재시도 로직 추가
-          let availCnt = 0;
-            try {
-              const response = await ApiClient.get('/api/staffAvailCnt', {
-                params: { staff_id: girl.staff_id }
-              });
-              
-              console.log(`=== Staff ${girl.staff_id} 전체 response 구조 확인 ===`);
-              console.log('response:', response);
-              console.log('response.data:', response.data);
-              console.log('response 키들:', Object.keys(response));
-              
-              // ApiClient가 다른 구조일 수 있으니 여러 가능성 체크
-              let data = null;
-              if (response.data) {
-                data = response.data;
-              } else if (response.body) {
-                data = response.body;
-              } else if (response.result) {
-                data = response.result;
-              } else if (Array.isArray(response)) {
-                data = response;
-              } else {
-                data = response; // response 자체가 데이터일 수도
+  useEffect(() => {
+    const fetchAllData = async () => {
+      if (!venueId) return;
+
+      try {
+        // 1. 먼저 staff 리스트를 가져옴
+        const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+        const res = await axios.get(`${API_HOST}/api/getVenueStaffList`, {
+          params: { venue_id: venueId },
+        });
+        const staffList = res.data || [];
+        console.log("staffList", staffList)
+        setStaffList(staffList);
+        // 2. staff 리스트가 있을 때만 availCnt 호출
+        if (staffList.length > 0) {
+          const top3WithAvailCnt = await Promise.all(
+            staffList.slice(0, 3).map(async (girl) => {
+              const birthYear = parseInt(girl.birth_year, 10);
+              const currentYear = new Date().getFullYear();
+              const age = birthYear ? currentYear - birthYear : '?';
+
+              // 재시도 로직 추가
+              let availCnt = 0;
+              try {
+                const response = await ApiClient.get('/api/staffAvailCnt', {
+                  params: { staff_id: girl.staff_id }
+                });
+
+                console.log(`=== Staff ${girl.staff_id} 전체 response 구조 확인 ===`);
+                console.log('response:', response);
+                console.log('response.data:', response.data);
+                console.log('response 키들:', Object.keys(response));
+
+                // ApiClient가 다른 구조일 수 있으니 여러 가능성 체크
+                let data = null;
+                if (response.data) {
+                  data = response.data;
+                } else if (response.body) {
+                  data = response.body;
+                } else if (response.result) {
+                  data = response.result;
+                } else if (Array.isArray(response)) {
+                  data = response;
+                } else {
+                  data = response; // response 자체가 데이터일 수도
+                }
+
+                console.log('실제 데이터:', data);
+
+                if (Array.isArray(data) && data.length > 0) {
+                  availCnt = data[0]?.availcnt || 0;
+                } else if (data?.availcnt) {
+                  availCnt = data.availcnt;
+                }
+
+                console.log('Final availCnt:', availCnt);
+
+              } catch (error) {
+                console.error(`Staff ${girl.staff_id} availCnt 로딩 실패:`, error);
+                availCnt = 0;
               }
-              
-              console.log('실제 데이터:', data);
-              
-              if (Array.isArray(data) && data.length > 0) {
-                availCnt = data[0]?.availcnt || 0;
-              } else if (data?.availcnt) {
-                availCnt = data.availcnt;
-              }
-              
-              console.log('Final availCnt:', availCnt);
-              
-            } catch (error) {
-              console.error(`Staff ${girl.staff_id} availCnt 로딩 실패:`, error);
-              availCnt = 0;
-            }
-            
-            return {
-              ...girl, 
-              displayName: `${girl.name} (${age})`,
-              availCnt: availCnt
-            };
-          })
-        );
-        
-        setTopGirls(top3WithAvailCnt);
+
+              return {
+                ...girl,
+                displayName: `${girl.name} (${age})`,
+                availCnt: availCnt
+              };
+            })
+          );
+
+          setTopGirls(top3WithAvailCnt);
+        }
+      } catch (error) {
+        console.error('Staff 데이터 가져오기 실패:', error);
       }
-    } catch (error) {
-      console.error('Staff 데이터 가져오기 실패:', error);
-    }
-  };
+    };
 
-  fetchAllData();
-}, [venueId]); 
+    fetchAllData();
+  }, [venueId]);
 
 
-useEffect(() => {
-  const loadVenueReview = async () => {
-    if (!venueId) return;
-    
-    try {
-      const response = await ApiClient.postForm('/api/getVenueReviewList', {
-        venue_id: venueId
-      });
-      
-      //console.log('responseReview', response.data);
-      
-      // 상태에 저장하거나 사용하기
-      // setReviews(response.data);
-      setReviewCount(response.data?.length || 0);
-    } catch (error) {
-      setReviewCount(0);
-      console.error('리뷰 로딩 실패:', error);
-    }
-  };
+  useEffect(() => {
+    const loadVenueReview = async () => {
+      if (!venueId) return;
 
-  loadVenueReview();
-}, [venueId]); // venueId가 변경될 때만 실행
- 
+      try {
+        const response = await ApiClient.postForm('/api/getVenueReviewList', {
+          venue_id: venueId
+        });
+
+        //console.log('responseReview', response.data);
+
+        // 상태에 저장하거나 사용하기
+        // setReviews(response.data);
+        setReviewCount(response.data?.length || 0);
+      } catch (error) {
+        setReviewCount(0);
+        console.error('리뷰 로딩 실패:', error);
+      }
+    };
+
+    loadVenueReview();
+  }, [venueId]); // venueId가 변경될 때만 실행
+
 
 
 
   const renderStars = (rating = 0) => {
-  const stars = [];
-  for (let i = 1; i <= 5; i++) {
-    let color = '#d1d5db'; // 기본 회색 (gray-300)
-    if (rating >= i) {
-      color = '#fbbf24'; // 노란색 (yellow-400)
-    } else if (rating >= i - 0.5) {
-      color = '#fde68a'; // 연노란색 (yellow-200)
-    }
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      let color = '#d1d5db'; // 기본 회색 (gray-300)
+      if (rating >= i) {
+        color = '#fbbf24'; // 노란색 (yellow-400)
+      } else if (rating >= i - 0.5) {
+        color = '#fde68a'; // 연노란색 (yellow-200)
+      }
 
-    stars.push(
-      <span key={i}>
-        <Star color={color} fill={color} size={20}/>
-      </span>
-    );
-  }
-  return stars;
-};
+      stars.push(
+        <span key={i}>
+          <Star color={color} fill={color} size={20} />
+        </span>
+      );
+    }
+    return stars;
+  };
 
   const CalendarIcon = ({ size = 24, color = '#333' }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={size}
-    height={size}
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke={color}
-    strokeWidth="1.5"
-  >
-    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-    <line x1="16" y1="2" x2="16" y2="6" />
-    <line x1="8" y1="2" x2="8" y2="6" />
-    <line x1="3" y1="10" x2="21" y2="10" />
-  </svg>
-);
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke={color}
+      strokeWidth="1.5"
+    >
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+
+
+
+
+  const MenuOverlay = ({ menuList, onClose }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [scale, setScale] = useState(1);
+    const [translateX, setTranslateX] = useState(0);
+    const [translateY, setTranslateY] = useState(0);
+    const [isZoomed, setIsZoomed] = useState(false);
+    
+    const imageRef = useRef(null);
+    const lastTapRef = useRef(0);
+    const initialDistanceRef = useRef(0);
+    const initialScaleRef = useRef(1);
+    const lastTouchRef = useRef({ x: 0, y: 0 });
+  
+    // 줌 리셋
+    const resetZoom = () => {
+      setScale(1);
+      setTranslateX(0);
+      setTranslateY(0);
+      setIsZoomed(false);
+    };
+  
+    // 이미지 변경 시 줌 리셋
+    useEffect(() => {
+      resetZoom();
+    }, [currentIndex]);
+  
+    // 더블탭 줌
+    const handleDoubleTap = (e) => {
+      const now = Date.now();
+      const timeSinceLastTap = now - lastTapRef.current;
+      
+      if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+        e.preventDefault();
+        if (scale === 1) {
+          setScale(2);
+          setIsZoomed(true);
+        } else {
+          resetZoom();
+        }
+      }
+      lastTapRef.current = now;
+    };
+  
+    // 핀치 줌 시작
+    const handleTouchStart = (e) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const distance = Math.sqrt(
+          Math.pow(touch2.clientX - touch1.clientX, 2) +
+          Math.pow(touch2.clientY - touch1.clientY, 2)
+        );
+        initialDistanceRef.current = distance;
+        initialScaleRef.current = scale;
+      } else if (e.touches.length === 1 && isZoomed) {
+        const touch = e.touches[0];
+        lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
+      }
+    };
+  
+    // 핀치 줌 중
+    const handleTouchMove = (e) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const distance = Math.sqrt(
+          Math.pow(touch2.clientX - touch1.clientX, 2) +
+          Math.pow(touch2.clientY - touch1.clientY, 2)
+        );
+        
+        const newScale = (distance / initialDistanceRef.current) * initialScaleRef.current;
+        const clampedScale = Math.min(Math.max(newScale, 1), 4); // 1x ~ 4x
+        
+        setScale(clampedScale);
+        setIsZoomed(clampedScale > 1);
+      } else if (e.touches.length === 1 && isZoomed) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - lastTouchRef.current.x;
+        const deltaY = touch.clientY - lastTouchRef.current.y;
+        
+        setTranslateX(prev => prev + deltaX);
+        setTranslateY(prev => prev + deltaY);
+        
+        lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
+      }
+    };
+  
+    // 네비게이션 (줌 상태에서는 비활성화)
+    const goToNext = () => {
+      if (!isZoomed) {
+        setCurrentIndex((prev) => (prev + 1) % menuList.length);
+      }
+    };
+  
+    const goToPrev = () => {
+      if (!isZoomed) {
+        setCurrentIndex((prev) => (prev - 1 + menuList.length) % menuList.length);
+      }
+    };
+  
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '20px'
+        }}
+        onClick={!isZoomed ? onClose : undefined}
+      >
+        <div
+          style={{
+            position: 'relative',
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            maxWidth: '90vw',
+            maxHeight: '80vh',
+            width: '400px'
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* 닫기 버튼 */}
+          <button
+            onClick={onClose}
+            style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+              background: 'rgba(0, 0, 0, 0.5)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              cursor: 'pointer',
+              zIndex: 10
+            }}
+          >
+            <X size={18} />
+          </button>
+  
+          {/* 줌 리셋 버튼 */}
+          {isZoomed && (
+            <button
+              onClick={resetZoom}
+              style={{
+                position: 'absolute',
+                top: '10px',
+                left: '10px',
+                background: 'rgba(0, 0, 0, 0.5)',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '4px 8px',
+                color: 'white',
+                cursor: 'pointer',
+                zIndex: 10,
+                fontSize: '12px'
+              }}
+            >
+              리셋
+            </button>
+          )}
+  
+          {/* 이전 버튼 */}
+          {menuList.length > 1 && !isZoomed && (
+            <button
+              onClick={goToPrev}
+              style={{
+                position: 'absolute',
+                left: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'rgba(0, 0, 0, 0.5)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                cursor: 'pointer',
+                zIndex: 10
+              }}
+            >
+              <ChevronLeft size={20} />
+            </button>
+          )}
+  
+          {/* 다음 버튼 */}
+          {menuList.length > 1 && !isZoomed && (
+            <button
+              onClick={goToNext}
+              style={{
+                position: 'absolute',
+                right: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'rgba(0, 0, 0, 0.5)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                cursor: 'pointer',
+                zIndex: 10
+              }}
+            >
+              <ChevronRight size={20} />
+            </button>
+          )}
+  
+          {/* 메뉴 이미지 */}
+          <div 
+            style={{ 
+              position: 'relative',
+              overflow: 'hidden',
+              touchAction: isZoomed ? 'none' : 'auto'
+            }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+          >
+            <img
+              ref={imageRef}
+              src={menuList[currentIndex]}
+              alt={`메뉴 ${currentIndex + 1}`}
+              style={{
+                width: '100%',
+                height: 'auto',
+                maxHeight: '70vh',
+                objectFit: 'contain',
+                transform: `scale(${scale}) translate(${translateX / scale}px, ${translateY / scale}px)`,
+                transition: scale === 1 ? 'transform 0.3s ease' : 'none',
+                cursor: isZoomed ? 'grab' : 'pointer'
+              }}
+              onClick={handleDoubleTap}
+              onDragStart={(e) => e.preventDefault()}
+            />
+  
+            {/* 인디케이터 */}
+            {menuList.length > 1 && !isZoomed && (
+              <div style={{
+                position: 'absolute',
+                bottom: '10px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                display: 'flex',
+                gap: '6px'
+              }}>
+                {menuList.map((_, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      backgroundColor: index === currentIndex ? 'white' : 'rgba(255, 255, 255, 0.5)',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => setCurrentIndex(index)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+  
+          {/* 메뉴 카운터 */}
+          {menuList.length > 1 && !isZoomed && (
+            <div style={{
+              position: 'absolute',
+              top: '10px',
+              left: '10px',
+              background: 'rgba(0, 0, 0, 0.5)',
+              color: 'white',
+              padding: '4px 8px',
+              borderRadius: '12px',
+              fontSize: '12px'
+            }}>
+              {currentIndex + 1} / {menuList.length}
+            </div>
+          )}
+  
+          {/* 줌 상태일 때 도움말 */}
+          {isZoomed && (
+            <div style={{
+              position: 'absolute',
+              bottom: '10px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'rgba(0, 0, 0, 0.7)',
+              color: 'white',
+              padding: '4px 12px',
+              borderRadius: '12px',
+              fontSize: '11px'
+            }}>
+              드래그로 이동 • 더블탭으로 줌아웃
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // 기존 컴포넌트에서 사용
+  const openMenuOverlay = (menuList) => {
+    const overlayElement = overlay.open(({ isOpen, close, unmount }) => (
+      <MenuOverlay
+        menuList={menuList}
+        onClose={() => {
+          console.log('Trying to close...');
+          unmount(); // close 대신 unmount 시도
+        }}
+      />
+    ));
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   return (
     <>
@@ -304,6 +659,7 @@ useEffect(() => {
           height: 300px; 
           object-fit: cover; border-radius: 0.5rem;
           margin: 0 auto 0.5rem;
+          object-position: top;
         }
         .girl-name {
           
@@ -366,94 +722,113 @@ useEffect(() => {
         <div className="featured-section">
 
 
-            <div className="club-image-area">
-              {loading ? (
-                <div className="club-name">Loading...</div>
-              ) : venueInfo?.imgList && Array.isArray(venueInfo.imgList) && venueInfo.imgList.length > 0 ? (
-                // 1순위: imgList가 존재하고 빈 배열이 아닌 경우
-                <RotationDiv 
-                  interval={500000000} 
-                  swipeThreshold={50} 
-                  showIndicators={true}  
-                  pauseOnHover={true} 
-                  className="venue-rotation"
-                >
-                  {venueInfo.imgList.map((imageUrl, index) => (
-                    <div key={index} className="rotation-image-container">
-                      <img src={imageUrl} alt={`venue-${index}`} />
-                    </div>
-                  ))}
-                </RotationDiv>
-              ) : venueInfo?.image_url ? (
-                // 2순위: imgList가 없으면 대표 이미지(image_url)
-                <img src={venueInfo.image_url} alt="venue" />
-              ) : (
-                // 3순위: 이미지가 없는 경우
-                <div className="club-name">No Image</div>
-              )}
+          <div className="club-image-area">
+            {loading ? (
+              <div className="club-name">Loading...</div>
+            ) : venueInfo?.imgList && Array.isArray(venueInfo.imgList) && venueInfo.imgList.length > 0 ? (
+              // 1순위: imgList가 존재하고 빈 배열이 아닌 경우
+              <RotationDiv
+                interval={500000000}
+                swipeThreshold={50}
+                showIndicators={true}
+                pauseOnHover={true}
+                className="venue-rotation"
+              >
+                {venueInfo.imgList.map((imageUrl, index) => (
+                  <div key={index} className="rotation-image-container">
+                    <img src={imageUrl} alt={`venue-${index}`} />
+                  </div>
+                ))}
+              </RotationDiv>
+            ) : venueInfo?.image_url ? (
+              // 2순위: imgList가 없으면 대표 이미지(image_url)
+              <img src={venueInfo.image_url} alt="venue" />
+            ) : (
+              // 3순위: 이미지가 없는 경우
+              <div className="club-name">No Image</div>
+            )}
+          </div>
+
+
+
+
+
+          {venueInfo && (
+            <div
+              className="is-reservation"
+              style={{
+                right: '22px',
+                top: '90px',
+                position: 'absolute',
+                backgroundColor: venueInfo.is_reservation ? 'rgb(11 199 97)' : 'rgb(107 107 107)',
+                color: '#fff',
+                padding: '5px 7px',
+                borderRadius: '3px',
+                display: 'inline-block',
+              }}
+            >
+              {venueInfo.is_reservation ? '예약 가능' : '예약 마감'}
             </div>
+          )}
 
 
+          <div className="club-name">{venueInfo?.name || 'Club One'}</div>
 
-
-            
-            {venueInfo && (
-                <div
-                  className="is-reservation"
-                  style={{
-                    right: '22px',
-                    top: '90px',
-                    position: 'absolute',
-                    backgroundColor: venueInfo.is_reservation ? 'rgb(11 199 97)' : 'rgb(107 107 107)',
-                    color: '#fff',
-                    padding: '5px 7px',
-                    borderRadius: '3px',
-                    display: 'inline-block',
-                  }}
-                >
-                  {venueInfo.is_reservation ? '예약 가능' : '예약 불가능'}
-                </div>
-              )}
-
-
-            <div className="club-name">{venueInfo?.name || 'Club One'}</div>
-
-            <div className='sum-info text-start'>
+          <div className='sum-info text-start'>
             <div className="club-location">{venueInfo?.address || venueInfo?.location || 'in Vietnam'}</div>
             <div className="top-venues-text">{venueInfo?.description || get('DiscoverPage1.4')}</div>
-            
+
             <div className="description">
               {venueInfo?.description ||
                 get('DiscoverPage1.5')}
             </div>
 
-            <div className="phone" style={{marginBottom: '5px'}}>
-              <span style={{color: '#858585'}}><Phone size={14}/> tell: </span> {venueInfo?.phone ||'-'}
+            <div className="phone" style={{ marginBottom: '5px' }}>
+              <span style={{ color: '#858585' }}><Phone size={14} /> tell: </span> {venueInfo?.phone || '-'}
             </div>
 
-            <div style={{marginBottom: '5px'}}>
-              <span style={{color: '#858585'}}><Users size={14}/>  Staff Count: </span>
+            <div style={{ marginBottom: '5px' }}>
+              <span style={{ color: '#858585' }}><Users size={14} />  Staff Count: </span>
               {venueInfo && venueInfo.staff_cnt !== undefined ? (
-                  <span>{venueInfo.staff_cnt} {get('text.cnt1')}</span>
-                ) : (
-                  <span>-</span>
-                )}
+                <span>{venueInfo.staff_cnt} {get('text.cnt1')}</span>
+              ) : (
+                <span>-</span>
+              )}
             </div>
             <div>
-              <span style={{color: '#858585'}}><CreditCard size={14}/> Menu: </span> 
+              <span style={{ color: '#858585' }}>
+                <CreditCard size={14} /> Menu:
+              </span>
+              {venueInfo?.menuList && Array.isArray(venueInfo.menuList) && venueInfo.menuList.length > 0 && (
+                <button
+                  onClick={() => openMenuOverlay(venueInfo.menuList)}
+                  style={{
+                    marginLeft: '8px',
+                    padding: '4px 8px',
+                    fontSize: '12px',
+                    backgroundColor: '#f3f4f6',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    color: '#374151'
+                  }}
+                >
+                  메뉴보기
+                </button>
+              )}
             </div>
           </div>
 
           <div className="top-sum">
             <div className="stars">{renderStars(venueInfo?.rating)}</div>
-            <div style={{color: '#0072ff'}} onClick={() =>
-              navigateToPageWithData(PAGES.VIEWREVIEW, {venueId})
+            <div style={{ color: '#0072ff' }} onClick={() =>
+              navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId })
             }>
-              리뷰 <span className='reviewCnt'>{reviewCount}</span>개 모두 보기 >
+              {get('nav.review.1')} <span className='reviewCnt'>{reviewCount}</span>{get('text.cnt.1')} {get('text.cnt.2')} >
             </div>
           </div>
 
-          <div className="section-title" style={{textAlign:'start'}}>{get('DiscoverPage1.6')}</div>
+          <div className="section-title" style={{ textAlign: 'start' }}>{get('DiscoverPage1.6')}</div>
           <div className="map-section">
             <GoogleMapComponent
               places={venueInfo ? [venueInfo] : []}
@@ -467,132 +842,140 @@ useEffect(() => {
 
         <div className="top-girls-section">
           <div className="section-title">{get('DiscoverPage1.2')}</div>
-          <RotationDiv interval={500000000} swipeThreshold={50} showIndicators={true}  pauseOnHover={true} className="girls-rotation">
-            {topGirls.map((girl, index) => (
-              <div key={index} className="girl-slide" style={{position: 'relative'}}>
-                {girl.image_url ? (
-                  <div style={{position: 'relative'}}>
-                    <img src={girl.image_url} className="girl-img" alt="girl" />
-                    <div style={{
-                      position: 'absolute',
-                      top: '10px',
-                      right: '10px',
-                      backgroundColor: girl.availCnt > 0 ? 'rgb(11, 199, 97)' : 'rgb(107, 107, 107)',
-                      color: 'rgb(255, 255, 255)',
-                      padding: '3px 6px',
-                      borderRadius: '3px',
-                      fontSize: '11px',
-                    }}>
-                      {girl.availCnt > 0 ? '예약 가능' : '예약 마감'}
+          <RotationDiv interval={500000000} swipeThreshold={50} showIndicators={true} pauseOnHover={true} className="girls-rotation">
+            {staffList.map((girl, index) => {
+              // 나이 계산
+              const birthYear = parseInt(girl.birth_year, 10);
+              const currentYear = new Date().getFullYear();
+              const age = birthYear ? currentYear - birthYear : '?';
+              const displayName = `${girl.name} (${age})`;
+
+              return (
+                <div key={index} className="girl-slide" style={{ position: 'relative' }}>
+                  {girl.image_url ? (
+                    <div style={{ position: 'relative' }}>
+                      <img src={girl.image_url} className="girl-img" alt="girl" />
+                      <div style={{
+                        position: 'absolute',
+                        top: '10px',
+                        right: '10px',
+                        backgroundColor: girl.availCnt > 0 ? 'rgb(11, 199, 97)' : 'rgb(107, 107, 107)',
+                        color: 'rgb(255, 255, 255)',
+                        padding: '3px 6px',
+                        borderRadius: '3px',
+                        fontSize: '11px',
+                      }}>
+                        {girl.availCnt > 0 ? '예약 가능' : '예약 마감'}
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div style={{position: 'relative'}}>
-                    <ImagePlaceholder />
-                    <div style={{
-                      position: 'absolute',
-                      top: '10px',
-                      right: '10px',
-                      backgroundColor: girl.availCnt > 0 ? 'rgb(11, 199, 97)' : 'rgb(107, 107, 107)',
-                      color: 'rgb(255, 255, 255)',
-                      padding: '3px 6px',
-                      borderRadius: '3px',
-                      fontSize: '11px',
-                    }}>
-                      {girl.availCnt > 0 ? '예약 가능' : '예약 마감'}
+                  ) : (
+                    <div style={{ position: 'relative' }}>
+                      <ImagePlaceholder />
+                      <div style={{
+                        position: 'absolute',
+                        top: '10px',
+                        right: '10px',
+                        backgroundColor: girl.availCnt > 0 ? 'rgb(11, 199, 97)' : 'rgb(107, 107, 107)',
+                        color: 'rgb(255, 255, 255)',
+                        padding: '3px 6px',
+                        borderRadius: '3px',
+                        fontSize: '11px',
+                      }}>
+                        {girl.availCnt > 0 ? '예약 가능' : '예약 마감'}
+                      </div>
                     </div>
-                  </div>
-                )}
-                <div className="girl-name">{girl.displayName}</div>
-                
-                <SketchBtn
-                  type="text"
-                  className="sketch-button" 
-                  size='small'
-                  variant='primary' 
-                  style={{ width: '130px', marginBottom: '20px'}}
-                  onClick={() => handleDetail(girl)}
-                >
-                  <HatchPattern opacity={0.8} />
-                  {get('DiscoverPage1.3')}
-                </SketchBtn>
-              </div>
-            ))}
-            </RotationDiv>
-            {/*</div><div className={`reservation-footer ${showFooter ? '' : 'hidden'}`}>*/}
-            <div className={`reservation-footer ${showFooter ? '' : ''}`}>
-              {<HatchPattern opacity={0.4} />}
-              <div className="reservation-footer-content">
-                <div>
-                <div className="club-name" style={{ color: '#374151', fontSize:'17px', maxWidth: '160px'}}>{venueInfo?.name || 'Club One'}</div>
+                  )}
+                  <div className="girl-name">{displayName}</div>
+
+                  <SketchBtn
+                    type="text"
+                    className="sketch-button"
+                    size='small'
+                    variant='primary'
+                    style={{ width: '130px', marginBottom: '20px' }}
+                    onClick={() => handleDetail(girl)}
+                  >
+                    <HatchPattern opacity={0.8} />
+                    {get('DiscoverPage1.3')}
+                  </SketchBtn>
+                </div>
+              );
+            })}
+          </RotationDiv>
+          {/*</div><div className={`reservation-footer ${showFooter ? '' : 'hidden'}`}>*/}
+          <div className={`reservation-footer ${showFooter ? '' : ''}`}>
+            {<HatchPattern opacity={0.4} />}
+            <div className="reservation-footer-content">
+              <div>
+                <div className="club-name" style={{ color: '#374151', fontSize: '17px', maxWidth: '160px' }}>{venueInfo?.name || 'Club One'}</div>
                 <div>
                   <Clock size={13} style={{ marginRight: '4px' }} />
                   {venueInfo && venueInfo.open_time && venueInfo.close_time
                     ? `${venueInfo.open_time} - ${venueInfo.close_time}`
                     : '-'}
                 </div>
-                </div>
-                 <SketchBtn 
-                  className="sketch-button enter-button"  
-                  variant="event" 
-                  style={{ width: '45px', height: '39px', marginTop: '10px', background:'#374151', color:'white'}}
-                  // onClick={() =>
-                  //   navigateToPageWithData(PAGES.RESERVATION, {
-                  //     target: 'venue',
-                  //     id: venueId || 1,
-                  //   })
-                  // }
-                ><MessageCircle size={16}/></SketchBtn>
-                <SketchBtn 
-                  className="sketch-button enter-button"  
-                  variant="event" 
-                  style={{ width: '85px', height: '39px', marginTop: '10px', marginLeft:'-55px'}}
-                  disabled={!venueInfo?.is_reservation}
-                  onClick={() =>{
-
-                    if(!venueInfo.is_reservation) return;
-
-                    navigateToPageWithData(PAGES.RESERVATION, {
-                      target: 'venue',
-                      id: venueId || 1,
-                    })
-                  }}
-                >
-                  <HatchPattern opacity={0.8} />
-                  {venueInfo?.is_reservation 
-                    ? get('DiscoverPage1.1') || '예약하기' 
-                    : get('DiscoverPage1.1.disable') || '예약 불가'
-                  }
-                </SketchBtn>
               </div>
+              <SketchBtn
+                className="sketch-button enter-button"
+                variant="event"
+                style={{ width: '45px', height: '39px', marginTop: '10px', background: '#374151', color: 'white' }}
+              // onClick={() =>
+              //   navigateToPageWithData(PAGES.RESERVATION, {
+              //     target: 'venue',
+              //     id: venueId || 1,
+              //   })
+              // }
+              ><MessageCircle size={16} /></SketchBtn>
+              <SketchBtn
+                className="sketch-button enter-button"
+                variant="event"
+                style={{ width: '85px', height: '39px', marginTop: '10px', marginLeft: '-55px' }}
+                disabled={!venueInfo?.is_reservation}
+                onClick={() => {
+
+                  if (!venueInfo.is_reservation) return;
+
+                  navigateToPageWithData(PAGES.RESERVATION, {
+                    target: 'venue',
+                    id: venueId || 1,
+                  })
+                }}
+              >
+                <HatchPattern opacity={0.8} />
+                {venueInfo?.is_reservation
+                  ? get('DiscoverPage1.1') || '예약하기'
+                  : get('DiscoverPage1.1.disable') || '예약 마감'
+                }
+              </SketchBtn>
             </div>
-           <div className="action-row">
-            <SketchBtn 
-                          className="sketch-button enter-button"  
-                          variant="event" 
-                          style={{'display':'none'}}
-                          disabled={!venueInfo?.is_reservation}
-                          onClick={() =>{
+          </div>
+          <div className="action-row">
+            <SketchBtn
+              className="sketch-button enter-button"
+              variant="event"
+              style={{ 'display': 'none' }}
+              disabled={!venueInfo?.is_reservation}
+              onClick={() => {
 
-                            if(!venueInfo.is_reservation) return;
+                if (!venueInfo.is_reservation) return;
 
-                            navigateToPageWithData(PAGES.RESERVATION, {
-                              target: 'venue',
-                              id: venueId || 1,
-                            })
-                          }}
-                      ><HatchPattern opacity={0.8} />
-                           {venueInfo?.is_reservation 
-                            ? get('DiscoverPage1.1.enable') || '예약하기' 
-                            : get('DiscoverPage1.1.disable') || '예약 불가'
-                          }
-                        </SketchBtn>
-          </div> 
-                          <LoadingScreen 
-                                    variant="cocktail"
-                                    loadingText="Loading..."
-                                    isVisible={isLoading} 
-                                  />
+                navigateToPageWithData(PAGES.RESERVATION, {
+                  target: 'venue',
+                  id: venueId || 1,
+                })
+              }}
+            ><HatchPattern opacity={0.8} />
+              {venueInfo?.is_reservation
+                ? get('DiscoverPage1.1.enable') || '예약하기'
+                : get('DiscoverPage1.1.disable') || '예약 마감'
+              }
+            </SketchBtn>
+          </div>
+          <LoadingScreen
+            variant="cocktail"
+            loadingText="Loading..."
+            isVisible={isLoading}
+          />
         </div>
       </div>
     </>

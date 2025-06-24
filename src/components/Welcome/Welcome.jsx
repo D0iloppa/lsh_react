@@ -150,7 +150,7 @@ const CocktailIcon = () => (
               <p className="brand-description">
                 {get('Welcome1.1')}
               </p>
-              <p className="description" style={{color:'#ca1212', margin: '0', textAlign: 'center', fontSize: '13px'}}>
+              <p className="description" style={{color:'#ca1212', margin: '0', textAlign: 'center', fontSize: '16px'}}>
                 {get('Intro.description1')}
               </p>
             </div>

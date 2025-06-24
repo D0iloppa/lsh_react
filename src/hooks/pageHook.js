@@ -34,9 +34,6 @@ const usePageNavigation = () => {
     // 뒤로가기
     const goBack = () => {
 
-      console.log('pageHistory', pageHistory);
-
-
         if (pageHistory.length > 1) {
             const newHistory = pageHistory.slice(0, -1);
             const previousPage = newHistory[newHistory.length - 1];

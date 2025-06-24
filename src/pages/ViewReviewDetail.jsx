@@ -4,7 +4,7 @@ import SketchInput from '@components/SketchInput';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 
-import SketchHeader from '@components/SketchHeaderMain'
+import SketchHeader from '@components/SketchHeader'
 import SketchDiv from '@components/SketchDiv'
 import SketchBtn from '@components/SketchBtn'
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
@@ -448,7 +448,7 @@ const ViewReviewPage = ({
         <SketchHeader
           title={get('Profile1.1')}
           showBack={true}
-          onBack={handleBack}
+          onBack={goBack}
           rightButtons={[]}
         />
 
@@ -572,25 +572,24 @@ const ViewReviewPage = ({
                     justifyContent: 'flex-end'
                   }}>
                     <SketchBtn
-                      className="reservation-btn"
-                      onClick={() => {
-                        if (review.is_reservation) {
-                          handleReservation(review);
-                        }
-                      }}
-                      disabled={!review.is_reservation}
-                      style={{
-                        width: '30%',
-                        backgroundColor: review.is_reservation ? '#10b981' : '#9ca3af', // 회색으로 비활성화 느낌
-                        color: '#fefefe',
-                        padding: '0.5rem 1rem',
-                        cursor: review.is_reservation ? 'pointer' : 'not-allowed',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      {review.is_reservation ? '예약하기' : '예약 마감'}
-                    </SketchBtn>
-
+                                          className="reservation-btn"
+                                          onClick={() => {
+                                            if (review.is_reservation) {
+                                              handleReservation(review);
+                                            }
+                                          }}
+                                          disabled={!review.is_reservation}
+                                          style={{
+                                            width: '30%',
+                                            backgroundColor: review.is_reservation ? '#10b981' : '#9ca3af', // 회색으로 비활성화 느낌
+                                            color: '#fefefe',
+                                            padding: '0.5rem 1rem',
+                                            cursor: review.is_reservation ? 'pointer' : 'not-allowed',
+                                            transition: 'all 0.2s ease'
+                                          }}
+                                        >
+                                          {review.is_reservation ? '예약하기' : '예약 마감'}
+                                        </SketchBtn>
                   </div>
 
 

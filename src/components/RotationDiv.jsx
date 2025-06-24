@@ -11,7 +11,8 @@ const RotationDiv = ({
   className = '',
   transitionDuration = 500,
   pauseOnHover = true,
-  swipeThreshold = 50
+  swipeThreshold = 50,
+  infiniteLoop = true
 }) => {
   const rotationItems = children ? Children.toArray(children) : items;
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -58,16 +59,26 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
   };
 
   const handlePrev = () => {
-    if (currentIndex === 0) {
-      handleBounce();
+   if (currentIndex === 0) {
+      if (infiniteLoop) {
+        // 무한 루프: 마지막 슬라이드로 이동
+        setCurrentIndex(rotationItems.length - 1);
+      } else {
+        handleBounce();
+      }
       return;
     }
     setCurrentIndex(currentIndex - 1);
   };
 
   const handleNext = () => {
-    if (currentIndex === rotationItems.length - 1) {
-      handleBounce();
+   if (currentIndex === rotationItems.length - 1) {
+      if (infiniteLoop) {
+        // 무한 루프: 첫 번째 슬라이드로 이동
+        setCurrentIndex(0);
+      } else {
+        handleBounce();
+      }
       return;
     }
     setCurrentIndex(currentIndex + 1);

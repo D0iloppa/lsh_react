@@ -183,6 +183,7 @@
 
 /* 스와이프 힌트 애니메이션 (선택사항) */
 .tutorial-container::before {
+      min-height: 97vh;
   content: '';
   position: absolute;
   bottom: 20px;

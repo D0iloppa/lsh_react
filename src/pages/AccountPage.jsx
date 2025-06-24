@@ -7,7 +7,7 @@ import '@components/SketchComponents.css';
 import { useNavigate } from 'react-router-dom';
 
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
-import SketchHeader from '@components/SketchHeader'
+import SketchHeader from '@components/SketchHeaderMain'
 
 import { User, History, CreditCard, Bell, Heart, Settings, HelpCircle, LogOut, MessageCircle   } from 'lucide-react';
 import LoadingScreen from '@components/LoadingScreen';
@@ -15,6 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const AccountPage = ({ 
   navigateToPageWithData, 
+  navigateToPage,
   PAGES,
   goBack,
   ...otherProps 
@@ -28,6 +29,8 @@ const AccountPage = ({
   const [showChatButton, setShowChatButton] = useState(true);
 
 
+  
+
   useEffect(() => {
       if (messages && Object.keys(messages).length > 0) {
         console.log('✅ Messages loaded:', messages);
@@ -39,7 +42,8 @@ const AccountPage = ({
 
   const handleBack = () => {
     console.log('Back 클릭');
-    navigateToPageWithData && navigateToPageWithData(PAGES.HOME);
+    // navigateToPageWithData && navigateToPageWithData(PAGES.HOME);
+    navigateToPage(PAGES.HOME);
   };
 
   const handleChatClick = () => {

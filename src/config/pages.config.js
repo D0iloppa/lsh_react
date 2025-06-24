@@ -29,6 +29,7 @@ import BookingHistory from '@pages/BookingHistory';
 import Favorites from '@pages/Favorites';
 
 import Setting from '@pages/Setting';
+import ViewReviewDetail from '@pages/ViewReviewDetail';
 
 // 페이지 상수
 export const PAGES = {
@@ -44,6 +45,7 @@ export const PAGES = {
     SUBSCRIPTION_PAY: 'SUBSCRIPTION_PAY',
     SHARE_EXP: 'SHARE_EXP',
     VIEWREVIEW: 'VIEWREVIEW',
+    VIEWREVIEWDETAIL: 'VIEWREVIEWDETAIL',
     NOTIFICATIONS: 'NOTIFICATIONS',
     CSPAGE1: 'CSPAGE1',
     CSPAGE2: 'CSPAGE2',
@@ -69,6 +71,7 @@ export const PAGE_COMPONENTS = {
     [PAGES.SUBSCRIPTION_PAY]: SubscriptionPaymentPage,
     [PAGES.SHARE_EXP]: ShareExpPage,
     [PAGES.VIEWREVIEW]: ViewReview,
+    [PAGES.VIEWREVIEWDETAIL]: ViewReviewDetail,
     [PAGES.NOTIFICATIONS]: Notifications,
     [PAGES.CSPAGE1]: CSPage1,
     [PAGES.CSPAGE2]: CSPage2,

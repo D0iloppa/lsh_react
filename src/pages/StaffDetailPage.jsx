@@ -17,6 +17,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   const [availCnt, setAvailCnt] = useState(0);
   const [isLoadingAvailCnt, setIsLoadingAvailCnt] = useState(false);
   const girl = otherProps || {};
+  
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const getAgeFromBirthYear = (birthYear) => {
     const currentYear = new Date().getFullYear();
@@ -29,7 +30,6 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
 
   const handleReserve = () => {
 
-    console.log(girl);
     navigateToPageWithData(PAGES.RESERVATION, {
       target: 'staff',
       id: girl.staff_id || 123,
@@ -258,12 +258,20 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
         </div>
 
         <div className="booking-form-section">
+      
+
           <SketchBtn
-            className="full-width" variant = 'event'
+            className="sketch-button enter-button"
+            variant="event"
+            style={{ display: 'block' }}
+            disabled={availCnt <= 0} // 예약 마감일 때 버튼 비활성화
             onClick={handleReserve}
           >
-            {get('btn.reserve.1')}
             <HatchPattern opacity={0.8} />
+            {availCnt > 0
+              ? get('DiscoverPage1.1') || '예약하기'
+              : get('DiscoverPage1.1.disable') || '예약 마감'
+            }
           </SketchBtn>
         </div>
          <LoadingScreen 

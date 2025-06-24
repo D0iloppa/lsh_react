@@ -16,6 +16,13 @@ const SketchHeader = ({
 
   const navigate = useNavigate();
 
+
+  
+  const goToMain = () => {
+    console.log('');
+  };
+
+
   useEffect(() => {
   window.history.pushState(null, '', window.location.href);
 

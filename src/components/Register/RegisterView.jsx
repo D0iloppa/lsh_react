@@ -543,7 +543,7 @@ const handleBack = () => {
       </div> */}
 
       {/* Login Link */}
-      <div style={{ textAlign: 'center', fontSize: '0.875rem', color: '#6b7280' }}>
+      {/* <div style={{ textAlign: 'center', fontSize: '0.875rem', color: '#6b7280' }}>
         Already have an account?{' '}
         <a 
           href="#" 
@@ -555,13 +555,13 @@ const handleBack = () => {
         >
           Login
         </a>
-      </div>
+      </div> */}
 
-      <InitFooter 
+      {/* <InitFooter 
                   className="custom-footer"
                   privacyHref="/privacy"
                   termsHref="/terms"
-                />
+                /> */}
 
       <LoadingScreen 
         variant="cocktail"

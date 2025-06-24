@@ -38,6 +38,11 @@ const BookingHistoryPage = ({
   };
   
   const handleRebook = (booking) => {
+    // isReviewable이 false면 함수 실행하지 않음
+    if (!booking.is_reservation) {
+      return;
+    }
+    
     console.log('Rebook clicked:', booking);
     navigateToPageWithData && navigateToPageWithData(PAGES.RESERVATION, {
       target: booking.targetType,
@@ -53,7 +58,7 @@ const BookingHistoryPage = ({
         disabled: false,
         action: 'view' // 리뷰 보기
       };
-    } else if (booking.isReviewable) {
+    } else if (booking.is_reservation) {
       return {
         text: get('Review1.2'), // '리뷰 등록'
         disabled: false,
@@ -68,9 +73,22 @@ const BookingHistoryPage = ({
     }
   };
 
+  // Rebook 버튼 상태 함수 추가
+  const getRebookButtonState = (booking) => {
 
-
-   
+    console.log('grb', booking);
+    if (booking.is_reservation) {
+      return {
+        text: get('DiscoverPage1.1.able'), // '다시 예약'
+        disabled: false
+      };
+    } else {
+      return {
+        text: get('DiscoverPage1.1.disable'), 
+        disabled: true
+      };
+    }
+  };
 
   const handleReview = (booking) => {
     const reviewState = getReviewButtonState(booking);
@@ -79,19 +97,7 @@ const BookingHistoryPage = ({
       return; // 비활성화된 경우 아무것도 하지 않음
     }
 
-    /*
-    console.log('Review clicked:', booking);
-    navigateToPageWithData && navigateToPageWithData(PAGES.SHARE_EXPERIENCE, {
-      target: booking.targetType,
-      target_id: booking.targetId
-    });
-    */
-    
     if (reviewState.action === 'view') {
-      // 기존 리뷰 보기/수정 페이지로 이동
-
-      // navigateToPageWithData && navigateToPageWithData(PAGES.PROFILE);
-
       console.log('view', booking);
       navigateToPageWithData && navigateToPageWithData(PAGES.VIEWREVIEW, {
           reservationId: booking.id,
@@ -151,9 +157,6 @@ const BookingHistoryPage = ({
     }
   };
 
-
-
-
   useEffect(() => {
     const initializeData = async () => {
       window.scrollTo(0, 0);
@@ -163,7 +166,6 @@ const BookingHistoryPage = ({
         console.log('Current language set to:', currentLang);
       }
       
-
       // historyData 로딩 완료까지 기다리기
       try {
         await loadBookingHistory(); // Promise 리턴하도록 수정 필요
@@ -175,8 +177,6 @@ const BookingHistoryPage = ({
   
     initializeData();
   }, [messages, currentLang]); // historyData 의존성 제거
-
-  
 
   const loadBookingHistory = () => {
     return new Promise((resolve, reject) => {
@@ -211,6 +211,7 @@ const BookingHistoryPage = ({
           venue_id:item.venue_id,
           review_cnt:item.review_cnt,
           isReviewable:item.isReviewable,
+          is_reservation:item.is_reservation,
           clientId: item.client_id
         }));
         
@@ -244,7 +245,6 @@ const BookingHistoryPage = ({
     }
   };
 
-
   const calculateDuration = (startTime, endTime) => {
     if (!startTime || !endTime) return '';
     
@@ -274,7 +274,6 @@ const BookingHistoryPage = ({
         }
 
         .page-title {
-          
           font-size: 1.4rem;
           font-weight: bold;
           color: #1f2937;
@@ -296,7 +295,6 @@ const BookingHistoryPage = ({
           margin-bottom: 1rem;
           transform: rotate(-0.1deg);
           transition: all 0.2s;
-          
           position: relative;
           overflow: hidden;
         }
@@ -332,7 +330,6 @@ const BookingHistoryPage = ({
         }
 
         .venue-name {
-         
           font-size: 1rem;
           font-weight: bold;
           color: #1f2937;
@@ -340,14 +337,12 @@ const BookingHistoryPage = ({
         }
 
         .host-info {
-          
           font-size: 0.85rem;
           color: #4b5563;
           margin: 0 0 0.25rem 0;
         }
 
         .booking-datetime {
-          
           font-size: 0.85rem;
           color: #6b7280;
           margin: 0;
@@ -368,7 +363,6 @@ const BookingHistoryPage = ({
         }
 
         .booking-status {
-          
           font-size: 0.8rem;
           font-weight: bold;
           margin-bottom: 0.5rem;
@@ -461,7 +455,6 @@ const BookingHistoryPage = ({
                         </span>
                       )}
                     </p>
-
                   </div>
 
                   <div className="booking-actions">
@@ -469,17 +462,22 @@ const BookingHistoryPage = ({
                       className="booking-status"
                       style={{ color: getStatusColor(booking.status) }}
                     >
-                      {booking.statusLabel}
+                      {booking.statusLabel}{booking.is_reservation}
                     </div>
                     
                     <div className="action-buttons">
                       <SketchBtn 
                         variant="event" 
                         size="small"
+                        disabled={!booking.is_reservation}
                         onClick={() => handleRebook(booking)}
+                        style={{
+                          opacity: booking.is_reservation ? 1 : 0.5,
+                          cursor: booking.is_reservation ? 'pointer' : 'not-allowed'
+                        }}
                       >
-                        <HatchPattern opacity={0.8} />
-                        {get('BookingHis1.2')}
+                        <HatchPattern opacity={booking.is_reservation ? 0.8 : 0.3} />
+                        {getRebookButtonState(booking).text}
                       </SketchBtn>
                       
                       <SketchBtn 
@@ -492,12 +490,11 @@ const BookingHistoryPage = ({
                         {getReviewButtonState(booking).text}
                       </SketchBtn>
 
-
                       <LoadingScreen 
-                                variant="cocktail"
-                                loadingText="Loading..."
-                                isVisible={isLoading} 
-                              />
+                        variant="cocktail"
+                        loadingText="Loading..."
+                        isVisible={isLoading} 
+                      />
                     </div>
                   </div>
                 </div>

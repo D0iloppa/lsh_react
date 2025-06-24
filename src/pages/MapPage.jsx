@@ -6,11 +6,12 @@ import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
 import GoogleMapComponent from '@components/GoogleMapComponent';
 import LoadingScreen from '@components/LoadingScreen';
+import SketchHeader from '@components/SketchHeaderMain'
 
 import { useMsg } from '@contexts/MsgContext';
 import { Users, Star, Heart, ArrowRight, Clock, MapPin, CreditCard } from 'lucide-react';
 
-const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSearch = () => {}, initialKeyword = '' }) => {
+const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithData, PAGES, goBack, onSearch = () => {}, initialKeyword = '' }) => {
   const [searchQuery, setSearchQuery] = useState(initialKeyword);
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [places, setPlaces] = useState([]);
@@ -29,6 +30,11 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
 
   const inputRef = useRef(null);
   const { messages, isLoading, get, currentLang } = useMsg();
+
+
+  const handleBack = () =>{
+    navigateToPage(PAGES.HOME);
+  }
 
   useEffect(() => {
     if (messages && Object.keys(messages).length > 0) window.scrollTo(0, 0);
@@ -183,7 +189,18 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
         .venue-list-item:hover { background-color: #f3f4f6; }
         .venue-name { font-size: 1.1rem; font-weight: bold; color: #1f2937; }
         .venue-details { margin-top: 0.4rem; font-size: 0.9rem; color: #4b5563; }
+
+        .hidden-header {
+          display: none !important;
+        }
       `}</style>
+
+ <SketchHeader 
+          title= { '지도 검색' } 
+          showBack={true}
+          onBack={handleBack}
+          rightButtons={[]} className=""
+        />
 
       <div className="map-container">
         <div className="map-container-area">
