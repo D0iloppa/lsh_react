@@ -47,6 +47,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
   const [targetName, setTargetName] = useState('');
+  const [pickupService, setPickupService] = useState(false);
   
   // 체크박스 상태들
   const [agreements, setAgreements] = useState({
@@ -424,7 +425,8 @@ const isAllAgreed = () => {
       duration: reservationData.duration,
       endTime: reservationData.endTime,
       memo: memo ,
-      targetName
+      targetName,
+      pickupService
     };
     
     navigateToPageWithData(PAGES.RESERVATION_SUM, {
@@ -474,7 +476,9 @@ const isAllAgreed = () => {
       startTimeRequired: get('Validation.StartTimeRequired') || '시작 시간을 선택해주세요.',
       durationRequired: get('Validation.DurationRequired') || '이용 시간을 선택해주세요.',
 
-      targetLabel:get('BookingSum.Target')
+      targetLabel:get('BookingSum.Target'),
+      pickupOption:get('reservation.escort.1'),
+      pickupInfo:get('reservation.escort.info')
     };
   };
 
@@ -699,6 +703,8 @@ const isAllAgreed = () => {
           useDurationMode={true} // Duration 모드 활성화
           maxDuration={4} // 최대 4시간까지 선택 가능
           messages={getReservationMessages()} // 다국어 메시지 전달
+          pickupService = {pickupService}
+          setPickupService = {setPickupService}
           getTargetLabel={getTargetLabel}
         />
         <div className='Important-info'>

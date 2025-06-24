@@ -240,16 +240,16 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
                 </select>
               </div>
 
-              {/* ✅ 예약 체크박스 */}
-              <label className="checkbox-label">
-                <input
+               {/* ✅ 예약 체크박스 */}
+                <label className="checkbox-label">
+                  <input
                     type="checkbox"
-                    checked={true}
-                    onChange={() => {}}
-                    style={{ display: 'block' }}
+                    checked={isReservationOnly}
+                    onChange={(e) => setIsReservationOnly(e.target.checked)}
+                    style={{ transform: 'scale(1.1)' }}
                   />
-                  예약가능 가게 보기
-              </label>
+                  예약 가능 업체
+                </label>
             </div>
 
             <div className="map-venue-count-bottom">

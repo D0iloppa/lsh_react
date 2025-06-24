@@ -325,11 +325,11 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
           <label className="checkbox-label">
             <input
               type="checkbox"
-              checked={true}
-              onChange={() => {}}
-              style={{ display: 'block' }}
+              checked={isReservationOnly}
+              onChange={(e) => setIsReservationOnly(e.target.checked)}
+              style={{ transform: 'scale(1.1)' }}
             />
-            예약가능 가게 보기
+            {get('main.filter.reservation.available')}
           </label>
         </section>
         

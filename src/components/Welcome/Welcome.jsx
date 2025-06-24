@@ -150,6 +150,9 @@ const CocktailIcon = () => (
               <p className="brand-description">
                 {get('Welcome1.1')}
               </p>
+              <p className="description" style={{color:'#ca1212', margin: '0', textAlign: 'center', fontSize: '13px'}}>
+                {get('Intro.description1')}
+              </p>
             </div>
       </div>
 
@@ -176,10 +179,7 @@ const CocktailIcon = () => (
 
          {/* 설명 섹션 */}
          <div className="intro-description-section">
-          <p className="description" style={{color:'#ca1212'}}>
-            {get('Intro.description1')}
-          </p>
-          <p>
+          <p style={{marginTop: '3px'}}>
             {get('Intro.description2')}
           </p>
           
@@ -226,11 +226,11 @@ const CocktailIcon = () => (
           </SketchBtn>
         </div>
 
-         <InitFooter 
+         {/* <InitFooter 
                     className="custom-footer"
                     privacyHref="/privacy"
                     termsHref="/terms"
-                  />
+                  /> */}
                    <LoadingScreen 
                              variant="cocktail"
                              loadingText="Loading..."

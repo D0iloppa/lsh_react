@@ -40,7 +40,7 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
 
 
-    <div className="tutorial-container max-w-md mx-auto bg-white min-h-screenp-6">
+    <div className="tutorial-container max-w-md mx-auto bg-white min-h-screenp-6" style={{margin: 'auto', padding: '5px', borderRadius: '5px', width: '341px', border: '1px solid #666'}}>
 
     {/* 진행 표시기 */}
       <div className="pi-div">

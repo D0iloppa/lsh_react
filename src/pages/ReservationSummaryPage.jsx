@@ -71,7 +71,8 @@ const ReserveSummaryPage = ({
         endTime, 
         memo,
         venueToItem,
-        targetName
+        targetName,
+        pickupService
       } = reserve_data;
 
       // API 요청을 위한 payload 준비
@@ -85,7 +86,7 @@ const ReserveSummaryPage = ({
         end_time: endTime,
         duration: duration,
         note: memo || '',
-        venueToItem
+        venueToItem, pickupService
       };
 
       setReservationPayload(api_payload);
@@ -100,7 +101,8 @@ const ReserveSummaryPage = ({
         endTime: endTime,
         duration: duration ? `${duration}${get('Reservation.HourUnit') || '시간'}` : '',
         attendee: `${attendee}${get('Reservation.PersonUnit') || '명'}`,
-        memo: memo || ''
+        memo: memo || '',
+        pickupService: pickupService
       };
 
       setDisplayData(display_data);
@@ -217,7 +219,8 @@ const ReserveSummaryPage = ({
       memoLabel: get('Reservation.MemoLabel') || '메모',
       confirmButton: get('btn.confirmRes.1') || '예약 확정',
       noMemo: get('BookingSum.NoMemo') || '메모 없음',
-      confirmingButton: get('Reservation.Confirming') || '예약 확정 중...'
+      confirmingButton: get('Reservation.Confirming') || '예약 확정 중...',
+      escortLabel:get('reservation.escort.1')
     };
   };
 
@@ -422,6 +425,15 @@ const ReserveSummaryPage = ({
                 <span className="summary-label">{messages_summary.attendeeLabel}:</span>
                 <span className="summary-value">{displayData.attendee}</span>
               </div>
+
+              
+              {/* 에스코트 */}
+              <div className="summary-item" style={{display:(displayData.pickupService)? '' : 'none'}}>
+                <span className="summary-label"></span>
+                <div className="summary-value">
+                  {<span className="">{messages_summary.escortLabel}</span>}
+                </div>
+              </div>
               
               {/* 메모 */}
               <div className="summary-item">
@@ -434,6 +446,7 @@ const ReserveSummaryPage = ({
                   )}
                 </div>
               </div>
+
             </div>
           </div>
         </div>

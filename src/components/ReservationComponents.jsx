@@ -744,6 +744,69 @@ export const MemoSelector = ({ value, onChange, messages = {} }) => {
   );
 };
 
+export const PickupSelector = ({ value, onChange, messages = {} }) => {
+  return (
+    <div className="form-step"
+          style={{
+            marginTop:"20px",
+            marginBottom: "0"
+          }}
+    >
+      <div className="step-label" style={{display:'none'}}>
+        <span className="step-number">4</span>
+        {messages.pickupLabel || '픽업 서비스'}
+      </div>
+      <div className="pickup-option">
+        <label 
+          className="pickup-checkbox"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            cursor: 'pointer',
+            padding: '12px',
+            border: '2px solid #e5e7eb',
+            borderRadius: '8px',
+            backgroundColor: value ? '#fef3c7' : '#f9fafb',
+            borderColor: value ? '#f59e0b' : '#e5e7eb',
+            transition: 'all 0.2s ease',
+            fontSize: '14px',
+            fontFamily: 'inherit'
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={value}
+            onChange={(e) => onChange(e.target.checked)}
+            style={{
+              width: '16px',
+              height: '16px',
+              cursor: 'pointer'
+            }}
+          />
+          <span>
+            {messages.pickupOption || '픽업 서비스 이용'}
+          </span>
+        </label>
+        {value && (
+          <div style={{ 
+            marginTop: '8px', 
+            padding: '8px 12px',
+            backgroundColor: '#eff6ff',
+            border: '1px solid #dbeafe',
+            borderRadius: '6px',
+            fontSize: '12px', 
+            color: '#1e40af',
+            lineHeight: '1.4'
+          }}>
+            {messages.pickupInfo || '주문 완료 후 약 15-20분 후 픽업 가능합니다. 픽업 준비 완료 시 알림을 보내드립니다.'}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // 통합 예약 폼 컴포넌트 (Duration 모드 지원)
 export const ReservationForm = ({
   attendee,
@@ -764,8 +827,12 @@ export const ReservationForm = ({
   useDurationMode = false, // 새로운 prop
   maxDuration = 6, // Duration 모드의 최대 시간
   messages = {}, // 다국어 메시지 추가,
+  pickupService,
+  setPickupService,
   getTargetLabel = () => {}
 }) => {
+
+
   return (
     <div className="form-section">
 
@@ -812,6 +879,16 @@ export const ReservationForm = ({
           messages={messages}
         />
       )}
+
+    <PickupSelector 
+      value={pickupService}
+      onChange={setPickupService}
+      messages={{
+        pickupLabel: messages['pickupLabel'] || '옵션',
+        pickupOption: messages['pickupOption'] || '픽업 서비스 이용',
+        pickupInfo: messages['pickupInfo'] || '픽업 서비스 이용시 예약금에 함께 차징됩니다.'
+      }}
+    />
 
       <MemoSelector
         value={memo}

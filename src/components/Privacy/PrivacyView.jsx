@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import SketchDiv from '@components/SketchDiv';
 import SketchBtn from '@components/SketchBtn';
@@ -16,6 +16,11 @@ import './PrivacyView.css'
 
 export default function TermsView() {
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  const location = useLocation();
+  
+  const urlParams = new URLSearchParams(location.search);
+  const returnUrl = urlParams.get('returnUrl');
+  const agreementType = urlParams.get('agreementType');
 
   useEffect(() => {
     if (messages && Object.keys(messages).length > 0) {
@@ -29,8 +34,29 @@ export default function TermsView() {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate(-1); // 이전 페이지로 이동
-  };
+  // 동의 페이지에서 온 경우와 일반 페이지에서 온 경우를 구분
+  if (returnUrl && agreementType) {
+    // Register 페이지에서 동의를 위해 온 경우 - 동의하지 않음 파라미터와 함께 돌아가기
+    const separator = returnUrl.includes('?') ? '&' : '?';
+    navigate(`${returnUrl}${separator}${agreementType}=declined`); // declined 추가
+  } else {
+    // 일반적인 뒤로가기
+    navigate(-1);
+  }
+};
+
+const handleAgree = () => {
+  // 동의했다는 파라미터와 함께 돌아가기
+  if (returnUrl && agreementType) {
+    const separator = returnUrl.includes('?') ? '&' : '?';
+    navigate(`${returnUrl}${separator}${agreementType}=agreed`);
+  } else {
+    navigate('/register');
+  }
+};
+
+  // 동의 페이지로 온 경우인지 확인
+  const isAgreementPage = returnUrl && agreementType;
 
   const lang = currentLang;
 
@@ -79,23 +105,46 @@ export default function TermsView() {
           })()}
         </SketchDiv>
 
-        {/* 버튼 영역 */}
-        <div className="space-y-3">
-          <SketchBtn
-            onClick={handleBack}
-            variant="secondary"
-            className=""
-          ><HatchPattern opacity={0.8} />
-            { get("btn.back.1") }
-          </SketchBtn>
-                          <LoadingScreen 
-          variant="cocktail"
-          loadingText="Loading..."
-          isVisible={isLoading} 
-        />
+         {/* 버튼 영역 - 조건부 렌더링 */}
+          <div className="space-y-3">
+            {isAgreementPage ? (
+              // 동의 페이지에서 온 경우 - 두 개 버튼
+              <>
+                <SketchBtn
+                  onClick={handleBack}
+                  variant="secondary" style={{marginBottom: '8px'}}
+                >
+                  <HatchPattern opacity={0.8} />
+                  동의하지 않음
+                </SketchBtn>
+                
+                <SketchBtn
+                  onClick={handleAgree}
+                  variant="primary"
+                >
+                  <HatchPattern opacity={0.8} />
+                  동의합니다
+                </SketchBtn>
+              </>
+            ) : (
+              // 일반 페이지에서 온 경우 - 기존 버튼
+              <SketchBtn
+                onClick={handleBack}
+                variant="secondary"
+              >
+                <HatchPattern opacity={0.8} />
+                {get("btn.back.1")}
+              </SketchBtn>
+            )}
+          </div>
+
+          <LoadingScreen 
+            variant="cocktail"
+            loadingText="Loading..."
+            isVisible={isLoading} 
+          />
         </div>
       </div>
-    </div>
     </>
   );
 }

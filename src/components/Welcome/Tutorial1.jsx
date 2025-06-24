@@ -49,7 +49,7 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
       {showIntroImage && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 cursor-pointer"
-          onClick={handleIntroImageClick}
+          onClick={onNextScreen}
         >
           <div className="relative">
             <div 
@@ -148,7 +148,7 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
         />
 
         {/* Next Screen 버튼 */}
-        <div className="relative" style={{ marginTop: '15px' }}>
+        <div className="relative" style={{ marginTop: '20px' }}>
           <HatchPattern opacity={0.3} />
           
           <SketchBtn 

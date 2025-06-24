@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import SketchInput from '@components/SketchInput';
 import SketchBtn from '@components/SketchBtn';
 import Header from '@components/Header';
 import HatchPattern from '@components/HatchPattern';
-import InitFooter2 from '@components/InitFooter2';
+import InitFooter from '@components/InitFooter';
 import SketchHeader from '@components/SketchHeader';
 import LoadingScreen from '@components/LoadingScreen';
 
@@ -14,22 +13,76 @@ import qs from 'qs';
 
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
-
 export default function RegisterView() {
-
   const { messages, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();  
-  
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // 동의 체크박스 상태
+  const [agreements, setAgreements] = useState({
+    privacy: false,
+    terms: false
+  });
+
   useEffect(() => {
   window.scrollTo(0, 0);
   
-  
-      if (messages && Object.keys(messages).length > 0) {
-        console.log('✅ Messages loaded:', messages);
-        // setLanguage('en'); // 기본 언어 설정
-        console.log('Current language set to:', currentLang);
-        window.scrollTo(0, 0);
-      }
-    }, [messages, currentLang]);
+  if (messages && Object.keys(messages).length > 0) {
+    console.log('✅ Messages loaded:', messages);
+    console.log('Current language set to:', currentLang);
+    window.scrollTo(0, 0);
+  }
+
+  // URL 파라미터에서 동의 상태 확인
+  const urlParams = new URLSearchParams(location.search);
+  const privacyParam = urlParams.get('privacy');
+  const termsParam = urlParams.get('terms');
+
+  // URL 파라미터가 있을 때만 처리
+  if (privacyParam || termsParam) {
+    // 현재 sessionStorage 상태를 기반으로 시작
+    const currentPrivacy = sessionStorage.getItem('privacy_agreed') === 'true';
+    const currentTerms = sessionStorage.getItem('terms_agreed') === 'true';
+    
+    let newPrivacy = currentPrivacy;
+    let newTerms = currentTerms;
+    
+    // URL 파라미터에 따라 업데이트
+    if (privacyParam === 'agreed') {
+      newPrivacy = true;
+      sessionStorage.setItem('privacy_agreed', 'true');
+    } else if (privacyParam === 'declined') {
+      newPrivacy = false;
+      sessionStorage.removeItem('privacy_agreed');
+    }
+    
+    if (termsParam === 'agreed') {
+      newTerms = true;
+      sessionStorage.setItem('terms_agreed', 'true');
+    } else if (termsParam === 'declined') {
+      newTerms = false;
+      sessionStorage.removeItem('terms_agreed');
+    }
+    
+    setAgreements({
+      privacy: newPrivacy,
+      terms: newTerms
+    });
+
+    // URL 파라미터 제거
+    const newUrl = window.location.pathname;
+    window.history.replaceState({}, '', newUrl);
+  } else {
+    // URL 파라미터가 없을 때는 sessionStorage에서만 읽기
+    const storedPrivacy = sessionStorage.getItem('privacy_agreed') === 'true';
+    const storedTerms = sessionStorage.getItem('terms_agreed') === 'true';
+    
+    setAgreements({
+      privacy: storedPrivacy,
+      terms: storedTerms
+    });
+  }
+}, [messages, currentLang, location.search]);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -44,8 +97,6 @@ export default function RegisterView() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const navigate = useNavigate();
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -53,7 +104,6 @@ export default function RegisterView() {
       [name]: value
     }));
     
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -62,10 +112,28 @@ export default function RegisterView() {
     }
   };
 
+const handleBack = () => {
+  // sessionStorage 정리 (체크박스 초기화)
+  sessionStorage.removeItem('privacy_agreed');
+  sessionStorage.removeItem('terms_agreed');
+  
+  navigate('/login'); 
+};
+
+    const handleAgreementClick = (type) => {
+    // 현재 페이지 정보를 저장하고 해당 페이지로 이동
+    const currentPath = '/register';
+    const targetPath = type === 'privacy' ? '/privacy' : '/terms';
+    
+    // 동의 페이지로 이동 (return URL 포함)
+    navigate(`${targetPath}?returnUrl=${encodeURIComponent(currentPath)}&agreementType=${type}`);
+  };
+
+
   const validateForm = () => {
     const newErrors = {};
     
-    // Required fields validation
+    // 기존 validation...
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -84,7 +152,6 @@ export default function RegisterView() {
       newErrors.rePassword = 'Passwords do not match';
     }
 
-    // Optional fields validation (format check only if provided)
     if (formData.birth_date && !/^\d{4}-\d{2}-\d{2}$/.test(formData.birth_date)) {
       newErrors.birth_date = 'Date format should be YYYY-MM-DD (e.g., 1988-08-18)';
     }
@@ -92,13 +159,21 @@ export default function RegisterView() {
     if (formData.phone && !/^\d{3}-\d{4}-\d{4}$/.test(formData.phone)) {
       newErrors.phone = 'Phone format should be 010-1234-5678';
     }
+
+    // 동의 체크박스 validation
+    if (!agreements.privacy) {
+      newErrors.privacy = '개인정보처리방침에 동의해주세요';
+    }
+    
+    if (!agreements.terms) {
+      newErrors.terms = '이용약관에 동의해주세요';
+    }
     
     return newErrors;
   };
 
   const registerUser = async (userData) => {
     try {
-      // API 호스트 설정 (환경변수나 설정에서 가져오기)
       const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
 
       console.log(API_HOST);
@@ -109,7 +184,9 @@ export default function RegisterView() {
           account_type: "user",
           login_type: "email",
           email: userData.email,
-          passwd: userData.password
+          passwd: userData.password,
+          privacy_agreed: agreements.privacy,
+          terms_agreed: agreements.terms
         }),
         {
           headers: {
@@ -130,13 +207,11 @@ export default function RegisterView() {
       let errors = {};
 
       if (error.response) {
-        // 서버에서 응답을 받은 경우
         if (error.response.data) {
           errorMessage = error.response.data.message || errorMessage;
           errors = error.response.data.errors || {};
         }
       } else if (error.request) {
-        // 요청이 만들어졌지만 응답을 받지 못한 경우
         errorMessage = 'Network error. Please check your connection.';
       }
 
@@ -161,10 +236,14 @@ export default function RegisterView() {
       
       if (result.success) {
         setMessage(result.message);
-        // 회원가입 성공 시 로그인 페이지로 이동
+
+        // 회원가입 성공 시 sessionStorage 정리
+        sessionStorage.removeItem('privacy_agreed');
+        sessionStorage.removeItem('terms_agreed');
+
         setTimeout(() => {
           navigate('/login');
-        }, 2000); // 2초 후 이동 (성공 메시지 표시용)
+        }, 2000);
       } else {
         if (result.errors && Object.keys(result.errors).length > 0) {
           setErrors(result.errors);
@@ -180,17 +259,15 @@ export default function RegisterView() {
   };
 
   const handleSocialLogin = (provider) => {
-    // 소셜 로그인 처리
     console.log(`${provider} 로그인 시도`);
-    // 실제 구현 시 OAuth 처리
   };
 
   return (
-    <div className="register-container max-w-md mx-auto bg-white border-gray-800 p-6">
+    <div className="register-container max-w-md mx-auto bg-white border-gray-800 p-6" style={{paddingBottom: '10px'}}>
       <SketchHeader 
-        title={  get('Menu1.1') }
+        title={get('Menu1.1')}
         showBack={true}
-        onBack={() => navigate(-1)}
+        onBack={handleBack}
         rightButtons={[]}
       />
       
@@ -208,8 +285,11 @@ export default function RegisterView() {
         {get('Register1.2')}
       </p>
 
+      <p className="description" style={{color:'#ca1212', margin: '0', textAlign: 'start', fontSize: '13px', fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>
+        * {get('Intro.description1')}
+      </p>
+
       <form onSubmit={onSubmit} style={{padding: '5px'}}>
-        {/* General Error/Success Message */}
         {errors.general && (
           <div className="sketch-error-message">{errors.general}</div>
         )}
@@ -256,7 +336,7 @@ export default function RegisterView() {
           style={{ marginBottom: '-8px' }} 
         />
 
-        {/* Nickname Input (Optional) */}
+        {/* Nickname Input */}
         <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.4')}</p>
         <SketchInput
           type="text"
@@ -269,7 +349,7 @@ export default function RegisterView() {
           style={{ marginBottom: '-8px' }} 
         />
 
-        {/* Gender Select (Optional) */}
+        {/* Gender Select */}
         <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.5')}</p>
         <select
           name="gender"
@@ -292,7 +372,7 @@ export default function RegisterView() {
           <option value="F">{get('title.text.8')}</option>
         </select>
 
-        {/* Birth Date Input (Optional) */}
+        {/* Birth Date Input */}
         <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.9')}</p>
         <SketchInput
           type="date"
@@ -306,9 +386,10 @@ export default function RegisterView() {
           style={{ marginBottom: '-8px' }} 
         />
 
-        {/* Phone Input (Optional) */}
+        {/* Phone Input */}
         <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.10')}</p>
-        <SketchInput style={{ fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif" }}
+        <SketchInput
+          style={{ fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif" }}
           type="tel"
           name="phone"
           value={formData.phone}
@@ -318,6 +399,100 @@ export default function RegisterView() {
           variant="text"
           placeholder="010-1234-5678"
         />
+
+        {/* 동의 체크박스 섹션 */}
+        <div style={{ marginTop: '1.5rem', marginBottom: '1rem' }}>
+          <p style={{ 
+            margin: '0 0 10px 0', 
+            fontSize: '14px', 
+            fontWeight: 'bold',
+            fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"
+          }}>
+            필수 동의사항 *
+          </p>
+
+          {/* 개인정보처리방침 동의 */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            marginBottom: '8px',
+            padding: '8px',
+            border: errors.privacy ? '1px solid #ef4444' : '1px solid #d1d5db',
+            borderRadius: '4px',
+            backgroundColor: agreements.privacy ? '#f0fdf4' : '#ffffff'
+          }}>
+           <input
+              type="checkbox"
+              id="privacy-agreement"
+              checked={agreements.privacy}
+              readOnly
+              onClick={() => handleAgreementClick('privacy')} // 추가
+              style={{ 
+                marginRight: '8px',
+                cursor: 'pointer',
+                accentColor: 'rgb(202 255 237)'
+              }}
+            />
+            <label 
+              htmlFor="privacy-agreement"
+              style={{ 
+                fontSize: '13px',
+                fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
+                cursor: 'pointer',
+                flex: 1
+              }}
+              onClick={() => handleAgreementClick('privacy')}
+            >
+              개인정보처리방침에 동의합니다 {agreements.privacy ? '✓' : '(내용 확인하기)'}
+            </label>
+          </div>
+          {errors.privacy && (
+            <p style={{ color: '#ef4444', fontSize: '12px', margin: '0 0 8px 0' }}>
+              {errors.privacy}
+            </p>
+          )}
+
+          {/* 이용약관 동의 */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            marginBottom: '8px',
+            padding: '8px',
+            border: errors.terms ? '1px solid #ef4444' : '1px solid #d1d5db',
+            borderRadius: '4px',
+            backgroundColor: agreements.terms ? '#f0fdf4' : '#ffffff'
+          }}>
+            <input
+              type="checkbox"
+              id="terms-agreement"
+              checked={agreements.terms}
+              readOnly
+              onClick={() => handleAgreementClick('terms')} // 추가
+              style={{ 
+                marginRight: '8px',
+                cursor: 'pointer',
+                accentColor: 'rgb(202 255 237)'
+              }}
+            />
+            <label 
+              htmlFor="terms-agreement"
+              style={{ 
+                fontSize: '13px',
+                fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
+                cursor: 'pointer',
+                flex: 1
+              }}
+              onClick={() => handleAgreementClick('terms')}
+            >
+              이용약관에 동의합니다 {agreements.terms ? '✓' : '(내용 확인하기)'}
+            </label>
+          </div>
+          {errors.terms && (
+            <p style={{ color: '#ef4444', fontSize: '12px', margin: '0 0 8px 0' }}>
+              {errors.terms}
+            </p>
+          )}
+        </div>
 
         {/* Sign Up Button */}
         <SketchBtn
@@ -332,7 +507,7 @@ export default function RegisterView() {
       </form>
 
       {/* 소셜 로그인 */}
-      <div style={{ textAlign: 'center', marginTop: '10px' , fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>
+      {/* <div style={{ textAlign: 'center', marginTop: '10px', fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>
         <p style={{marginBottom: '0', fontSize: '0.875rem', color: '#6b7280' }}>
           {get('title.text.12')}
         </p>
@@ -365,7 +540,7 @@ export default function RegisterView() {
             🐦
           </button>
         </div>
-      </div>
+      </div> */}
 
       {/* Login Link */}
       <div style={{ textAlign: 'center', fontSize: '0.875rem', color: '#6b7280' }}>
@@ -382,14 +557,17 @@ export default function RegisterView() {
         </a>
       </div>
 
-      {/* 푸터 */}
-      <InitFooter2 />
+      <InitFooter 
+                  className="custom-footer"
+                  privacyHref="/privacy"
+                  termsHref="/terms"
+                />
 
-       <LoadingScreen 
-                 variant="cocktail"
-                 loadingText="Loading..."
-                 isVisible={isLoading} 
-               />
+      <LoadingScreen 
+        variant="cocktail"
+        loadingText="Loading..."
+        isVisible={isLoading} 
+      />
     </div>
   );
 }

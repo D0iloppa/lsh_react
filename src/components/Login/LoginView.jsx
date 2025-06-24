@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import SketchDiv from '@components/SketchDiv';
 import LoginForm from './LoginForm';
 import './LoginView.css';
@@ -7,6 +7,7 @@ import InitFooter from '@components/InitFooter';
 import HatchPattern from '@components/HatchPattern';
 import LoadingScreen from '@components/LoadingScreen';
 import ImagePlaceholder from '@components/ImagePlaceholder';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 // 칵테일 아이콘 컴포넌트
 const CocktailIcon = () => (
@@ -47,6 +48,15 @@ const CocktailIcon = () => (
 );
 
 export default function LoginView() {
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+     useEffect(() => {
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      window.scrollTo(0, 0);
+    }
+  }, [messages]);
+
   return (
     <div className="login-container">
       <div className="login-wrapper">
@@ -56,6 +66,9 @@ export default function LoginView() {
             <CocktailIcon />
             <h1 className="sketch-title sketch-title--large" style={{display:'flex'}}>LeTanTon Sheriff <ImagePlaceholder src="/cdn/age.png" style={{lineHeight: '0.5', marginLeft: '8px', width:'26px'}}/></h1>
           </div>
+          <p className="description" style={{color:'#ca1212', margin: '0', textAlign: 'center', fontSize: '13px'}}>
+            {get('Intro.description1')}
+          </p>
         </header>
 
         {/* Login Form Container */}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import HatchPattern from '@components/HatchPattern';
 import SketchInput from '@components/SketchInput';
 import ImagePlaceholder from '@components/ImagePlaceholder';
@@ -6,14 +6,16 @@ import '@components/SketchComponents.css';
 
 import SketchHeader from '@components/SketchHeader'
 import SketchDiv from '@components/SketchDiv'
+import SketchBtn from '@components/SketchBtn'
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import LoadingScreen from '@components/LoadingScreen';
-import {Filter, Martini} from 'lucide-react';
+import { Filter, Martini, Store, User } from 'lucide-react';
+
 import axios from 'axios';
 
-const ViewReviewPage = ({ 
-  navigateToPageWithData, 
+const ViewReviewPage = ({
+  navigateToPageWithData,
   PAGES,
   venueData = {
     name: 'Modern Bar',
@@ -22,123 +24,146 @@ const ViewReviewPage = ({
     image: '/placeholder-venue.jpg'
   },
   goBack,
-  ...otherProps 
+  ...otherProps
 }) => {
- 
+
   const venueId = otherProps?.venueId || null;
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
-   console.log("venueId", venueId)
-   const [userImages, setUserImages] = useState({});
+  console.log("venueId", venueId)
+  const [userImages, setUserImages] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder1, setSortOrder1] = useState('rating_high'); // 정렬 순서
   const [sortOrder, setSortOrder] = useState('latest'); // 정렬 순서
+
   const [targetTypeFilter, setTargetTypeFilter] = useState('ALL'); // 타겟 타입 필터
   const [originalReviews, setOriginalReviews] = useState([]); // 원본 데이터 보관
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const API_HOST = import.meta.env.VITE_API_HOST;
-    
-  
+
+
   useEffect(() => {
 
 
-      if (messages && Object.keys(messages).length > 0) {
-        console.log('✅ Messages loaded:', messages);
-        window.scrollTo(0, 0);
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      window.scrollTo(0, 0);
+    }
+  }, [messages, currentLang]);
+
+
+  const handleReservation = (review) => {
+    console.log('Rebook clicked:', review);
+    navigateToPageWithData && navigateToPageWithData(PAGES.RESERVATION, {
+      target: review.target_type,
+      id: (review.target_type == 'venue') ? review.venue_id : review.target_id,
+      staff: (review.target_type == 'staff') ? { name : review.targetName} : {}
+    });
+  };
+
+  const applyFiltersAndSort = () => {
+
+    console.log('filter', otherProps);
+
+    const { reservationId = false, clientId = false, target, targetId } = otherProps
+
+    let userFilter = false;
+    if (reservationId && clientId) userFilter = true;
+
+    let filtered = [...originalReviews];
+
+    // 타겟 타입 필터링
+    if (targetTypeFilter !== 'ALL') {
+      filtered = filtered.filter(review => review.target_type === targetTypeFilter);
+    }
+
+    if (userFilter) {
+      // filtered = filtered.filter(review => review.user_id == clientId);
+      filtered = filtered.filter(review => review.reservation_id == reservationId);
+    }
+
+    console.log('tt', filtered);
+
+    // 날짜 정렬
+    filtered.sort((a, b) => {
+      // 1차 정렬: 평점
+      let ratingSort = 0;
+      if (sortOrder1 === 'rating_high') {
+        ratingSort = b.rating - a.rating;
+      } else if (sortOrder1 === 'rating_low') {
+        ratingSort = a.rating - b.rating;
       }
-    }, [messages, currentLang]);
 
-    const applyFiltersAndSort = () => {
-
-      console.log('filter', otherProps);
-
-      const { reservationId=false, clientId=false, target, targetId  } = otherProps
-
-      let userFilter = false;
-      if(reservationId && clientId) userFilter = true;
-
-      let filtered = [...originalReviews];
-      
-      // 타겟 타입 필터링
-      if (targetTypeFilter !== 'ALL') {
-        filtered = filtered.filter(review => review.target_type === targetTypeFilter);
+      // 평점이 다르면 평점으로 정렬
+      if (ratingSort !== 0) {
+        return ratingSort;
       }
 
-      console.log('test', filtered);
-      if(userFilter){
-        filtered = filtered.filter(review => review.user_id == clientId);
-      }
+      // 평점이 같으면 날짜로 정렬
+      const dateA = new Date(a.created_at);
+      const dateB = new Date(b.created_at);
 
-      
-      // 날짜 정렬
-      filtered.sort((a, b) => {
-        const dateA = new Date(a.created_at);
-        const dateB = new Date(b.created_at);
-        
-        if (sortOrder === 'latest') {
-          return dateB - dateA; // 최신순
-        } else {
-          return dateA - dateB; // 과거순
-        }
-      });
-      
-      setReviews(filtered);
-    };
+      return sortOrder === 'latest' ? dateB - dateA : dateA - dateB;
+    });
 
-useEffect(() => {
-  applyFiltersAndSort();
-}, [sortOrder, targetTypeFilter, originalReviews]);
+    setReviews(filtered);
+  };
+
+  useEffect(() => {
+    applyFiltersAndSort();
+  }, [sortOrder, sortOrder1, targetTypeFilter, originalReviews]);
 
   // ViewReview
   useEffect(() => {
-  const loadVenueReviews = async () => {
-  if (!venueId) return;
-  
-  try {
-    setLoading(true);
-    const response = await ApiClient.postForm('/api/getVenueReviewList', {
-      venue_id: venueId
-    });
-    
-    const reviewsData = response.data || [];
-    //console.log("reviewsData", reviewsData)
-    setOriginalReviews(reviewsData);
-    setReviews(reviewsData);
-    
-    // 유니크한 user_id들 추출
-    const userIds = [...new Set(reviewsData.map(review => review.user_id))];
-    
-    // 모든 유저 정보를 병렬로 요청
-    const userPromises = userIds.map(userId => 
-      axios.get(`${API_HOST}/api/getUserInfo`, {
-        params: { user_id: userId }
-      }).catch(error => {
-        console.error(`유저 ${userId} 정보 실패:`, error);
-        return { data: { image_url: '/placeholder-user.jpg' } };
-      })
-    );
-    
-    const userResponses = await Promise.all(userPromises);
-    
-    const userImagesData = {};
-    userIds.forEach((userId, index) => {
-      userImagesData[userId] = userResponses[index].data?.image_url || '/placeholder-user.jpg';
-    });
+    const loadVenueReviews = async () => {
+      //if (!venueId) return;
 
-  console.log("userImagesData", userImagesData)
-    
-    setUserImages(userImagesData);
-    
-  } catch (error) {
-    console.error('리뷰 로딩 실패:', error);
-    setReviews([]);
-  } finally {
-    setLoading(false);
-  }
-};
-  
+      try {
+        setLoading(true);
+        const response = await ApiClient.postForm('/api/getVenueReviewList', {
+          venue_id: venueId || -1
+        });
 
-  loadVenueReviews();
-}, [venueId]);
+        const reviewsData = response.data || [];
+        //console.log("reviewsData", reviewsData)
+        setOriginalReviews(reviewsData);
+        setReviews(reviewsData);
+
+        // 유니크한 user_id들 추출
+        const userIds = [...new Set(reviewsData.map(review => review.user_id))];
+
+        // 모든 유저 정보를 병렬로 요청
+        const userPromises = userIds.map(userId =>
+          axios.get(`${API_HOST}/api/getUserInfo`, {
+            params: { user_id: userId }
+          }).catch(error => {
+            console.error(`유저 ${userId} 정보 실패:`, error);
+            return { data: { image_url: '/placeholder-user.jpg' } };
+          })
+        );
+
+        const userResponses = await Promise.all(userPromises);
+
+        const userImagesData = {};
+        userIds.forEach((userId, index) => {
+          userImagesData[userId] = userResponses[index].data?.image_url || '/placeholder-user.jpg';
+        });
+
+        console.log("userImagesData", userImagesData)
+
+        setUserImages(userImagesData);
+
+      } catch (error) {
+        console.error('리뷰 로딩 실패:', error);
+        setReviews([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+
+    loadVenueReviews();
+  }, [venueId]);
 
 
 
@@ -147,7 +172,7 @@ useEffect(() => {
     navigateToPageWithData && navigateToPageWithData(PAGES.NOTIFICATIONS);
   };
 
-    const handleBack = (venueId) => {
+  const handleBack = (venueId) => {
     navigateToPageWithData(PAGES.DISCOVER, { venueId });
   };
 
@@ -201,32 +226,38 @@ useEffect(() => {
         }
 
         .search-section {
-          padding: 1rem;
-          border-bottom: 2px solid #e5e7eb;
-        }
-        .select-box {
-          padding: 8px 12px;
-          border: 1px solid #333;
-          border-radius: 8px;
-          background: white;
-          font-size: 14px;
-          min-width: 135px;
-          appearance: none;
-          background-image: url("data:image/svg+xml,%3Csvg fill='black' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.5 7l4.5 4 4.5-4'/%3E%3C/svg%3E");
-          background-repeat: no-repeat;
-          background-position: right 10px center;
-          background-size: 12px;
-        }
-        .map-filter-selects {
-          display: flex;
-          flex-wrap: nowrap;
-          overflow-x: auto;
-          gap: 12px;
-          margin-top: 0.5rem;
-          padding-right: 1rem;
-          scrollbar-width: none;
-          margin-bottom: 10px;
-        }
+            padding: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+          }
+
+          .select-box {
+            padding: 8px 8px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: white;
+            font-size: 13px;
+            flex: 1;
+            min-width: 0;
+            max-width: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg fill='black' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.5 7l4.5 4 4.5-4'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .map-filter-selects {
+            display: flex;
+            gap: 8px;
+            margin-top: 0.5rem;
+            margin-bottom: 10px;
+            width: 100%;
+          }
+
+
         .map-filter-selects::-webkit-scrollbar { display: none; }
 
         .venue-section {
@@ -354,6 +385,42 @@ useEffect(() => {
             border-right: none;
           }
         }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+          }
+
+          .review-type-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid;
+          }
+
+          .review-type-badge.venue {
+            background-color: #a7f3d0;
+            color: #047857;
+            border-color: #34d399;
+          }
+
+          .review-type-badge.staff {
+            background-color: #fef08a;
+            color: #92400e;
+            border-color: #fbbf24;
+          }
+
+          .review-target-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            letter-spacing: 0.3px;
+          }
       `}</style>
 
       <div className="view-review-container">
@@ -368,7 +435,15 @@ useEffect(() => {
 
         {/* Search Section */}
         <div className="map-filter-selects">
-          <select 
+          <select
+            className="select-box"
+            value={sortOrder1}
+            onChange={(e) => setSortOrder1(e.target.value)}
+          >
+            <option value="rating_high">평점 높은순</option>
+            <option value="rating_low">평점 낮은순</option>
+          </select>
+          <select
             className="select-box"
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
@@ -376,7 +451,7 @@ useEffect(() => {
             <option value="latest">최신순</option>
             <option value="oldest">과거순</option>
           </select>
-          <select 
+          <select
             className="select-box"
             value={targetTypeFilter}
             onChange={(e) => setTargetTypeFilter(e.target.value)}
@@ -399,18 +474,18 @@ useEffect(() => {
 
         {/* User Reviews */}
         <div className="reviews-section">
-          
+
           {loading ? (
             <div style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              textAlign: 'center', 
+              textAlign: 'center',
               color: 'gray',
               height: '200px'
             }}>
-              <Martini size={15}/>
+              <Martini size={15} />
               <span>리뷰 로딩 중...</span>
             </div>
           ) : reviews.length > 0 ? (
@@ -419,27 +494,87 @@ useEffect(() => {
                 <HatchPattern opacity={0.03} />
                 <div className="review-content">
                   <div className="review-header">
-                    <ImagePlaceholder 
-                      src={userImages[review.user_id] || '/placeholder-user.jpg'}
+                    <ImagePlaceholder
+                      //src={userImages[review.user_id] || '/placeholder-user.jpg'}
+                      src={review.targetImage || '/placeholder-user.jpg'}
                       className="user-avatar" alt="profile"
                     />
                     <div>
-                    <div className={`review-type ${review.target_type}`}>
-                    {review.target_type === 'venue' ? '매장' : 'Staff'}
-                  </div>
-                    <div className="user-info"></div>
-                      <h3 className="user-name">{review.user_name}</h3>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        marginBottom: '8px'
+                      }}>
+                        <div style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '50%',
+                          backgroundColor: review.target_type === 'venue' ? '#dcfce7' : '#fef3c7',
+                          color: review.target_type === 'venue' ? '#16a34a' : '#d97706'
+                        }}>
+                          {review.target_type === 'venue' ? (
+                            <Store size={14} />
+                          ) : (
+                            <User size={14} />
+                          )}
+                        </div>
+                        <span style={{
+                          fontSize: '15px',
+                          fontWeight: '500',
+                          color: '#333'
+                        }}>
+                          {review.targetName}
+                        </span>
+                      </div>
+
+
+
+                      <div className="user-info"></div>
+                      <div style={{ 'display': 'flex' }}>
+                        <span style={{ marginRight: '5px', fontSize: '0.95rem' }}>작성자 :</span>
+                        <h3 className="user-name">{review.user_name}</h3>
+                      </div>
                       <p className="review-meta">
                         {renderStars(review.rating)} stars - {new Date(review.created_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
                   <p className="review-text">{review.content}</p>
+
+                  {/* 예약하기 버튼 */}
+                  <div className="review-actions" style={{
+                    paddingTop: '1rem',
+                    borderTop: '1px solid #e5e7eb',
+                    display: 'flex',
+                    justifyContent: 'flex-end'
+                  }}>
+                    <SketchBtn
+                      className="reservation-btn"
+                      onClick={() => handleReservation(review)}
+                      style={{
+                        width:'30%',
+                        backgroundColor: '#10b981',
+                        color: '#fefefe',
+                        padding: '0.5rem 1rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      예약하기
+                    </SketchBtn>
+                  </div>
+
+
+
                 </div>
               </SketchDiv>
             ))
           ) : (
-            <div style={{textAlign: 'center', color:'gray'}}>리뷰가 없습니다.</div>
+            <div style={{ textAlign: 'center', color: 'gray' }}>리뷰가 없습니다.</div>
           )}
         </div>
       </div>
