@@ -195,13 +195,15 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
         }
       `}</style>
 
- <SketchHeader 
-          title= { '지도 검색' } 
-          showBack={true}
-          onBack={handleBack}
-          rightButtons={[]} className=""
-          style={{ display: 'none' }}
-        />
+<div style={{ display: 'none' }}>
+  <SketchHeader 
+    title="지도 검색"
+    showBack={true}
+    onBack={handleBack}
+    rightButtons={[]}
+  />
+</div>
+
 
       <div className="map-container">
         <div className="map-container-area">

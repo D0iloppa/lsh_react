@@ -65,6 +65,23 @@ const ViewReviewPage = ({
     });
   };
 
+  const handleViewDetail = (review) => {
+  console.log('View detail clicked:', review);
+  
+  if (review.target_type === 'venue') {
+    // venue인 경우 VIEWREVIEW 페이지로 이동
+    navigateToPageWithData && navigateToPageWithData(PAGES.DISCOVER, {
+      venueId: review.venue_id
+    });
+  } else if (review.target_type === 'staff') {
+    // staff인 경우 STAFFDETAIL 페이지로 이동
+    navigateToPageWithData && navigateToPageWithData(PAGES.STAFFDETAIL, {
+      staff_id: review.target_id,
+      
+    });
+  }
+};
+
   const applyFiltersAndSort = () => {
 
     console.log('filter', otherProps);
@@ -565,7 +582,7 @@ const ViewReviewPage = ({
                   <p className="review-text">{review.content}</p>
 
                   {/* 예약하기 버튼 */}
-                  <div className="review-actions" style={{
+                  {/* <div className="review-actions" style={{
                     paddingTop: '1rem',
                     borderTop: '1px solid #e5e7eb',
                     display: 'flex',
@@ -591,9 +608,31 @@ const ViewReviewPage = ({
                       {review.is_reservation ? '예약하기' : '예약 마감'}
                     </SketchBtn>
 
-                  </div>
+                  </div> */}
 
-
+                  <div className="review-actions" style={{
+                    paddingTop: '1rem',
+                    borderTop: '1px solid #e5e7eb',
+                    display: 'flex',
+                    justifyContent: 'flex-end'
+                  }}>
+                  <SketchBtn 
+                    onClick={() => {
+                      console.log('버튼 클릭됨!');
+                      handleViewDetail(review);
+                    }}
+                    style={{
+                        width: '30%',
+                        backgroundColor: review.is_reservation ? '#10b981' : '#9ca3af', // 회색으로 비활성화 느낌
+                        color: '#fefefe',
+                        padding: '0.5rem 1rem',
+                        cursor: review.is_reservation ? 'pointer' : 'not-allowed',
+                        transition: 'all 0.2s ease'
+                      }}
+                  >
+                    상세보기
+                  </SketchBtn>
+</div>
 
                 </div>
               </SketchDiv>

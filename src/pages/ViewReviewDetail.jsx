@@ -565,7 +565,7 @@ const ViewReviewPage = ({
                   <p className="review-text">{review.content}</p>
 
                   {/* 예약하기 버튼 */}
-                  <div className="review-actions" style={{
+                  {/* <div className="review-actions" style={{
                     paddingTop: '1rem',
                     borderTop: '1px solid #e5e7eb',
                     display: 'flex',
@@ -590,7 +590,7 @@ const ViewReviewPage = ({
                                         >
                                           {review.is_reservation ? '예약하기' : '예약 마감'}
                                         </SketchBtn>
-                  </div>
+                  </div> */}
 
 
 

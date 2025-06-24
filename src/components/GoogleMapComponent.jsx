@@ -60,38 +60,47 @@ const GoogleMapComponent = ({
     });
   };
 
-  const createImageWithText = async (rating) => {
-    const image = new Image();
-    image.src = '/cdn/map_icon.png';
-    await image.decode();
+  const createImageWithText = async (rating, isReservationAvailable = true) => {
+  const image = new Image();
+  image.src = isReservationAvailable ? '/cdn/map_icon.png' : '/cdn/map_icon_gray.png';
+  await image.decode();
 
-    const baseSize = 64;
-    const scale = 2;
-    const canvas = document.createElement('canvas');
-    canvas.width = baseSize * scale;
-    canvas.height = baseSize * scale;
-    const ctx = canvas.getContext('2d');
+  const baseSize = 64;
+  const scale = 2;
+  const canvas = document.createElement('canvas');
+  canvas.width = baseSize * scale;
+  canvas.height = baseSize * scale;
+  const ctx = canvas.getContext('2d');
 
-    ctx.scale(scale, scale);
-    ctx.drawImage(image, 0, 0, baseSize, baseSize);
+  ctx.scale(scale, scale);
+  
+  // gray.png일 때 opacity 적용
+  if (!isReservationAvailable) {
+    ctx.globalAlpha = 0.6; // 60% 투명도 (0.0 = 완전 투명, 1.0 = 불투명)
+  }
+  
+  ctx.drawImage(image, 0, 0, baseSize, baseSize);
+  
+  // opacity 원래대로 복원
+  ctx.globalAlpha = 1.0;
 
-    const text = parseFloat(rating || 0).toFixed(1);
+  const text = parseFloat(rating || 0).toFixed(1);
 
-    ctx.font = 'bold 12px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#000';
-    ctx.strokeText(text, baseSize / 2, 18);
-    ctx.fillStyle = '#fff';
-    ctx.fillText(text, baseSize / 2, 18);
+  ctx.font = 'bold 12px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#000';
+  ctx.strokeText(text, baseSize / 2, 18);
+  ctx.fillStyle = '#fff';
+  ctx.fillText(text, baseSize / 2, 18);
 
-    return {
-      url: canvas.toDataURL(),
-      scaledSize: new window.google.maps.Size(baseSize, baseSize),
-      anchor: new window.google.maps.Point(baseSize / 2, baseSize),
-    };
+  return {
+    url: canvas.toDataURL(),
+    scaledSize: new window.google.maps.Size(baseSize, baseSize),
+    anchor: new window.google.maps.Point(baseSize / 2, baseSize),
   };
+};
 
   useEffect(() => {
     if (!mapReady || !places) return;
@@ -112,7 +121,7 @@ const GoogleMapComponent = ({
         });
       }
 
-      const icon = await createImageWithText(place.rating);
+      const icon = await createImageWithText(place.rating, place.is_reservation);
 
       const marker = new window.google.maps.Marker({
         position: {

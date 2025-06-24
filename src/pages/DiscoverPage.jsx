@@ -925,12 +925,12 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
                 className="sketch-button enter-button"
                 variant="event"
                 style={{ width: '45px', height: '39px', marginTop: '10px', background: '#374151', color: 'white' }}
-              // onClick={() =>
-              //   navigateToPageWithData(PAGES.RESERVATION, {
-              //     target: 'venue',
-              //     id: venueId || 1,
-              //   })
-              // }
+               onClick={() =>
+                 navigateToPageWithData(PAGES.CHATTING, {
+                   target: 'venue',
+                   id: venueId || 1,
+                 })
+               }
               ><MessageCircle size={16} /></SketchBtn>
               <SketchBtn
                 className="sketch-button enter-button"

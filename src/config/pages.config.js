@@ -31,6 +31,9 @@ import Favorites from '@pages/Favorites';
 import Setting from '@pages/Setting';
 import ViewReviewDetail from '@pages/ViewReviewDetail';
 
+
+import Chatting from '@pages/Chatting';
+
 // 페이지 상수
 export const PAGES = {
     HOME: 'HOME',
@@ -54,7 +57,8 @@ export const PAGES = {
     FAVORITES: 'FAVORITES',
     SETTING: 'SETTING',
     PROFILE: 'PROFILE',
-    PAYMENT: 'PAYMENT'
+    PAYMENT: 'PAYMENT',
+    CHATTING: 'CHATTING'
 };
 
 // 페이지 컴포넌트 매핑
@@ -80,7 +84,8 @@ export const PAGE_COMPONENTS = {
     [PAGES.FAVORITES]: Favorites,
     [PAGES.SETTING]: Setting,
     [PAGES.PROFILE]: Profile,
-    [PAGES.PAYMENT]: Payment
+    [PAGES.PAYMENT]: Payment,
+    [PAGES.CHATTING]: Chatting
 };
 
 // 기본 페이지
