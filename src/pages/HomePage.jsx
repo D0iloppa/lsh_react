@@ -417,7 +417,21 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
         <div style={{ flex: '1', position: 'relative' }}>
           <div style={{ padding: isOverlayStyle ? '0' : '0.75rem 1rem' }}>
             <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{spot.name}</div>
-
+            <div
+                  className="is-reservation"
+                  style={{
+                    backgroundColor: spot.is_reservation ? 'rgb(17 157 81)' : 'rgb(107 107 107)',
+                    color: '#fff',
+                    padding: '5px 7px',
+                    borderRadius: '3px',
+                    display: 'inline-block',
+                    marginTop: '4px',
+                    fontSize: '12px',
+                    height: '13px'
+                  }}
+                >
+                  {spot.is_reservation ? '예약 가능' : '예약 마감'}
+                </div>
             <div style={{ fontSize: '14px', color: '#333', marginTop: '6px' }}>
               <MapPin size={14}/> {spot.address}
             </div>

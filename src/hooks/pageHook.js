@@ -11,6 +11,7 @@ const usePageNavigation = () => {
     const navigateToPage = (page) => {
         setCurrentPage(page);
         setPageHistory(prev => [...prev, page]);
+        setPageDataStack(prev => [...prev, { page, data: null }]);
     };
 
     // 데이터와 함께 페이지 이동

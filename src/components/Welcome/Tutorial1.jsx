@@ -46,56 +46,7 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
   return (
     <>
       {/* 초기 안내 이미지 오버레이 */}
-      {showIntroImage && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 cursor-pointer"
-          onClick={onNextScreen}
-        >
-          <div className="relative">
-            <div 
-                className="absolute inset-0 bg-black bg-opacity-60 z-0"
-                style={{
-                  width: '100vw',
-                  height: '100vh',
-                  left: '-8px',
-                  bottom: '8px',
-                  background: 'rgb(0 0 0 / 65%)'
-                }}
-              ></div>
-            <ImagePlaceholder 
-              src="/cdn/tuto_info_2.png"
-              className="w-full h-auto object-contain"
-              style={{ 
-                left: '-8px',
-                bottom: '12px',
-                width: '100vw',
-                height: '100vh',
-                borderRadius: '10px',
-                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                objectFit: 'contain',
-                
-              }}
-            />
-            
-            {/* 클릭 안내 텍스트 (선택사항) */}
-            <div 
-              className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-center"
-              style={{
-                   color: 'white',
-                    background: 'rgb(157 157 157 / 18%)',
-                    padding: '8px 16px',
-                    borderRadius: '12px',
-                    fontSize: '14px',
-                    width: '184px',
-                    top: '20px'
-              }}
-            >
-              화면을 터치하여 계속하기   →
-            </div>
-          </div>
-        </div>
-      )}
-
+      
       {/* 메인 튜토리얼 내용 */}
       <div className="tutorial-container max-w-md mx-auto bg-white min-h-screen p-6">
         {/* 진행 표시기 */}
@@ -104,15 +55,6 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
               currentStep={currentStep} 
               totalSteps={totalSteps} 
             />
-        </div>
-
-        {/* 메인 이미지 */}
-        <div className="mb-6">
-          <ImagePlaceholder 
-             src={"/cdn/tuto1.png"}
-            className="w-60 h-48"  
-            style={{ border: '2px solid #333', borderRadius: '5px', height: '190px'}}
-          />
         </div>
 
         {/* 제목 */}
@@ -127,25 +69,14 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
           {get('Tutorial1.2')}
         </p>
 
-        {/* Elite Hostess Club 카드 */}
-        <InfoCard 
-           title={"Elite Hostess Club"}
-           imageSrc="/cdn/content/mang.png"
-           description={get('Tutorial1.5')}
-           titleClassName="transform rotate-1"
-           descriptionClassName="transform rotate-1"
-           imageSize="w-24 h-24"
-           className="mb-4"
-        />
+        {/* 메인 이미지 */}
+        <div className="mb-6">
+          <ImagePlaceholder  src={"/cdn/tuto-1.png"}  style={{ border: '1px solid #333', borderRadius: '5px',height: '465px'}}/>
+        </div>
 
-        <InfoCard 
-          title="Vibrant Lounge Bar"
-          imageSrc="/cdn/content/qui.png"
-          description={get('Tutorial1.7')}
-          titleClassName="transform -rotate-1"
-          descriptionClassName="transform -rotate-1"
-          className="mb-8"
-        />
+
+        {/* Elite Hostess Club 카드 */}
+        
 
         {/* Next Screen 버튼 */}
         <div className="relative" style={{ marginTop: '20px' }}>

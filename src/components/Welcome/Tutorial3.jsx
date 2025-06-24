@@ -40,7 +40,7 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
 
 
-    <div className="tutorial-container max-w-md mx-auto bg-white min-h-screenp-6" style={{margin: 'auto', padding: '5px', borderRadius: '5px', width: '341px', border: '1px solid #666'}}>
+    <div className="tutorial-container max-w-md mx-auto bg-white min-h-screenp-6">
 
     {/* 진행 표시기 */}
       <div className="pi-div">
@@ -49,8 +49,12 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
               totalSteps={totalSteps} 
             />
         </div>
+         <p className="welcome-description" style={{textAlign: 'center'}}>
+            {get('Tutorial3.2')}
+            {get('Tutorial3.3')}
+          </p>
 
-      <SketchDiv variant="container" style={{padding: '10px 20px', width: '310px', margin: 'auto'}}>
+      {/* <SketchDiv variant="container" style={{padding: '10px 20px', width: '310px', margin: 'auto'}}>
         <HatchPattern opacity={0.3} />
         <div style={{ position: 'relative', zIndex: '10'}}>
           <h3 className="welcome-title" style={{fontSize: '17px'}}>
@@ -61,17 +65,17 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
             {get('Tutorial3.3')}
           </p>
         </div>
-      </SketchDiv>
+      </SketchDiv> */}
 
-
+      <ImagePlaceholder  src={"/cdn/tuto3.png"}  style={{ border: '1px solid #333', borderRadius: '5px',height: '465px'}}/>
       {/* 메인 이미지 */}
-      <div className="">
+      {/* <div className="">
         <ImagePlaceholder src={"/cdn/tuto-2.png"} className="w-full h-48" style={{margin: 'auto', width: '330px', height:'307px', border: '1px solid #333', padding: '10px', borderTopLeftRadius: '15px 8px',
         borderTopRightRadius: '8px 20px',
         borderBottomRightRadius: '12px 6px',
         borderBottomLeftRadius: '6px 15px',
         transform: 'rotate(-1.2deg)' }} />
-      </div>
+      </div> */}
 
       {/* Next Screen 버튼 */}
       <div className="relative" style={{ marginTop: '1rem' }}>

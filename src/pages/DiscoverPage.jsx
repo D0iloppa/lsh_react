@@ -364,15 +364,39 @@ useEffect(() => {
         />
 
         <div className="featured-section">
+
+
             <div className="club-image-area">
               {loading ? (
                 <div className="club-name">Loading...</div>
+              ) : venueInfo?.imgList && Array.isArray(venueInfo.imgList) && venueInfo.imgList.length > 0 ? (
+                // 1순위: imgList가 존재하고 빈 배열이 아닌 경우
+                <RotationDiv 
+                  interval={500000000} 
+                  swipeThreshold={50} 
+                  showIndicators={true}  
+                  pauseOnHover={true} 
+                  className="venue-rotation"
+                >
+                  {venueInfo.imgList.map((imageUrl, index) => (
+                    <div key={index} className="rotation-image-container">
+                      <img src={imageUrl} alt={`venue-${index}`} />
+                    </div>
+                  ))}
+                </RotationDiv>
               ) : venueInfo?.image_url ? (
+                // 2순위: imgList가 없으면 대표 이미지(image_url)
                 <img src={venueInfo.image_url} alt="venue" />
               ) : (
+                // 3순위: 이미지가 없는 경우
                 <div className="club-name">No Image</div>
               )}
             </div>
+
+
+
+
+            
             {venueInfo && (
                 <div
                   className="is-reservation"
@@ -495,7 +519,8 @@ useEffect(() => {
               </div>
             ))}
             </RotationDiv>
-            <div className={`reservation-footer ${showFooter ? '' : 'hidden'}`}>
+            {/*</div><div className={`reservation-footer ${showFooter ? '' : 'hidden'}`}>*/}
+            <div className={`reservation-footer ${showFooter ? '' : ''}`}>
               {<HatchPattern opacity={0.4} />}
               <div className="reservation-footer-content">
                 <div>
@@ -522,15 +547,22 @@ useEffect(() => {
                   className="sketch-button enter-button"  
                   variant="event" 
                   style={{ width: '85px', height: '39px', marginTop: '10px', marginLeft:'-55px'}}
-                  onClick={() =>
+                  disabled={!venueInfo?.is_reservation}
+                  onClick={() =>{
+
+                    if(!venueInfo.is_reservation) return;
+
                     navigateToPageWithData(PAGES.RESERVATION, {
                       target: 'venue',
                       id: venueId || 1,
                     })
-                  }
+                  }}
                 >
                   <HatchPattern opacity={0.8} />
-                  {get('DiscoverPage1.1')}
+                  {venueInfo?.is_reservation 
+                    ? get('DiscoverPage1.1') || '예약하기' 
+                    : get('DiscoverPage1.1.disable') || '예약 불가'
+                  }
                 </SketchBtn>
               </div>
             </div>
@@ -538,14 +570,22 @@ useEffect(() => {
             <SketchBtn 
                           className="sketch-button enter-button"  
                           variant="event" 
-                          onClick={() =>
-                          navigateToPageWithData(PAGES.RESERVATION, {
-                            target: 'venue',
-                            id: venueId || 1,
-                          })
-                        }
+                          style={{'display':'none'}}
+                          disabled={!venueInfo?.is_reservation}
+                          onClick={() =>{
+
+                            if(!venueInfo.is_reservation) return;
+
+                            navigateToPageWithData(PAGES.RESERVATION, {
+                              target: 'venue',
+                              id: venueId || 1,
+                            })
+                          }}
                       ><HatchPattern opacity={0.8} />
-                          {get('DiscoverPage1.1')}
+                           {venueInfo?.is_reservation 
+                            ? get('DiscoverPage1.1.enable') || '예약하기' 
+                            : get('DiscoverPage1.1.disable') || '예약 불가'
+                          }
                         </SketchBtn>
           </div> 
                           <LoadingScreen 
