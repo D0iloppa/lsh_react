@@ -50,9 +50,9 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
             />
         </div>
 
-      <SketchDiv variant="container">
+      <SketchDiv variant="container" style={{padding: '10px 20px', width: '310px', margin: 'auto'}}>
         <HatchPattern opacity={0.3} />
-        <div style={{ position: 'relative', zIndex: 10 }}>
+        <div style={{ position: 'relative', zIndex: '10'}}>
           <h3 className="welcome-title" style={{fontSize: '17px'}}>
             {get('Tutorial3.1')}
           </h3>
@@ -66,7 +66,7 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
       {/* 메인 이미지 */}
       <div className="">
-        <ImagePlaceholder src={"/cdn/tuto-2.png"} className="w-full h-48" style={{ width: '335px', height:'310px', border: '1px solid #333', padding: '10px', borderTopLeftRadius: '15px 8px',
+        <ImagePlaceholder src={"/cdn/tuto-2.png"} className="w-full h-48" style={{margin: 'auto', width: '330px', height:'307px', border: '1px solid #333', padding: '10px', borderTopLeftRadius: '15px 8px',
         borderTopRightRadius: '8px 20px',
         borderBottomRightRadius: '12px 6px',
         borderBottomLeftRadius: '6px 15px',

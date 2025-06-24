@@ -6,6 +6,9 @@ import { MsgProvider, useMsg  } from '@contexts/MsgContext';
 
 import { AuthProvider, useAuth } from '@contexts/AuthContext';
 
+import { PopupProvider } from '@contexts/PopupContext';
+import GlobalPopupManager from '@components/GlobalPopupManager';
+
 import PageView from './debug/PageView'
 
 import WelcomePage from '@components/Welcome';
@@ -88,10 +91,13 @@ const AppRoutes = () => {
 function App() {
   return (
     <AuthProvider>
-      <MsgProvider>  {/* 👈 여기에 추가! */}
-        <Router basename="/">
-          <AppRoutes />
-        </Router>
+      <MsgProvider>
+        <PopupProvider> 
+          <Router basename="/">
+            <AppRoutes />
+            <GlobalPopupManager /> 
+          </Router>
+        </PopupProvider>
       </MsgProvider>
     </AuthProvider>
   );

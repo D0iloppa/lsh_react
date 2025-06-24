@@ -90,9 +90,16 @@ const BookingHistoryPage = ({
     if (reviewState.action === 'view') {
       // 기존 리뷰 보기/수정 페이지로 이동
 
-      navigateToPageWithData && navigateToPageWithData(PAGES.PROFILE);
+      // navigateToPageWithData && navigateToPageWithData(PAGES.PROFILE);
 
-      // navigateToPageWithData && navigateToPageWithData(PAGES.VIEWREVIEW);
+      console.log('view', booking);
+      navigateToPageWithData && navigateToPageWithData(PAGES.VIEWREVIEW, {
+          reservationId: booking.id,
+          clientId: booking.clientId,
+          target: booking.targetType,
+          targetId: booking.targetId,
+          venueId: booking.venue_id
+      });
       
     } else if (reviewState.action === 'create') {
       navigateToPageWithData && navigateToPageWithData(PAGES.SHARE_EXP, {
@@ -203,7 +210,8 @@ const BookingHistoryPage = ({
           reservedAt: item.reserved_at,
           venue_id:item.venue_id,
           review_cnt:item.review_cnt,
-          isReviewable:item.isReviewable
+          isReviewable:item.isReviewable,
+          clientId: item.client_id
         }));
         
         setBookings(formattedBookings); // 🔥 여기서 bookings 설정!

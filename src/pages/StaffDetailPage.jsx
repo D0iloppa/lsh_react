@@ -7,12 +7,15 @@ import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import '@components/SketchComponents.css';
 import LoadingScreen from '@components/LoadingScreen';
+import ApiClient from '@utils/ApiClient';
 
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps }) => {
   const [date, setDate] = useState('');
   const [partySize, setPartySize] = useState('');
+  const [availCnt, setAvailCnt] = useState(0);
+  const [isLoadingAvailCnt, setIsLoadingAvailCnt] = useState(false);
   const girl = otherProps || {};
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const getAgeFromBirthYear = (birthYear) => {
@@ -33,6 +36,37 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
       staff:girl
     })
   }
+    // availCnt 가져오기
+  useEffect(() => {
+    const fetchStaffAvailCnt = async () => {
+      if (!girl.staff_id) return;
+      
+      setIsLoadingAvailCnt(true);
+      
+      try {
+        const response = await ApiClient.get('/api/staffAvailCnt', {
+          params: { staff_id: girl.staff_id }
+        });
+        
+        console.log(`Staff ${girl.staff_id} availCnt response:`, response);
+        
+        // ApiClient는 response 자체가 데이터 배열
+        if (Array.isArray(response) && response.length > 0) {
+          setAvailCnt(response[0]?.availcnt || 0);
+        } else {
+          setAvailCnt(0);
+        }
+        
+      } catch (error) {
+        console.error('availCnt 로딩 실패:', error);
+        setAvailCnt(0);
+      } finally {
+        setIsLoadingAvailCnt(false);
+      }
+    };
+
+    fetchStaffAvailCnt();
+  }, [girl.staff_id]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -132,11 +166,50 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
         .full-width {
           width: 100%;
         }
+
+        // .avail-status-badge {
+        //   position: absolute;
+        //   top: 19px;
+        //   right: 56px;
+        //   padding: 4px 8px;
+        //   border-radius: 4px;
+        //   font-size: 11px;
+        //   color: white;
+        //   z-index: 10;
+        // }
       `}</style>
 
+    {/* {!isLoadingAvailCnt && (
+            <div 
+              className="avail-status-badge"
+              style={{
+                backgroundColor: availCnt > 0 ? 'rgb(11, 199, 97)' : 'rgb(107, 107, 107)'
+              }}
+            >
+              {availCnt > 0 ? '예약 가능' : '예약 마감'}
+            </div>
+          )} */}
+
       <div className="staff-detail-container">
-        <SketchHeader
-          title={get('Menu1.2')}
+       <SketchHeader
+          title={
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>{get('Menu1.2')}</span>
+              {!isLoadingAvailCnt && (
+                <span 
+                  style={{
+                    backgroundColor: availCnt > 0 ? 'rgb(11, 199, 97)' : 'rgb(107, 107, 107)',
+                    color: 'white',
+                    padding: '2px 6px',
+                    borderRadius: '3px',
+                    fontSize: '10px',
+                  }}
+                >
+                  {availCnt > 0 ? '예약 가능' : '예약 마감'}
+                </span>
+              )}
+            </div>
+          }
           showBack={true}
           onBack={handleBack}
           rightButtons={[]}

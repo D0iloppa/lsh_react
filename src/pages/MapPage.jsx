@@ -227,6 +227,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
                 </select>
             
                 <select
+                  style={{'display':'none'}}
                   className="select-box"
                   value={staffLanguageFilter}
                   onChange={(e) => setStaffLanguageFilter(e.target.value)}
@@ -242,12 +243,12 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
               {/* ✅ 예약 체크박스 */}
               <label className="checkbox-label">
                 <input
-                  type="checkbox"
-                  checked={isReservationOnly}
-                  onChange={(e) => setIsReservationOnly(e.target.checked)}
-                  style={{ transform: 'scale(1.1)' }}
-                />
-                예약 가능 업체
+                    type="checkbox"
+                    checked={true}
+                    onChange={() => {}}
+                    style={{ display: 'block' }}
+                  />
+                  예약가능 가게 보기
               </label>
             </div>
 
@@ -305,7 +306,6 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
                           color: '#222'
                         }}
                       >
-                        <CreditCard size={18} style={{marginBottom: '-4px'}}/> ${venue.price}
                       </div>
                     </SketchDiv>
                   ))}

@@ -319,32 +319,17 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
               <option value="RATING_4">{get('main.filter.rating.4plus')}</option>
               <option value="RATING_3">{get('main.filter.rating.3plus')}</option>
             </select>
-            <select className="select-box" value={sortPrice} onChange={(e) => setSortPrice(e.target.value)}>
-              <option value="PRICE_ALL">{get('main.filter.price.all')}</option>
-              <option value="PRICE_HIGH">{get('main.filter.price.high')}</option>
-              <option value="PRICE_LOW">{get('main.filter.price.low')}</option>
-            </select>
-             <select
-                  className="select-box"
-                  value={staffLanguageFilter}
-                  onChange={(e) => setStaffLanguageFilter(e.target.value)}
-                >
-                  <option value="ALL">{get('language.filter.all')}</option>
-                  <option value="kr">{get('language.name.korean')}</option>
-                  <option value="en">{get('language.name.english')}</option>
-                  <option value="ja">{get('language.name.japanese')}</option>
-                  <option value="vi">{get('language.name.vietnamese')}</option>
-                </select>
+             
           </div>
 
           <label className="checkbox-label">
             <input
               type="checkbox"
-              checked={isReservationOnly}
-              onChange={(e) => setIsReservationOnly(e.target.checked)}
-              style={{ transform: 'scale(1.1)' }}
+              checked={true}
+              onChange={() => {}}
+              style={{ display: 'block' }}
             />
-            {get('main.filter.reservation.available')}
+            예약가능 가게 보기
           </label>
         </section>
         
@@ -458,19 +443,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
             )}
           </div>
 
-          {/* 💰 가격: 모든 카드 우측 하단 고정 */}
-          <div
-             style={{
-              position: 'absolute',
-              right: isOverlayStyle ? '0rem' : '1rem',
-              bottom: isOverlayStyle ? '0rem' : '1rem',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              color: '#222',
-            }}
-          >
-            <CreditCard size={18} style={{marginBottom: '-4px'}}/> ${spot.price}
-          </div>
+         
         </div>
       </div>
     );

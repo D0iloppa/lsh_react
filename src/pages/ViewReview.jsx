@@ -36,7 +36,11 @@ const ViewReviewPage = ({
   const [originalReviews, setOriginalReviews] = useState([]); // 원본 데이터 보관
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const API_HOST = import.meta.env.VITE_API_HOST;
-      useEffect(() => {
+    
+  
+  useEffect(() => {
+
+
       if (messages && Object.keys(messages).length > 0) {
         console.log('✅ Messages loaded:', messages);
         window.scrollTo(0, 0);
@@ -44,12 +48,26 @@ const ViewReviewPage = ({
     }, [messages, currentLang]);
 
     const applyFiltersAndSort = () => {
+
+      console.log('filter', otherProps);
+
+      const { reservationId=false, clientId=false, target, targetId  } = otherProps
+
+      let userFilter = false;
+      if(reservationId && clientId) userFilter = true;
+
       let filtered = [...originalReviews];
       
       // 타겟 타입 필터링
       if (targetTypeFilter !== 'ALL') {
         filtered = filtered.filter(review => review.target_type === targetTypeFilter);
       }
+
+      console.log('test', filtered);
+      if(userFilter){
+        filtered = filtered.filter(review => review.user_id == clientId);
+      }
+
       
       // 날짜 정렬
       filtered.sort((a, b) => {

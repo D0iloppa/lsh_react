@@ -176,8 +176,11 @@ const CocktailIcon = () => (
 
          {/* 설명 섹션 */}
          <div className="intro-description-section">
-          <p className="description">
-            {get('Intro.description')}
+          <p className="description" style={{color:'#ca1212'}}>
+            {get('Intro.description1')}
+          </p>
+          <p>
+            {get('Intro.description2')}
           </p>
           
           {/* 기능 리스트 */}

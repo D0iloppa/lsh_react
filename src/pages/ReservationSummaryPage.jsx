@@ -8,6 +8,8 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
 import ApiClient from '@utils/ApiClient';
 
+import AgreementCheckbox2 from '@components/AgreementCheckbox2';
+
 const ReserveSummaryPage = ({ 
   navigateToPageWithData, 
   goBack,
@@ -18,6 +20,7 @@ const ReserveSummaryPage = ({
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   
   // 예약 확정을 위한 상태 관리
+  const [agreementChecked, setAgreementChecked] = useState(false);
   const [reservationPayload, setReservationPayload] = useState({});
   const [displayData, setDisplayData] = useState({
     target: '',
@@ -30,6 +33,20 @@ const ReserveSummaryPage = ({
     memo: ''
   });
   const [isConfirming, setIsConfirming] = useState(false);
+
+
+  const [agreements, setAgreements] = useState({
+    policyTerms: false
+  });
+  
+  // 핸들러 추가
+  const handleAgreementChange = (key, checked) => {
+    setAgreements(prev => ({
+      ...prev,
+      [key]: checked
+    }));
+  };
+
 
   useEffect(() => {
     if (messages && Object.keys(messages).length > 0) {
@@ -146,6 +163,11 @@ const ReserveSummaryPage = ({
       return;
     }
 
+    if (!agreementChecked) {
+      alert(get('Agreement.Required') || '이용 정책에 동의해주세요.');
+      return;
+    }
+
     setIsConfirming(true);
     
     try {
@@ -230,7 +252,10 @@ const ReserveSummaryPage = ({
         }
 
         .content-section {
-          padding: 2rem 1.5rem;
+          padding-top: 2rem;
+          padding-left: 1.5rem;
+          padding-right: 1.5rem;
+          padding-bottom: 0.5rem;
         }
 
         .section-title {
@@ -341,6 +366,13 @@ const ReserveSummaryPage = ({
             border-right: none;
           }
         }
+
+        .agreements-section{
+          margin-bottom:20px;
+        }
+
+
+
       `}</style>
 
       <div className="summary-container">
@@ -405,6 +437,17 @@ const ReserveSummaryPage = ({
             </div>
           </div>
         </div>
+
+        {/* agreements Section */}
+        <div className="agreements-section">
+          <AgreementCheckbox2 
+            agreements={agreements}
+            onAgreementChange={handleAgreementChange}
+            showRequired={true}
+          />
+        </div>
+
+
 
         {/* Confirm Section */}
         <div className="confirm-section">

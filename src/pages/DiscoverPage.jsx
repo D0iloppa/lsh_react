@@ -77,33 +77,112 @@ useEffect(() => {
       }
     };
 
-    const fetchTopGirls = async () => {
-      if (!venueId) return;
-      try {
+    // const fetchTopGirls = async () => {
+    //   if (!venueId) return;
+    //   try {
 
-        const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
-        const res = await axios.get(`${API_HOST}/api/getVenueStaffList`, {
-          params: { venue_id: venueId },
-        });
-        const staffList = res.data || [];
-        const top3 = staffList.slice(0, 3).map((girl) => {
-          const birthYear = parseInt(girl.birth_year, 10);
-          const currentYear = new Date().getFullYear();
-          const age = birthYear ? currentYear - birthYear : '?';
-          return {
-            ...girl, 
-            displayName: `${girl.name} (${age})`,
-          };
-        });
-        setTopGirls(top3);
-      } catch (error) {
-        console.error('Top girls 가져오기 실패:', error);
-      }
-    };
+    //     const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+    //     const res = await axios.get(`${API_HOST}/api/getVenueStaffList`, {
+    //       params: { venue_id: venueId },
+    //     });
+    //     const staffList = res.data || [];
+    //     const top3 = staffList.slice(0, 3).map((girl) => {
+    //       const birthYear = parseInt(girl.birth_year, 10);
+    //       const currentYear = new Date().getFullYear();
+    //       const age = birthYear ? currentYear - birthYear : '?';
+    //       return {
+    //         ...girl, 
+    //         displayName: `${girl.name} (${age})`,
+    //       };
+    //     });
+    //     setTopGirls(top3);
+    //   } catch (error) {
+    //     console.error('Top girls 가져오기 실패:', error);
+    //   }
+    // };
 
     fetchVenueInfo();
-    fetchTopGirls();
+    //fetchTopGirls();
   }, [venueId, messages, currentLang]);
+
+useEffect(() => {
+  const fetchAllData = async () => {
+    if (!venueId) return;
+    
+    try {
+      // 1. 먼저 staff 리스트를 가져옴
+      const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+      const res = await axios.get(`${API_HOST}/api/getVenueStaffList`, {
+        params: { venue_id: venueId },
+      });
+      const staffList = res.data || [];
+      
+      // 2. staff 리스트가 있을 때만 availCnt 호출
+      if (staffList.length > 0) {
+        const top3WithAvailCnt = await Promise.all(
+          staffList.slice(0, 3).map(async (girl) => {
+            const birthYear = parseInt(girl.birth_year, 10);
+            const currentYear = new Date().getFullYear();
+            const age = birthYear ? currentYear - birthYear : '?';
+            
+            // 재시도 로직 추가
+          let availCnt = 0;
+            try {
+              const response = await ApiClient.get('/api/staffAvailCnt', {
+                params: { staff_id: girl.staff_id }
+              });
+              
+              console.log(`=== Staff ${girl.staff_id} 전체 response 구조 확인 ===`);
+              console.log('response:', response);
+              console.log('response.data:', response.data);
+              console.log('response 키들:', Object.keys(response));
+              
+              // ApiClient가 다른 구조일 수 있으니 여러 가능성 체크
+              let data = null;
+              if (response.data) {
+                data = response.data;
+              } else if (response.body) {
+                data = response.body;
+              } else if (response.result) {
+                data = response.result;
+              } else if (Array.isArray(response)) {
+                data = response;
+              } else {
+                data = response; // response 자체가 데이터일 수도
+              }
+              
+              console.log('실제 데이터:', data);
+              
+              if (Array.isArray(data) && data.length > 0) {
+                availCnt = data[0]?.availcnt || 0;
+              } else if (data?.availcnt) {
+                availCnt = data.availcnt;
+              }
+              
+              console.log('Final availCnt:', availCnt);
+              
+            } catch (error) {
+              console.error(`Staff ${girl.staff_id} availCnt 로딩 실패:`, error);
+              availCnt = 0;
+            }
+            
+            return {
+              ...girl, 
+              displayName: `${girl.name} (${age})`,
+              availCnt: availCnt
+            };
+          })
+        );
+        
+        setTopGirls(top3WithAvailCnt);
+      }
+    } catch (error) {
+      console.error('Staff 데이터 가져오기 실패:', error);
+    }
+  };
+
+  fetchAllData();
+}, [venueId]); 
 
 
 useEffect(() => {
@@ -217,7 +296,7 @@ useEffect(() => {
           justify-content: center; align-items: center;
           color: #6b7280; 
         }
-        .top-girls-section { padding: 1rem;}
+        .top-girls-section { padding: 1rem; margin-top: 20px}
         .girls-rotation { width: 100%; margin-bottom: 30px;}
         .girl-slide { text-align: center;  margin-top: 20px;}
         .girl-img {
@@ -294,6 +373,24 @@ useEffect(() => {
                 <div className="club-name">No Image</div>
               )}
             </div>
+            {venueInfo && (
+                <div
+                  className="is-reservation"
+                  style={{
+                    right: '22px',
+                    top: '90px',
+                    position: 'absolute',
+                    backgroundColor: venueInfo.is_reservation ? 'rgb(11 199 97)' : 'rgb(107 107 107)',
+                    color: '#fff',
+                    padding: '5px 7px',
+                    borderRadius: '3px',
+                    display: 'inline-block',
+                  }}
+                >
+                  {venueInfo.is_reservation ? '예약 가능' : '예약 불가능'}
+                </div>
+              )}
+
 
             <div className="club-name">{venueInfo?.name || 'Club One'}</div>
 
@@ -319,7 +416,7 @@ useEffect(() => {
                 )}
             </div>
             <div>
-              <span style={{color: '#858585'}}><CreditCard size={14}/> Price: </span> $ {venueInfo?.price ||'-'}
+              <span style={{color: '#858585'}}><CreditCard size={14}/> Menu: </span> 
             </div>
           </div>
 
@@ -348,28 +445,56 @@ useEffect(() => {
           <div className="section-title">{get('DiscoverPage1.2')}</div>
           <RotationDiv interval={500000000} swipeThreshold={50} showIndicators={true}  pauseOnHover={true} className="girls-rotation">
             {topGirls.map((girl, index) => (
-              <div key={index} className="girl-slide">
+              <div key={index} className="girl-slide" style={{position: 'relative'}}>
                 {girl.image_url ? (
-                  <img src={girl.image_url} className="girl-img" alt="girl" />
+                  <div style={{position: 'relative'}}>
+                    <img src={girl.image_url} className="girl-img" alt="girl" />
+                    <div style={{
+                      position: 'absolute',
+                      top: '10px',
+                      right: '10px',
+                      backgroundColor: girl.availCnt > 0 ? 'rgb(11, 199, 97)' : 'rgb(107, 107, 107)',
+                      color: 'rgb(255, 255, 255)',
+                      padding: '3px 6px',
+                      borderRadius: '3px',
+                      fontSize: '11px',
+                    }}>
+                      {girl.availCnt > 0 ? '예약 가능' : '예약 마감'}
+                    </div>
+                  </div>
                 ) : (
-                  <ImagePlaceholder />
+                  <div style={{position: 'relative'}}>
+                    <ImagePlaceholder />
+                    <div style={{
+                      position: 'absolute',
+                      top: '10px',
+                      right: '10px',
+                      backgroundColor: girl.availCnt > 0 ? 'rgb(11, 199, 97)' : 'rgb(107, 107, 107)',
+                      color: 'rgb(255, 255, 255)',
+                      padding: '3px 6px',
+                      borderRadius: '3px',
+                      fontSize: '11px',
+                    }}>
+                      {girl.availCnt > 0 ? '예약 가능' : '예약 마감'}
+                    </div>
+                  </div>
                 )}
                 <div className="girl-name">{girl.displayName}</div>
-                {/* <button className="girl-detail-btn" onClick={() => handleDetail(girl)}>
-                  Staff Detail
-                </button> */}
-
+                
                 <SketchBtn
-                          type="text"
-                          className="sketch-button" size = 'small'
-                          variant = 'primary' style={{ width: '130px' , marginBottom: '20px'}}
-                          onClick={() => handleDetail(girl)}
-                        >{<HatchPattern opacity={0.8} />}
-                            {get('DiscoverPage1.3')}
-                        </SketchBtn>
+                  type="text"
+                  className="sketch-button" 
+                  size='small'
+                  variant='primary' 
+                  style={{ width: '130px', marginBottom: '20px'}}
+                  onClick={() => handleDetail(girl)}
+                >
+                  <HatchPattern opacity={0.8} />
+                  {get('DiscoverPage1.3')}
+                </SketchBtn>
               </div>
             ))}
-          </RotationDiv>
+            </RotationDiv>
             <div className={`reservation-footer ${showFooter ? '' : 'hidden'}`}>
               {<HatchPattern opacity={0.4} />}
               <div className="reservation-footer-content">
