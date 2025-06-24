@@ -200,6 +200,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
           showBack={true}
           onBack={handleBack}
           rightButtons={[]} className=""
+          style={{ display: 'none' }}
         />
 
       <div className="map-container">

@@ -821,9 +821,15 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
 
           <div className="top-sum">
             <div className="stars">{renderStars(venueInfo?.rating)}</div>
-            <div style={{ color: '#0072ff' }} onClick={() =>
-              navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId })
-            }>
+            <div 
+              style={{ 
+                color: reviewCount > 0 ? '#0072ff' : '#999999',
+                cursor: reviewCount > 0 ? 'pointer' : 'default'
+              }} 
+              onClick={reviewCount > 0 ? () =>
+                navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId })
+              : undefined}
+            >
               {get('nav.review.1')} <span className='reviewCnt'>{reviewCount}</span>{get('text.cnt.1')} {get('text.cnt.2')} >
             </div>
           </div>

@@ -203,7 +203,7 @@ function App() {
     <AuthProvider>
       <MsgProvider>
         <PopupProvider>
-          <Router basename="/">
+          <Router basename="/lsh">
             <AppRoutes />
             <GlobalPopupManager />
           </Router>
