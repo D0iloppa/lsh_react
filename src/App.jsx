@@ -595,7 +595,7 @@ function App() {
     <AuthProvider>
       <MsgProvider>
         <PopupProvider>
-          <Router basename="/lsh">
+          <Router basename={import.meta.env.BASE_URL}>
             <AppRoutes />
             <GlobalPopupManager />
           </Router>
