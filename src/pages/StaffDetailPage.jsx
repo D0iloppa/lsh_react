@@ -49,14 +49,23 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
             params: { staff_id: otherProps.staff_id }
           });
           
+        const apiData = Array.isArray(response) && response.length > 0 
+                  ? response[0] 
+                  : (response.data && Array.isArray(response.data) && response.data.length > 0)
+                    ? response.data[0]
+                    : {};
+
+
+                    console.log("apiData", apiData)
+
           // API 데이터와 기존 데이터 합치기
           const staffData = {
             ...otherProps,
-            ...response.data, // API에서 받은 완전한 데이터
+            ...apiData, // API에서 받은 완전한 데이터
           };
           
           setGirl(staffData);
-          console.log('API에서 받은 staff 데이터:', staffData);
+          //console.log('API에서 받은 staff 데이터:', staffData);
           
         } catch (error) {
           console.error('Staff 정보 로딩 실패:', error);

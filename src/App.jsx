@@ -167,18 +167,15 @@ const LeTantonSheriffPage = () => {
         .logo-section {
           display: flex;
           align-items: center;
-          gap: 1rem;
+          gap: 0.2rem;
         }
 
         .logo-icon {
           width: 40px;
           height: 40px;
-          border: 2px solid #333;
-          border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          background-color: white;
         }
 
         .logo-text {
@@ -287,6 +284,7 @@ const LeTantonSheriffPage = () => {
           font-size: 1.4rem;
           font-weight: bold;
           color: #333;
+          margin-top:1rem;
           margin-bottom: 1rem;
         }
 
@@ -310,7 +308,7 @@ const LeTantonSheriffPage = () => {
         .bottom-message {
           font-size: 1rem;
           color: #374151;
-          padding-left: 15rem;
+          padding-left: 19rem;
           margin-bottom: 2rem;
         }
 

@@ -29,6 +29,8 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [staffList, setStaffList] = useState([]);
   // 스크롤 이벤트용 별도 useEffect
+
+
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
@@ -119,7 +121,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
           params: { venue_id: venueId },
         });
         const staffList = res.data || [];
-        console.log("staffList", staffList)
+        //console.log("staffList", staffList)
         setStaffList(staffList);
         // 2. staff 리스트가 있을 때만 availCnt 호출
         if (staffList.length > 0) {
@@ -136,10 +138,10 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
                   params: { staff_id: girl.staff_id }
                 });
 
-                console.log(`=== Staff ${girl.staff_id} 전체 response 구조 확인 ===`);
-                console.log('response:', response);
-                console.log('response.data:', response.data);
-                console.log('response 키들:', Object.keys(response));
+                // console.log(`=== Staff ${girl.staff_id} 전체 response 구조 확인 ===`);
+                // console.log('response:', response);
+                // console.log('response.data:', response.data);
+                // console.log('response 키들:', Object.keys(response));
 
                 // ApiClient가 다른 구조일 수 있으니 여러 가능성 체크
                 let data = null;
@@ -169,6 +171,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
                 console.error(`Staff ${girl.staff_id} availCnt 로딩 실패:`, error);
                 availCnt = 0;
               }
+
 
               return {
                 ...girl,
@@ -850,11 +853,18 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
           <div className="section-title">{get('DiscoverPage1.2')}</div>
           <RotationDiv interval={500000000} swipeThreshold={50} showIndicators={true} pauseOnHover={true} className="girls-rotation">
             {staffList.map((girl, index) => {
+              // topGirls에서 같은 staff_id의 availCnt 찾기
+              const topGirlData = topGirls.find(topGirl => topGirl.staff_id === girl.staff_id);
+              const availCnt = topGirlData?.availCnt || 0;
+              console.log("availCnt", availCnt)
+
               // 나이 계산
               const birthYear = parseInt(girl.birth_year, 10);
               const currentYear = new Date().getFullYear();
               const age = birthYear ? currentYear - birthYear : '?';
               const displayName = `${girl.name} (${age})`;
+
+              console.log(`Girl ${index} - staff_id: ${girl.staff_id}, availCnt: ${availCnt}`);
 
               return (
                 <div key={index} className="girl-slide" style={{ position: 'relative' }}>
@@ -865,13 +875,13 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
                         position: 'absolute',
                         top: '10px',
                         right: '10px',
-                        backgroundColor: girl.availCnt > 0 ? 'rgb(11, 199, 97)' : 'rgb(107, 107, 107)',
+                        backgroundColor: availCnt > 0 ? 'rgb(11, 199, 97)' : 'rgb(107, 107, 107)',
                         color: 'rgb(255, 255, 255)',
                         padding: '3px 6px',
                         borderRadius: '3px',
                         fontSize: '11px',
                       }}>
-                        {girl.availCnt > 0 ? '예약 가능' : '예약 마감'}
+                        {availCnt > 0 ? '예약 가능' : '예약 마감'}
                       </div>
                     </div>
                   ) : (
@@ -881,13 +891,13 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
                         position: 'absolute',
                         top: '10px',
                         right: '10px',
-                        backgroundColor: girl.availCnt > 0 ? 'rgb(11, 199, 97)' : 'rgb(107, 107, 107)',
+                        backgroundColor: availCnt > 0 ? 'rgb(11, 199, 97)' : 'rgb(107, 107, 107)',
                         color: 'rgb(255, 255, 255)',
                         padding: '3px 6px',
                         borderRadius: '3px',
                         fontSize: '11px',
                       }}>
-                        {girl.availCnt > 0 ? '예약 가능' : '예약 마감'}
+                        {availCnt > 0 ? '예약 가능' : '예약 마감'}
                       </div>
                     </div>
                   )}
