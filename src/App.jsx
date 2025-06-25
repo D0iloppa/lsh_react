@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
 
-import { MsgProvider, useMsg  } from '@contexts/MsgContext';
+import { MsgProvider, useMsg } from '@contexts/MsgContext';
 
 import { AuthProvider, useAuth } from '@contexts/AuthContext';
 
@@ -27,6 +27,9 @@ import PrivacyView from '@components/Privacy';
 import MainApp from '@layout/MainApp';
 
 import Cocktail from '@components/CocktailIcon';
+import HatchPattern from '@components/HatchPattern';
+
+
 
 const AppRoutes = () => {
   const { isLoggedIn } = useAuth();
@@ -51,36 +54,36 @@ const AppRoutes = () => {
 
 
       {/* 1. 최초 진입 - 항상 WelcomePage */}
-      <Route 
-        path="/" 
-        element={<WelcomePage onComplete={handleWelcomeComplete} />} 
+      <Route
+        path="/"
+        element={<WelcomePage onComplete={handleWelcomeComplete} />}
       />
 
       {/* 2. 로그인 페이지 */}
-      <Route 
-        path="/login" 
+      <Route
+        path="/login"
         element={
           /*<LoginView />*/
           isLoggedIn ? <Navigate to="/main" replace /> : <LoginView />
-        } 
+        }
       />
 
 
       {/* 3. 회원가입 페이지 */}
-      <Route 
-        path="/register" 
+      <Route
+        path="/register"
         element={
-           <RegisterView />
-        } 
+          <RegisterView />
+        }
       />
 
       {/* 4. 메인 앱 (로그인 필요) */}
-      <Route 
-        path="/main" 
+      <Route
+        path="/main"
         element={
           /*<MainApp />*/
-          isLoggedIn ? <MainApp /> : <Navigate to="/login" replace /> 
-        } 
+          isLoggedIn ? <MainApp /> : <Navigate to="/login" replace />
+        }
       />
 
       {/* Terms 페이지 */}
@@ -96,30 +99,69 @@ const AppRoutes = () => {
 };
 
 
-import { ShieldCheck, Clock, Package, Globe, QrCode } from 'lucide-react';
-
+//import { ShieldCheck, Clock, Package, Globe, QrCode } from 'lucide-react';
+import { ShieldCheck, Clock, Gift , MessagesSquare, ShoppingBasket,  Package, Globe, QrCode } from 'lucide-react';
 
 const LeTantonSheriffPage = () => {
   return (
     <>
       <style jsx="true">{`
+
+         #root {
+          padding: 0;
+          margin: 0;
+        }
+
+        /* body도 함께 초기화하는 것이 좋음 */
+        body {
+          margin: 0;
+          padding: 0;
+        }
+
+
         .main-container {
-          max-width: 1200px;
           margin: 0 auto;
           background-color: white;
-          min-height: 100vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
-          padding: 1.5rem;
           line-height: 1.4;
+        }
+
+        .content-container{
+          padding:1.5rem;
+          background-color: white;
+          z-index:1
         }
 
         .header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 2rem;
-          padding-bottom: 0.8rem;
+          padding: 1.5rem;
+          padding-bottom: 1.0rem;
           border-bottom: 2px solid #e5e7eb;
+          position: relative;
+          background-color: #fafafa;
+        }
+
+        .header::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-image: 
+            url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23d1d5db' stroke-width='1' opacity='0.4'%3E%3Cpath d='M-10,-10 L70,70 M-5,-15 L65,65 M-15,-5 L65,75 M0,-20 L80,60 M-20,0 L60,80'/%3E%3C/g%3E%3C/svg%3E"),
+            url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23e5e7eb' stroke-width='0.8' opacity='0.3'%3E%3Cpath d='M-10,50 L50,-10 M-5,45 L45,-5 M0,40 L40,0 M5,45 L45,5 M10,50 L50,10'/%3E%3C/g%3E%3C/svg%3E");
+          background-size: 60px 60px, 40px 40px;
+          background-position: 0 0, 20px 20px;
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .header > * {
+          position: relative;
+          z-index: 2;
         }
 
         .logo-section {
@@ -136,6 +178,7 @@ const LeTantonSheriffPage = () => {
           display: flex;
           align-items: center;
           justify-content: center;
+          background-color: white;
         }
 
         .logo-text {
@@ -147,13 +190,16 @@ const LeTantonSheriffPage = () => {
         .subtitle {
           font-size: 1rem;
           color: #6b7280;
+          padding: 0.5rem 1rem;
+          /* background-color: rgba(255, 255, 255, 0.8);*/
+          border-radius: 4px;
         }
 
         .main-title {
           font-size: 2rem;
           font-weight: bold;
           color: #333;
-          margin-bottom: 0.8rem;
+          margin-bottom: 0.1rem;
         }
 
         .main-description {
@@ -172,7 +218,7 @@ const LeTantonSheriffPage = () => {
         .feature-item {
           display: flex;
           flex-direction: column;
-          gap: 0.8rem;
+          gap: 0;
         }
 
         .feature-header {
@@ -184,8 +230,6 @@ const LeTantonSheriffPage = () => {
         .feature-icon {
           width: 40px;
           height: 40px;
-          border: 2px solid #333;
-          border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -198,7 +242,7 @@ const LeTantonSheriffPage = () => {
         }
 
         .feature-content {
-          padding-left: 0.8rem;
+          padding-left: 3.4rem;
         }
 
         .feature-content p {
@@ -211,21 +255,19 @@ const LeTantonSheriffPage = () => {
           display: flex;
           align-items: center;
           gap: 2rem;
-          margin: 4rem 0;
-          padding: 2rem;
-          border: 2px solid #333;
-          border-radius: 8px;
+          margin: 1rem 0;
         }
 
         .qr-placeholder {
-          width: 150px;
-          height: 150px;
-          border: 2px solid #333;
+          width: 200px;
+          height: 200px;
           display: flex;
           align-items: center;
           justify-content: center;
           border-radius: 4px;
           position: relative;
+          border: 2px dashed #d1d5db;
+          background-color: #f9fafb;
         }
 
         .qr-placeholder::before {
@@ -235,7 +277,6 @@ const LeTantonSheriffPage = () => {
           left: 10px;
           right: 10px;
           bottom: 10px;
-          border: 1px solid #333;
         }
 
         .qr-content {
@@ -267,30 +308,57 @@ const LeTantonSheriffPage = () => {
         }
 
         .bottom-message {
-          text-align: center;
           font-size: 1rem;
           color: #374151;
-          margin: 2rem 0;
-          padding: 1.5rem;
-          border: 2px solid #333;
-          border-radius: 8px;
+          padding-left: 15rem;
+          margin-bottom: 2rem;
+        }
+
+        .dummy-space{
+          padding-top: 0.5rem;
+          padding-bottom: 0.5rem;
         }
 
         .footer {
-          margin-top: 2.5rem;
-          padding-top: 1.5rem;
+          padding: 1.5rem;
           border-top: 2px solid #e5e7eb;
           display: flex;
           justify-content: space-between;
           align-items: center;
           color: #6b7280;
           font-size: 0.85rem;
+          position: relative;
+          background-color: #fafafa;
+        }
+
+        .footer::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-image: 
+            url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23d1d5db' stroke-width='1' opacity='0.4'%3E%3Cpath d='M-10,-10 L70,70 M-5,-15 L65,65 M-15,-5 L65,75 M0,-20 L80,60 M-20,0 L60,80'/%3E%3C/g%3E%3C/svg%3E"),
+            url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23e5e7eb' stroke-width='0.8' opacity='0.3'%3E%3Cpath d='M-10,50 L50,-10 M-5,45 L45,-5 M0,40 L40,0 M5,45 L45,5 M10,50 L50,10'/%3E%3C/g%3E%3C/svg%3E");
+          background-size: 80px 80px, 50px 50px;
+          background-position: 0 0, 25px 25px;
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .footer > * {
+          position: relative;
+          z-index: 2;
         }
 
         .footer-contact {
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
+          padding: 0.5rem 1rem;
+          /* background-color: rgba(255, 255, 255, 0.8);*/
+          border-radius: 4px;
         }
 
         .footer-links {
@@ -309,6 +377,9 @@ const LeTantonSheriffPage = () => {
 
         .copyright {
           text-align: right;
+          padding: 0.5rem 1rem;
+          /* background-color: rgba(255, 255, 255, 0.8);*/ 
+          border-radius: 4px;
         }
 
         /* 반응형 */
@@ -343,107 +414,123 @@ const LeTantonSheriffPage = () => {
             flex-direction: column;
             gap: 0.5rem;
           }
+
+          .bottom-message {
+            padding-left: 0;
+          }
         }
       `}</style>
 
       <div className="main-container">
         {/* 헤더 */}
-        <div className="header">
-          <div className="logo-section">
-            <div className="logo-icon">
-              <Cocktail />
+        <div>
+          <div className="header">            
+            <div className="logo-section">
+              <div className="logo-icon">
+                <Cocktail />
+              </div>
+              <span className="logo-text">LeTanton Sheriff</span>
             </div>
-            <span className="logo-text">LeTanton Sheriff</span>
+            <div className="subtitle">
+              호치민 레탄톤의 프리미엄 나이트라이프 가이드
+            </div>
           </div>
-          <div className="subtitle">
-            호치민 레탄톤의 프리미엄 나이트라이프 가이드
-          </div>
-        </div>
 
-        {/* 메인 타이틀 */}
-        <div className="main-title">
-          모바일 앱에서만 제공되는 특별한 경험!
-        </div>
-        <div className="main-description">
-          지금 스마트폰으로 앱을 설치하고 모든 혜택을 누리세요.
-        </div>
-
-        {/* 서비스 핵심 가치 */}
-        <div style={{ marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem', color: '#333' }}>
-            서비스 핵심 가치
-          </h2>
+          {/* <HatchPattern opacity={0.8} />*/}
           
-          <div className="features-grid">
-            <div className="feature-item">
-              <div className="feature-header">
-                <div className="feature-icon">
-                  <ShieldCheck size={24} />
-                </div>
-                <div className="feature-title">안전한 예약 시스템</div>
-              </div>
-              <div className="feature-content">
-                <p>검증된 바와 스태프 정보</p>
-                <p>실시간 예약 확인 및 취급 서비스</p>
-              </div>
-            </div>
-
-            <div className="feature-item">
-              <div className="feature-header">
-                <div className="feature-icon">
-                  <Clock size={24} />
-                </div>
-                <div className="feature-title">실시간 세팅 지원</div>
-              </div>
-              <div className="feature-content">
-                <p>예약별 바/스태프별 차점 소등</p>
-                <p>반출시간 즉시 조절 가능</p>
-              </div>
-            </div>
-
-            <div className="feature-item">
-              <div className="feature-header">
-                <div className="feature-icon">
-                  <Package size={24} />
-                </div>
-                <div className="feature-title">회원 전용 혜택</div>
-              </div>
-              <div className="feature-content">
-                <p>프리미엄 회원 무제한 픽업 서비스</p>
-                <p>일반회원 회원 인기 및 우선 예약</p>
-              </div>
-            </div>
-
-            <div className="feature-item">
-              <div className="feature-header">
-                <div className="feature-icon">
-                  <Globe size={24} />
-                </div>
-                <div className="feature-title">현지화된 정보</div>
-              </div>
-              <div className="feature-content">
-                <p>레탄톤 지역 현황 정확한 정보</p>
-                <p>베트남어/영어/한국어 완벽 지원</p>
-              </div>
-            </div>
-          </div>
         </div>
+        
 
-        {/* QR 코드 섹션 */}
-        <div className="qr-section">
-          <div className="qr-placeholder">
-            <img src="/cdn/qr.png"></img>
+        <div className="content-container">
+
+          {/* 메인 타이틀 */}
+          <div className="main-title">
+            모바일에서만 제공되는 특별한 경험!
           </div>
-          <div className="qr-content">
-            <div className="qr-title">
-              QR 코드를 스캔하시면 모바일 웹 페이지로 이동합니다
+          <div className="main-description">
+            지금 스마트폰으로 레탄톤 보안관에 접속하고 모든 혜택을 누리세요.
+          </div>
+
+          {/* 서비스 핵심 가치 */}
+          <div style={{ marginBottom: '2rem' }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem', color: '#333' }}>
+              서비스 핵심 가치
+            </h2>
+
+            <div className="features-grid">
+              <div className="feature-item">
+                <div className="feature-header">
+                  <div className="feature-icon">
+                    <ShoppingBasket size={24} />
+                  </div>
+                  <div className="feature-title">안전한 예약 시스템</div>
+                </div>
+                <div className="feature-content">
+                  <p>검증된 바와 스탭 정보</p>
+                  <p>실시간 예약 확인 및 취급 서비스</p>
+                </div>
+              </div>
+
+              <div className="feature-item">
+                <div className="feature-header">
+                  <div className="feature-icon">
+                    <MessagesSquare size={24} />
+                  </div>
+                  <div className="feature-title">실시간 채팅 지원</div>
+                </div>
+                <div className="feature-content">
+                  <p>예약별 바/스탭과 직접 소통</p>
+                  <p>변경사항 즉시 조정 가능</p>
+                </div>
+              </div>
+
+              <div className="feature-item">
+                <div className="feature-header">
+                  <div className="feature-icon">
+                    <Gift size={24} />
+                  </div>
+                  <div className="feature-title">회원 전용 혜택</div>
+                </div>
+                <div className="feature-content">
+                  <p>프리미엄 회원 무제한 픽업 서비스</p>
+                  <p>일일권 회원 인기 바 우선 예약</p>
+                </div>
+              </div>
+
+              <div className="feature-item">
+                <div className="feature-header">
+                  <div className="feature-icon">
+                    <Globe size={24} />
+                  </div>
+                  <div className="feature-title">현지화된 정보</div>
+                </div>
+                <div className="feature-content">
+                  <p>레탄톤 지역 한정 정확한 정보</p>
+                  <p>베트남어/영어/한국어 완벽 지원</p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* 하단 메시지 */}
-        <div className="bottom-message">
-          모바일 앱에서는 더 빠른 예약, 실시간 알림, 위치 기반 추천 등 더 많은 기능을 이용할 수 있습니다!
+          {/* QR 코드 섹션 */}
+          <div className="qr-section">
+            <div className="qr-placeholder">
+              <img src="/cdn/qr.png" style={{"width": "100%"}}></img>
+            </div>
+            <div className="qr-content">
+              <div className="qr-title">
+                QR 코드를 스캔하시면 모바일 웹 페이지로 이동합니다
+                <div className="dummy-space"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* 하단 메시지 */}
+          <div className="bottom-message">
+            모바일에서는 더 빠른 예약, 실시간 알림, 위치 기반 추천 등 더 많은 기능을 이용할 수 있습니다!
+          </div>
+
+
         </div>
 
         {/* 푸터 */}
@@ -474,7 +561,7 @@ function App() {
       // 메타 태그로 확대 비활성화
       const metaViewport = document.querySelector('meta[name="viewport"]');
       if (metaViewport) {
-        metaViewport.setAttribute('content', 
+        metaViewport.setAttribute('content',
           'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'
         );
       } else {
@@ -528,7 +615,7 @@ function App() {
       document.addEventListener('touchstart', preventZoomGestures, { passive: false });
       document.addEventListener('touchmove', preventZoomGestures, { passive: false });
       document.addEventListener('gesturestart', preventDoubleTapZoom, { passive: false });
-      
+
       return () => {
         document.removeEventListener('touchstart', preventZoomGestures);
         document.removeEventListener('touchmove', preventZoomGestures);
@@ -540,20 +627,20 @@ function App() {
     const disableBackButton = () => {
       // 브라우저 히스토리에 현재 페이지 추가
       window.history.pushState(null, '', window.location.href);
-      
+
       const handlePopState = (event) => {
         // 뒤로가기 시도 시 현재 페이지로 다시 이동
         window.history.pushState(null, '', window.location.href);
-        
+
         // 사용자에게 알림 (선택사항)
         console.log('뒤로가기가 비활성화되어 있습니다. 앱 내 뒤로가기 버튼을 사용해주세요.');
-        
+
         // 또는 경고창 표시 (선택사항)
         // alert('뒤로가기가 비활성화되어 있습니다.');
       };
 
       window.addEventListener('popstate', handlePopState);
-      
+
       return () => {
         window.removeEventListener('popstate', handlePopState);
       };
@@ -585,24 +672,24 @@ function App() {
     */}
 
     return (
-      <LeTantonSheriffPage/>
+      <LeTantonSheriffPage />
     )
   }
 
   return (
     <OverlayProvider>
-    {/* 기존 Provider들 */}
-    <AuthProvider>
-      <MsgProvider>
-        <PopupProvider>
-          <Router basename={import.meta.env.BASE_URL}>
-            <AppRoutes />
-            <GlobalPopupManager />
-          </Router>
-        </PopupProvider>
-      </MsgProvider>
-    </AuthProvider>
-  </OverlayProvider>
+      {/* 기존 Provider들 */}
+      <AuthProvider>
+        <MsgProvider>
+          <PopupProvider>
+            <Router basename={import.meta.env.BASE_URL}>
+              <AppRoutes />
+              <GlobalPopupManager />
+            </Router>
+          </PopupProvider>
+        </MsgProvider>
+      </AuthProvider>
+    </OverlayProvider>
   );
 }
 

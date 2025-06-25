@@ -598,7 +598,7 @@ const ViewReviewPage = ({
               </SketchDiv>
             ))
           ) : (
-            <div style={{ textAlign: 'center', color: 'gray' }}>리뷰가 없습니다.</div>
+            <div style={{ textAlign: 'center', color: 'gray' }}>{get('Review3.5')}</div>
           )}
         </div>
       </div>

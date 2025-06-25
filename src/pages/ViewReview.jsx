@@ -77,7 +77,7 @@ const ViewReviewPage = ({
     // staff인 경우 STAFFDETAIL 페이지로 이동
     navigateToPageWithData && navigateToPageWithData(PAGES.STAFFDETAIL, {
       staff_id: review.target_id,
-      
+      fromReview: true
     });
   }
 };

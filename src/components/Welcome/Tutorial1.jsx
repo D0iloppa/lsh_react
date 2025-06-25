@@ -45,7 +45,6 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
   return (
     <>
-      {/* 초기 안내 이미지 오버레이 */}
       
       {/* 메인 튜토리얼 내용 */}
       <div className="tutorial-container max-w-md mx-auto bg-white min-h-screen p-6">
@@ -71,7 +70,7 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
         {/* 메인 이미지 */}
         <div className="mb-6">
-          <ImagePlaceholder  src={"/cdn/tuto-1.png"}  style={{ border: '1px solid #333', borderRadius: '5px',height: '465px'}}/>
+          <ImagePlaceholder  src={"/cdn/tuto-1.png"}  style={{opacity: '0.8' ,border: '1px solid #333', borderRadius: '5px',height: '465px'}}/>
         </div>
 
 

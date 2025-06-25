@@ -182,7 +182,7 @@
 }
 
 /* 스와이프 힌트 애니메이션 (선택사항) */
-.tutorial-container::before {
+/* .tutorial-container::before {
       min-height: 97vh;
   content: '';
   position: absolute;
@@ -196,7 +196,7 @@
   z-index: 1000;
   opacity: 0;
   transition: opacity 0.3s ease;
-}
+} */
 
 .tutorial-swipe-enabled::before {
   opacity: 1;

@@ -16,7 +16,8 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   const [partySize, setPartySize] = useState('');
   const [availCnt, setAvailCnt] = useState(0);
   const [isLoadingAvailCnt, setIsLoadingAvailCnt] = useState(false);
-  const girl = otherProps || {};
+  const [loading, setLoading] = useState(false);
+  const [girl, setGirl] = useState(otherProps || {});
   
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const getAgeFromBirthYear = (birthYear) => {
@@ -36,6 +37,44 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
       staff:girl
     })
   }
+
+   useEffect(() => {
+    const fetchStaffData = async () => {
+      if (otherProps.fromReview && otherProps.staff_id) {
+        setLoading(true);
+        try {
+          console.log('Review에서 온 경우 - API 호출:', otherProps.staff_id);
+          
+          const response = await ApiClient.get('/api/getStaffProfile', {
+            params: { staff_id: otherProps.staff_id }
+          });
+          
+          // API 데이터와 기존 데이터 합치기
+          const staffData = {
+            ...otherProps,
+            ...response.data, // API에서 받은 완전한 데이터
+          };
+          
+          setGirl(staffData);
+          console.log('API에서 받은 staff 데이터:', staffData);
+          
+        } catch (error) {
+          console.error('Staff 정보 로딩 실패:', error);
+          // 실패하면 기본 데이터 사용
+          setGirl(otherProps);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        // fromReview가 아니면 기존 데이터 사용
+        console.log('기존 방식 - otherProps 사용');
+        setGirl(otherProps);
+      }
+    };
+
+    fetchStaffData();
+  }, [otherProps.fromReview, otherProps.staff_id]);
+
     // availCnt 가져오기
   useEffect(() => {
     const fetchStaffAvailCnt = async () => {
