@@ -87,6 +87,7 @@ export default function SketchTextarea({
           font-size: 0.85rem;
           margin-top: 4px;
           transform: rotate(-0.1deg);
+          font-family: BMHanna, "Comic Sans MS", cursive, sans-serif;
         }
 
         @media (max-width: 480px) {

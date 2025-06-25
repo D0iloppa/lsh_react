@@ -645,11 +645,11 @@ function App() {
     };
 
     const cleanupZoom = disableZoom();
-    const cleanupBack = disableBackButton();
+    // const cleanupBack = disableBackButton();
 
     return () => {
       cleanupZoom && cleanupZoom();
-      cleanupBack && cleanupBack();
+      // cleanupBack && cleanupBack();
     };
   }, []);
 

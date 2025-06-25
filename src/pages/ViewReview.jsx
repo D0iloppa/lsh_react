@@ -572,7 +572,7 @@ const ViewReviewPage = ({
 
                       <div className="user-info"></div>
                       <div style={{ 'display': 'flex' }}>
-                        <span style={{ marginRight: '5px', fontSize: '0.95rem' }}>작성자 :</span>
+                        <span style={{ marginRight: '5px', fontSize: '0.95rem' }}>{get('COMMON_AUTHOR') || '작성자'} :</span>
                         <h3 className="user-name">{review.user_name}</h3>
                       </div>
                       <p className="review-meta">
@@ -631,7 +631,7 @@ const ViewReviewPage = ({
                         transition: 'all 0.2s ease'
                       }}
                   >
-                    상세보기
+                    {get('COMMON_VIEW_DETAILS') || '상세보기'}
                   </SketchBtn>
 </div>
 
@@ -639,7 +639,7 @@ const ViewReviewPage = ({
               </SketchDiv>
             ))
           ) : (
-            <div style={{ textAlign: 'center', color: 'gray' }}>리뷰가 없습니다.</div>
+            <div style={{ textAlign: 'center', color: 'gray' }}>{get('Review3.5')}</div>
           )}
         </div>
       </div>

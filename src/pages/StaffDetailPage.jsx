@@ -39,50 +39,59 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   }
 
    useEffect(() => {
-    const fetchStaffData = async () => {
-      if (otherProps.fromReview && otherProps.staff_id) {
-        setLoading(true);
-        try {
-          console.log('Review에서 온 경우 - API 호출:', otherProps.staff_id);
-          
-          const response = await ApiClient.get('/api/getStaffProfile', {
-            params: { staff_id: otherProps.staff_id }
-          });
-          
-        const apiData = Array.isArray(response) && response.length > 0 
-                  ? response[0] 
-                  : (response.data && Array.isArray(response.data) && response.data.length > 0)
-                    ? response.data[0]
-                    : {};
+  const fetchStaffData = async () => {
+    if (otherProps.fromReview && otherProps.staff_id) {
+      setLoading(true);
+      try {
+        //console.log('Review에서 온 경우 - API 호출:', otherProps.staff_id);
+        
+        const response = await ApiClient.get('/api/getStaffProfile', {
+          params: { staff_id: otherProps.staff_id }
+        });
+        
+        //console.log('API response:', response);
+        
+        // 배열 전체를 데이터로 사용
+        const apiDataArray = Array.isArray(response) 
+          ? response 
+          : (response.data && Array.isArray(response.data))
+            ? response.data
+            : [];
 
+        //console.log("apiDataArray", apiDataArray);
 
-                    console.log("apiData", apiData)
-
-          // API 데이터와 기존 데이터 합치기
-          const staffData = {
-            ...otherProps,
-            ...apiData, // API에서 받은 완전한 데이터
-          };
-          
-          setGirl(staffData);
-          //console.log('API에서 받은 staff 데이터:', staffData);
-          
-        } catch (error) {
-          console.error('Staff 정보 로딩 실패:', error);
-          // 실패하면 기본 데이터 사용
-          setGirl(otherProps);
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        // fromReview가 아니면 기존 데이터 사용
-        console.log('기존 방식 - otherProps 사용');
+        // 첫 번째 객체에서 공통 정보 추출
+        const basicInfo = apiDataArray.length > 0 ? apiDataArray[0] : {};
+        
+        // 모든 이미지 URL들 추출
+        const images = apiDataArray.map(item => item.image_url).filter(Boolean);
+        
+        // API 데이터와 기존 데이터 합치기
+        const staffData = {
+          ...otherProps,
+          ...basicInfo, // 기본 정보
+          images: images, // 모든 이미지들
+          image_url: images[0] || basicInfo.image_url, // 대표 이미지
+        };
+        
+        setGirl(staffData);
+        //console.log('최종 staff 데이터:', staffData);
+        
+      } catch (error) {
+        console.error('Staff 정보 로딩 실패:', error);
         setGirl(otherProps);
+      } finally {
+        setLoading(false);
       }
-    };
+    } else {
+      //console.log('기존 방식 - otherProps 사용');
+      setGirl(otherProps);
+    }
+  };
 
-    fetchStaffData();
-  }, [otherProps.fromReview, otherProps.staff_id]);
+  fetchStaffData();
+}, [otherProps.fromReview, otherProps.staff_id]);
+
 
     // availCnt 가져오기
   useEffect(() => {
@@ -96,7 +105,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
           params: { staff_id: girl.staff_id }
         });
         
-        console.log(`Staff ${girl.staff_id} availCnt response:`, response);
+        //console.log(`Staff ${girl.staff_id} availCnt response:`, response);
         
         // ApiClient는 response 자체가 데이터 배열
         if (Array.isArray(response) && response.length > 0) {
@@ -119,7 +128,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   useEffect(() => {
     window.scrollTo(0, 0);
      if (messages && Object.keys(messages).length > 0) {
-      console.log('✅ Messages loaded:', messages);
+      //console.log('✅ Messages loaded:', messages);
       // setLanguage('en'); // 기본 언어 설정
       console.log('Current language set to:', currentLang);
       window.scrollTo(0, 0);
@@ -274,9 +283,11 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
             {(() => {
               const images = girl.images || [girl.image_url];
               const hasMultipleImages = images.length > 1;
-              
+
+              //console.log("images", images, images.length)
+
               // 이미지가 1개면 같은 이미지를 3-4번 복제
-              const slidesToShow = hasMultipleImages ? images : Array(4).fill(images[0]);
+              const slidesToShow = hasMultipleImages ? images : Array(3).fill(images[0]);
               
               return slidesToShow.map((imageUrl, index) => (
                 <div key={index} className="profile-slide">

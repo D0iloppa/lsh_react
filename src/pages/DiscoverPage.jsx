@@ -770,7 +770,10 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
                 display: 'inline-block',
               }}
             >
-              {venueInfo.is_reservation ? '예약 가능' : '예약 마감'}
+              {venueInfo.is_reservation ? 
+                get('VENUE_RESERVATION_AVAILABLE') || '예약 가능' : 
+                get('VENUE_RESERVATION_CLOSED') || '예약 마감'
+              }
             </div>
           )}
 
@@ -807,7 +810,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
                   onClick={() => openMenuOverlay(venueInfo.menuList)}
                   style={{
                     marginLeft: '8px',
-                    padding: '4px 8px',
+                    padding: '2px 8px',
                     fontSize: '12px',
                     backgroundColor: '#f3f4f6',
                     border: '1px solid #d1d5db',
@@ -816,7 +819,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
                     color: '#374151'
                   }}
                 >
-                  메뉴보기
+                  {get('VENUE_VIEW_MENU') || '메뉴보기'}
                 </button>
               )}
             </div>
@@ -856,7 +859,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
               // topGirls에서 같은 staff_id의 availCnt 찾기
               const topGirlData = topGirls.find(topGirl => topGirl.staff_id === girl.staff_id);
               const availCnt = topGirlData?.availCnt || 0;
-              console.log("availCnt", availCnt)
+              //console.log("availCnt", availCnt)
 
               // 나이 계산
               const birthYear = parseInt(girl.birth_year, 10);
@@ -881,7 +884,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
                         borderRadius: '3px',
                         fontSize: '11px',
                       }}>
-                        {availCnt > 0 ? '예약 가능' : '예약 마감'}
+                        {availCnt > 0 ? get('VENUE_RESERVATION_AVAILABLE') : get('VENUE_RESERVATION_CLOSED')}
                       </div>
                     </div>
                   ) : (
@@ -897,7 +900,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
                         borderRadius: '3px',
                         fontSize: '11px',
                       }}>
-                        {availCnt > 0 ? '예약 가능' : '예약 마감'}
+                        {availCnt > 0 ? get('VENUE_RESERVATION_AVAILABLE') : get('VENUE_RESERVATION_CLOSED')}
                       </div>
                     </div>
                   )}

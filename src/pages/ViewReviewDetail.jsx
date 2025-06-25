@@ -276,7 +276,6 @@ const ViewReviewPage = ({
             width: 100%;
           }
 
-
         .map-filter-selects::-webkit-scrollbar { display: none; }
 
         .venue-section {
@@ -554,7 +553,7 @@ const ViewReviewPage = ({
 
                       <div className="user-info"></div>
                       <div style={{ 'display': 'flex' }}>
-                        <span style={{ marginRight: '5px', fontSize: '0.95rem' }}>작성자 :</span>
+                        <span style={{ marginRight: '5px', fontSize: '0.95rem' }}>{get('COMMON_AUTHOR') || '작성자'} :</span>
                         <h3 className="user-name">{review.user_name}</h3>
                       </div>
                       <p className="review-meta">

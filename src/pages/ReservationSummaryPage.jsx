@@ -41,6 +41,9 @@ const ReserveSummaryPage = ({
   
   // 핸들러 추가
   const handleAgreementChange = (key, checked) => {
+
+    console.log(agreements, checked);
+
     setAgreements(prev => ({
       ...prev,
       [key]: checked
@@ -165,7 +168,8 @@ const ReserveSummaryPage = ({
       return;
     }
 
-    if (!agreementChecked) {
+    console.log(agreements.policyTerms);
+    if (!agreements.policyTerms) {
       alert(get('Agreement.Required') || '이용 정책에 동의해주세요.');
       return;
     }

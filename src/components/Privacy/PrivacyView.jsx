@@ -164,7 +164,7 @@ export default function TermsView() {
           {/* 스크롤 안내 메시지 */}
           {isAgreementPage && !hasScrolledToBottom && (
             <div className="scroll-indicator">
-              ↓ 끝까지 스크롤해주세요
+               {get('scrollToEnd')}
             </div>
           )}
 
@@ -177,7 +177,7 @@ export default function TermsView() {
                   style={{marginBottom: '8px'}}
                 >
                   <HatchPattern opacity={0.8} />
-                  동의하지 않음
+                  {get('Btn.disagree')}
                 </SketchBtn>
                 
                 <SketchBtn
@@ -187,7 +187,7 @@ export default function TermsView() {
                   disabled={!hasScrolledToBottom}
                 >
                   <HatchPattern opacity={hasScrolledToBottom ? 0.8 : 0.3} />
-                  {hasScrolledToBottom ? '동의합니다' : '약관을 끝까지 읽어주세요'}
+                  {hasScrolledToBottom ? get('Btn.agree') : get('Btn.readTermsToEnd')}
                 </SketchBtn>
               </>
             ) : (
