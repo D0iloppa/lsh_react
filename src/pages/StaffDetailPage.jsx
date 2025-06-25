@@ -7,6 +7,7 @@ import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import '@components/SketchComponents.css';
 import LoadingScreen from '@components/LoadingScreen';
+import ApiClient from '@utils/ApiClient';
 
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
@@ -32,6 +33,31 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
       id: girl.staff_id || 123,
     })
   }
+
+  
+  const toggleFavorite = async (spotTmp) => {
+    const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+    setHotspots((prev) =>
+      prev.map((spot) =>
+        spot.id === spotTmp.id ? { ...spot, isFavorite: !spot.isFavorite } : spot
+      )
+    );
+
+    const isNowFavorite = !spotTmp.isFavorite;
+
+    try {
+      const url = `${API_HOST}/api/${isNowFavorite ? 'insertFavorite' : 'deleteFavorite'}`;
+      await axios.get(url, {
+        params: {
+          user_id: user?.user_id || 1,
+          target_type: 'staff',
+          target_id: spotTmp.id,
+        },
+      });
+    } catch (error) {
+      console.error('API 호출 실패:', error);
+    }
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);

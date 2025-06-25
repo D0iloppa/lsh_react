@@ -24,14 +24,18 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
     }
   }, [messages, currentLang]);
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // 개발용
+  const [email, setEmail] = useState('kdi3939@naver.com');
+  const [password, setPassword] = useState('shffks');
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   
+  const [loginType, setLoginType] = useState('manager');
+  // setStatus가 props로 전달된다고 가정 (없으면 주석처리)
+  // const { setStatus } = props;
 
-  const { login, loading } = useAuth(); // ← AuthContext 사용
+  const { login, loading, setLoginType: setAuthLoginType } = useAuth(); // ← AuthContext의 setLoginType 추가
   const navigate = useNavigate();
 
   const onSubmit = async (e) => {
@@ -40,13 +44,22 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
     setErrors({});
     setMessage('');
 
-    const result = await login(email, password);
+    const result = await login(email, password, loginType);
     
     if (result.success) {
       setMessage(result.message);
-      // 로그인 성공 시 메인 페이지로 이동
+      // AuthContext에 loginType 저장
+      setAuthLoginType(loginType);
+      
+      // 로그인 성공 시 loginType에 따라 다른 페이지로 이동
       setTimeout(() => {
-        navigate('/main');
+        if (loginType === 'manager') {
+          navigate('/manager');
+        } else if (loginType === 'staff') {
+          navigate('/staff');
+        } else {
+          navigate('/main'); // 기본값
+        }
       }, 300); // 0.3초 후 이동 (성공 메시지 표시용)
     } else {
       setErrors(result.errors);
@@ -108,6 +121,38 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
           error={errors.password}
           variant="password"
         />
+
+        {/* Login Type Radio Buttons */}
+        <div style={{ margin: '1rem 0', textAlign: 'center' }}>
+          <label>
+            <input
+              type="radio"
+              name="loginType"
+              value="manager"
+              checked={loginType === 'manager'}
+              onChange={() => {
+                setLoginType('manager');
+                setAuthLoginType('manager'); // AuthContext에도 즉시 저장
+                if (typeof setStatus === 'function') setStatus({ loginType: 'manager' });
+              }}
+            />
+            MANAGER
+          </label>
+          <label style={{ marginLeft: '1rem' }}>
+            <input
+              type="radio"
+              name="loginType"
+              value="staff"
+              checked={loginType === 'staff'}
+              onChange={() => {
+                setLoginType('staff');
+                setAuthLoginType('staff'); // AuthContext에도 즉시 저장
+                if (typeof setStatus === 'function') setStatus({ loginType: 'staff' });
+              }}
+            />
+            STAFF
+          </label>
+        </div>
 
         {/* Login Button */}
         <SketchBtn

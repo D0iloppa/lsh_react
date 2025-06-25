@@ -16,10 +16,14 @@ export const AuthProvider = ({ children }) => {
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
+  const [loginType, setLoginType] = useState(() => {
+    return localStorage.getItem('loginType') || null;
+  });
+
   const [loading, setLoading] = useState(false);
 
   // 로그인 함수 (Login 컴포넌트 로직 재활용)
-    const login = async (email, password) => {
+    const login = async (email, password, loginTypeArg) => {
       try {
         setLoading(true);
         
@@ -40,9 +44,11 @@ export const AuthProvider = ({ children }) => {
 
           localStorage.setItem('isLoggedIn', 'true');
           localStorage.setItem('user', JSON.stringify(result.user));
+          localStorage.setItem('loginType', loginTypeArg);
 
           setIsLoggedIn(true);
           setUser(result.user);
+          setLoginType(loginTypeArg);
           console.log('로그인 성공:', result.user);
         }
         
@@ -75,8 +81,10 @@ export const AuthProvider = ({ children }) => {
         // 성공, 실패 상관없이 실행
         setIsLoggedIn(false);
         setUser(null);
+        setLoginType(null);
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('user');
+        localStorage.removeItem('loginType');
       }
   };
 
@@ -85,7 +93,9 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     login,
-    logout
+    logout,
+    loginType,
+    setLoginType
   };
 
   return (

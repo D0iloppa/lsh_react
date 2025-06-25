@@ -1,16 +1,39 @@
 // pageHook.js
-import { useState } from 'react';
-import { PAGES, DEFAULT_PAGE } from '../config/pages.config';
+import { useState, useEffect } from 'react';
+import { PAGES, DEFAULT_MANAGER_PAGE, DEFAULT_STAFF_PAGE } from '../config/pages.config';
+import { useAuth } from '@contexts/AuthContext';
 
 const usePageNavigation = () => {
-    const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE);
+    const { loginType } = useAuth();
+    
+    // loginType에 따라 기본 페이지 결정
+    const getDefaultPage = () => {
+        if (loginType === 'manager') {
+            return DEFAULT_MANAGER_PAGE;
+        } else if (loginType === 'staff') {
+            return DEFAULT_STAFF_PAGE;
+        }
+        return PAGES.HOME; // 기본값
+    };
+
+    const [currentPage, setCurrentPage] = useState(getDefaultPage());
     const [pageDataStack, setPageDataStack] = useState([]);
-    const [pageHistory, setPageHistory] = useState([DEFAULT_PAGE]);
+    const [pageHistory, setPageHistory] = useState([getDefaultPage()]);
+
+    // loginType이 변경될 때 기본 페이지 업데이트
+    useEffect(() => {
+        const defaultPage = getDefaultPage();
+        setCurrentPage(defaultPage);
+        setPageHistory([defaultPage]);
+        setPageDataStack([]);
+    }, [loginType]);
 
     // 일반 페이지 이동
     const navigateToPage = (page) => {
         setCurrentPage(page);
         setPageHistory(prev => [...prev, page]);
+        // data clear
+        setPageDataStack(prev => [...prev, { page, data: null }]);
     };
 
     // 데이터와 함께 페이지 이동

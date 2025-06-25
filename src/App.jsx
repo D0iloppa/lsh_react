@@ -1,11 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
 
-
-import { MsgProvider, useMsg  } from '@contexts/MsgContext';
+import { MsgProvider, useMsg } from '@contexts/MsgContext';
 
 import { AuthProvider, useAuth } from '@contexts/AuthContext';
+
+import { PopupProvider } from '@contexts/PopupContext';
+import GlobalPopupManager from '@components/GlobalPopupManager';
+
+
+import { OverlayProvider } from 'overlay-kit';
+
 
 import PageView from './debug/PageView'
 
@@ -18,6 +25,10 @@ import TermsView from '@components/Terms';
 import PrivacyView from '@components/Privacy';
 
 import MainApp from '@layout/MainApp';
+import StaffApp from '@layout/StaffApp';
+
+import Cocktail from '@components/CocktailIcon';
+import HatchPattern from '@components/HatchPattern';
 
 const AppRoutes = () => {
   const { isLoggedIn } = useAuth();
@@ -65,12 +76,19 @@ const AppRoutes = () => {
         } 
       />
 
-      {/* 4. 메인 앱 (로그인 필요) */}
+      {/* 4. 매니저 메인 앱 (로그인 필요) */}
       <Route 
-        path="/main" 
+        path="/manager" 
         element={
-          <MainApp />
-          /* isLoggedIn ? <MainApp /> : <Navigate to="/login" replace /> */
+          isLoggedIn ? <MainApp /> : <Navigate to="/login" replace />
+        } 
+      />
+
+      {/* 5. 스태프 메인 앱 (로그인 필요) */}
+      <Route 
+        path="/staff" 
+        element={
+          isLoggedIn ? <StaffApp /> : <Navigate to="/login" replace />
         } 
       />
 
@@ -88,13 +106,19 @@ const AppRoutes = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <MsgProvider>  {/* 👈 여기에 추가! */}
-        <Router basename="/lsh_staff">
-          <AppRoutes />
-        </Router>
-      </MsgProvider>
-    </AuthProvider>
+    <OverlayProvider>
+      {/* 기존 Provider들 */}
+      <AuthProvider>
+        <MsgProvider>
+          <PopupProvider>
+            <Router basename={import.meta.env.BASE_URL}>
+              <AppRoutes />
+              <GlobalPopupManager />
+            </Router>
+          </PopupProvider>
+        </MsgProvider>
+      </AuthProvider>
+    </OverlayProvider>
   );
 }
 

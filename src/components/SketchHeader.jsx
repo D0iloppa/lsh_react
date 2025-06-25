@@ -244,6 +244,21 @@ const SketchHeader = ({
         <div className="right-section">
           <div className="right-buttons">
             {rightButtons && rightButtons.map((btn, idx) => {
+              // 객체인 경우 (icon, onClick 등이 있는 경우)
+              if (typeof btn === 'object' && btn !== null && !React.isValidElement(btn)) {
+                const IconComponent = btn.icon;
+                return (
+                  <button 
+                    key={idx} 
+                    className="header-button"
+                    onClick={btn.onClick}
+                    title={btn.title || ''}
+                  >
+                    {IconComponent && <IconComponent size={16} />}
+                    {btn.label && <span style={{ marginLeft: btn.icon ? '4px' : '0' }}>{btn.label}</span>}
+                  </button>
+                );
+              }
               // 만약 버튼이 단순 문자열이나 아이콘이라면 header-button으로 감싸기
               if (typeof btn === 'string' || (React.isValidElement(btn) && !btn.props.className?.includes('sketch'))) {
                 return (
