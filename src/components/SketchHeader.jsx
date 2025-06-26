@@ -118,6 +118,10 @@ const SketchHeader = ({
           line-height: 1.2;
           transform: rotate(-0.1deg);
           text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.05);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 100%;
         }
 
         .right-section {
@@ -237,7 +241,10 @@ const SketchHeader = ({
 
         {/* 가운데: 타이틀 */}
         <div className="center-section">
-          <h1 className="page-title">{title}</h1><span style={{ fontSize: '20px',  marginLeft: '5px', lineHeight: '1.5', display:'none' }}>🔞</span>
+          <h1 className="page-title">
+            {Array.isArray(title) ? title : title}
+          </h1>
+          <span style={{ fontSize: '20px',  marginLeft: '5px', lineHeight: '1.5', display:'none' }}>🔞</span>
         </div>
 
         {/* 오른쪽: 버튼들 (옵션) */}

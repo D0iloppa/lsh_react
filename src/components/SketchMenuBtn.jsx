@@ -45,7 +45,7 @@ const SketchMenuBtn = ({
         .menu-name {
           flex: 1;
           font-weight: 500;
-          font-size: 1rem;
+          font-size: 0.9rem;
           color: #374151;
 
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;

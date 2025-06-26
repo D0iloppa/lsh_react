@@ -73,8 +73,8 @@ const MainApp = () => {
     // 네비게이션 메뉴들
     const navigationItems = [
         { id: PAGES.MANAGER_DASHBOARD, icon: Home, label: get('Footer1.3') || '대시보드' },
-        { id: PAGES.SCHEDULE_MANAGEMENT, icon: Calendar, label: get('Schedule1.1') || '스케줄관리' },
-        { id: PAGES.MANAGER_ACCOUNT, icon: User, label: get('Menu1.3') || '계정' }
+        { id: PAGES.RESERVATION_MANAGEMENT, icon: Calendar, label: get('Mng.menu.2') || '예약관리' },
+        { id: PAGES.MANAGER_ACCOUNT, icon: User, label: get('Mng.menu.3') || '계정' }
     ];
 
     return (

@@ -13,6 +13,7 @@ import '@components/SketchComponents.css';
 import './Welcome.css';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
+import ImagePlaceholder from '@components/ImagePlaceholder';
 
 const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
@@ -140,7 +141,7 @@ const CocktailIcon = () => (
                <div className="logo-container">
                 <CocktailIcon />
                 <h1 className="sketch-title sketch-title--large">LeTanTon Sheriff</h1>
-                <span style={{ fontSize: '20px',  marginLeft: '-8px' }}>🔞</span>
+                <span style={{ fontSize: '20px',  marginLeft: '-8px' }}><ImagePlaceholder src="/cdn/age.png" style={{lineHeight: '0.5', marginLeft: '5px', width:'26px'}}/></span>
               </div>
               </div>
               
