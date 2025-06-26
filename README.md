@@ -47,10 +47,15 @@ git clone https://github.com/D0iloppa/lsh_react.git
 cd lsh_react
 ```
 
-### 2. VSCode에서 Dev Container로 열기
+### 2. Docker에서 개발모드 live로 열기
+```
+# node 런타임
+docker exec -it lsh_react /bin/bash
 
-VSCode에서 .devcontainer/ 포함된 폴더를 열고
-Reopen in Container 선택
+# 컨테이너 진입후, 기동
+./dev_start.sh
+
+```
 
 ### 3. 개발 서버 실행
 ```
