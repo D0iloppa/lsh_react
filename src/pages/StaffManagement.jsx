@@ -95,7 +95,7 @@ const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           onBack={goBack}
         />
         <div className="add-btn-row">
-          <SketchBtn variant="primary" size="small">Add Staff</SketchBtn>
+          <SketchBtn variant="primary" size="normal">+ Add Staff</SketchBtn>
         </div>
         <div className="staff-list">
           {mockStaffs.map(staff => (

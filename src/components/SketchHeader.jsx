@@ -26,7 +26,6 @@ const SketchHeader = ({
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 1rem;
           min-height: 3.5rem;
           box-sizing: border-box;
           border-top-left-radius: 15px 8px;

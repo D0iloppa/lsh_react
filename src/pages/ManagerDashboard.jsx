@@ -51,49 +51,50 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       id: 3,
       icon: <ClipboardList size={24} />,
       name: 'Staff Schedule',
-      page: PAGES.SCHEDULE_ADD,
-      menuEvent: () => {}
+      page: PAGES.STAFF_SCHEDULE,
+      menuEvent: () => { navigateToPage(PAGES.STAFF_SCHEDULE); }
     },
     { 
       id: 4, 
       icon: <Tag size={24} />, 
       name: 'Promotions', 
-      menuEvent: () => {} 
+      page: PAGES.PROMOTION_MANAGEMENT,
+      menuEvent: () => { navigateToPage(PAGES.PROMOTION_MANAGEMENT); }
     },
     { 
       id: 5, 
       icon: <Star size={24} />, 
       name: 'Reviews', 
-      menuEvent: () => {} 
+      page: PAGES.REVIEW_MANAGEMENT,
+      menuEvent: () => { navigateToPage(PAGES.REVIEW_MANAGEMENT); }
     },
     { 
       id: 6, 
       icon: <Headphones size={24} />, 
       name: 'Support', 
-      menuEvent: () => {} 
+      page: PAGES.CUSTOMER_SUPPORT,
+      menuEvent: () => { navigateToPage(PAGES.CUSTOMER_SUPPORT); }
     },
     { 
       id: 7, 
       icon: <Bell size={24} />, 
       name: 'Notifications', 
-      menuEvent: () => {} 
+      page: PAGES.NOTIFICATION_CENTER,
+      menuEvent: () => { navigateToPage(PAGES.NOTIFICATION_CENTER); }
     },
     { 
       id: 8, 
       icon: <Settings size={24} />, 
       name: 'Settings', 
-      menuEvent: () => {} 
+      page: PAGES.SETTINGS,
+      menuEvent: () => { navigateToPage(PAGES.ManagerSettings); }
     }
   ];
 
   return (
     <>
     <style jsx="true">{` 
-    
-    .item-content{margin: 0, padding: 0}
-    
-    
-    
+      .menu-item { min-height: 58px; }
     `}</style>
 
 
@@ -110,24 +111,26 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
         {summary.map((item, idx) => (
           <div key={idx} style={{
             background: 'white',
-            margin: '0 0.7rem 0.5rem 0.7rem',
-            padding: '0.7rem 0.9rem',
+            padding: '0.2rem 0.9rem',
             borderRadius: '5px',
             boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
             fontFamily: 'inherit',
             transform: 'rotate(-0.2deg)'
           }}>
             <SketchDiv className="item-content">
-              <div style={{padding: '0.5rem'}}>
-              <div style={{ fontWeight: 600, fontSize: '0.98rem', marginBottom: 2 }}>{item.title}</div>
-              <div style={{ color: '#555', fontSize: '0.92rem', lineHeight: 1.3 }}>{item.content}</div>
+              <HatchPattern opacity={0.4} />
+              <div style={{padding: '0.9rem'}}>
+                <div style={{ fontWeight: 600, fontSize: '0.98rem', marginBottom: 2 }}>{item.title}</div>
+                <div style={{ color: '#555', fontSize: '0.92rem', lineHeight: 1.3 }}>{item.content}</div>
               </div>
             </SketchDiv>
+            
+            
           </div>
         ))}
         </div>
     
-      <div className="menu-section" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', padding: '0 1.5rem 1.5rem 1.5rem' }}>
+      <div className="menu-section" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', padding: '1rem 0.7rem 1.5rem', alignItems: 'stretch' }}>
         {menus.map((menu) => (
           <div key={menu.id} style={{ flex: '1 1 45%', minWidth: '140px' }}>
             <SketchMenuBtn
@@ -135,7 +138,7 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
               name={menu.name}
               hasArrow={false}
               onClick={menu.menuEvent}
-              className="menu-item"
+              className={"menu-item"}
             />
           </div>
         ))}

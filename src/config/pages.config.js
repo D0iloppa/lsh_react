@@ -27,18 +27,41 @@ import Promotion from '@pages/Promotion';
 
 import BookingHistory from '@pages/BookingHistory';
 import Favorites from '@pages/Favorites';
-
 import Setting from '@pages/Setting';
-import ManagerDashboard from '@pages/ManagerDashboard';
 
+//////////////////////////
+
+
+// Manager Pages
+import ManagerDashboard from '@pages/ManagerDashboard';
 import ManagerAccount from '@pages/ManagerAccount';
 import ReservationManagement from '@pages/ReservationManagement';
 import StaffManagement from '@pages/StaffManagement';
-
 import CreateStaff from '@pages/CreateStaff';
 import StaffSchedule from '@pages/StaffSchedule';
-
 import PromotionManagement from '@pages/PromotionManagement';
+import CreatePromotion from '@pages/CreatePromotion';
+import ReviewManagement from '@pages/ReviewManagement';
+import CustomerSupport from '@pages/CustomerSupport';
+import NotificationCenter from '@pages/NotificationCenter';
+import ManagerSettings from '@pages/ManagerSettings';
+import VenueSetup from '@pages/VenueSetup';
+
+//////////////////////////
+// Staff Pages
+import StaffHome from '@pages/StaffHome';
+import EditProfile from '@pages/EditProfile';
+
+import StaffBookingList from '@pages/StaffBookingList';
+import StaffWorkSchedule from '@pages/StaffWorkSchedule';
+import StaffWorkScheduleCreate from '@pages/StaffWorkScheduleCreate';
+
+import StaffReviewHistory from '@pages/StaffReviewHistory';
+
+import StaffSetting from '@pages/StaffSetting';
+
+
+
 
 // 페이지 상수
 export const PAGES = {
@@ -72,7 +95,20 @@ export const PAGES = {
     ANALYTICS: 'ANALYTICS',
     CREATE_STAFF: 'CREATE_STAFF',
     STAFF_SCHEDULE: 'STAFF_SCHEDULE',
-    PROMOTION_MANAGEMENT: 'PROMOTION_MANAGEMENT'
+    PROMOTION_MANAGEMENT: 'PROMOTION_MANAGEMENT',
+    CREATE_PROMOTION: 'CREATE_PROMOTION',
+    REVIEW_MANAGEMENT: 'REVIEW_MANAGEMENT',
+    CUSTOMER_SUPPORT: 'CUSTOMER_SUPPORT',
+    NOTIFICATION_CENTER: 'NOTIFICATION_CENTER',
+    SETTINGS: 'SETTINGS',
+    VENUE_SETUP: 'VENUE_SETUP',
+    STAFF_HOME: 'STAFF_HOME',
+    EDIT_PROFILE: 'EDIT_PROFILE',
+    STAFF_BOOKING_LIST: 'STAFF_BOOKING_LIST',
+    STAFF_WORK_SCHEDULE: 'STAFF_WORK_SCHEDULE',
+    StaffWorkScheduleCreate,
+    StaffReviewHistory,
+    StaffSetting,
 };
 
 // 페이지 컴포넌트 매핑
@@ -105,9 +141,19 @@ export const PAGE_COMPONENTS = {
     [PAGES.ANALYTICS]: ManagerDashboard, // 임시로 대시보드 사용
     [PAGES.CREATE_STAFF]: CreateStaff,
     [PAGES.STAFF_SCHEDULE]: StaffSchedule,
-    [PAGES.PROMOTION_MANAGEMENT]: PromotionManagement
+    [PAGES.PROMOTION_MANAGEMENT]: PromotionManagement,
+    [PAGES.CREATE_PROMOTION]: CreatePromotion,
+    [PAGES.REVIEW_MANAGEMENT]: ReviewManagement,
+    [PAGES.CUSTOMER_SUPPORT]: CustomerSupport,
+    [PAGES.NOTIFICATION_CENTER]: NotificationCenter,
+    [PAGES.ManagerSettings]: ManagerSettings,
+    [PAGES.VENUE_SETUP]: VenueSetup,
+    [PAGES.STAFF_HOME]: StaffHome,
+    [PAGES.EDIT_PROFILE]: EditProfile,
+    [PAGES.STAFF_BOOKING_LIST]: StaffBookingList,
+    [PAGES.STAFF_WORK_SCHEDULE]: StaffWorkSchedule
 };
 
 // 기본 페이지
 export const DEFAULT_MANAGER_PAGE = PAGES.MANAGER_DASHBOARD;
-export const DEFAULT_STAFF_PAGE = PAGES.HOME;
+export const DEFAULT_STAFF_PAGE = PAGES.STAFF_HOME;

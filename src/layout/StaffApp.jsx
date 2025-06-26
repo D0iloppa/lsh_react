@@ -1,7 +1,7 @@
 // src/layout/StaffApp.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, Search, Calendar, User, Map, ChevronUp } from 'lucide-react';
+import { Home, Search, MessageCircle, User, Map, ChevronUp } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
@@ -11,7 +11,7 @@ import LoadingScreen from '@components/LoadingScreen';
 
 import './MainApp.css';
 
-const MainApp = () => {
+const StaffApp = () => {
 
     const scrollToTop = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -20,7 +20,7 @@ const MainApp = () => {
     const { user, isLoggedIn } = useAuth();
     const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
     
-    console.log('Welcome staff!', user);
+    console.log('Welcome manager!', user);
 
 
     useEffect(() => {
@@ -60,7 +60,7 @@ const MainApp = () => {
     // 페이지 이동시 MainApp.jsx에 정의 필요
     const renderCurrentPage = () => {
         const pageData = getCurrentPageData();
-        const PageComponent = PAGE_COMPONENTS[currentPage] || PAGE_COMPONENTS[DEFAULT_STAFF_PAGE];
+        const PageComponent = PAGE_COMPONENTS[currentPage] || PAGE_COMPONENTS[DEFAULT_MANAGER_PAGE];
         
         return <PageComponent {...pageData} {...navigationProps} />;
     };
@@ -72,10 +72,9 @@ const MainApp = () => {
 
     // 네비게이션 메뉴들
     const navigationItems = [
-        { id: PAGES.HOME, icon: Home, label: get('HomePage1.1') || '홈' },
-        { id: PAGES.SEARCH, icon: Search, label: get('btn.search.1') || '검색' },
-        { id: PAGES.EVENTS, icon: Calendar, label: get('btn.promotion.1') || '이벤트' },
-        { id: PAGES.ACCOUNT, icon: User, label: get('Menu1.3') || '계정' }
+        { id: PAGES.STAFF_HOME, icon: Home, label: get('Footer1.3') || '대시보드' },
+        { id: PAGES.RESERVATION_MANAGEMENT, icon: MessageCircle, label: get('Staff.menu.2') || '예약관리' },
+        { id: PAGES.MANAGER_ACCOUNT, icon: User, label: get('Staff.menu.3') || '계정' }
     ];
 
     return (
@@ -106,7 +105,7 @@ const MainApp = () => {
             {currentPage == 'HOME' && (
                 <section className="bottom-map-section">
                     <div className="map-icon-container" onClick={handleMapClick}>
-                    <Map size={20} /> <span style={{marginLeft: '5px'}}>{get('MapPage1.1') || '지도'}</span>
+                    <Map size={20} /> <span style={{marginLeft: '5px'}}>{get('Main1.1')}</span>
                     </div>
                 </section>
                 
@@ -125,6 +124,6 @@ const MainApp = () => {
     );
 };
 
-export default MainApp;
+export default StaffApp;
 
 

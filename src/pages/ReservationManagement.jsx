@@ -3,6 +3,8 @@ import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 import SketchHeader from '@components/SketchHeader';
+import HatchPattern from '@components/HatchPattern';
+import { Calendar, Check, Edit } from 'lucide-react';
 
 const mockReservations = [
   {
@@ -60,8 +62,12 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
           gap: 0.6rem;
         }
         .reservation-card {
-          border: 1px solid #e5e7eb;
-          border-radius: 7px;
+          border-top-left-radius: 12px 7px;
+          border-top-right-radius: 6px 14px;
+          border-bottom-right-radius: 10px 5px;
+          border-bottom-left-radius: 8px 11px;
+          background-color: white;
+          border: 1px solid #666;
           background: #fff;
           padding: 0.7rem 0.8rem 0.8rem 0.8rem;
           position: relative;
@@ -76,7 +82,7 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
         .reservation-date {
           font-size: 1.02rem;
           font-weight: 600;
-          margin-bottom: 0.1rem;
+          margin-bottom: 0.8rem;
         }
         .reservation-time {
           font-size: 0.92rem;
@@ -86,7 +92,7 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
         .reservation-venue {
           font-size: 0.92rem;
           color: #222;
-          margin-bottom: 0.1rem;
+          margin-bottom: 0.2rem;
         }
         .reservation-status {
           font-size: 0.88rem;
@@ -103,6 +109,12 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
           font-size: 0.88rem;
           padding: 0.18rem 0.5rem;
         }
+          
+        .reservation-contents {
+          padding: 0.3rem;
+          margin-bottom: 0.5rem;
+        
+        }
       `}</style>
       <div className="reservation-container">
         <SketchHeader
@@ -115,7 +127,7 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
           {statusList.map(s => (
             <SketchBtn
               key={s.key}
-              variant={selectedStatus === s.key ? 'primary' : 'event'}
+              variant={s.key === 'cancelled' ? 'danger' : 'primary'}
               onClick={() => setSelectedStatus(s.key)}
               className="status-btn"
               size="small"
@@ -129,18 +141,19 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
           {filtered.map(r => (
             <SketchDiv key={r.id} className="reservation-card">
               <div className="reservation-header">
-                <div>
-                  <div className="reservation-date">{r.date}</div>
+                <div className="reservation-contents">
+                  <div className="reservation-date"><Calendar size={15} style={{marginRight: '3px'}}/> {r.date}</div>
                   <div className="reservation-venue">venue: {r.venue}</div>
                   <div className="reservation-status">Status: {r.status.charAt(0).toUpperCase() + r.status.slice(1)}</div>
                 </div>
                 <div className="reservation-time">{r.time}</div>
               </div>
               <div className="reservation-actions">
-                <SketchBtn variant="primary" size="small" className="action-btn">Approve</SketchBtn>
-                <SketchBtn variant="event" size="small" className="action-btn">Modify</SketchBtn>
+                <SketchBtn variant="event" size="small" className="action-btn">Approve</SketchBtn>
+                <SketchBtn variant="primary" size="small" className="action-btn"><Edit size={14} style={{marginRight: '3px'}}/> Modify</SketchBtn>
                 <SketchBtn variant="danger" size="small" className="action-btn">Cancel</SketchBtn>
               </div>
+              <HatchPattern opacity={0.4} />
             </SketchDiv>
           ))}
         </div>
