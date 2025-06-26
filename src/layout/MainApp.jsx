@@ -74,7 +74,7 @@ const MainApp = () => {
     const navigationItems = [
         { id: PAGES.MANAGER_DASHBOARD, icon: Home, label: get('Footer1.3') || '대시보드' },
         { id: PAGES.RESERVATION_MANAGEMENT, icon: Calendar, label: get('Mng.menu.2') || '예약관리' },
-        { id: PAGES.MANAGER_ACCOUNT, icon: User, label: get('Mng.menu.3') || '계정' }
+        { id: PAGES.ManagerSettings, icon: User, label: get('Mng.menu.3') || '계정' }
     ];
 
     return (

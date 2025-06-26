@@ -4,13 +4,14 @@ import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 import dayjs from 'dayjs';
+import { CheckCircle, XCircle } from 'lucide-react';
 
 import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
 
-import Swal from 'sweetalert2';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import customSwal from '@components/CustomSwal';
 
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -134,7 +135,7 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
       const staffName = staff ? staff.staff_name : 'Unknown Staff';
       
       // 상태 변경 확인 메시지
-      const result = await Swal.fire({
+      const result = await customSwal.fire({
         title: '스케줄 설정',
         text: '스케줄을 설정하시겠습니까?',
         icon: 'question',
@@ -172,7 +173,23 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
       console.log('✅ Schedule status updated:', newStatus);
 
       // 성공 시 결과 알림
-      toast.success(`${staffName}의 스케줄이 ${newStatus === 'available' ? '승인' : '거절'}되었습니다.`);
+      if (newStatus === 'available') {
+        toast.info(
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <CheckCircle color="#4caf50" size={20} />
+            {`${staffName}의 스케줄이 승인되었습니다.`}
+          </span>,
+          {icon:false}
+        );
+      } else {
+        toast.info(
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <XCircle color="#f44336" size={20} />
+            {`${staffName}의 스케줄이 거절되었습니다.`}
+          </span>,
+          {icon:false}
+        );
+      }
       
     } catch (error) {
       console.error('Failed to update schedule status:', error);

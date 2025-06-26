@@ -6,34 +6,73 @@ import SketchInput from '@components/SketchInput';
 import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
 import { useNavigate } from 'react-router-dom';
 
+const defaultForm = {
+  name: '',
+  description: '',
+  address: '',
+  latitude: '',
+  longitude: '',
+  phone: '',
+  open_time: '',
+  close_time: '',
+  logo: '',
+  cover: '',
+  status: '',
+  profile_content_id: '',
+  url: '',
+  rating: '',
+  image_url: '',
+  staff_cnt: '',
+  cat_nm: '',
+  price: '',
+  is_reservation: false,
+  staff_languages: '',
+  imgList: [],
+  menuList: [],
+  item_id: '',
+  cat_id: ''
+};
+
 const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
+  const { user } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
-  const [form, setForm] = useState({
-    logo: '',
-    cover: '',
-    name: '',
-    address: '',
-    phone: '',
-    open_time: '',
-    close_time: '',
-    intro: '',
-  });
+  const [mode, setMode] = useState(otherProps.mode || 'create');
+  const [venueId, setVenueId] = useState(otherProps.venue_id || null);
+  const [form, setForm] = useState(defaultForm);
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-      if (messages && Object.keys(messages).length > 0) {
-        console.log('✅ Messages loaded:', messages);
-        // setLanguage('en'); // 기본 언어 설정
-        console.log('Current language set to:', currentLang);
-        window.scrollTo(0, 0);
-      }
-    }, [messages, currentLang]);
+    if (mode === 'edit' && venueId) {
+      // edit 모드일 때만 데이터 fetch
+      const fetchVenue = async () => {
+        try {
+          const venueData = await ApiClient.get('/api/getVenue', {
+            params: { venue_id: venueId }
+          });
+          setForm(prev => ({
+            ...prev,
+            ...venueData,
+            open_time: formatTimeForInput(venueData.open_time),
+            close_time: formatTimeForInput(venueData.close_time)
+          }));
+        } catch (e) {
+          console.error('Venue data fetch error:', e);
+        }
+      };
+      fetchVenue();
+    } else {
+      // create 모드일 때는 form을 비움
+      setForm(defaultForm);
+    }
+    // messages, currentLang 등은 별도 처리
+  }, [mode, venueId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -135,6 +174,16 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     return timeString + ':00'; // HH:MM -> HH:MM:SS
   };
 
+  // "09:00:00" → "09:00"
+  const formatTimeForInput = (timeStr) => {
+    if (!timeStr) return '';
+    // 이미 HH:MM이면 그대로 반환
+    if (/^\d{2}:\d{2}$/.test(timeStr)) return timeStr;
+    // HH:MM:SS → HH:MM
+    if (/^\d{2}:\d{2}:\d{2}$/.test(timeStr)) return timeStr.slice(0, 5);
+    return '';
+  };
+
   const validateIntro = (intro) => {
     if (!intro.trim()) {
       return 'Introduction is required';
@@ -157,7 +206,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     newErrors.phone = validatePhone(form.phone);
     newErrors.open_time = validateOpenTime(form.open_time);
     newErrors.close_time = validateCloseTime(form.close_time);
-    newErrors.intro = validateIntro(form.intro);
+    newErrors.description = validateIntro(form.description);
 
     // 빈 에러 메시지 제거
     Object.keys(newErrors).forEach(key => {
@@ -191,7 +240,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       case 'close_time':
         errorMessage = validateCloseTime(value);
         break;
-      case 'intro':
+      case 'description':
         errorMessage = validateIntro(value);
         break;
       default:
@@ -201,7 +250,60 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     setErrors(prev => ({ ...prev, [name]: errorMessage }));
   };
 
-  // 저장 버튼 클릭 핸들러
+  const insertVenue = async () => {
+    // form 데이터에서 logo, cover 제외하고 전송 (이미지는 별도 처리)
+    const venueData = {
+      cat_id: 1,
+      name: form.name.trim(),
+      address: form.address.trim(),
+      phone: form.phone.trim(),
+      open_time: formatTimeToSeconds(form.open_time.trim()),    // HH:MM:SS 형식으로 변환
+      close_time: formatTimeToSeconds(form.close_time.trim()),  // HH:MM:SS 형식으로 변환
+      description: form.description.trim()
+    };
+    
+    console.log('Saving venue data:', venueData);
+    
+    // API 호출
+    const response = await ApiClient.postForm('/api/register_venue', venueData);
+    
+    console.log('API response:', response);
+    
+    // 성공 응답 체크 (API 응답 구조에 따라 조정)
+    if (response && (response.success || response.data || response.venue_id)) {
+      alert('Venue setup completed successfully!');
+      // /manager 페이지로 이동
+      navigate('/manager');
+    } else {
+      throw new Error('Invalid response from server');
+    }
+  };
+
+  const updateVenue = async () => {
+    // TODO: venue 수정 API 호출 구현
+    // alert('수정 기능은 아직 구현되지 않았습니다.');
+
+    const venueData = {
+      cat_id: 1,
+      venue_id: user?.venue_id,
+      name: form.name.trim(),
+      address: form.address.trim(),
+      phone: form.phone.trim(),
+      open_time: formatTimeToSeconds(form.open_time.trim()),    // HH:MM:SS 형식으로 변환
+      close_time: formatTimeToSeconds(form.close_time.trim()),  // HH:MM:SS 형식으로 변환
+      description: form.description.trim()
+    };
+    
+    // API 호출
+    const response = await ApiClient.postForm('/api/venueEdit', venueData);
+    
+    console.log('API response:', response);
+
+
+
+
+  };
+
   const handleSave = async () => {
     if (!validateForm()) {
       // 첫 번째 에러 필드로 스크롤
@@ -217,46 +319,17 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     setIsSubmitting(true);
 
     try {
-      // form 데이터에서 logo, cover 제외하고 전송 (이미지는 별도 처리)
-      const venueData = {
-        cat_id: 1,
-        name: form.name.trim(),
-        address: form.address.trim(),
-        phone: form.phone.trim(),
-        open_time: formatTimeToSeconds(form.open_time.trim()),    // HH:MM:SS 형식으로 변환
-        close_time: formatTimeToSeconds(form.close_time.trim()),  // HH:MM:SS 형식으로 변환
-        description: form.intro.trim()
-      };
-      
-      console.log('Saving venue data:', venueData);
-      
-      // API 호출
-      const response = await ApiClient.postForm('/api/register_venue', venueData);
-      
-      console.log('API response:', response);
-      
-      // 성공 응답 체크 (API 응답 구조에 따라 조정)
-      if (response && (response.success || response.data || response.venue_id)) {
-        alert('Venue setup completed successfully!');
-       
-        // /manager 페이지로 이동
-        navigate('/manager');
-        
-      } else {
-        throw new Error('Invalid response from server');
+      if (mode === 'create') {
+        await insertVenue();
+      } else if (mode === 'edit') {
+        await updateVenue();
       }
-      
     } catch (error) {
       console.error('Venue setup failed:', error);
-      
-      // 에러 타입에 따른 메시지 처리
       let errorMessage = 'Failed to save venue information. Please try again.';
-      
       if (error.response) {
-        // API가 에러 응답을 반환한 경우
         const status = error.response.status;
         const errorData = error.response.data;
-        
         if (status === 400) {
           errorMessage = errorData.message || 'Invalid venue information provided.';
         } else if (status === 401) {
@@ -268,15 +341,11 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         } else if (status >= 500) {
           errorMessage = 'Server error. Please try again later.';
         }
-        
         console.error('API error details:', errorData);
       } else if (error.request) {
-        // 네트워크 에러
         errorMessage = 'Network error. Please check your connection.';
       }
-      
       alert(errorMessage);
-      
     } finally {
       setIsSubmitting(false);
     }
@@ -449,14 +518,14 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         
         <div className="input-row">
           <SketchInput
-            name="intro"
-            value={form.intro}
+            name="description"
+            value={form.description || ''}
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder={get('VENUE_INTRO_PLACEHOLDER')}
             as="textarea"
             rows={2}
-            error={errors.intro}
+            error={errors.description}
           />
         </div>
         

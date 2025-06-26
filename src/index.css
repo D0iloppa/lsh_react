@@ -1,3 +1,50 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.Toastify__toast {
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+    border-radius: 12px !important;      /* 조금 더 작게 */
+    padding: 8px 14px !important;        /* 패딩 줄임 */
+    min-height: 36px !important;         /* 높이 줄임 */
+    font-size: 13px !important;          /* 폰트도 살짝 줄임 */
+    margin-bottom: 6rem !important;       /* 토스트 간격도 줄임 */
+  }
+
+  .swal-compact-popup {
+    padding: 1.2rem 1.2rem !important;
+    min-width: 260px !important;
+    max-width: 320px !important;
+  }
+  
+  .swal-compact-title {
+    font-size: 1.1rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .swal-compact-html {
+    font-size: 0.95rem !important;
+    margin-bottom: 0.7rem !important;
+  }
+  
+  .swal-compact-icon {
+    width: 48px !important;
+    height: 48px !important;
+    margin: 0 auto 0.5rem auto !important;
+  }
+
+  .swal-compact-icon .swal2-icon-content {
+    font-size: 1.5rem !important;
+  }
+  
+  
+  .swal-compact-confirm,
+  .swal-compact-cancel {
+    font-size: 0.95rem !important;
+    padding: 0.3rem 1.1rem !important;
+    min-width: 60px !important;
+    min-height: 32px !important;
+    border-radius: 6px !important;
+    margin: 0 0.3rem !important;
+  }

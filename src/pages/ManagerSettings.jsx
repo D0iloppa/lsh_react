@@ -1,16 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
 
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import { useAuth } from '@contexts/AuthContext';
+
 const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
+
+
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+
+    if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        // setLanguage('en'); // 기본 언어 설정
+        console.log('Current language set to:', currentLang);
+        window.scrollTo(0, 0);
+      }
+
+
+  }, [ messages, currentLang]);
+
+
+  const handleShopDetail = () => {
+    navigateToPageWithData(PAGES.VENUE_SETUP, { 
+      mode: 'edit', venue_id: user?.venue_id
+    });
+  }
+
+
+
   const [business, setBusiness] = useState({ name: '', address: '' });
   const [password, setPassword] = useState({ current: '', new: '', confirm: '' });
   const [emailNoti, setEmailNoti] = useState(true);
   const [smsNoti, setSmsNoti] = useState(false);
-  const [language, setLanguage] = useState('English');
 
   return (
     <>
@@ -61,7 +90,12 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
         />
         <div className="section-title">Manage Shop Detail</div>
         <SketchDiv className="section-box" style={{marginBottom:'1.2rem'}}>
-          <SketchBtn variant="primary" size="medium" style={{ width: '100%' }}>Shop Detail</SketchBtn>
+          <SketchBtn 
+          variant="primary" 
+          size="medium" 
+          style={{ width: '100%' }}
+          onClick={handleShopDetail}
+          >Shop Detail</SketchBtn>
         </SketchDiv>
 
         <div className="section-title">Update Business Info</div>
@@ -136,7 +170,7 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
         <div className="section-title">Language</div>
         <SketchDiv className="section-box">
           <div className="lang-row">
-            <select value={language} onChange={e => setLanguage(e.target.value)} style={{ fontSize: '1rem', borderRadius: '6px', border: '1px solid #e5e7eb', padding: '0.3rem 1.2rem 0.3rem 0.5rem', background: '#fff' }}>
+            <select value={'English'} onChange={(e) => {} } style={{ fontSize: '1rem', borderRadius: '6px', border: '1px solid #e5e7eb', padding: '0.3rem 1.2rem 0.3rem 0.5rem', background: '#fff' }}>
               <option>English</option>
               <option>Korean</option>
               <option>Vietnamese</option>

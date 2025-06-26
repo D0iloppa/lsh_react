@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 
 
@@ -12,9 +12,28 @@ import SketchDiv from '@components/SketchDiv';
 
 import '@components/SketchComponents.css';
 
-
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 export default function ManagerDashboard({ navigateToPage, navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) {
+  
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+
+    if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        // setLanguage('en'); // 기본 언어 설정
+        console.log('Current language set to:', currentLang);
+        window.scrollTo(0, 0);
+      }
+
+
+  }, [ messages, currentLang]);
+  
+  
+  
+  
   // 대시보드 상단 요약 정보
   const summary = [
     {
