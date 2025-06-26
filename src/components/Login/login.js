@@ -59,7 +59,12 @@ export const loginPost = async (email, password) => {
         );
     
 
-        const { error=false, errMsg=false, user=false, staff=false } = response.data;
+        let { error=false, errMsg=false, user=false, staff=false, manager=false } = response.data;
+
+        // type decoration
+        user = user && { type: 'user', ...user };
+        staff = staff && { type: 'staff', ...staff };
+        manager = manager && { type: 'manager', ...manager };
 
         if(error){
             return {
@@ -73,7 +78,7 @@ export const loginPost = async (email, password) => {
         return {
           success: true,
           message: 'Login successful!',
-          user: user
+          user: user || manager || staff
         };
     
       } catch (error) {

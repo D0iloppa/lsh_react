@@ -25,8 +25,8 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
   }, [messages, currentLang]);
 
   // 개발용
-  const [email, setEmail] = useState('kdi3939@naver.com');
-  const [password, setPassword] = useState('shffks');
+  const [email, setEmail] = useState('manager@lsh.com');
+  const [password, setPassword] = useState('webdnpfzjs1!');
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -35,7 +35,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
   // setStatus가 props로 전달된다고 가정 (없으면 주석처리)
   // const { setStatus } = props;
 
-  const { login, loading, setLoginType: setAuthLoginType } = useAuth(); // ← AuthContext의 setLoginType 추가
+  const { login, user, loading, setLoginType: setAuthLoginType } = useAuth(); // ← AuthContext의 setLoginType 추가
   const navigate = useNavigate();
 
   const onSubmit = async (e) => {
@@ -50,20 +50,28 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
       setMessage(result.message);
       // AuthContext에 loginType 저장
       setAuthLoginType(loginType);
+    
+    setTimeout(() => {
+      if (loginType === 'manager') {
       
-      // 로그인 성공 시 loginType에 따라 다른 페이지로 이동
-      setTimeout(() => {
-        if (loginType === 'manager') {
-          navigate('/manager');
-        } else if (loginType === 'staff') {
-          navigate('/staff');
+        const venueId = user?.venue_id;
+      
+        if (!venueId || venueId == 0 || venueId == null) {
+          // venue_id가 null, 0, 또는 없으면 튜토리얼로 이동
+          navigate('/managerTuto');
         } else {
-          navigate('/main'); // 기본값
+          // venue_id가 있으면 메인으로 이동
+          navigate('/manager');
         }
-      }, 300); // 0.3초 후 이동 (성공 메시지 표시용)
-    } else {
-      setErrors(result.errors);
-    }
+      } else if (loginType === 'staff') {
+        navigate('/staff');
+      } else {
+        navigate('/manager'); // 기본값
+      }
+    }, 300); // 0.3초 후 이동 (성공 메시지 표시용)
+  } else {
+    setErrors(result.errors);
+  }
     
     setIsLoading(false);
   };

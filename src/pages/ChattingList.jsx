@@ -1,72 +1,74 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
-
-const mockStaffs = [
-  {
-    id: 1,
-    name: 'Nguyen Thi Hoa',
-    lastMessage: '나를 데리러오시오',
-    lastTime: '10:24',
-    isNew: 2,
-    img: 'https://randomuser.me/api/portraits/women/1.jpg',
-  },
-  {
-    id: 2,
-    name: 'Tran van Binh',
-    lastMessage: '출근 완료했습니다',
-    lastTime: '09:15',
-    isNew: 0,
-    img: 'https://randomuser.me/api/portraits/men/2.jpg',
-  },
-  {
-    id: 3,
-    name: 'Le Minh Tuan',
-    lastMessage: '잠시 외출 중입니다',
-    lastTime: '08:42',
-    isNew: 1,
-    img: '/cdn/content/1.png',
-  },
-  {
-    id: 4,
-    name: 'Le Minh Tuan',
-    lastMessage: '잠시 외출 중입니다',
-    lastTime: '08:42',
-    isNew: 1,
-    img: '/cdn/content/1.png',
-  },
-  {
-    id: 5,
-    name: 'Le Minh Tuan',
-    lastMessage: '잠시 외출 중입니다',
-    lastTime: '08:42',
-    isNew: 1,
-    img: '/cdn/content/1.png',
-  },
-  {
-    id: 6,
-    name: 'Le Minh Tuan',
-    lastMessage: '잠시 외출 중입니다',
-    lastTime: '08:42',
-    isNew: 1,
-    img: '/cdn/content/1.png',
-  },
-  {
-    id: 7,
-    name: 'Le Minh Tuan',
-    lastMessage: '잠시 외출 중입니다',
-    lastTime: '08:42',
-    isNew: 1,
-    img: '/cdn/content/1.png',
-  },
-];
+import { useAuth } from '@contexts/AuthContext';
+import axios from 'axios';
 
 const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
+  const [staffs, setStaffs] = useState([]);
+  const { user } = useAuth();
+  const intervalRef = useRef(null);
+
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+    if (user?.venue_id) {
+      fetchAndUpdate(user.venue_id); // 최초 데이터
+      startInterval(user.venue_id);  // 주기적 갱신
+    }
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current); // 언마운트 시 정리
+    };
+  }, [user]);
+
+  const startInterval = (venue_id) => {
+    intervalRef.current = setInterval(() => {
+      fetchAndUpdate(venue_id);
+    }, 500); // 0.5초마다 갱신
+  };
+
+  const fetchAndUpdate = async (venue_id) => {
+    const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+    try {
+      const response = await axios.get(`${API_HOST}/api/getChattingList`, {
+        params: { venue_id },
+      });
+      const data = response.data || [];
+
+      const mappedStaffs = data.map((item, index) => ({
+        id: item.user_id || index,
+        room_sn: item.room_sn,
+        name: item.room_name || '이름 없음',
+        lastMessage: item.last_message_preview || '메시지 없음',
+        lastTime: item.last_message_at
+          ? new Date(item.last_message_at).toLocaleTimeString('ko-KR', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+            })
+          : '--:--',
+        isNew: item.not_read_cnt || 0,
+        img: item.image_url || '',
+      }));
+
+      // 기존 데이터와 비교해 다를 때만 setState
+      if (JSON.stringify(mappedStaffs) !== JSON.stringify(staffs)) {
+        setStaffs(mappedStaffs);
+      }
+
+    } catch (error) {
+      console.error('❌ 채팅 리스트 불러오기 실패:', error);
+    }
+  };
+
+  const handleClickStaff = (staff) => {
+    navigateToPageWithData(PAGES.CHATTING, {
+      room_sn: staff.room_sn,
+      name: staff.name,
+    });
+  };
 
   return (
     <>
@@ -93,6 +95,11 @@ const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           gap: 0.7rem;
           border-radius: 10px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .staff-card:hover {
+          background: #f9f9f9;
         }
         .staff-img {
           width: 60px;
@@ -150,34 +157,40 @@ const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
       `}</style>
 
       <div className="staff-container">
-        <SketchHeader
-          title="Chatting List"
-          showBack={true}
-          onBack={goBack}
-        />
+        <SketchHeader title="Chatting List" showBack={true} onBack={goBack} />
         <div className="staff-list">
-          {mockStaffs.map((staff) => (
-            <SketchDiv key={staff.id} className="staff-card">
-              <HatchPattern opacity={0.4} />
-              <div className="staff-img">
-                {staff.img ? (
-                  <img src={staff.img} alt={staff.name} />
-                ) : (
-                  <span>🖼️</span>
-                )}
-              </div>
-              <div className="staff-info">
-                <div className="staff-name">{staff.name}</div>
-                <div className="staff-rating">{staff.lastMessage}</div>
-              </div>
-              <div className="staff-actions">
-                <div className="last-time">{staff.lastTime}</div>
-                {staff.isNew > 0 && (
-                  <div className="new-badge">{staff.isNew}</div>
-                )}
-              </div>
-            </SketchDiv>
-          ))}
+          {staffs.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>
+              채팅 기록이 없습니다.
+            </div>
+          ) : (
+            staffs.map((staff) => (
+              <SketchDiv
+                key={staff.id}
+                className="staff-card"
+                onClick={() => handleClickStaff(staff)}
+              >
+                <HatchPattern opacity={0.4} />
+                <div className="staff-img">
+                  {staff.img ? (
+                    <img src={staff.img} alt={staff.name} />
+                  ) : (
+                    <span>🖼️</span>
+                  )}
+                </div>
+                <div className="staff-info">
+                  <div className="staff-name">{staff.name}</div>
+                  <div className="staff-rating">{staff.lastMessage}</div>
+                </div>
+                <div className="staff-actions">
+                  <div className="last-time">{staff.lastTime}</div>
+                  {staff.isNew > 0 && (
+                    <div className="new-badge">{staff.isNew}</div>
+                  )}
+                </div>
+              </SketchDiv>
+            ))
+          )}
         </div>
       </div>
     </>

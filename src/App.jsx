@@ -29,6 +29,8 @@ import StaffApp from '@layout/StaffApp';
 
 import Cocktail from '@components/CocktailIcon';
 import HatchPattern from '@components/HatchPattern';
+import VenueTuto1 from '@components/Welcome/VenueTuto1';
+import VenueSetup from '@pages/VenueSetup';
 
 const AppRoutes = () => {
   const { isLoggedIn } = useAuth();
@@ -83,6 +85,21 @@ const AppRoutes = () => {
           isLoggedIn ? <MainApp /> : <Navigate to="/login" replace />
         } 
       />
+
+    <Route 
+            path="/managerTuto" 
+            element={
+              isLoggedIn ? <VenueTuto1 /> : <Navigate to="/login" replace />
+            } 
+          />
+
+          <Route 
+            path="/venueSetup" 
+            element={
+              isLoggedIn ? <VenueSetup /> : <Navigate to="/login" replace />
+            } 
+          />
+
 
       {/* 5. 스태프 메인 앱 (로그인 필요) */}
       <Route 

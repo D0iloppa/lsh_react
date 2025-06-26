@@ -1,22 +1,24 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 import dayjs from 'dayjs';
 
+import { useAuth } from '@contexts/AuthContext';
+
+import ApiClient from '@utils/ApiClient';
+
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const dates = [1,2,3,4,5,6,7,8,9,10,11,12,13];
-const staffList = [
-  { id: 1, name: 'John Doe' },
-  { id: 2, name: 'Anna Smith' },
-  { id: 3, name: 'James Brown' },
-];
 
 const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
   const [month, setMonth] = useState(dayjs().month());
   const [year, setYear] = useState(dayjs().year());
   const [selectedDate, setSelectedDate] = useState(null);
+  const [staffList, setStaffList] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { user } = useAuth();
 
   const calendarScrollRef = useRef(null);
 
@@ -84,6 +86,117 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
       setSelectedDate(today);
     }
   };
+
+  // 날짜 선택 시 스태프 목록을 가져오는 함수
+  const fetchStaffList = async (date) => {
+    setIsLoading(true);
+    try {
+      console.log('Fetching staff list for date:', user, date.format('YYYY-MM-DD'));
+
+
+      // 실제 API 호출
+      const response = await ApiClient.postForm('/api/getStaffShift', {
+        target_id: user.venue_id,
+        work_date: date.format('YYYY-MM-DD')
+      });
+
+      const {data=[]} = response;
+
+      console.log('✅ Staff shift data loaded:', data);
+      
+      // 데이터 구조 매핑
+      const mappedStaffList = data.map(item => ({
+        schedule_id: item.schedule_id,
+        staff_name: item.target_name || 'Unknown Staff',
+        status: item.status, // 'pending', 'available', 'declined'
+        start_time: item.start_time,
+        end_time: item.end_time,
+        work_date: item.work_date
+      }));
+      
+      setStaffList(mappedStaffList);
+    } catch (error) {
+      console.error('Failed to fetch staff list:', error);
+      setStaffList([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 스케줄 상태 변경 핸들러
+  const handleStatusChange = async (scheduleId, newStatus) => {
+    try {
+      console.log('Updating schedule status:', scheduleId, 'to:', newStatus);
+
+      // 실제 스케줄 상태 변경 API 호출
+      const response = await ApiClient.postForm('/api/updateShift', {
+        schedule_id: scheduleId,
+        status: newStatus
+      });
+
+      console.log('✅ Schedule status update response:', response);
+      
+      // 성공 시 로컬 상태 업데이트
+      setStaffList(prev => 
+        prev.map(staff => 
+          staff.schedule_id === scheduleId 
+            ? { ...staff, status: newStatus }
+            : staff
+        )
+      );
+      
+      console.log('✅ Schedule status updated:', newStatus);
+    } catch (error) {
+      console.error('Failed to update schedule status:', error);
+    }
+  };
+
+  // 날짜 선택 핸들러
+  const handleDateSelect = (date) => {
+    setSelectedDate(date);
+    fetchStaffList(date);
+  };
+
+  // 페이지 진입 시 오늘 날짜로 스크롤 이동
+  useEffect(() => {
+    const scrollToToday = () => {
+      if (calendarScrollRef.current) {
+        const todayIdx = calendarCells.findIndex(cell => cell.date.isSame(today, 'date'));
+        
+        if (todayIdx !== -1) {
+          // 오늘 날짜가 있는 주(2주 단위)를 찾기
+          const weekIndex = Math.floor(todayIdx / 14);
+          
+          // 실제 DOM 요소의 높이를 계산
+          const calendar2WeeksElements = calendarScrollRef.current.querySelectorAll('.calendar-2weeks');
+          
+          if (calendar2WeeksElements[weekIndex]) {
+            const elementHeight = calendar2WeeksElements[weekIndex].offsetHeight;
+            
+            // 간단한 방법: 각 2주 블록의 높이를 기준으로 계산
+            const scrollPosition = weekIndex * elementHeight;
+            
+            // 부드러운 스크롤 애니메이션
+            calendarScrollRef.current.scrollTo({
+              top: scrollPosition,
+              behavior: 'smooth'
+            });
+          }
+        }
+      }
+    };
+
+    // 즉시 실행
+    scrollToToday();
+  }, [month, year]); // calendarCells 대신 month, year를 의존성으로 변경
+
+  // 최초 로딩 시 오늘 날짜 선택 및 스태프 목록 가져오기
+  useEffect(() => {
+    if (!selectedDate) {
+      setSelectedDate(today);
+      fetchStaffList(today);
+    }
+  }, []); // 최초 한 번만 실행
 
   return (
     <>
@@ -166,9 +279,15 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
           margin-bottom: 0.6rem;
           padding: 0.6rem 0.8rem;
         }
-        .staff-name {
+        .staff-info {
           flex: 1;
+        }
+        .staff-name {
           font-size: 1.02rem;
+        }
+        .staff-time {
+          font-size: 0.92rem;
+          color: #666;
         }
         .staff-assign-btn {
           min-width: 38px;
@@ -197,6 +316,38 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
           justify-content: flex-end;
           gap: 0.5rem;
           margin-bottom: 0.3rem;
+        }
+        .status-toggle {
+          width: 40px;
+          height: 20px;
+          background-color: #ccc;
+          border-radius: 20px;
+          position: relative;
+          cursor: pointer;
+        }
+        .status-toggle.available {
+          background-color: #4caf50;
+        }
+        .status-toggle.pending,
+        .status-toggle.declined {
+          background-color: #f44336;
+        }
+        .toggle-slider {
+          width: 18px;
+          height: 18px;
+          background-color: #fff;
+          border-radius: 50%;
+          position: absolute;
+          top: 1px;
+          left: 1px;
+          transition: transform 0.2s;
+        }
+        .toggle-slider.available {
+          transform: translateX(20px);
+        }
+        .toggle-slider.pending,
+        .toggle-slider.declined {
+          transform: translateX(0);
         }
       `}</style>
       <div className="schedule-container">
@@ -229,7 +380,7 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
                         (selectedDate && cell.date.isSame(selectedDate, 'date') ? ' selected' : '') +
                         (!cell.isCurrentMonth ? ' other-month' : '')
                       }
-                      onClick={() => setSelectedDate(cell.date)}
+                      onClick={() => handleDateSelect(cell.date)}
                     >
                       {cell.date.date()}
                     </div>
@@ -240,13 +391,32 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
           ))}
         </div>
         
-        <div className="assign-title">Assign Shifts</div>
-        {staffList.map(staff => (
-          <div key={staff.id} className="staff-row">
-            <div className="staff-name">{staff.name}</div>
-            <SketchBtn variant="event" size="small" className="staff-assign-btn">🗓️</SketchBtn>
+        <div className="assign-title">Schedule Approval</div>
+        {isLoading ? (
+          <div style={{ textAlign: 'center', padding: '1rem', color: '#666' }}>
+            Loading staff list...
           </div>
-        ))}
+        ) : (
+          staffList.map(staff => (
+            <div key={staff.schedule_id} className="staff-row">
+              <div className="staff-info">
+                <div className="staff-name">{staff.staff_name}</div>
+                <div className="staff-time">
+                  {staff.start_time?.substring(0, 5)} - {staff.end_time?.substring(0, 5)}
+                </div>
+              </div>
+              <div 
+                className={`status-toggle ${staff.status}`}
+                onClick={() => handleStatusChange(
+                  staff.schedule_id, 
+                  staff.status === 'available' ? 'declined' : 'available'
+                )}
+              >
+                <div className={`toggle-slider ${staff.status}`}></div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </>
   );

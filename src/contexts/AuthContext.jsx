@@ -12,9 +12,17 @@ export const AuthProvider = ({ children }) => {
   });
 
   const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem('user');
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
+    try {
+        const storedUser = localStorage.getItem('user');
+        if (!storedUser || storedUser === 'undefined' || storedUser === 'null') {
+            return {};
+        }
+        return JSON.parse(storedUser);
+    } catch (error) {
+        console.error('localStorage user 파싱 실패:', error);
+        return {};
+    }
+});
 
   const [loginType, setLoginType] = useState(() => {
     return localStorage.getItem('loginType') || null;
