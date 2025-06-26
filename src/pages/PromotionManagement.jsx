@@ -1,8 +1,19 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
+import SketchInput from '@components/SketchInput';
+import ImagePlaceholder from '@components/ImagePlaceholder';
+import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
+
+import { useAuth } from '@contexts/AuthContext';
+import ApiClient from '@utils/ApiClient';
+import { Filter, Star, Edit, Trash2, Eye } from 'lucide-react';
+
+import Swal from 'sweetalert2';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const mockPromotions = [
   {
@@ -22,92 +33,456 @@ const mockPromotions = [
 ];
 
 const PromotionManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
+  const [promotions, setPromotions] = useState([]);
+  const [originalPromotions, setOriginalPromotions] = useState([]);
+  const [filterQuery, setFilterQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
+
+  // 프로모션 데이터 로딩
+  const fetchPromotions = async () => {
+    setIsLoading(true);
+    try {
+      console.log('Fetching promotions for venue:', user?.venue_id);
+      
+      // 실제 API 호출
+      const response = await ApiClient.postForm('/api/getVenuePromotion', {
+        venue_id: user?.venue_id
+      });
+
+      console.log('✅ Venue promotions loaded:', response);
+      
+      const { data = [] } = response;
+      setOriginalPromotions(data);
+      setPromotions(data);
+      
+    } catch (error) {
+      console.error('Failed to fetch promotions:', error);
+      toast.error('프로모션 목록을 불러오는데 실패했습니다.');
+      setOriginalPromotions([]);
+      setPromotions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 필터 적용
+  const handleApplyFilter = () => {
+    const keyword = filterQuery.toLowerCase();
+    const filtered = originalPromotions.filter(p =>
+      p.title?.toLowerCase().includes(keyword) ||
+      p.venue_name?.toLowerCase().includes(keyword)
+    );
+    setPromotions(filtered);
+  };
+
+  // 프로모션 삭제
+  const handleDeletePromotion = async (promotionId) => {
+    const result = await Swal.fire({
+      title: '프로모션 삭제',
+      text: '이 프로모션을 삭제하시겠습니까?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '삭제',
+      cancelButtonText: '취소',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        // TODO: API 구현 후 실제 API 호출로 변경
+        console.log('Deleting promotion:', promotionId);
+        
+        // 임시로 로컬 상태만 업데이트
+        setPromotions(prev => prev.filter(p => p.promotion_id !== promotionId));
+        setOriginalPromotions(prev => prev.filter(p => p.promotion_id !== promotionId));
+        
+        toast.success('프로모션이 삭제되었습니다.');
+      } catch (error) {
+        console.error('Failed to delete promotion:', error);
+        toast.error('프로모션 삭제에 실패했습니다.');
+      }
+    }
+  };
+
+  // 프로모션 종료
+  const handleEndPromotion = async (promotionId) => {
+    const result = await Swal.fire({
+      title: '프로모션 종료',
+      text: '이 프로모션을 종료하시겠습니까?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: '종료',
+      cancelButtonText: '취소',
+      confirmButtonColor: '#f39c12',
+      cancelButtonColor: '#3085d6'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        // TODO: API 구현 후 실제 API 호출로 변경
+        console.log('Ending promotion:', promotionId);
+        
+        // 임시로 로컬 상태만 업데이트
+        setPromotions(prev => 
+          prev.map(p => p.promotion_id === promotionId ? { ...p, status: 'inactive' } : p)
+        );
+        setOriginalPromotions(prev => 
+          prev.map(p => p.promotion_id === promotionId ? { ...p, status: 'inactive' } : p)
+        );
+        
+        toast.success('프로모션이 종료되었습니다.');
+      } catch (error) {
+        console.error('Failed to end promotion:', error);
+        toast.error('프로모션 종료에 실패했습니다.');
+      }
+    }
+  };
+
+  // 프로모션 편집 페이지로 이동
+  const handleEditPromotion = (promotion) => {
+    navigateToPageWithData(PAGES.CREATE_PROMOTION, {
+      mode: 'edit',
+      venue_id: user?.venue_id,
+      promotionData: promotion
+    });
+  };
+
+  // 새 프로모션 생성 페이지로 이동
+  const handleCreatePromotion = () => {
+    navigateToPageWithData(PAGES.CREATE_PROMOTION, {
+      mode: 'create',
+      venue_id: user?.venue_id
+    });
+  };
+
+  useEffect(() => {
+    fetchPromotions();
+  }, [user]);
+
   return (
     <>
       <style jsx="true">{`
         .promotion-container {
           max-width: 28rem;
           margin: 0 auto;
-          background: #fff;
+          background-color: white;
           min-height: 100vh;
-          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+          position: relative;
         }
-        .create-btn-row {
-          margin: 1.1rem 0 1.2rem 0;
-        }
-        .promotion-list {
+
+        .content-section {
+          padding: 1.5rem;
           display: flex;
           flex-direction: column;
-          gap: 1.1rem;
+          gap: 1.5rem;
         }
-        .promotion-card {
-          border: 1px solid #e5e7eb;
-          border-radius: 7px;
-          background: #fff;
-          padding: 0.8rem 0.9rem 1.1rem 0.9rem;
+
+        .filter-section {
+          padding: 1.25rem;
+          background-color: #fefefe;
+          border: 0.8px solid #666;
+          position: relative;
+          overflow: hidden;
+          border-radius: 12px;
         }
-        .promo-img {
-          width: 100%;
-          height: 120px;
-          background: #f3f4f6;
-          border-radius: 6px;
-          margin-bottom: 0.7rem;
+
+        .filter-content {
           display: flex;
           align-items: center;
-          justify-content: center;
-          font-size: 2.2rem;
-          color: #bbb;
+          position: relative;
+          z-index: 2;
+          gap: 0.75rem;
         }
-        .promo-title {
-          font-size: 1.08rem;
-          font-weight: 600;
-          margin-bottom: 0.2rem;
+
+        .filter-input {
+          flex: 1;
         }
-        .promo-desc {
-          font-size: 0.97rem;
-          color: #222;
-          margin-bottom: 0.2rem;
-        }
-        .promo-date {
-          font-size: 0.93rem;
-          color: #888;
-          margin-bottom: 0.5rem;
-        }
-        .promo-actions {
+
+        .filter-btn {
           display: flex;
-          gap: 0.7rem;
-          justify-content: space-between;
+          align-items: center;
+          gap: 0.5rem;
         }
-        .promo-action-btn {
-          min-width: 54px;
-          font-size: 0.95rem;
-          padding: 0.18rem 0.5rem;
+
+        .create-btn-row {
+          margin-bottom: 1rem;
+        }
+
+        .promotion-card {
+          padding: 0;
+          background-color: #fefefe;
+          border: 0.8px solid #666;
+          position: relative;
+          overflow: hidden;
+          border-radius: 12px;
+          transition: all 0.2s;
+          margin-bottom: 20px;
+        }
+
+        .promotion-card:nth-child(even) {
+          transform: rotate(0.3deg);
+        }
+
+        .promotion-card:nth-child(odd) {
+          transform: rotate(-0.2deg);
+        }
+
+        .promotion-card:hover {
+          box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .promotion-card:nth-child(even):hover {
+          transform: rotate(0.3deg) scale(1.01);
+        }
+
+        .promotion-card:nth-child(odd):hover {
+          transform: rotate(-0.2deg) scale(1.01);
+        }
+
+        .promotion-content {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .promotion-image {
+          width: 100%;
+          height: 120px;
+          object-fit: cover;
+          border-bottom: 0.8px solid #666;
+        }
+
+        .promotion-info {
+          padding: 1.25rem;
+        }
+
+        .promotion-title {
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: #1f2937;
+          margin: 0 0 0.75rem 0;
+          line-height: 1.2;
+        }
+
+        .promotion-details {
+          margin-bottom: 1rem;
+        }
+
+        .promotion-detail {
+          font-size: 0.875rem;
+          color: #6b7280;
+          margin: 0.25rem 0;
+          line-height: 1.4;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .detail-label {
+          font-weight: 500;
+          color: #374151;
+          min-width: 3rem;
+        }
+
+        .promotion-actions {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 0.5rem;
+          margin-top: 1rem;
+        }
+
+        .action-btn {
+          min-width: 60px;
+          font-size: 0.85rem;
+          padding: 0.3rem 0.6rem;
+        }
+
+        .promotion-card.featured {
+          border-color: #38bdf8;
+          background-color: #e0f2fe;
+        }
+
+        .featured-star {
+          position: absolute;
+          top: 0.95rem;
+          right: 0.95rem;
+          z-index: 3;
+          width: 28px;
+          height: 28px;
+          stroke: #ffffff;
+        }
+
+        .status-badge {
+          display: inline-block;
+          padding: 0.25rem 0.75rem;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 500;
+          text-transform: uppercase;
+        }
+
+        .status-badge.active {
+          background-color: #dcfce7;
+          color: #166534;
+        }
+
+        .status-badge.inactive {
+          background-color: #fee2e2;
+          color: #991b1b;
+        }
+
+        .empty-state {
+          text-align: center;
+          padding: 3rem 1.5rem;
+          color: #6b7280;
+        }
+
+        .empty-state h3 {
+          font-size: 1.125rem;
+          font-weight: 500;
+          margin-bottom: 0.5rem;
+          color: #374151;
+        }
+
+        .empty-state p {
+          font-size: 0.875rem;
+          line-height: 1.5;
+        }
+
+        @media (max-width: 480px) {
+          .content-section {
+            padding: 1rem;
+          }
+
+          .filter-content {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .filter-btn {
+            justify-content: center;
+          }
+
+          .promotion-info {
+            padding: 1rem;
+          }
+
+          .promotion-title {
+            font-size: 1.1rem;
+          }
+
+          .promotion-actions {
+            flex-direction: row;
+            gap: 0.75rem;
+            align-items: center;
+          }
         }
       `}</style>
       <div className="promotion-container">
         <SketchHeader
-          title="Manage Promotions"
+          title="프로모션 관리"
           showBack={true}
           onBack={goBack}
         />
-        <div className="create-btn-row">
-          <SketchBtn variant="primary" size="medium" style={{ width: '100%' }}>Create New Promotion</SketchBtn>
-        </div>
-        <div className="promotion-list">
-          {mockPromotions.map(promo => (
-            <SketchDiv key={promo.id} className="promotion-card">
-              <div className="promo-img">🖼️</div>
-              <div className="promo-title">{promo.title}</div>
-              <div className="promo-desc">{promo.desc}</div>
-              <div className="promo-date">Date: {promo.date}</div>
-              <div className="promo-actions">
-                <SketchBtn variant="event" size="small" className="promo-action-btn">Edit</SketchBtn>
-                <SketchBtn variant="event" size="small" className="promo-action-btn">End</SketchBtn>
-                <SketchBtn variant="event" size="small" className="promo-action-btn">Track</SketchBtn>
+        
+        <div className="content-section">
+          <div className="create-btn-row">
+            <SketchBtn variant="primary" size="medium" style={{ width: '100%' }} onClick={handleCreatePromotion}>
+              새 프로모션 만들기
+            </SketchBtn>
+          </div>
+
+          <div className="promotions-list">
+            {isLoading ? (
+              <div className="empty-state">
+                <h3>로딩 중...</h3>
+                <p>프로모션 목록을 불러오는 중입니다.</p>
               </div>
-            </SketchDiv>
-          ))}
+            ) : promotions.length > 0 ? (
+              promotions.map((promotion, index) => (
+                <SketchDiv
+                  key={promotion.promotion_id}
+                  className={`promotion-card ${index === -1 ? 'featured' : ''}`}
+                >
+                  <HatchPattern opacity={0.4} />
+
+                  <div className="promotion-content">
+                    <ImagePlaceholder
+                      src={promotion.image_url}
+                      alt={promotion.title}
+                      className="promotion-image"
+                    />
+                    <div className="promotion-info">
+                      <h3 className="promotion-title">{promotion.title}</h3>
+                      
+                      <div className="promotion-details">
+                        <div className="promotion-detail">
+                          <span>{promotion.description}</span>
+                        </div>
+                        <div className="promotion-detail">
+                          <span className="detail-label">할인:</span>
+                          <span>
+                            {promotion.discount_type === 'percent' ? `${promotion.discount_value}%` : `${promotion.discount_value}원`}
+                          </span>
+                        </div>
+                        <div className="promotion-detail">
+                          <span className="detail-label">기간:</span>
+                          <span>{promotion.start_date} ~ {promotion.end_date}</span>
+                        </div>
+                      </div>
+
+                      <div className="promotion-actions">
+                        <SketchBtn size="small" className="action-btn" onClick={() => handleEditPromotion(promotion)}>
+                          EDIT
+                        </SketchBtn>
+                        <SketchBtn 
+                          size="small" 
+                          className="action-btn"
+                          onClick={() => handleEndPromotion(promotion.promotion_id)}
+                        >
+                          END
+                        </SketchBtn>
+                        <SketchBtn size="small" className="action-btn">
+                          TRACK
+                        </SketchBtn>
+                      </div>
+                    </div>
+                  </div>
+                </SketchDiv>
+              ))
+            ) : (
+              <SketchDiv className="promotion-card">
+                <HatchPattern opacity={0.02} />
+                <div className="empty-state">
+                  <h3>프로모션이 없습니다</h3>
+                  <p>새로운 프로모션을 만들어보세요!</p>
+                </div>
+              </SketchDiv>
+            )}
+          </div>
         </div>
+
+        <ToastContainer
+          position="bottom-center"
+          autoClose={3000}
+          hideProgressBar={true}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+          style={{
+            borderRadius: '25px',
+            fontSize: '14px',
+            padding: '12px 20px'
+          }}
+        />
       </div>
     </>
   );

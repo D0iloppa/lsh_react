@@ -19,28 +19,36 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const fileInputRef = useRef(null);
   const messageEndRef = useRef(null);
   const chatBoxRef = useRef(null);
+  const firstLoadRef = useRef(true);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    getChattingData();
+
     const interval = setInterval(() => {
       getChattingData();
-    }, 1000);
+    }, 500);
 
     return () => clearInterval(interval);
   }, []);
 
-  // 스크롤이 맨 아래일 때만 자동 스크롤
   const isUserAtBottom = () => {
     if (!chatBoxRef.current) return false;
     const { scrollTop, scrollHeight, clientHeight } = chatBoxRef.current;
     return scrollHeight - scrollTop - clientHeight < 50;
   };
-
-  useEffect(() => {
-    if (isUserAtBottom()) {
+useEffect(() => {
+  if (firstLoadRef.current) {
+    setTimeout(() => {
+      messageEndRef.current?.scrollIntoView({ behavior: 'auto' });
+    }, 50); // 🔧 변경
+    firstLoadRef.current = false;
+  } else if (isUserAtBottom()) {
+    setTimeout(() => {
       messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages]);
+    }, 50);
+  }
+}, [messages]);
 
   const formatTime = (date) => {
     return new Intl.DateTimeFormat('ko-KR', {

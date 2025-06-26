@@ -7,6 +7,7 @@ import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
+import { useNavigate } from 'react-router-dom';
 
 const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
@@ -23,6 +24,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
       if (messages && Object.keys(messages).length > 0) {
@@ -229,23 +231,16 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       console.log('Saving venue data:', venueData);
       
       // API 호출
-      const response = await ApiClient.post('/api/register_venue', venueData);
+      const response = await ApiClient.postForm('/api/register_venue', venueData);
       
       console.log('API response:', response);
       
       // 성공 응답 체크 (API 응답 구조에 따라 조정)
       if (response && (response.success || response.data || response.venue_id)) {
         alert('Venue setup completed successfully!');
-        
-        // 메인 페이지로 이동
-        if (navigateToPageWithData && PAGES?.MAIN) {
-          navigateToPageWithData(PAGES.MAIN, { 
-            venue_id: response.venue_id || response.data?.venue_id 
-          });
-        } else {
-          // 페이지 새로고침으로 사용자 정보 업데이트
-          window.location.reload();
-        }
+       
+        // /manager 페이지로 이동
+        navigate('/manager');
         
       } else {
         throw new Error('Invalid response from server');

@@ -6,8 +6,11 @@ import '@components/SketchComponents.css';
 import dayjs from 'dayjs';
 
 import { useAuth } from '@contexts/AuthContext';
-
 import ApiClient from '@utils/ApiClient';
+
+import Swal from 'sweetalert2';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -126,6 +129,27 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
   // 스케줄 상태 변경 핸들러
   const handleStatusChange = async (scheduleId, newStatus) => {
     try {
+      // 해당 스태프 정보 찾기
+      const staff = staffList.find(s => s.schedule_id === scheduleId);
+      const staffName = staff ? staff.staff_name : 'Unknown Staff';
+      
+      // 상태 변경 확인 메시지
+      const result = await Swal.fire({
+        title: '스케줄 설정',
+        text: '스케줄을 설정하시겠습니까?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: '확인',
+        cancelButtonText: '취소',
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33'
+      });
+
+      // 사용자가 취소한 경우
+      if (!result.isConfirmed) {
+        return;
+      }
+
       console.log('Updating schedule status:', scheduleId, 'to:', newStatus);
 
       // 실제 스케줄 상태 변경 API 호출
@@ -146,8 +170,15 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
       );
       
       console.log('✅ Schedule status updated:', newStatus);
+
+      // 성공 시 결과 알림
+      toast.success(`${staffName}의 스케줄이 ${newStatus === 'available' ? '승인' : '거절'}되었습니다.`);
+      
     } catch (error) {
       console.error('Failed to update schedule status:', error);
+
+      // 실패 시 결과 알림
+      toast.error('스케줄 상태 변경에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -418,6 +449,23 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
           ))
         )}
       </div>
+      <ToastContainer
+        position="bottom-center"
+        autoClose={3000}
+        hideProgressBar={true}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        style={{
+          borderRadius: '25px',
+          fontSize: '14px',
+          padding: '12px 20px'
+        }}
+      />
     </>
   );
 };
