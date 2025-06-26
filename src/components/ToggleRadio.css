@@ -1,0 +1,52 @@
+/* ToggleRadio.css */
+.toggle-radio {
+  display: inline-flex;
+  align-items: center;
+}
+
+.toggle-radio-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-radio-input {
+  display: none; /* 기본 체크박스 숨김 */
+}
+
+.toggle-radio-slider {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  background-color: #ccc;
+  border-radius: 22px;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-radio-button {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background-color: white;
+  border-radius: 50%;
+  left: 2px;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* 중요! ON 상태 스타일 */
+.toggle-radio-input:checked + .toggle-radio-slider {
+  background-color: #4CAF50 !important; /* 초록색 강제 적용 */
+}
+
+.toggle-radio-input:checked + .toggle-radio-slider .toggle-radio-button {
+  transform: translateX(18px);
+}
+
+/* 호버 효과 */
+.toggle-radio-label:hover .toggle-radio-slider {
+  opacity: 0.8;
+}

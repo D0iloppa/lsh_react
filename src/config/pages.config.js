@@ -28,7 +28,8 @@ import Promotion from '@pages/Promotion';
 import BookingHistory from '@pages/BookingHistory';
 import Favorites from '@pages/Favorites';
 import Setting from '@pages/Setting';
-
+import Chatting from '@pages/Chatting';
+import ChattingList from '@pages/ChattingList';
 //////////////////////////
 
 
@@ -106,6 +107,8 @@ export const PAGES = {
     EDIT_PROFILE: 'EDIT_PROFILE',
     STAFF_BOOKING_LIST: 'STAFF_BOOKING_LIST',
     STAFF_WORK_SCHEDULE: 'STAFF_WORK_SCHEDULE',
+    CHATTING: 'CHATTING',
+    CHATTINGLIST: 'CHATTINGLIST',
     StaffWorkScheduleCreate,
     StaffReviewHistory,
     StaffSetting,
@@ -151,7 +154,9 @@ export const PAGE_COMPONENTS = {
     [PAGES.STAFF_HOME]: StaffHome,
     [PAGES.EDIT_PROFILE]: EditProfile,
     [PAGES.STAFF_BOOKING_LIST]: StaffBookingList,
-    [PAGES.STAFF_WORK_SCHEDULE]: StaffWorkSchedule
+    [PAGES.STAFF_WORK_SCHEDULE]: StaffWorkSchedule,
+    [PAGES.CHATTING]: Chatting,
+    [PAGES.CHATTINGLIST]: ChattingList
 };
 
 // 기본 페이지

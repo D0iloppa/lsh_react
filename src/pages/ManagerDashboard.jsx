@@ -89,12 +89,21 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       page: PAGES.SETTINGS,
       menuEvent: () => { navigateToPage(PAGES.ManagerSettings); }
     }
+    ,
+    { 
+      id: 9, 
+      icon: <Settings size={24} />, 
+      name: 'CHATTING', 
+      page: PAGES.CHATTING,
+      menuEvent: () => { navigateToPage(PAGES.CHATTINGLIST); }
+    }
   ];
 
   return (
     <>
     <style jsx="true">{` 
       .menu-item { min-height: 58px; }
+      .item-content{background: #fafafa;}
     `}</style>
 
 

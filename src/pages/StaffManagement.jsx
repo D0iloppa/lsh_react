@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect} from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
+import HatchPattern from '@components/HatchPattern';
+import ToggleRadio from '@components/ToggleRadio';
 import '@components/SketchComponents.css';
 
 const mockStaffs = [
@@ -26,6 +28,7 @@ const mockStaffs = [
 ];
 
 const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
+
   return (
     <>
       <style jsx="true">{`
@@ -47,8 +50,7 @@ const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           gap: 0.7rem;
         }
         .staff-card {
-          border: 1px solid #e5e7eb;
-          border-radius: 7px;
+          position: relative;
           background: #fff;
           padding: 0.7rem 0.8rem;
           display: flex;
@@ -56,8 +58,8 @@ const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           gap: 0.7rem;
         }
         .staff-img {
-          width: 54px;
-          height: 54px;
+          width: 60px;
+          height: 60px;
           background: #f3f4f6;
           border-radius: 6px;
           display: flex;
@@ -95,11 +97,12 @@ const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           onBack={goBack}
         />
         <div className="add-btn-row">
-          <SketchBtn variant="primary" size="normal">+ Add Staff</SketchBtn>
+          <SketchBtn variant="primary" size="normal" style={{width: '118px', fontSize: '14px', height: '37px'}}>+ Add Staff
+            <HatchPattern opacity={0.8} /></SketchBtn>
         </div>
         <div className="staff-list">
           {mockStaffs.map(staff => (
-            <SketchDiv key={staff.id} className="staff-card">
+            <SketchDiv key={staff.id} className="staff-card"><HatchPattern opacity={0.4} />
               <div className="staff-img">{staff.img || <span>🖼️</span>}</div>
               <div className="staff-info">
                 <div className="staff-name">{staff.name}</div>
@@ -111,7 +114,7 @@ const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
                 </div>
               </div>
               <div className="staff-actions">
-                <SketchBtn variant="event" size="small" className="action-btn">🔄</SketchBtn>
+                <ToggleRadio />
               </div>
             </SketchDiv>
           ))}
@@ -121,4 +124,4 @@ const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
   );
 };
 
-export default StaffManagement; 
+export default StaffManagement;
