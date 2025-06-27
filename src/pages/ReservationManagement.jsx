@@ -7,6 +7,7 @@ import HatchPattern from '@components/HatchPattern';
 import { MessageCircle, Calendar, Check, Edit } from 'lucide-react';
 import ApiClient from '@utils/ApiClient';
 import { useAuth } from '../contexts/AuthContext';
+import Swal from 'sweetalert2';
 
 const mockReservations = [
   {
@@ -156,13 +157,23 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
     }
   };
 
-  // 예약 관리 API 호출 함수 (승인/취소)
+  // 예약 관리 API 호출 함수 (승인/취소) - SweetAlert2로 변경
   const handleReservationManage = async (reservation_id, mngCode) => {
     const actionText = mngCode === 1 ? '승인' : '취소';
     
-    // 확인창 표시
-    const isConfirmed = window.confirm(`정말 ${actionText}하시겠습니까?`);
-    if (!isConfirmed) return;
+    // 확인창 표시 - SweetAlert2로 변경
+    const result = await Swal.fire({
+      title: '예약 관리',
+      text: `정말 ${actionText}하시겠습니까?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: actionText,
+      cancelButtonText: '취소',
+      confirmButtonColor: mngCode === 1 ? '#10b981' : '#ef4444',
+      cancelButtonColor: '#6b7280'
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       setLoading(true);
@@ -177,11 +188,26 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
       // 성공 시 예약 목록 다시 불러오기
       await loadReservations();
       
-      alert(`예약이 성공적으로 ${actionText}되었습니다.`);
+      // 성공 알림 - SweetAlert2로 변경
+      Swal.fire({
+        title: '성공',
+        text: `예약이 성공적으로 ${actionText}되었습니다.`,
+        icon: 'success',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#10b981'
+      });
       
     } catch (error) {
       console.error(`예약 ${actionText} 실패:`, error);
-      alert(`예약 ${actionText}에 실패했습니다. 다시 시도해주세요.`);
+      
+      // 에러 알림 - SweetAlert2로 변경
+      Swal.fire({
+        title: '오류',
+        text: `예약 ${actionText}에 실패했습니다. 다시 시도해주세요.`,
+        icon: 'error',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#ef4444'
+      });
     } finally {
       setLoading(false);
     }
@@ -352,8 +378,6 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
             {filtered.length === 0 ? (
               <div className="loading-message">
                 No {selectedStatus} reservations found.
-                <br />
-                Total reservations: {reservations.length}
               </div>
             ) : (
               filtered.map(r => (

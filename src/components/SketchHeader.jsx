@@ -107,6 +107,7 @@ const SketchHeader = ({
           align-items: center;
           position: relative;
           z-index: 1;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .page-title {

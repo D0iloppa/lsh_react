@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
+import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
 import dayjs from 'dayjs';
 import { CheckCircle, XCircle } from 'lucide-react';
@@ -259,19 +260,21 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
           display: flex;
           align-items: center;
           justify-content: center;
-          margin: 1.1rem 0 0.7rem 0;
+          margin: 1.1rem 0 1rem 0;
           gap: 0.7rem;
         }
         .calendar-scroll {
-          max-height: 6.8rem;
+          max-height: 7rem;
           overflow-y: auto;
           scroll-snap-type: y mandatory;
         }
         .calendar-2weeks {
+          position: relative;
           display: grid;
           grid-template-rows: repeat(2, 1fr);
           height: 6.8rem;
           scroll-snap-align: start;
+          gap: 3px;
         }
         .calendar-row {
           display: grid;
@@ -305,7 +308,7 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
           border: 2.2px solid #3bb0ff;
         }
         .calendar-date.selected {
-          border: 2.2px solid #222;
+          border: 2px solid #1f2937;
           background: #e6f7ff;
         }
         .calendar-date.other-month {
@@ -314,11 +317,15 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
           background: #f7f7f7;
         }
         .assign-title {
+          background: #f2f2f2;
+          border-top: 1px solid #dedede;
           font-size: 1.15rem;
           font-weight: 600;
-          margin: 1.2rem 0 0.7rem 0;
+          margin: 1rem 0 0.4rem 0;
+          padding: 1rem;
         }
         .staff-row {
+          position: relative;
           display: flex;
           align-items: center;
           border: 1px solid #e5e7eb;
@@ -369,7 +376,7 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
           width: 40px;
           height: 20px;
           background-color: #ccc;
-          border-radius: 20px;
+          border-radius: 5px;
           position: relative;
           cursor: pointer;
         }
@@ -405,9 +412,9 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
           onBack={goBack}
         />
         <div className="month-row">
-          <SketchBtn variant="event" size="small" className="month-nav-btn" onClick={handlePrevMonth}>Previous</SketchBtn>
+          <SketchBtn variant="event" size="small" className="month-nav-btn" onClick={handlePrevMonth}>Previous<HatchPattern opacity={0.6} /></SketchBtn>
           <div className="month-label">{dayjs().month(month).format('MMMM')} {year}</div>
-          <SketchBtn variant="event" size="small" className="month-nav-btn" onClick={handleNextMonth}>Next</SketchBtn>
+          <SketchBtn variant="event" size="small" className="month-nav-btn" onClick={handleNextMonth}>Next<HatchPattern opacity={0.6} /></SketchBtn>
         </div>
         <div className="calendar">
           {days.map(day => (
@@ -417,6 +424,7 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
         <div className="calendar-scroll" ref={calendarScrollRef}>
           {Array.from({ length: Math.ceil(calendarCells.length / 14) }).map((_, twoWeekIdx) => (
             <div className="calendar-2weeks" key={twoWeekIdx}>
+              <HatchPattern opacity={0.3} />
               {[0, 1].map(rowIdx => (
                 <div className="calendar-row" key={rowIdx}>
                   {calendarCells.slice(twoWeekIdx * 14 + rowIdx * 7, twoWeekIdx * 14 + (rowIdx + 1) * 7).map((cell, idx) => (
@@ -447,6 +455,7 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
         ) : (
           staffList.map(staff => (
             <div key={staff.schedule_id} className="staff-row">
+              <HatchPattern opacity={0.6} />
               <div className="staff-info">
                 <div className="staff-name">{staff.staff_name}</div>
                 <div className="staff-time">

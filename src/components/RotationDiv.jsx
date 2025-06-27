@@ -8,6 +8,7 @@ const RotationDiv = ({
   interval = 3000,
   showIndicators = true,
   autoRotate = true,
+  autoLoop = true,
   className = '',
   transitionDuration = 500,
   pauseOnHover = true,
@@ -57,20 +58,28 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
     setCurrentIndex(index);
   };
 
-  const handlePrev = () => {
-    if (currentIndex === 0) {
-      handleBounce();
-      return;
-    }
-    setCurrentIndex(currentIndex - 1);
-  };
-
-  const handleNext = () => {
+   const handleNext = () => {
     if (currentIndex === rotationItems.length - 1) {
-      handleBounce();
+      if (autoLoop) {
+        setCurrentIndex(0); // 첫 번째로 돌아가기
+      } else {
+        handleBounce(); // autoLoop가 false일 때만 바운스
+      }
       return;
     }
     setCurrentIndex(currentIndex + 1);
+  };
+
+  const handlePrev = () => {
+    if (currentIndex === 0) {
+      if (autoLoop) {
+        setCurrentIndex(rotationItems.length - 1); // 마지막으로 이동
+      } else {
+        handleBounce(); // autoLoop가 false일 때만 바운스
+      }
+      return;
+    }
+    setCurrentIndex(currentIndex - 1);
   };
 
   const handleMouseEnter = () => {

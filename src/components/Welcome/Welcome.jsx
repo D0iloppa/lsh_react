@@ -119,6 +119,7 @@ const CocktailIcon = () => (
           interval={4000} 
           showIndicators={true}
           pauseOnHover={true}
+          autoLoop={true}  // 이 옵션 추가 (기본값: true)
           className="venue-rotation"
         >
           {popularVenues.map((venue, index) => (
@@ -145,10 +146,10 @@ const CocktailIcon = () => (
               </div>
               </div>
               
-              <h2 className="brand-subtitle">All Girlsbars Here</h2>
+              {/* <h2 className="brand-subtitle">All Girlsbars Here</h2> */}
               
               <p className="brand-description">
-                {get('Welcome1.1')}
+                Welcome to Le Thanh Ton Sheriff Manager Portal. Manage your reservations, staff, and promotions easily.
               </p>
             </div>
       </div>

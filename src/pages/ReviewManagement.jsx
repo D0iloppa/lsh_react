@@ -3,6 +3,8 @@ import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
+import HatchPattern from '@components/HatchPattern';
+import { Filter, Star, Edit, Trash2, Eye, MessagesSquare } from 'lucide-react';
 
 const mockReviews = [
   {
@@ -40,6 +42,7 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
         .filter-row {
+          padding: 0.3rem;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -50,11 +53,17 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
           margin-right: 0.5rem;
         }
         .filter-select {
+          border-top-left-radius: 12px 7px;
+          border-top-right-radius: 6px 14px;
+          border-bottom-right-radius: 10px 5px;
+          border-bottom-left-radius: 8px 11px;
+          transform: rotate(0.3deg);
           font-size: 1rem;
-          border: 1px solid #e5e7eb;
-          border-radius: 6px;
+          border: 1px solid #666;
           padding: 0.2rem 1.2rem 0.2rem 0.5rem;
           background: #fff;
+
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
         .review-list {
           display: flex;
@@ -62,16 +71,14 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
           gap: 1.1rem;
         }
         .review-card {
-          border: 1px solid #e5e7eb;
-          border-radius: 7px;
-          background: #fff;
           padding: 0.8rem 0.9rem 1.1rem 0.9rem;
+          position: relative;
         }
         .review-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 0.2rem;
+          margin-bottom: 1rem;
         }
         .review-name {
           font-size: 1.05rem;
@@ -87,7 +94,7 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
         .review-content {
           font-size: 0.97rem;
           color: #222;
-          margin-bottom: 0.5rem;
+          margin-bottom: 1rem;
         }
         .review-actions {
           display: flex;
@@ -126,15 +133,16 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
         <div className="review-list">
           {mockReviews.map(review => (
             <SketchDiv key={review.id} className="review-card">
+              <HatchPattern opacity={0.6} />
               <div className="review-header">
                 <div className="review-name">{review.name}</div>
-                <div className="review-rating">★ {review.rating}</div>
+                <div className="review-rating"><Star size={14} fill='yellow'/> {review.rating}</div>
               </div>
               <div className="review-content">"{review.content}"</div>
               <div className="review-actions">
                 <SketchBtn variant="event" size="small" className="review-action-btn">Respond</SketchBtn>
-                <SketchBtn variant="event" size="small" className="review-action-btn">Flag</SketchBtn>
-                <SketchBtn variant="event" size="small" className="review-action-btn">Chat</SketchBtn>
+                <SketchBtn variant="danger" size="small" className="review-action-btn">Flag</SketchBtn>
+                <SketchBtn variant="primary" size="small" className="review-action-btn"><MessagesSquare size={13}/> Chat</SketchBtn>
               </div>
             </SketchDiv>
           ))}

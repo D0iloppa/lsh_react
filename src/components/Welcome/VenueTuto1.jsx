@@ -83,10 +83,10 @@ const VenueTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES}) => {
           </p>
         </div>
 
-        <ImagePlaceholder src="/cdn/tuto1.png"
+        <ImagePlaceholder src="/cdn/venue_setting.png"
         className="w-full h-auto object-contain"
           style={{ 
-            height: '200px',
+            height: '395px',
             width: '100%',
             borderRadius: '1px solid #666',
             borderRadius: '10px',
@@ -122,7 +122,9 @@ const VenueTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES}) => {
       {/* Enter venue information 버튼 */}
       <div className="relative" style={{ marginBottom: '0.75rem' }}>
         <SketchBtn 
+        varint
           onClick={handleEnterVenueInfo}
+          variant = 'event' 
           style={{ 
           padding: '0.75rem',
           backgroundColor: '#f5f5f5',
@@ -160,7 +162,7 @@ const VenueTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES}) => {
       {/* 하단 설명 텍스트 */}
       <div style={{ textAlign: 'center' }}>
         <p style={{ fontSize: '0.75rem', color: '#666' }}>
-          {get('TUTORIAL_EDIT_ANYTIME')}
+          * {get('TUTORIAL_EDIT_ANYTIME')}
         </p>
       </div>
 

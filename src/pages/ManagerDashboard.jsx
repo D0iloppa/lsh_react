@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 
 
-import { Calendar, Users, ClipboardList, Tag, Star, Headphones, Bell, Settings } from 'lucide-react';
+import { Calendar, Users, ClipboardList, Tag, Star, Headphones, Bell, Settings, MessagesSquare } from 'lucide-react';
 
 import SketchHeader from '@components/SketchHeader';
 import SketchMenuBtn from '@components/SketchMenuBtn';
@@ -37,15 +37,32 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
   // 대시보드 상단 요약 정보
   const summary = [
     {
-      title: "Today's Reservations",
+      title: (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <Calendar size={16} opacity={0.5}/>
+        <span>Today's Reservations</span>
+      </div>
+    ),
       content: 'You have 12 reservations today.'
     },
     {
-      title: 'Active Promotions',
+      //title: 'Active Promotions',
+      title: (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <Tag size={16} opacity={0.5}/>
+        <span>Active Promotions</span>
+      </div>
+    ),
       content: '3 ongoing promotions.'
     },
     {
-      title: 'Recent Reviews',
+      //title: 'Recent Reviews',
+      title: (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <Star size={16} opacity={0.5}/>
+        <span>Recent Reviews</span>
+      </div>
+    ),
       content: '5 new reviews.'
     }
   ];
@@ -111,7 +128,7 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
     ,
     { 
       id: 9, 
-      icon: <Settings size={24} />, 
+      icon: <MessagesSquare size={24} />, 
       name: 'CHATTING', 
       page: PAGES.CHATTING,
       menuEvent: () => { navigateToPage(PAGES.CHATTINGLIST); }
@@ -121,8 +138,29 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
   return (
     <>
     <style jsx="true">{` 
-      .menu-item { min-height: 58px; }
-      .item-content{background: #fafafa;}
+      .menu-item { 
+      position: relative;
+      padding: 0.75rem 1rem;
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
+      border: 1px solid #d1d5db;
+      border-radius: 12px 10px 8px 14px;
+      transform: rotate(0.4deg);
+      transition: all 0.2s ease;
+      cursor: pointer;
+      box-sizing: border-box;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(0, 0, 0, 0.05)
+      }
+      .item-content{
+        position: relative;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
+        color: #1f2937;
+        border-color: #666;
+        box-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05);}
+          .menu-icon {margin-top: 3px;
+          }
     `}</style>
 
 
@@ -147,7 +185,7 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
           }}>
             <SketchDiv className="item-content">
               <HatchPattern opacity={0.4} />
-              <div style={{padding: '0.9rem'}}>
+              <div className="big-card" style={{padding: '0.9rem'}}>
                 <div style={{ fontWeight: 600, fontSize: '0.98rem', marginBottom: 2 }}>{item.title}</div>
                 <div style={{ color: '#555', fontSize: '0.92rem', lineHeight: 1.3 }}>{item.content}</div>
               </div>

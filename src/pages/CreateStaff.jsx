@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
+import HatchPattern from '@components/HatchPattern'
 import SketchDiv from '@components/SketchDiv';
 import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
@@ -11,7 +12,7 @@ const roleOptions = [
   { value: 'other', label: 'Other' },
 ];
 
-const CreateStaff = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
+const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
   const [form, setForm] = useState({
     name: '',
     username: '',
@@ -25,6 +26,11 @@ const CreateStaff = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
+    const handleAddStaff = () => {
+   navigateToPage(PAGES.STAFF_MANAGEMENT)
+  };
+
+
   return (
     <>
       <style jsx="true">{`
@@ -32,19 +38,18 @@ const CreateStaff = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
           max-width: 28rem;
           margin: 0 auto;
           background: #fff;
-          min-height: 100vh;
+          min-height: 95vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
         .form-title {
+          position:relative;
           font-size: 1.3rem;
           font-weight: 600;
-          margin: 1.2rem 0 1.1rem 0;
+          padding: 0.3rem;
+          margin: 1.2rem 0 0.2rem 0;
           text-align: left;
         }
         .form-box {
-          border: 1px solid #e5e7eb;
-          border-radius: 7px;
-          background: #fff;
           padding: 1.1rem 1.2rem 1.2rem 1.2rem;
         }
         .form-label {
@@ -78,6 +83,7 @@ const CreateStaff = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
         />
         <div className="form-title">Create New Staff Account</div>
         <SketchDiv className="form-box">
+          <HatchPattern opacity={0.4} />
           <div className="form-field">
             <div className="form-label">Staff Member's Name</div>
             <SketchInput
@@ -132,8 +138,8 @@ const CreateStaff = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
             ))}
           </div>
           <div className="form-actions">
-            <SketchBtn variant="primary" size="small">Save</SketchBtn>
-            <SketchBtn variant="event" size="small">Cancel</SketchBtn>
+            <SketchBtn variant="event" size="small">Save</SketchBtn>
+            <SketchBtn variant="danger" size="small" onClick={handleAddStaff}>Cancel</SketchBtn>
           </div>
         </SketchDiv>
       </div>

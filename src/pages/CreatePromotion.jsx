@@ -4,7 +4,7 @@ import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
-
+import HatchPattern from '@components/HatchPattern';
 import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
 
@@ -181,7 +181,7 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           display: flex;
           flex-direction: column;
           gap: 0.7rem;
-          margin-top: 1rem;
+          margin-bottom: 1rem;
         }
         #discount_value{
           width: 100%;
@@ -241,7 +241,7 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
         <div className="form-label">Promotion Dates</div>
         <div className="date-row">
           <div className="date-field">
-            <div className="form-label" style={{fontWeight:400}}>Start Date</div>
+            <div className="form-label" style={{fontSize: '0.3rem'}}>- Start Date</div>
             <SketchInput
               name="startDate"
               value={form.startDate}
@@ -251,7 +251,7 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
             />
           </div>
           <div className="date-field">
-            <div className="form-label" style={{fontWeight:400}}>End Date</div>
+            <div className="form-label" style={{fontSize: '0.3rem'}}>- End Date</div>
             <SketchInput
               name="endDate"
               value={form.endDate}
@@ -271,19 +271,24 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           />
         </div>
         <div className="form-field">
-          <div className="form-label">Discount</div>
+          <div className="form-label" style={{marginBottom:'-13px'}}>Discount</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <select
               name="discount_type"
               value={form.discount_type}
               onChange={handleChange}
               style={{
-                padding: '0.5rem',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                fontSize: '0.8rem',
-                width: '120px'
-              }}
+                  padding: '0.6rem',
+                  border: '1px solid #666',
+                  borderTopLeftRadius: '6px 8px',
+                  borderTopRightRadius: '10px 5px',
+                  borderBottomRightRadius: '8px 12px',
+                  borderBottomLeftRadius: '12px 6px',
+                  transform: 'rotate(0.2deg)',
+                  fontSize: '0.8rem',
+                  width: '120px',
+                  fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"
+                }}
             >
               <option value="percent">Percent</option>
             </select>
@@ -309,12 +314,12 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           </SketchBtn>
           */}
           <SketchBtn 
-            variant="primary" 
+            variant="event" 
             size="medium" 
             style={{ width: '100%' }}
             onClick={handleSubmit}
             disabled={isSubmitting}
-          >
+          ><HatchPattern opacity={0.8} />
             {isSubmitting ? '처리 중...' : (isEditMode ? "수정 완료" : "저장 및 활성화")}
           </SketchBtn>
         </div>

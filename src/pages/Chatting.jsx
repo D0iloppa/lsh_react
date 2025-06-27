@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import SketchHeader from '@components/SketchHeader';
+import { ImageUploader } from '@components/ImageUploader';
 import { useAuth } from '../contexts/AuthContext';
 import '@components/SketchComponents.css';
-import { Image as ImageIcon } from 'lucide-react';
+import ApiClient from '@utils/ApiClient';
 import axios from 'axios';
 
 const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
@@ -13,10 +14,10 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const nickname = user?.name;
   const venue_id = user?.venue_id;
 
-  const [messages, setMessages] = useState([]);
+  const [chat_messages, setChatMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [modalImage, setModalImage] = useState(null);
-  const fileInputRef = useRef(null);
+  const lastChatSnRef = useRef(null);
   const messageEndRef = useRef(null);
   const chatBoxRef = useRef(null);
   const firstLoadRef = useRef(true);
@@ -37,18 +38,18 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     const { scrollTop, scrollHeight, clientHeight } = chatBoxRef.current;
     return scrollHeight - scrollTop - clientHeight < 50;
   };
-useEffect(() => {
-  if (firstLoadRef.current) {
-    setTimeout(() => {
-      messageEndRef.current?.scrollIntoView({ behavior: 'auto' });
-    }, 50); // 🔧 변경
-    firstLoadRef.current = false;
-  } else if (isUserAtBottom()) {
-    setTimeout(() => {
-      messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 50);
-  }
-}, [messages]);
+
+  useEffect(() => {
+    if (firstLoadRef.current) {
+      // 첫 로딩 시에는 스크롤하지 않음 (getChattingData에서 처리)
+      firstLoadRef.current = false;
+    } else if (isUserAtBottom()) {
+      // 사용자가 맨 밑에 있을 때만 자동 스크롤
+      setTimeout(() => {
+        messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 50);
+    }
+  }, [chat_messages]);
 
   const formatTime = (date) => {
     return new Intl.DateTimeFormat('ko-KR', {
@@ -62,18 +63,61 @@ useEffect(() => {
     const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
     try {
       const response = await axios.get(`${API_HOST}/api/getChattingData`, {
-        params: { room_sn },
+        params: { 
+          room_sn,
+          chat_sn: lastChatSnRef.current || null
+        },
       });
 
+       /*
+      console.log('API Response:', response.data);
+      console.log('Current lastChatSnRef.current:', lastChatSnRef.current);
+      */
       const newMessages = response.data.map((item, index) => ({
         id: index + 1,
         sender: item.sender_type === 'user' ? 'other' : 'me',
         text: item.chat_msg || '',
         image: item.image_url || null,
+        chat_sn: item.chat_sn,
         time: formatTime(new Date(item.send_dt)),
       }));
 
-      setMessages(newMessages);
+      // console.log('Processed newMessages:', newMessages);
+
+      // 초기 로드와 업데이트 구분
+      if (lastChatSnRef.current === null) {
+        // 첫 로드 시 전체 메시지 설정
+        console.log('First load - setting all messages:', newMessages);
+        setChatMessages(newMessages);
+        
+        // 첫 로드 후에만 lastChatSnRef.current 설정
+        if (newMessages.length > 0) {
+          const lastMessage = newMessages[newMessages.length - 1];
+          lastChatSnRef.current = lastMessage.chat_sn;
+          console.log('Updated lastChatSnRef.current to:', lastChatSnRef.current);
+          
+          // 첫 로딩 시 화면 맨 밑으로 스크롤
+          setTimeout(() => {
+            messageEndRef.current?.scrollIntoView({ behavior: 'auto' });
+          }, 100);
+        }
+      } else {
+        // 기존 메시지에 새로운 메시지만 추가
+        const newChatMessages = newMessages.filter(msg => msg.chat_sn > lastChatSnRef.current);
+        // console.log('Filtered new messages:', newChatMessages);
+        if (newChatMessages.length > 0) {
+          setChatMessages(prev => {
+            const updated = [...prev, ...newChatMessages];
+            //console.log('Updated chat_messages:', updated);
+            return updated;
+          });
+          
+          // 새로운 메시지가 추가된 후 lastChatSnRef.current 업데이트
+          const lastMessage = newChatMessages[newChatMessages.length - 1];
+          lastChatSnRef.current = lastMessage.chat_sn;
+          // console.log('Updated lastChatSnRef.current to:', lastChatSnRef.current);
+        }
+      }
     } catch (error) {
       console.error('❌ 채팅 데이터 불러오기 실패:', error);
     }
@@ -84,13 +128,13 @@ useEffect(() => {
 
     const now = new Date();
     const newMessage = {
-      id: messages.length + 1,
+      id: chat_messages.length + 1,
       sender: 'me',
       text: inputValue.trim(),
       time: formatTime(now),
     };
 
-    setMessages([...messages, newMessage]);
+    // setChatMessages([...chat_messages, newMessage]);
     setInputValue('');
 
     const chatData = {
@@ -110,6 +154,8 @@ useEffect(() => {
     await insertChattingData(chatData);
   };
 
+  
+
   const insertChattingData = async (params) => {
     const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
     try {
@@ -120,21 +166,29 @@ useEffect(() => {
     }
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const handleUploadComplete = (content_id, file) => {
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const newMessage = {
-        id: messages.length + 1,
-        sender: 'me',
-        image: reader.result,
-        time: formatTime(new Date()),
-      };
-      setMessages([...messages, newMessage]);
-    };
-    reader.readAsDataURL(file);
+    console.log('이미지 전송 ^_T', content_id);
+
+    insertChattingData({
+      room_sn,
+      chat_msg: '',
+      sender: user_id,
+      sender_type: 'manager',
+      content_id: content_id,
+      room_name: nickname,
+      room_description: '',
+      created_by: user_id,
+      creator_type: 'manager',
+      last_message_preview: '사진',
+      venue_id,
+    })
+
+  };
+
+  const handleUploadError = (error) => {
+    console.error('이미지 업로드 실패:', error);
+    alert('이미지 업로드에 실패했습니다.');
   };
 
   return (
@@ -252,7 +306,8 @@ useEffect(() => {
       <div className="chat-container">
         <SketchHeader title="1:1 채팅" showBack={true} onBack={goBack} rightButtons={[]} />
         <div className="chat-messages" ref={chatBoxRef}>
-          {messages.map((msg) => (
+          {console.log('Rendering chat_messages:', chat_messages)}
+          {chat_messages.map((msg) => (
             <div key={msg.id} className={`chat-message-wrapper ${msg.sender}`}>
               {msg.sender === 'me' ? (
                 <>
@@ -289,16 +344,13 @@ useEffect(() => {
         </div>
 
         <div className="chat-input-wrapper">
-          <button className="image-button" onClick={() => fileInputRef.current.click()}>
-            <ImageIcon size={22} strokeWidth={1.6} />
-          </button>
-          <input
-            type="file"
-            accept="image/*"
-            ref={fileInputRef}
-            style={{ display: 'none' }}
-            onChange={handleImageUpload}
-            capture="environment"
+          <ImageUploader 
+            apiClient={ApiClient}
+            onUploadComplete={handleUploadComplete}
+            onUploadError={handleUploadError}
+            showContextMenu={true}
+            showPreview={false}
+            className="chat-image-uploader"
           />
           <input
             className="chat-input"

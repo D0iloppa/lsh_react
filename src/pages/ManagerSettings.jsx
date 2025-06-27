@@ -4,9 +4,11 @@ import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
+import HatchPattern from '@components/HatchPattern';
 
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
+import { ZoomIn } from 'lucide-react';
 
 const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
 
@@ -50,17 +52,16 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           background: #fff;
           min-height: 100vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+          padding: 1rem;
         }
         .section-title {
           font-size: 1.15rem;
           font-weight: 600;
-          margin: 1.2rem 0 0.7rem 0;
         }
         .section-box {
-          border: 1px solid #e5e7eb;
-          border-radius: 7px;
+          border: none;
           background: #fff;
-          padding: 0.7rem 0.9rem;
+          padding: 0.7rem 0rem;
           margin-bottom: 1.1rem;
         }
         .input-row {
@@ -82,12 +83,13 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           gap: 1rem;
         }
       `}</style>
-      <div className="settings-container">
+      
         <SketchHeader
           title="Settings"
           showBack={true}
           onBack={goBack}
         />
+        <div className="settings-container">
         <div className="section-title">Manage Shop Detail</div>
         <SketchDiv className="section-box" style={{marginBottom:'1.2rem'}}>
           <SketchBtn 
@@ -95,7 +97,7 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           size="medium" 
           style={{ width: '100%' }}
           onClick={handleShopDetail}
-          >Shop Detail</SketchBtn>
+          ><HatchPattern opacity={0.6} /><ZoomIn size={14} style={{marginRight: '5px'}}/> Shop Detail </SketchBtn>
         </SketchDiv>
 
         <div className="section-title">Update Business Info</div>
@@ -117,7 +119,7 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
             />
           </div>
           <div className="save-btn-row">
-            <SketchBtn variant="event" size="small">Save</SketchBtn>
+            <SketchBtn variant="accent" size="small" style={{width: '30%'}}><HatchPattern opacity={0.6} /> Save</SketchBtn>
           </div>
         </SketchDiv>
 
@@ -151,7 +153,7 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
             />
           </div>
           <div className="save-btn-row">
-            <SketchBtn variant="event" size="small">Save</SketchBtn>
+            <SketchBtn variant="accent" size="small"  style={{width: '30%'}}><HatchPattern opacity={0.6} /> Save</SketchBtn>
           </div>
         </SketchDiv>
 
@@ -159,24 +161,46 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
         <SketchDiv className="section-box">
           <div className="noti-row">
             <span>Email Notifications</span>
-            <SketchBtn variant="event" size="small">{emailNoti ? 'On' : 'Off'}</SketchBtn>
+            <SketchBtn 
+              variant={emailNoti ? "green" : "danger"} 
+              size="small"  
+              style={{width: '30%'}}
+            ><HatchPattern opacity={0.6} />
+              {emailNoti ? 'On' : 'Off'}
+            </SketchBtn>
           </div>
           <div className="noti-row">
             <span>SMS Notifications</span>
-            <SketchBtn variant="event" size="small">{smsNoti ? 'On' : 'Off'}</SketchBtn>
+            <SketchBtn 
+              variant={smsNoti ? "green" : "danger"} 
+              size="small"  
+              style={{width: '30%'}}
+            ><HatchPattern opacity={0.6} />
+              {smsNoti ? 'On' : 'Off'}
+            </SketchBtn>
           </div>
         </SketchDiv>
-
         <div className="section-title">Language</div>
         <SketchDiv className="section-box">
           <div className="lang-row">
-            <select value={'English'} onChange={(e) => {} } style={{ fontSize: '1rem', borderRadius: '6px', border: '1px solid #e5e7eb', padding: '0.3rem 1.2rem 0.3rem 0.5rem', background: '#fff' }}>
+            <select value={'English'} onChange={(e) => {} } style={{ 
+                  fontSize: '1rem', 
+                  padding: '0.3rem 1.2rem 0.3rem 0.5rem', 
+                  background: '#fff',
+                  borderTopLeftRadius: '6px 8px',
+                  borderTopRightRadius: '10px 5px',
+                  borderBottomRightRadius: '8px 12px',
+                  borderBottomLeftRadius: '12px 6px',
+                  transform: 'rotate(0.2deg)',
+                  fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
+                  width: '212px'
+                }}>
               <option>English</option>
               <option>Korean</option>
               <option>Vietnamese</option>
               <option>Japanese</option>
             </select>
-            <SketchBtn variant="event" size="small">Save</SketchBtn>
+            <SketchBtn variant="accent" size="small" style={{width: '30%'}}><HatchPattern opacity={0.6} /> Save</SketchBtn>
           </div>
         </SketchDiv>
       </div>

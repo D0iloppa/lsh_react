@@ -46,6 +46,24 @@ const ApiClient = {
     }).then(response => response.data);
   },
 
+  // multipart/form-data 전용 POST 메서드 추가
+  postMultipart(endpoint, data = {}, config = {}) {
+    const formData = new FormData();
+    
+    // 객체를 FormData로 변환
+    Object.keys(data).forEach(key => {
+      formData.append(key, data[key]);
+    });
+    
+    return axiosInstance.post(endpoint, formData, {
+      ...config,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        ...config.headers
+      }
+    }).then(response => response.data);
+  },
+
   // DELETE 요청
   delete(endpoint, config = {}) {
     return axiosInstance.delete(endpoint, config).then(response => response.data);
@@ -63,6 +81,21 @@ const ApiClient = {
     } else {
       delete axiosInstance.defaults.headers.common['Authorization'];
     }
+  },
+
+  // 이미지 업로드 전용 메서드
+  uploadImage(file, config = {}) {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    return axiosInstance.post('/api/contentUpload', formData, {
+      ...config,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        ...config.headers
+      },
+      onUploadProgress: config.onUploadProgress
+    }).then(response => response.data);
   },
 
   // axios 인스턴스 직접 접근 (필요시)

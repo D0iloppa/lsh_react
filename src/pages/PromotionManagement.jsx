@@ -176,7 +176,6 @@ const PromotionManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, 
           padding: 1.5rem;
           display: flex;
           flex-direction: column;
-          gap: 1.5rem;
         }
 
         .filter-section {
@@ -392,7 +391,7 @@ const PromotionManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, 
         <div className="content-section">
           <div className="create-btn-row">
             <SketchBtn variant="primary" size="medium" style={{ width: '100%' }} onClick={handleCreatePromotion}>
-              새 프로모션 만들기
+              + 새 프로모션 만들기 <HatchPattern opacity={0.6} />
             </SketchBtn>
           </div>
 
@@ -437,11 +436,11 @@ const PromotionManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, 
 
                       <div className="promotion-actions">
                         <SketchBtn size="small" className="action-btn" onClick={() => handleEditPromotion(promotion)}>
-                          EDIT
+                          <Edit size={13}/> EDIT
                         </SketchBtn>
                         <SketchBtn 
                           size="small" 
-                          className="action-btn"
+                          className="action-btn" variant="danger"
                           onClick={() => handleEndPromotion(promotion.promotion_id)}
                         >
                           END

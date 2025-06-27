@@ -97,7 +97,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
 
   return (
     <>
-      <h2 className="sketch-title">{ get('Login1.1') }</h2>
+      <h2 className="sketch-title">{ get('Login1.1') } </h2>
       
       <form onSubmit={onSubmit}>
         {/* General Error/Success Message */}
@@ -197,7 +197,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
             navigate('/register');
           }}
         >
-          { get('Welcome1.3') }
+          { get('Menu1.1') }
         </a>
       </div>
                           <LoadingScreen 

@@ -1,6 +1,7 @@
 import React from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
+import HatchPattern from '@components/HatchPattern';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 
@@ -28,6 +29,19 @@ const mockInquiries = [
   },
 ];
 
+const getStatusStyle = (status) => {
+  switch(status) {
+    case 'New':
+      return { color: '#dc2626',   }; // 빨간색
+    case 'In Progress':
+      return { color: '#d97706'}; // 노란색
+    case 'Resolved':
+      return { color: '#059669', background: '#eeffee'}; // 초록색
+    default:
+      return { color: '#6b7280' }; // 기본 회색
+  }
+};
+
 const CustomerSupport = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
   return (
     <>
@@ -50,12 +64,11 @@ const CustomerSupport = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           gap: 0.7rem;
         }
         .inquiry-card {
-          border: 1px solid #e5e7eb;
-          border-radius: 7px;
           background: #fff;
           padding: 0.8rem 0.9rem 0.8rem 0.9rem;
           display: flex;
           align-items: center;
+          position: relative;
         }
         .inquiry-info {
           flex: 1;
@@ -84,12 +97,16 @@ const CustomerSupport = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
         <div className="inquiry-title">Customer Inquiries</div>
         <div className="inquiry-list">
           {mockInquiries.map(inq => (
-            <SketchDiv key={inq.id} className="inquiry-card">
+            <SketchDiv key={inq.id} className="inquiry-card"><HatchPattern opacity={0.3} />
               <div className="inquiry-info">
                 <div className="inquiry-title-main">{inq.title}</div>
                 <div className="inquiry-meta">{inq.user} - {inq.date}</div>
               </div>
-              <SketchBtn variant="event" size="small" className="inquiry-status-btn">{inq.status}</SketchBtn>
+              <SketchBtn variant="primary" size="small" className="inquiry-status-btn"  style={{
+                width: '38%',
+                ...getStatusStyle(inq.status) // 상태별 스타일 적용
+              }}>
+              {inq.status}<HatchPattern opacity={0.6} /></SketchBtn>
             </SketchDiv>
           ))}
         </div>

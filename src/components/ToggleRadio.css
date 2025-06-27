@@ -20,7 +20,7 @@
   width: 40px;
   height: 22px;
   background-color: #ccc;
-  border-radius: 22px;
+  border-radius: 5px;
   transition: background-color 0.3s ease;
   display: flex;
   align-items: center;

@@ -64,6 +64,10 @@ const SketchBtn = ({
           background: linear-gradient(135deg, #00f0ff, #fff0d8);
         }
 
+        .sketch-btn.green {
+          background-color: rgb(47 209 168);
+          color: white;
+        }
 
         .sketch-btn.primary {
           background-color: white;

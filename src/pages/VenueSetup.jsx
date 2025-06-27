@@ -419,7 +419,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           font-size: 0.875rem;
           color: #888;
           text-align: center;
-          margin-top: 1.2rem;
+          margin-bottom: 1rem;
           line-height: 1.4;
         }
         .required-field {
@@ -434,6 +434,8 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           opacity: 0.6;
           cursor: not-allowed;
         }
+        
+        .close_time{margin-bottom: 1px}
       `}</style>
       <div className="venue-container">
         <SketchHeader
@@ -445,11 +447,11 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         <div className="section-title">{get('VENUE_UPLOAD_IMAGES')}</div>
         <div className="img-row">
           <div className="img-upload">
-            🖼️
+            +
             <div className="img-label">{get('VENUE_LOGO')}</div>
           </div>
           <div className="img-upload">
-            🖼️
+            +
             <div className="img-label">{get('VENUE_COVER_PHOTO')}</div>
           </div>
         </div>

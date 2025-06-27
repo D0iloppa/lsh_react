@@ -9,6 +9,8 @@ import { useAuth } from '../contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
 import { Star } from 'lucide-react';
 
+import Swal from 'sweetalert2';
+
 const mockStaffs = [
   {
     id: 1,
@@ -44,12 +46,23 @@ const StaffManagement = ({  navigateToPage, navigateToPageWithData, PAGES, goBac
     const actionText = newStatus === 'active' ? '활성화' : '비활성화';
     
     // 확인창 표시
-    const isConfirmed = window.confirm(`정말 이 스태프를 ${actionText}하시겠습니까?`);
-    if (!isConfirmed) {
+    const result = await Swal.fire({
+      title: '스태프 상태 변경',
+      text: `정말 이 스태프를 ${actionText}하시겠습니까?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: actionText,
+      cancelButtonText: '취소',
+      confirmButtonColor: newStatus === 'active' ? '#10b981' : '#ef4444',
+      cancelButtonColor: '#6b7280'
+    });
+
+     if (!result.isConfirmed) {
       // 취소 시 목록 새로고침으로 원래 상태로 되돌리기
       await loadStaffList();
       return;
     }
+
 
     try {
       const response = await ApiClient.postForm('/api/updateStaffStatus', {
@@ -63,11 +76,22 @@ const StaffManagement = ({  navigateToPage, navigateToPageWithData, PAGES, goBac
       // 성공 시 목록 다시 불러오기
       await loadStaffList();
       
-      alert(`스태프가 성공적으로 ${actionText}되었습니다.`);
-      
+      Swal.fire({
+        title: '성공',
+        text: `스태프가 성공적으로 ${actionText}되었습니다.`,
+        icon: 'success',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#10b981'
+      });
     } catch (error) {
       console.error(`Staff ${actionText} 실패:`, error);
-      alert(`스태프 ${actionText}에 실패했습니다. 다시 시도해주세요.`);
+      Swal.fire({
+        title: '오류',
+        text: `스태프 ${actionText}에 실패했습니다. 다시 시도해주세요.`,
+        icon: 'error',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#ef4444'
+      });
       
       // 실패 시 목록 새로고침으로 원래 상태로 되돌리기
       await loadStaffList();
@@ -158,7 +182,7 @@ const StaffManagement = ({  navigateToPage, navigateToPageWithData, PAGES, goBac
 
   // 스태프 추가 버튼 클릭 핸들러
   const handleAddStaff = () => {
-   console.log("스태프 등록 창 이동")
+   navigateToPage(PAGES.CREATE_STAFF)
   };
 
   // 스태프 목록 로드 함수
@@ -225,7 +249,7 @@ const StaffManagement = ({  navigateToPage, navigateToPageWithData, PAGES, goBac
         .add-btn-row {
           display: flex;
           justify-content: flex-end;
-          margin: 0.7rem 0 1.1rem 0;
+          margin: 0.7rem 0 1rem 0;
         }
         .staff-list {
           display: flex;
@@ -241,8 +265,8 @@ const StaffManagement = ({  navigateToPage, navigateToPageWithData, PAGES, goBac
           gap: 0.7rem;
         }
         .staff-img {
-          width: 60px;
-          height: 60px;
+          width: 70px;
+          height: 70px;
           background: #f3f4f6;
           border-radius: 6px;
           display: flex;
@@ -257,6 +281,7 @@ const StaffManagement = ({  navigateToPage, navigateToPageWithData, PAGES, goBac
           height: 100%;
           object-fit: cover;
           border-radius: 6px;
+          object-position: top;
         }
         .staff-info {
           flex: 1;
@@ -298,7 +323,7 @@ const StaffManagement = ({  navigateToPage, navigateToPageWithData, PAGES, goBac
           onBack={goBack}
         />
         <div className="add-btn-row">
-          <SketchBtn variant="primary" size="normal" style={{width: '118px', fontSize: '14px', height: '37px'}} onClick={handleAddStaff}>+ Add Staff
+          <SketchBtn variant="primary" size="medium" style={{padding: '0', fontSize: '14px', padding:'0.75rem 1rem'}} onClick={handleAddStaff}>+ Add Staff
             <HatchPattern opacity={0.8} /></SketchBtn>
         </div>
         
@@ -320,7 +345,7 @@ const StaffManagement = ({  navigateToPage, navigateToPageWithData, PAGES, goBac
                     {staff.img ? (
                       <img src={staff.img} alt={staff.name} />
                     ) : (
-                      <span>🖼️</span>
+                      <span>X</span>
                     )}
                   </div>
                   <div className="staff-info">
