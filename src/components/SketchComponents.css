@@ -169,15 +169,17 @@
   .sketch-error-message {
     color: #dc2626;
     font-size: 0.875rem;
-    margin-top: 0.25rem;
+    margin-top: 0.5rem;
     transform: rotate(0.1deg);
+    font-family: BMHanna, "Comic Sans MS", cursive, sans-serif;
   }
   
   .sketch-success-message {
     color: #059669;
     font-size: 0.875rem;
-    margin-top: 0.25rem;
+    margin-top: 0.5rem;
     transform: rotate(-0.1deg);
+    font-family: BMHanna, "Comic Sans MS", cursive, sans-serif;
   }
   
   /* ========== Sketch Title ========== */

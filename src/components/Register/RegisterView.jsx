@@ -21,8 +21,6 @@ export default function RegisterView() {
   
   useEffect(() => {
   window.scrollTo(0, 0);
-  
-  
       if (messages && Object.keys(messages).length > 0) {
         console.log('✅ Messages loaded:', messages);
         // setLanguage('en'); // 기본 언어 설정
@@ -62,6 +60,13 @@ export default function RegisterView() {
     }
   };
 
+   const validateNickname = (nickname) => {
+    if (!nickname.trim()) return get('VALIDATION_NICKNAME_REQUIRED') || '닉네임을 입력해주세요';
+    if (nickname.trim().length < 2) return get('VALIDATION_NICKNAME_MIN_LENGTH') || '닉네임은 최소 2자 이상이어야 합니다';
+    if (nickname.trim().length > 20) return get('VALIDATION_NICKNAME_MAX_LENGTH') || '닉네임은 20자 이하로 입력해주세요';
+    return null;
+  };
+
   const validateForm = () => {
     const newErrors = {};
     
@@ -83,6 +88,9 @@ export default function RegisterView() {
     } else if (formData.password !== formData.rePassword) {
       newErrors.rePassword = 'Passwords do not match';
     }
+
+     const nicknameError = validateNickname(formData.nickname);  
+    if (nicknameError) newErrors.nickname = nicknameError;
 
     // Optional fields validation (format check only if provided)
     if (formData.birth_date && !/^\d{4}-\d{2}-\d{2}$/.test(formData.birth_date)) {

@@ -34,7 +34,7 @@ const mockStaffs = [
 
 const StaffManagement = ({  navigateToPage, navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
 
-  console.log("PAGES", PAGES)
+  //console.log("PAGES", PAGES)
 
   const { user } = useAuth();
   const [staffList, setStaffList] = useState([]);

@@ -39,6 +39,31 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     return scrollHeight - scrollTop - clientHeight < 50;
   };
 
+  // 🎯 스크롤을 맨 밑으로 이동시키는 함수
+  const scrollToBottom = (behavior = 'smooth') => {
+    // 여러 방법을 시도해서 확실하게 스크롤
+    if (chatBoxRef.current) {
+      // 방법 1: scrollTop 직접 설정
+      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+      
+      // 방법 2: scrollIntoView 사용
+      setTimeout(() => {
+        messageEndRef.current?.scrollIntoView({ 
+          behavior, 
+          block: 'end',
+          inline: 'nearest'
+        });
+      }, 10);
+      
+      // 방법 3: 추가 보정 (이미지 로딩 등을 고려)
+      setTimeout(() => {
+        if (chatBoxRef.current) {
+          chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+        }
+      }, 100);
+    }
+  };
+
   useEffect(() => {
     if (firstLoadRef.current) {
       // 첫 로딩 시에는 스크롤하지 않음 (getChattingData에서 처리)
@@ -79,6 +104,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         text: item.chat_msg || '',
         image: item.image_url || null,
         chat_sn: item.chat_sn,
+        sender_type: item.sender_type, // 추가: 원본 sender_type 보존
         time: formatTime(new Date(item.send_dt)),
       }));
 
@@ -96,10 +122,10 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           lastChatSnRef.current = lastMessage.chat_sn;
           console.log('Updated lastChatSnRef.current to:', lastChatSnRef.current);
           
-          // 첫 로딩 시 화면 맨 밑으로 스크롤
+          // 🎯 첫 로딩 시 반드시 맨 밑으로 스크롤 (시간 여유를 더 줌)
           setTimeout(() => {
-            messageEndRef.current?.scrollIntoView({ behavior: 'auto' });
-          }, 100);
+            scrollToBottom('auto');
+          }, 200);
         }
       } else {
         // 기존 메시지에 새로운 메시지만 추가
@@ -114,6 +140,16 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           
           // 새로운 메시지가 추가된 후 lastChatSnRef.current 업데이트
           const lastMessage = newChatMessages[newChatMessages.length - 1];
+
+          // 🎯 내가 보낸 메시지이거나 사용자가 맨 밑에 있을 때 스크롤
+          const shouldScroll = lastMessage.sender_type === 'manager' || isUserAtBottom();
+          
+          if (shouldScroll) {
+            setTimeout(() => {
+              scrollToBottom(lastMessage.sender_type === 'manager' ? 'auto' : 'smooth');
+            }, 100);
+          }
+          
           lastChatSnRef.current = lastMessage.chat_sn;
           // console.log('Updated lastChatSnRef.current to:', lastChatSnRef.current);
         }
@@ -135,8 +171,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     };
 
     // setChatMessages([...chat_messages, newMessage]);
-    setInputValue('');
-
+    
     const chatData = {
       room_sn,
       chat_msg: inputValue.trim(),
@@ -150,6 +185,13 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       last_message_preview: inputValue.trim(),
       venue_id,
     };
+
+    setInputValue(''); // 입력창 즉시 비우기
+    
+    // 🎯 메시지 전송 후 약간의 지연을 두고 스크롤
+    setTimeout(() => {
+      scrollToBottom('auto');
+    }, 150);
 
     await insertChattingData(chatData);
   };
@@ -182,7 +224,12 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       creator_type: 'manager',
       last_message_preview: '사진',
       venue_id,
-    })
+    });
+
+    // 🎯 이미지 업로드 후 스크롤 (이미지 로딩 시간 고려)
+    setTimeout(() => {
+      scrollToBottom('auto');
+    }, 300);
 
   };
 
@@ -308,7 +355,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         <div className="chat-messages" ref={chatBoxRef}>
           {console.log('Rendering chat_messages:', chat_messages)}
           {chat_messages.map((msg) => (
-            <div key={msg.id} className={`chat-message-wrapper ${msg.sender}`}>
+            <div key={msg.chat_sn} className={`chat-message-wrapper ${msg.sender}`}>
               {msg.sender === 'me' ? (
                 <>
                   <div className="chat-time">{msg.time}</div>

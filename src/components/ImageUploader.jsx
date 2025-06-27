@@ -33,7 +33,19 @@ export const ImageUploader = ({
     onUploadStart?.();
 
     try {
-      const response = await apiClient.uploadImage(file);
+      // 파일 검증 및 전처리
+      const validatedFile = await validateAndProcessFile(file);
+      
+      // 모바일 환경에서 파일 형식 변환
+      let processedFile = validatedFile;
+      
+      // 모바일 환경 감지 및 파일 변환
+      if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        console.log('Mobile device detected, processing file...');
+        processedFile = await convertFileForMobile(validatedFile);
+      }
+
+      const response = await apiClient.uploadImage(processedFile);
       
       // WAS 응답 구조에 맞게 처리
       if (response.success) {
@@ -44,15 +56,15 @@ export const ImageUploader = ({
           ...prev,
           isUploading: false,
           contentId,
-          file
+          file: processedFile
         }));
         
         // Preview overlay 표시
         if (showPreview) {
-          showImagePreview(file, contentId);
+          showImagePreview(processedFile, contentId);
         }
         
-        onUploadComplete?.(contentId, file);
+        onUploadComplete?.(contentId, processedFile);
       } else {
         throw new Error(response.error || 'Upload failed');
       }
@@ -69,23 +81,250 @@ export const ImageUploader = ({
     }
   }, [apiClient, onUploadComplete, onUploadStart, onUploadError, disabled, showPreview]);
 
+  // 파일 검증 및 전처리 함수
+  const validateAndProcessFile = useCallback(async (file) => {
+    console.log('Validating file:', {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    });
+
+    // 파일 크기 제한 (50MB)
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    if (file.size > maxSize) {
+      throw new Error(`파일 크기가 너무 큽니다. 최대 ${Math.round(maxSize / 1024 / 1024)}MB까지 업로드 가능합니다.`);
+    }
+
+    // 지원하는 이미지 형식 확인
+    const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif'];
+    const isSupportedType = supportedTypes.includes(file.type.toLowerCase());
+    
+    if (!isSupportedType) {
+      console.warn('Unsupported file type:', file.type, 'Converting to JPEG...');
+      // 지원하지 않는 형식이면 JPEG로 변환
+      return await convertToJPEG(file);
+    }
+
+    // HEIC/HEIF 형식 처리 (iOS에서 자주 사용)
+    if (file.type.toLowerCase().includes('heic') || file.type.toLowerCase().includes('heif')) {
+      console.log('HEIC/HEIF format detected, converting...');
+      return await convertToJPEG(file);
+    }
+
+    // 파일이 손상되었는지 확인
+    try {
+      await validateImageFile(file);
+    } catch (error) {
+      console.warn('Image validation failed, attempting conversion:', error);
+      return await convertToJPEG(file);
+    }
+
+    return file;
+  }, []);
+
+  // 이미지 파일 유효성 검사
+  const validateImageFile = useCallback((file) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve();
+      };
+      
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Invalid image file'));
+      };
+      
+      img.src = url;
+    });
+  }, []);
+
+  // JPEG로 변환하는 함수
+  const convertToJPEG = useCallback(async (file) => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        try {
+          // 원본 크기 유지하되 최대 크기 제한
+          const maxSize = 4096; // 최대 4096px
+          let { width, height } = img;
+          
+          if (width > height) {
+            if (width > maxSize) {
+              height = (height * maxSize) / width;
+              width = maxSize;
+            }
+          } else {
+            if (height > maxSize) {
+              width = (width * maxSize) / height;
+              height = maxSize;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          // 이미지 그리기
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Canvas를 Blob으로 변환 (품질 조정)
+          canvas.toBlob((blob) => {
+            if (blob) {
+              // 파일명 확장자 변경
+              const fileName = file.name.replace(/\.[^/.]+$/, '.jpg');
+              const convertedFile = new File([blob], fileName, {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+              });
+              
+              console.log('File converted to JPEG:', {
+                originalSize: file.size,
+                convertedSize: convertedFile.size,
+                originalType: file.type,
+                convertedType: convertedFile.type
+              });
+              
+              resolve(convertedFile);
+            } else {
+              reject(new Error('Failed to convert to JPEG'));
+            }
+          }, 'image/jpeg', 0.85); // JPEG 품질 85%
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      img.onerror = () => {
+        reject(new Error('Failed to load image for conversion'));
+      };
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        img.src = e.target.result;
+      };
+      reader.onerror = () => {
+        reject(new Error('Failed to read file for conversion'));
+      };
+      reader.readAsDataURL(file);
+    });
+  }, []);
+
+  // 모바일 환경에서 파일 변환 함수
+  const convertFileForMobile = useCallback(async (file) => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        try {
+          // 이미지 크기 조정 (최대 1920px)
+          const maxSize = 1920;
+          let { width, height } = img;
+          
+          if (width > height) {
+            if (width > maxSize) {
+              height = (height * maxSize) / width;
+              width = maxSize;
+            }
+          } else {
+            if (height > maxSize) {
+              width = (width * maxSize) / height;
+              height = maxSize;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          // 이미지 그리기
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Canvas를 Blob으로 변환
+          canvas.toBlob((blob) => {
+            if (blob) {
+              // 원본 파일명 유지하면서 새로운 Blob 생성
+              const convertedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+              });
+              
+              console.log('File converted for mobile:', {
+                originalSize: file.size,
+                convertedSize: convertedFile.size,
+                originalType: file.type,
+                convertedType: convertedFile.type
+              });
+              
+              resolve(convertedFile);
+            } else {
+              reject(new Error('Failed to convert image'));
+            }
+          }, 'image/jpeg', 0.9); // JPEG 품질 90%
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      img.onerror = () => {
+        reject(new Error('Failed to load image'));
+      };
+      
+      // 파일을 Data URL로 읽기
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        img.src = e.target.result;
+      };
+      reader.onerror = () => {
+        reject(new Error('Failed to read file'));
+      };
+      reader.readAsDataURL(file);
+    });
+  }, []);
+
   // 파일 선택 핸들러
   const handleImageSelect = useCallback((event) => {
     const file = event.target.files?.[0];
+    const isCamera = event.target === cameraInputRef.current;
+    
+    console.log('File selection event:', {
+      hasFile: !!file,
+      fileInfo: file ? {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified
+      } : null,
+      source: isCamera ? 'camera' : 'gallery',
+      inputElement: event.target
+    });
+    
     if (file) {
+      console.log('Calling handleFileUpload with file from:', isCamera ? 'camera' : 'gallery');
       handleFileUpload(file);
+    } else {
+      console.log('No file selected');
     }
+    
     // 같은 파일을 다시 선택할 수 있도록 value 초기화
     event.target.value = '';
   }, [handleFileUpload]);
 
   // 갤러리에서 선택
   const selectFromGallery = useCallback(() => {
+    console.log('Gallery selection triggered');
     fileInputRef.current?.click();
   }, []);
 
   // 카메라로 촬영
   const selectFromCamera = useCallback(() => {
+    console.log('Camera selection triggered');
     cameraInputRef.current?.click();
   }, []);
 

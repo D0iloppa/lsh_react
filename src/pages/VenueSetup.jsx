@@ -419,7 +419,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           font-size: 0.875rem;
           color: #888;
           text-align: center;
-          margin-bottom: 1rem;
+          margin-top: 1.2rem;
           line-height: 1.4;
         }
         .required-field {
