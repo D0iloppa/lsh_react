@@ -284,7 +284,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
               const images = girl.images || [girl.image_url];
               const hasMultipleImages = images.length > 1;
 
-              //console.log("images", images, images.length)
+              console.log("images", images, images.length)
 
               // 이미지가 1개면 같은 이미지를 3-4번 복제
               const slidesToShow = hasMultipleImages ? images : Array(3).fill(images[0]);
@@ -294,7 +294,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
                   <div className="dual-image-container">
                     <div className="image-left">
                       <ImagePlaceholder
-                        src={imageUrl || '/placeholder-girl1.jpg'}
+                        src={imageUrl}
                         className="profile-image"
                       />
                     </div>

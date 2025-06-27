@@ -942,6 +942,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
                  navigateToPageWithData(PAGES.CHATTING, {
                    target: 'venue',
                    id: venueId || 1,
+                   name : venueInfo?.name,
                  })
                }
               ><MessageCircle size={16} /></SketchBtn>

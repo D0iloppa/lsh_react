@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
 
 import { useNavigate } from 'react-router-dom';
-import { Ban } from 'lucide-react';
 import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import RotationDiv from '@components/RotationDiv';
 import PopularVenue from '@components/PopularVenue';
-import ProgressIndicator from './ProgressIndicator';
-import InitFooter from '@components/InitFooter';
 import '@components/SketchComponents.css';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import './Welcome.css';
