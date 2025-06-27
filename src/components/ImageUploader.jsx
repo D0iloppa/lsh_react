@@ -336,7 +336,11 @@ export const ImageUploader = ({
     }
 
     event.preventDefault();
-    
+
+    selectFromGallery()
+
+
+    /*
     overlay.open(({ isOpen, close, unmount }) => {
       // 외부 클릭 시 닫기
       const handleOutsideClick = (e) => {
@@ -426,6 +430,7 @@ export const ImageUploader = ({
         </div>
       );
     });
+    */
   }, [showContextMenu, selectFromGallery, selectFromCamera]);
 
   // 이미지 preview overlay 표시
