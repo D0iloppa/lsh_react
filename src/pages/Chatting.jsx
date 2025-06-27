@@ -23,12 +23,34 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const firstLoadRef = useRef(true);
 
   const isUserAtBottom = () => {
+    if (!messageBoxRef.current) return false;
     const el = messageBoxRef.current;
     return el.scrollHeight - el.scrollTop - el.clientHeight < 50;
   };
 
-  const scrollToBottom = () => {
-    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // 🎯 스크롤을 맨 밑으로 이동시키는 함수
+  const scrollToBottom = (behavior = 'smooth') => {
+    // 여러 방법을 시도해서 확실하게 스크롤
+    if (messageBoxRef.current) {
+      // 방법 1: scrollTop 직접 설정
+      messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
+      
+      // 방법 2: scrollIntoView 사용
+      setTimeout(() => {
+        messageEndRef.current?.scrollIntoView({ 
+          behavior, 
+          block: 'end',
+          inline: 'nearest'
+        });
+      }, 10);
+      
+      // 방법 3: 추가 보정 (이미지 로딩 등을 고려)
+      setTimeout(() => {
+        if (messageBoxRef.current) {
+          messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
+        }
+      }, 100);
+    }
   };
 
   useEffect(() => {
@@ -73,6 +95,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         text: item.chat_msg || '',
         image: item.image_url || null,
         chat_sn: item.chat_sn,
+        sender_type: item.sender_type, // 추가: 원본 sender_type 보존
         time: formatTime(new Date(item.send_dt)),
       }));
 
@@ -88,10 +111,10 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           const lastMessage = newMessages[newMessages.length - 1];
           lastChatSnRef.current = lastMessage.chat_sn;
           
-          // 첫 로딩 시 화면 맨 밑으로 스크롤
+          // 🎯 첫 로딩 시 반드시 맨 밑으로 스크롤 (시간 여유를 더 줌)
           setTimeout(() => {
-            messageEndRef.current?.scrollIntoView({ behavior: 'auto' });
-          }, 100);
+            scrollToBottom('auto');
+          }, 200);
         }
       } else {
         // 기존 메시지에 새로운 메시지만 추가
@@ -105,6 +128,16 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           
           // 새로운 메시지가 추가된 후 lastChatSnRef.current 업데이트
           const lastMessage = newChatMessages[newChatMessages.length - 1];
+          
+          // 🎯 내가 보낸 메시지('user')이거나 사용자가 맨 밑에 있을 때 스크롤
+          const shouldScroll = lastMessage.sender_type === 'user' || isUserAtBottom();
+          
+          if (shouldScroll) {
+            setTimeout(() => {
+              scrollToBottom(lastMessage.sender_type === 'user' ? 'auto' : 'smooth');
+            }, 100);
+          }
+          
           lastChatSnRef.current = lastMessage.chat_sn;
         }
       }
@@ -125,9 +158,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     };
 
     // setChatMessages((prev) => [...prev, newMessage]);
-    setInputValue('');
-    scrollToBottom();
-
+    
     const chatData = {
       room_sn: 0,
       chat_msg: inputValue.trim(),
@@ -141,6 +172,13 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       last_message_preview: inputValue.trim(),
       venue_id: venue_id,
     };
+
+    setInputValue(''); // 입력창 즉시 비우기
+    
+    // 🎯 메시지 전송 후 약간의 지연을 두고 스크롤
+    setTimeout(() => {
+      scrollToBottom('auto');
+    }, 150);
 
     await insertChattingData(chatData);
   };
@@ -171,7 +209,12 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       creator_type: 'user',
       last_message_preview: '사진',
       venue_id: venue_id,
-    })
+    });
+
+    // 🎯 이미지 업로드 후 스크롤 (이미지 로딩 시간 고려)
+    setTimeout(() => {
+      scrollToBottom('auto');
+    }, 300);
   };
 
   const handleUploadError = (error) => {
