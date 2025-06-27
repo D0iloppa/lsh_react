@@ -9,9 +9,12 @@ Docker 기반의 개발 환경 위에서 실행되며, 내부 호스트명은 `l
 
 - **프레임워크**: [React](https://react.dev/)
 - **번들러**: [Vite](https://vitejs.dev/)
+- **스타일링**: [Tailwind CSS](https://tailwindcss.com/)
+- **상태관리**: React Context API
+- **라우팅**: [React Router DOM](https://reactrouter.com/)
+- **UI 컴포넌트**: [Lucide React](https://lucide.dev/) + [Overlay Kit](https://overlay-kit.com/)
 - **환경 구성**: Docker + Dev Container
-- **접속 도메인**: http://lsh.host (개발용 내부 도메인)
-
+- **접속 도메인**: http://lsh.host/lsh (개발용 내부 도메인)
 ---
 
 ## 📦 개발 환경
@@ -26,12 +29,20 @@ Docker 기반의 개발 환경 위에서 실행되며, 내부 호스트명은 `l
 
 ### 폴더 구조
 ```
-lsh_react/
+lsh_staff/
 ├── public/
 ├── src/
+│ ├── components/ # 재사용 가능한 컴포넌트 (통페이지 컴포넌트 포함)
+│ ├── pages/ # 페이지 컴포넌트
+│ ├── layout/ # 레이아웃 컴포넌트 (StaffApp.jsx)
+│ ├── contexts/ # React Context (인증, 메시지 등)
+│ ├── hooks/ # 커스텀 훅
+│ ├── config/ # 설정 파일 (pages.config.js)
+│ ├── utils/ # 유틸리티 함수
+│ └── assets/ # 정적 리소스
 ├── .devcontainer/
-├── Dockerfile (생략 가능)
 ├── vite.config.js
+├── tailwind.config.cjs
 ├── package.json
 ├── README.md
 └── ...
@@ -91,3 +102,40 @@ nginx는 별도 컨테이너로 실행되며, proxy_pass http://<react-container
 Author: D0iloppa
 
 Email: kdi3939@gmail.com
+
+
+# 🔧 Internal Notes
+
+### 빌드 및 배포 명령어
+
+```bash
+# 1. React 앱 빌드
+docker exec -it lsh_react npm run build
+
+# 2. 기존 파일 삭제 및 새 디렉토리 생성
+docker exec -it nginx rm -rf /usr/app/lsh_staff
+docker exec -it nginx mkdir -p /usr/app/lsh_staff
+
+# 3. 새로운 파일 복사
+docker cp /home/doil/workspace/w_dev/docker/lsh_staff/dist/. nginx:/usr/app/lsh_staff/
+
+# 4. 복사 확인
+docker exec -it nginx ls -la /usr/app/lsh_staff/
+
+# 5. nginx 설정 재로드
+docker exec -it nginx nginx -s reload
+```
+
+### 개발 환경 확인
+```bash
+# 컨테이너 상태 확인
+docker ps
+
+# 로그 확인
+docker logs lsh_react
+docker logs nginx
+
+# 컨테이너 내부 접속
+docker exec -it lsh_react bash
+docker exec -it nginx bash
+```
