@@ -5,7 +5,7 @@ import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
 import ToggleRadio from '@components/ToggleRadio';
 import '@components/SketchComponents.css';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
 import { Star } from 'lucide-react';
 

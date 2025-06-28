@@ -28,13 +28,18 @@ export const AuthProvider = ({ children }) => {
     return localStorage.getItem('loginType') || null;
   });
 
+  const [accountType, setAccountType] = useState(() => {
+    return localStorage.getItem('accountType') || null;
+  });
+
   const [loading, setLoading] = useState(false);
 
   // 로그인 함수 (Login 컴포넌트 로직 재활용)
-    const login = async (email, password, loginTypeArg) => {
+    const login = async (params={}) => {
       try {
         setLoading(true);
         
+        /*
         // Login 컴포넌트의 유효성 검사 함수 사용
         const validation = validateForm(email, password);
         if (!validation.isValid) {
@@ -43,20 +48,24 @@ export const AuthProvider = ({ children }) => {
             errors: validation.errors
           };
         }
+        */
+
 
         // Login 컴포넌트의 API 호출 함수 사용
-        const result = await loginPost(email, password);
+        const result = await loginPost(params);
         
         if (result.success) {
           // 성공 시 상태 업데이트
 
           localStorage.setItem('isLoggedIn', 'true');
           localStorage.setItem('user', JSON.stringify(result.user));
-          localStorage.setItem('loginType', loginTypeArg);
+          localStorage.setItem('loginType', params.login_type);
+          localStorage.setItem('accountType', params.account_type);
 
           setIsLoggedIn(true);
           setUser(result.user);
-          setLoginType(loginTypeArg);
+          setLoginType(params.login_type);
+          setAccountType(params.account_type);
           console.log('로그인 성공:', result.user);
         }
         
@@ -72,6 +81,28 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
       }
     };
+
+  // 비밀번호 검증 전용 함수 (navigate 없음)
+  const verifyPassword = async (params={}) => {
+    try {
+      setLoading(true);
+      
+      // Login 컴포넌트의 API 호출 함수 사용 
+      const result = await loginPost(params);
+      
+      // 성공해도 상태를 업데이트하지 않음 (navigate 없음)
+      return result;
+      
+    } catch (error) {
+      console.error('Password verification error:', error);
+      return {
+        success: false,
+        errors: { general: 'Something went wrong. Please try again.' }
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 로그아웃 함수
   const logout = async () => {
@@ -90,9 +121,11 @@ export const AuthProvider = ({ children }) => {
         setIsLoggedIn(false);
         setUser(null);
         setLoginType(null);
+        setAccountType(null);
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('user');
         localStorage.removeItem('loginType');
+        localStorage.removeItem('accountType');
       }
   };
 
@@ -101,9 +134,12 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     login,
+    verifyPassword,
     logout,
     loginType,
-    setLoginType
+    setLoginType,
+    accountType,
+    setAccountType
   };
 
   return (

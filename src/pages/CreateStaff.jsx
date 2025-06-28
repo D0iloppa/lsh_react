@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import HatchPattern from '@components/HatchPattern'
@@ -8,6 +8,7 @@ import '@components/SketchComponents.css';
 
 
 import { useAuth } from '@contexts/AuthContext';
+import ApiClient from '@utils/ApiClient';
 
 const roleOptions = [
   { value: 'hostess', label: 'Hostess' },
@@ -16,6 +17,10 @@ const roleOptions = [
 ];
 
 const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
+
+  const { user } = useAuth();
+  
+  const [venue, setVenue] = useState(-1);
   const [form, setForm] = useState({
     name: '',
     username: '',
@@ -29,9 +34,25 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-    const handleAddStaff = () => {
-   navigateToPage(PAGES.STAFF_MANAGEMENT)
+  const handleAddStaff = async () => {
+    ApiClient.postForm('/api/register', {
+      login_type: 'id',
+      account_type:'staff',
+      venue_id: venue,
+      fullnm: form.name,
+      login_id: form.username,
+      passwd: form.password,
+      contact: form.contact,
+      created_by: user?.id
+    }).then(res=>{
+      console.log('res', res);
+    });
   };
+
+  useEffect(() => {
+    setVenue(user?.venue_id);
+    console.log('loginUser', user, venue);
+  }, [venue]); // venue_id가 변경될 때만 실행
 
 
   return (
@@ -145,8 +166,8 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
             }
           </div>
           <div className="form-actions">
-            <SketchBtn variant="event" size="small">Save</SketchBtn>
-            <SketchBtn variant="danger" size="small" onClick={handleAddStaff}>Cancel</SketchBtn>
+            <SketchBtn variant="event" size="small" onClick={handleAddStaff}>Save</SketchBtn>
+            <SketchBtn variant="danger" size="small" onClick={goBack}>Cancel</SketchBtn>
           </div>
         </SketchDiv>
       </div>

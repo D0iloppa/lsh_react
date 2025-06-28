@@ -11,15 +11,13 @@ import SketchBtn from '@components/SketchBtn';
 import InitFooter from '@components/InitFooter';
 import LoadingScreen from '@components/LoadingScreen';
 
+
 export default function LoginForm() {
 
 const { messages, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
   useEffect(() => {
     if (messages && Object.keys(messages).length > 0) {
-      console.log('✅ Messages loaded:', messages);
-      // setLanguage('en'); // 기본 언어 설정
-      console.log('Current language set to:', currentLang);
       window.scrollTo(0, 0);
     }
   }, [messages, currentLang]);
@@ -44,7 +42,12 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
     setErrors({});
     setMessage('');
 
-    const result = await login(email, password, loginType);
+    const result = await login({
+      login_id: email,
+      passwd: password,
+      account_type: loginType,
+      login_type: 'email'
+    });
     
     if (result.success) {
       setMessage(result.message);
@@ -97,7 +100,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
 
   return (
     <>
-      <h2 className="sketch-title">{ get('Login1.1') } </h2>
+      <h2 style={{display: 'none'}} className="sketch-title">{ get('Login1.1') } </h2>
 
 
     {/* Login Type Radio Buttons */}

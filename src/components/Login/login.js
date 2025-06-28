@@ -42,12 +42,13 @@ import qs from 'qs';
 
 const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
 
-export const loginPost = async (email, password) => {
+export const loginPost = async ({login_id, passwd, login_type ='email'}) => {
 
     const data =  qs.stringify({
-        login_type: "email",
-        email,
-        passwd: password
+        login_type: login_type,
+        email: login_id,
+        login_id: login_id,
+        passwd: passwd
       });
 
     try {
@@ -65,9 +66,17 @@ export const loginPost = async (email, password) => {
         let { error=false, errMsg=false, user=false, staff=false, manager=false } = response.data;
 
         // type decoration
-        user = user && { type: 'user', ...user };
-        staff = staff && { type: 'staff', ...staff };
-        manager = manager && { type: 'manager', ...manager };
+        user = user && { type: 'user', 
+                        'login_type': login_type, 
+                        login_id: login_id, ...user };
+
+        staff = staff && { type: 'staff', 
+                        'login_type': login_type, 
+                        login_id: login_id, ...staff };
+
+        manager = manager && { type: 'manager', 
+                        'login_type': login_type, 
+                        login_id: login_id, ...manager };
 
         if(error){
             return {
@@ -121,7 +130,7 @@ export const loginPost = async (email, password) => {
 };
 
 // 로그인 핸들러
-export const handleLogin = async (email, password) => {
+export const handleLogin = async (email, password, login_type = 'email') => {
     try {
         // 폼 유효성 검사
         const validation = validateForm(email, password);
@@ -137,7 +146,7 @@ export const handleLogin = async (email, password) => {
 
 
 
-        return await loginPost(email, password);
+        return await loginPost(email, password, login_type);
 
     } catch (error) {
         console.error('Login error:', error);

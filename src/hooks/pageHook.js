@@ -4,13 +4,13 @@ import { PAGES, DEFAULT_MANAGER_PAGE, DEFAULT_STAFF_PAGE } from '../config/pages
 import { useAuth } from '@contexts/AuthContext';
 
 const usePageNavigation = () => {
-    const { loginType } = useAuth();
+    const { accountType } = useAuth();
     
     // loginType에 따라 기본 페이지 결정
     const getDefaultPage = () => {
-        if (loginType === 'manager') {
+        if (accountType === 'manager') {
             return DEFAULT_MANAGER_PAGE;
-        } else if (loginType === 'staff') {
+        } else if (accountType === 'staff') {
             return DEFAULT_STAFF_PAGE;
         }
         return PAGES.HOME; // 기본값
@@ -26,7 +26,7 @@ const usePageNavigation = () => {
         setCurrentPage(defaultPage);
         setPageHistory([defaultPage]);
         setPageDataStack([]);
-    }, [loginType]);
+    }, [accountType]);
 
     // 일반 페이지 이동
     const navigateToPage = (page) => {

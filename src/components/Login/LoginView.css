@@ -5,7 +5,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
     /* 손글씨 느낌의 Google Font 사용 */
     font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
   }
@@ -25,6 +26,21 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    margin-top: 1.0rem
+  }
+
+  /* RotationDiv 영역 크기 조정 */
+  .rotation-section {
+    margin: 0 auto;
+    margin-top: 1.0rem;
+    transform: scale(0.7); /* 0.6에서 0.8로 조정하여 덜 작게 */
+    transform-origin: center top; /* center center에서 center top으로 변경 */
+  }
+
+
+  .venue-rotation {
+    width: 100%;
+    height: 100%;
   }
   
   /* Footer */

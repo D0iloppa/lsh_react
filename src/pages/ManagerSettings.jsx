@@ -6,18 +6,47 @@ import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
 import HatchPattern from '@components/HatchPattern';
 
+import Swal from 'sweetalert2';
+
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
-import { ZoomIn } from 'lucide-react';
+import { ZoomIn, Check, X } from 'lucide-react';
+
+import ApiClient from '@utils/ApiClient';
 
 const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
 
 
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
-  const { user } = useAuth();
+  const { user, verifyPassword, logout } = useAuth();
+  const [venueData, setVenueData] = useState({});
+
+  // 비밀번호 변경 관련 state
+  const [password, setPassword] = useState({ current: '', new: '', confirm: '' });
+  const [isPasswordVerified, setIsPasswordVerified] = useState(false);
+  const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
+  const [showNewPasswordFields, setShowNewPasswordFields] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    const fetchVenue = async () => {
+      try {
+        const vd = await ApiClient.get('/api/getVenue', {
+          params: { venue_id: user?.venue_id }
+        });
+        console.log('vd', vd);
+        setVenueData(prev => ({
+          ...prev,
+          ...vd
+        }));
+      } catch (e) {
+        console.error('Venue data fetch error:', e);
+      }
+    };
+
+    fetchVenue();
+
 
     if (messages && Object.keys(messages).length > 0) {
         console.log('✅ Messages loaded:', messages);
@@ -27,7 +56,7 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
       }
 
 
-  }, [ messages, currentLang]);
+  }, [ messages, currentLang ]);
 
 
   const handleShopDetail = () => {
@@ -36,12 +65,170 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
     });
   }
 
+  const handleSaveBusinessInfo = () => {
 
+    ApiClient.postForm('/api/venueEdit', {
+      venue_id: venueData?.venue_id,
+      name: business.name,
+      address: business.address
+    }).then(res=>{
+      console.log('res', res);
+      Swal.fire({
+        title: 'Success',
+        text: 'Business info updated successfully',
+        icon: 'success'
+      });
+    });
+
+  }
+
+  const handleLogout = async () => {
+      console.log('logout')
+      await logout();
+      navigate('/login'); 
+  }
+
+  // 현재 비밀번호 인증
+  const handleVerifyCurrentPassword = async () => {
+    if (!password.current.trim()) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Please enter your current password',
+        icon: 'error'
+      });
+      return;
+    }
+
+    setIsVerifyingPassword(true);
+    try {
+      // 비밀번호 검증 전용 함수 사용 (navigate 없음)
+      const response = await verifyPassword({
+        login_id: user.login_id,
+        email: user.login_id,
+        passwd: password.current,
+        login_type: user.login_type,
+        account_type: user.type
+      });
+      
+      console.log('response', response);
+
+      const { success = false } = response;
+
+      if (success) {
+        setIsPasswordVerified(true);
+        setShowNewPasswordFields(true);
+        Swal.fire({
+          title: 'Success',
+          text: 'Password verified successfully',
+          icon: 'success',
+          timer: 1500
+        });
+      } else {
+        setIsPasswordVerified(false);
+        Swal.fire({
+          title: 'Error',
+          text: 'Current password is incorrect',
+          icon: 'error'
+        });
+      }
+    } catch (error) {
+      console.error('Password verification error:', error);
+      setIsPasswordVerified(false);
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to verify password',
+        icon: 'error'
+      });
+    } finally {
+      setIsVerifyingPassword(false);
+    }
+  };
+
+  // 새 비밀번호 저장
+  const handleSaveNewPassword = async () => {
+    // 1. Current Password vs New Password 체크
+    if (password.current === password.new) {
+      Swal.fire({
+        title: 'Error',
+        text: 'New password must be different from current password',
+        icon: 'error'
+      });
+      return;
+    }
+
+    // 2. New Password vs Confirm Password 체크
+    if (password.new !== password.confirm) {
+      Swal.fire({
+        title: 'Error',
+        text: 'New password and confirm password do not match',
+        icon: 'error'
+      });
+      return;
+    }
+
+    // 3. 새 비밀번호 길이 체크
+    if (password.new.length < 6) {
+      Swal.fire({
+        title: 'Error',
+        text: 'New password must be at least 6 characters long',
+        icon: 'error'
+      });
+      return;
+    }
+
+    try {
+      // API 호출 (백엔드에서 구현 예정)
+      const response = await ApiClient.postForm('/api/UpdatePassword', {
+        // 인자는 백엔드에서 결정
+        login_type: user.login_type,
+        account_type: user.account_type,
+        login_id: user.login_id,
+        email: user.login_id,
+        passwd: password.new,
+        rePasswd: password.confirm,
+      });
+
+      if (response.success) {
+        Swal.fire({
+          title: 'Success',
+          text: 'Password updated successfully',
+          icon: 'success'
+        });
+        
+        // 폼 초기화
+        setPassword({ current: '', new: '', confirm: '' });
+        setIsPasswordVerified(false);
+        setShowNewPasswordFields(false);
+      } else {
+        Swal.fire({
+          title: 'Error',
+          text: response.message || 'Failed to update password',
+          icon: 'error'
+        });
+      }
+    } catch (error) {
+      console.error('Password update error:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to update password',
+        icon: 'error'
+      });
+    }
+  };
 
   const [business, setBusiness] = useState({ name: '', address: '' });
-  const [password, setPassword] = useState({ current: '', new: '', confirm: '' });
   const [emailNoti, setEmailNoti] = useState(true);
   const [smsNoti, setSmsNoti] = useState(false);
+
+  useEffect(() => {
+    if (venueData?.name || venueData?.address) {
+      setBusiness({
+        name: venueData.name || '',
+        address: venueData.address || ''
+      });
+    }
+  }, [venueData]);
+
 
   return (
     <>
@@ -119,45 +306,80 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
             />
           </div>
           <div className="save-btn-row">
-            <SketchBtn variant="accent" size="small" style={{width: '30%'}}><HatchPattern opacity={0.6} /> Save</SketchBtn>
+            <SketchBtn 
+              onClick={handleSaveBusinessInfo}
+              variant="accent" size="small" style={{width: '30%'}}><HatchPattern opacity={0.6} /> Save</SketchBtn>
           </div>
         </SketchDiv>
 
-        <div className="section-title">Change Password</div>
-        <SketchDiv className="section-box">
-          <div className="input-row">
-            <SketchInput
-              name="currentPassword"
-              value={password.current}
-              onChange={e => setPassword(p => ({ ...p, current: e.target.value }))}
-              placeholder="Current Password"
-              type="password"
-            />
-          </div>
-          <div className="input-row">
-            <SketchInput
-              name="newPassword"
-              value={password.new}
-              onChange={e => setPassword(p => ({ ...p, new: e.target.value }))}
-              placeholder="New Password"
-              type="password"
-            />
-          </div>
-          <div className="input-row">
-            <SketchInput
-              name="confirmPassword"
-              value={password.confirm}
-              onChange={e => setPassword(p => ({ ...p, confirm: e.target.value }))}
-              placeholder="Confirm Password"
-              type="password"
-            />
-          </div>
-          <div className="save-btn-row">
-            <SketchBtn variant="accent" size="small"  style={{width: '30%'}}><HatchPattern opacity={0.6} /> Save</SketchBtn>
-          </div>
-        </SketchDiv>
+        <div className="password-section">
+          <div className="section-title">Change Password</div>
+          <SketchDiv className="section-box">
+            <div className="input-row" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+              <div style={{flex: 1}}>
+                <SketchInput
+                  name="currentPassword"
+                  value={password.current}
+                  onChange={e => setPassword(p => ({ ...p, current: e.target.value }))}
+                  placeholder="Current Password"
+                  type="password"
+                  disabled={isPasswordVerified}
+                />
+              </div>
+              {!isPasswordVerified ? (
+                <SketchBtn 
+                  variant="accent" 
+                  size="small" 
+                  onClick={handleVerifyCurrentPassword}
+                  disabled={isVerifyingPassword}
+                  style={{width: '80px', marginBottom : '0.7rem', padding:'0.3rem 0.5rem'}}
+                >
+                  <HatchPattern opacity={0.6} />
+                  {isVerifyingPassword ? 'Checking...' : 'Check'}
+                </SketchBtn>
+              ) : (
+                <div style={{color: 'green', fontSize: '20px'}}>
+                  <Check size={20} />
+                </div>
+              )}
+            </div>
+            
+            {showNewPasswordFields && (
+              <>
+                <div className="input-row">
+                  <SketchInput
+                    name="newPassword"
+                    value={password.new}
+                    onChange={e => setPassword(p => ({ ...p, new: e.target.value }))}
+                    placeholder="New Password"
+                    type="password"
+                  />
+                </div>
+                <div className="input-row">
+                  <SketchInput
+                    name="confirmPassword"
+                    value={password.confirm}
+                    onChange={e => setPassword(p => ({ ...p, confirm: e.target.value }))}
+                    placeholder="Confirm Password"
+                    type="password"
+                  />
+                </div>
+                <div className="save-btn-row">
+                  <SketchBtn 
+                    variant="accent" 
+                    size="small" 
+                    style={{width: '30%'}}
+                    onClick={handleSaveNewPassword}
+                  >
+                    <HatchPattern opacity={0.6} /> Save
+                  </SketchBtn>
+                </div>
+              </>
+            )}
+          </SketchDiv> 
+        </div>
 
-        <div className="section-title">Notification Preferences</div>
+        <div className="section-title">Notification Preferences (아직 미구현)</div>
         <SketchDiv className="section-box">
           <div className="noti-row">
             <span>Email Notifications</span>
@@ -203,6 +425,16 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
             <SketchBtn variant="accent" size="small" style={{width: '30%'}}><HatchPattern opacity={0.6} /> Save</SketchBtn>
           </div>
         </SketchDiv>
+
+
+        <div className="section-title" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+          <SketchBtn variant="" size="small" style={{width: '100%'}} onClick={handleLogout}>
+            <HatchPattern opacity={0.6} /> Logout
+          </SketchBtn>
+        </div>
+        
+          
+        
       </div>
     </>
   );

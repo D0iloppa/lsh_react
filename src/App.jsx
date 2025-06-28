@@ -41,7 +41,7 @@ const AppRoutes = () => {
   const handleWelcomeComplete = () => {
     // 튜토리얼 완료 시 로그인 상태 체크
     if (isLoggedIn) {
-      navigate('/main');
+      navigate('/');
     } else {
       navigate('/login');
     }
