@@ -100,7 +100,7 @@ nginx를 통해 React dev 서버(5173)로 리버스 프록시됩니다
 
 ---
 
-## 🐳 Docker 관련 참고
+# 🐳 Docker 관련 참고
 
 React 개발 서버는 컨테이너에서 구동되며, Vite는 내부 포트 5173에서 리스닝
 
@@ -111,14 +111,12 @@ nginx는 별도 컨테이너로 실행되며, proxy_pass http://<react-container
 ---
 
 ### 📌 기타
-
 기본 .gitignore는 node_modules, dist, logs, .vscode/, .idea/ 등을 포함합니다
 
 주요 커밋 메시지 스타일은 자유롭게, 초기 커밋은 "init" 사용
 
 최초 커밋 후 main 브랜치로 GitHub에 push 필요
 
----
 
 # 📫 Maintainer
 Author: D0iloppa

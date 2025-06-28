@@ -1,10 +1,11 @@
-import React, { useState,useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 import HatchPattern from '@components/HatchPattern';
-import { Filter, Star, Edit, Trash2, Eye, MessagesSquare, ChevronDown, ChevronUp, Send } from 'lucide-react';
+import ImagePlaceholder from '@components/ImagePlaceholder';
+import { Filter, Star, Edit, Trash2, Eye, MessagesSquare, ChevronDown, ChevronUp, Send, Store, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
@@ -44,27 +45,27 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
   const venue_id = user.venue_id;
 
   useEffect(() => {
-      const loadVenueReview = async () => {
-        if (!venue_id) return;
-  
-        try {
-          const response = await ApiClient.postForm('/api/getVenueReviewList', {
-            venue_id: venue_id
-          });
-  
-          console.log('responseReview', response.data);
-  
-          // 상태에 저장하거나 사용하기
-          setReviews(response.data);
-         
-        } catch (error) {
-          setReviews([])
-          console.error('리뷰 로딩 실패:', error);
-        }
-      };
-  
-      loadVenueReview();
-    }, [venue_id]);
+    const loadVenueReview = async () => {
+      if (!venue_id) return;
+
+      try {
+        const response = await ApiClient.postForm('/api/getVenueReviewList', {
+          venue_id: venue_id
+        });
+
+        console.log('responseReview', response.data);
+
+        // 상태에 저장하거나 사용하기
+        setReviews(response.data);
+       
+      } catch (error) {
+        setReviews([])
+        console.error('리뷰 로딩 실패:', error);
+      }
+    };
+
+    loadVenueReview();
+  }, [venue_id]);
 
   // 답변 영역 토글
   const toggleResponse = (reviewId) => {
@@ -98,16 +99,19 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
     }
 
     try {
-      // API 호출 (실제 구현 시)
-      // await ApiClient.postForm('/api/reviews/respond', {
-      //   review_id: reviewId,
-      //   response: responseText
-      // });
+      // API 호출
+      const response = await ApiClient.postForm('/api/updateReplyContent', {
+        review_id: reviewId,
+        venue_id: venue_id,
+        reply_content: responseText
+      });
+
+      console.log('답변 등록 응답:', response);
 
       // 성공 시 로컬 상태 업데이트
       setReviews(prev => prev.map(review => 
-        review.id === reviewId 
-          ? { ...review, response: responseText }
+        (review.review_id || review.id) === reviewId 
+          ? { ...review, reply_content: responseText }
           : review
       ));
 
@@ -154,6 +158,23 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
     }));
   };
 
+  // 별점 렌더링 함수 (첫 번째 코드에서 가져옴)
+  const renderStars = (rating) => {
+    return (
+      <>
+        {[...Array(5)].map((_, i) => (
+          <Star
+            key={i}
+            size={14}
+            fill={i < rating ? '#fbbf24' : 'none'}
+            color={i < rating ? '#fbbf24' : '#d1d5db'}
+            style={{ marginRight: 2 }}
+          />
+        ))}
+      </>
+    );
+  };
+
   return (
     <>
       <style jsx="true">{`
@@ -194,30 +215,56 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
           gap: 1.1rem;
         }
         .review-card {
-          padding: 0.8rem 0.9rem 1.1rem 0.9rem;
+          background-color: #f8fafc;
+          padding: 1rem;
+          margin-bottom: 1rem;
+          transform: rotate(0.2deg);
           position: relative;
+          overflow: hidden;
+        }
+        .review-card:nth-child(even) {
+          transform: rotate(-0.2deg);
+        }
+        .review-content {
+          position: relative;
+          z-index: 10;
         }
         .review-header {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          margin-bottom: 1rem;
+          gap: 0.75rem;
+          margin-bottom: 0.75rem;
         }
-        .review-name {
-          font-size: 1.05rem;
-          font-weight: 600;
+        .user-avatar {
+          width: 60px;
+          height: 60px;
+          flex-shrink: 0;
         }
-        .review-rating {
-          font-size: 1.05rem;
-          color: #222;
-          display: flex;
-          align-items: center;
-          gap: 0.2rem;
+        .user-info {
+          flex: 1;
         }
-        .review-content {
-          font-size: 0.97rem;
-          color: #222;
-          margin-bottom: 1rem;
+        .user-name {
+          font-size: 0.95rem;
+          font-weight: bold;
+          color: #1f2937;
+          margin: 0;
+        }
+        .review-meta {
+          font-size: 0.8rem;
+          color: #6b7280;
+          margin: 0.25rem 0 0 0;
+        }
+        .review-text {
+          font-size: 0.9rem;
+          color: #374151;
+          line-height: 1.4;
+          margin: 0 0 1rem 0;
+        }
+        .review-target-name {
+          font-size: 15px;
+          font-weight: 500;
+          color: #333;
+          letter-spacing: 0.3px;
         }
         .review-actions {
           display: flex;
@@ -230,8 +277,8 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
           padding: 0.18rem 0.5rem;
         }
         .existing-response {
-          background-color: #f8fafc;
-          border: 1px solid #e2e8f0;
+          background-color: white;
+          border: 1px solid #c4c4c4;
           border-radius: 8px;
           padding: 0.75rem;
           margin-top: 0.5rem;
@@ -335,73 +382,121 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
         </div>
         <div className="review-list">
           {reviews.map(review => (
-            <SketchDiv key={review.id} className="review-card">
-              <HatchPattern opacity={0.6} />
-              <div className="review-header">
-                <div className="review-name">{review.user_name}</div>
-                <div className="review-rating"><Star size={14} fill='yellow'/> {review.rating}</div>
-              </div>
-              <div className="review-content">"{review.content}"</div>
-              
-              {/* 기존 답변이 있는 경우 표시 */}
-              {review.response && !openResponses[review.id] && (
-                <div className="existing-response">
-                  <div className="existing-response-header">
-                    <span className="response-label">Manager Response:</span>
-                  </div>
-                  <div className="existing-response-text">{review.response}</div>
-                </div>
-              )}
-
-              <div className="review-actions">
-                <SketchBtn 
-                  variant={openResponses[review.id] ? "secondary" : "event"} 
-                  size="small" 
-                  className="review-action-btn"
-                  onClick={() => toggleResponse(review.id)}
-                >
-                  {openResponses[review.id] ? (
-                    <>
-                      <ChevronUp size={14} /> Close
-                    </>
-                  ) : (
-                    <>
-                      {review.response ? 'Edit Response' : 'Respond'}
-                    </>
-                  )}
-                </SketchBtn>
-                <SketchBtn variant="danger" size="small" className="review-action-btn">Flag</SketchBtn>
-              </div>
-
-              {/* 답변 입력 폼 */}
-              {openResponses[review.id] && (
-                <div className="response-form">
-                  <textarea
-                    className="response-textarea"
-                    placeholder="Write your response to this review..."
-                    value={responses[review.id] || ''}
-                    onChange={(e) => handleResponseChange(review.id, e.target.value)}
+            <SketchDiv key={review.review_id || review.id} className="review-card">
+              <HatchPattern opacity={0.03} />
+              <div className="review-content">
+                <div className="review-header">
+                  <ImagePlaceholder
+                    src={review.targetImage || '/placeholder-user.jpg'}
+                    className="user-avatar" 
+                    alt="profile"
                   />
-                  <div className="response-form-actions">
-                    <SketchBtn 
-                      variant="secondary" 
-                      size="small" 
-                      className="response-form-btn"
-                      onClick={() => toggleResponse(review.id)}
-                    >
-                      Cancel
-                    </SketchBtn>
-                    <SketchBtn 
-                      variant="event" 
-                      size="small" 
-                      className="response-form-btn"
-                      onClick={() => handleSubmitResponse(review.id)}
-                    >
-                      <Send size={12} /> Submit
-                    </SketchBtn>
+                  <div className="user-info">
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '8px'
+                    }}>
+                      <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        backgroundColor: review.target_type === 'venue' ? '#dcfce7' : '#fef3c7',
+                        color: review.target_type === 'venue' ? '#16a34a' : '#d97706'
+                      }}>
+                        {review.target_type === 'venue' ? (
+                          <Store size={14} />
+                        ) : (
+                          <User size={14} />
+                        )}
+                      </div>
+                      <span className="review-target-name">
+                        {review.targetName || review.name}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span style={{ fontSize: '0.95rem' }}>작성자:</span>
+                      <h3 className="user-name">{review.user_name || review.name}</h3>
+                    </div>
+                    <p className="review-meta">
+                      {renderStars(review.rating)} - {new Date(review.created_at || Date.now()).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
-              )}
+                <p className="review-text">"{review.content}"</p>
+                
+                {/* 기존 답변이 있는 경우 표시 */}
+                {(review.reply_content || review.response) && !openResponses[review.review_id || review.id] && (
+                  <div className="existing-response">
+                    <div className="existing-response-header">
+                      <span className="response-label">매니저 답변:</span>
+                    </div>
+                    <div className="existing-response-text">{review.reply_content || review.response}</div>
+                  </div>
+                )}
+
+                <div className="review-actions">
+                  <SketchBtn 
+                    variant={openResponses[review.review_id || review.id] ? "secondary" : 
+                            ((review.reply_content || review.response) ? "primary" : "event")} 
+                    size="small" 
+                    className="review-action-btn"
+                    onClick={() => toggleResponse(review.review_id || review.id)}
+                  >
+                    {openResponses[review.review_id || review.id] ? (
+                      <>
+                        <ChevronUp size={14} /> 닫기
+                      </>
+                    ) : (
+                      <>
+                        {(review.reply_content || review.response) ? (
+                          <>
+                            <Edit size={14} /> 답변수정
+                          </>
+                        ) : (
+                          '답변등록'
+                        )}
+                      </>
+                    )}
+                  </SketchBtn>
+                  <SketchBtn variant="danger" size="small" className="review-action-btn">신고</SketchBtn>
+                </div>
+
+                {/* 답변 입력 폼 */}
+                {openResponses[review.review_id || review.id] && (
+                  <div className="response-form">
+                    <textarea
+                      className="response-textarea"
+                      placeholder="답변을 작성해 주세요.."
+                      value={responses[review.review_id || review.id] || review.reply_content || review.response || ''}
+                      onChange={(e) => handleResponseChange(review.review_id || review.id, e.target.value)}
+                    />
+                    <div className="response-form-actions">
+                      <SketchBtn 
+                        variant="secondary" 
+                        size="small" 
+                        className="response-form-btn"
+                        onClick={() => toggleResponse(review.review_id || review.id)}
+                      >
+                        취소
+                      </SketchBtn>
+                      <SketchBtn 
+                        variant="event" 
+                        size="small" 
+                        className="response-form-btn"
+                        onClick={() => handleSubmitResponse(review.review_id || review.id)}
+                      >
+                        <Send size={12} /> 답변제출
+                      </SketchBtn>
+                    </div>
+                  </div>
+                )}
+              </div>
             </SketchDiv>
           ))}
         </div>
