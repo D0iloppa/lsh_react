@@ -98,6 +98,40 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
   return (
     <>
       <h2 className="sketch-title">{ get('Login1.1') } </h2>
+
+
+    {/* Login Type Radio Buttons */}
+    <div style={{ margin: '1rem 0', textAlign: 'center' }}>
+            <label>
+              <input
+                type="radio"
+                name="loginType"
+                value="manager"
+                checked={loginType === 'manager'}
+                onChange={() => {
+                  setLoginType('manager');
+                  setAuthLoginType('manager'); // AuthContext에도 즉시 저장
+                  if (typeof setStatus === 'function') setStatus({ loginType: 'manager' });
+                }}
+              />
+              MANAGER
+            </label>
+            <label style={{ marginLeft: '1rem' }}>
+              <input
+                type="radio"
+                name="loginType"
+                value="staff"
+                checked={loginType === 'staff'}
+                onChange={() => {
+                  setLoginType('staff');
+                  setAuthLoginType('staff'); // AuthContext에도 즉시 저장
+                  if (typeof setStatus === 'function') setStatus({ loginType: 'staff' });
+                }}
+              />
+              STAFF
+            </label>
+          </div>
+
       
       <form onSubmit={onSubmit}>
         {/* General Error/Success Message */}
@@ -110,7 +144,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
 
         {/* Email Input */}
         <SketchInput
-          type="email"
+          type="text"
           placeholder={get('title.text.1')}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -130,37 +164,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
           variant="password"
         />
 
-        {/* Login Type Radio Buttons */}
-        <div style={{ margin: '1rem 0', textAlign: 'center' }}>
-          <label>
-            <input
-              type="radio"
-              name="loginType"
-              value="manager"
-              checked={loginType === 'manager'}
-              onChange={() => {
-                setLoginType('manager');
-                setAuthLoginType('manager'); // AuthContext에도 즉시 저장
-                if (typeof setStatus === 'function') setStatus({ loginType: 'manager' });
-              }}
-            />
-            MANAGER
-          </label>
-          <label style={{ marginLeft: '1rem' }}>
-            <input
-              type="radio"
-              name="loginType"
-              value="staff"
-              checked={loginType === 'staff'}
-              onChange={() => {
-                setLoginType('staff');
-                setAuthLoginType('staff'); // AuthContext에도 즉시 저장
-                if (typeof setStatus === 'function') setStatus({ loginType: 'staff' });
-              }}
-            />
-            STAFF
-          </label>
-        </div>
+      
 
         {/* Login Button */}
         <SketchBtn
@@ -186,7 +190,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
       </div>
 
       {/* Sign Up Link */}
-      <div style={{ textAlign: 'center', fontSize: '0.875rem', color: '#6b7280', marginTop: '10px' }}>
+      <div style={{ display: 'none', textAlign: 'center', fontSize: '0.875rem', color: '#6b7280', marginTop: '10px' }}>
         { get('Login1.3') }{' '}
         {/* <a href="#" className="sketch-link sketch-link--primary">Sign Up</a> */}
          <a 

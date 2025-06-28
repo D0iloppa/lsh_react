@@ -33,7 +33,7 @@ import VenueTuto1 from '@components/Welcome/VenueTuto1';
 import VenueSetup from '@pages/VenueSetup';
 
 const AppRoutes = () => {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user, loginType } = useAuth();
   const { messages } = useMsg();
 
   const navigate = useNavigate();
@@ -55,9 +55,37 @@ const AppRoutes = () => {
 
 
       {/* 1. 최초 진입 - 항상 WelcomePage */}
+      {
+        /*
       <Route 
         path="/" 
         element={<WelcomePage onComplete={handleWelcomeComplete} />} 
+      />
+      */
+      }
+
+    <Route 
+        path="/" 
+        element={
+          isLoggedIn ? (
+            user?.type === 'manager' ? (
+              <Navigate to="/manager" replace />
+            ) : user?.type === 'staff' ? (
+              <Navigate to="/staff" replace />
+            ) : (
+              // loginType을 fallback으로 사용
+              loginType === 'manager' ? (
+                <Navigate to="/manager" replace />
+              ) : loginType === 'staff' ? (
+                <Navigate to="/staff" replace />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            )
+          ) : (
+            <LoginView />
+          )
+        } 
       />
 
       {/* 2. 로그인 페이지 */}

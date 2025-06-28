@@ -3,9 +3,12 @@
 
 // 이메일 유효성 검사
 export const validateEmail = (email) => {
+    /*
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-};
+    */
+    return true;
+};  
 
 // 비밀번호 유효성 검사
 export const validatePassword = (password) => {

@@ -11,26 +11,6 @@ import { Star } from 'lucide-react';
 
 import Swal from 'sweetalert2';
 
-const mockStaffs = [
-  {
-    id: 1,
-    name: 'Nguyen Thi Hoa',
-    rating: 4,
-    img: '',
-  },
-  {
-    id: 2,
-    name: 'Tran van Binh',
-    rating: 3,
-    img: '',
-  },
-  {
-    id: 3,
-    name: 'Le Minh Tuan',
-    rating: 5,
-    img: '',
-  },
-];
 
 const StaffManagement = ({  navigateToPage, navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
 

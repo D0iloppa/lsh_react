@@ -6,6 +6,9 @@ import SketchDiv from '@components/SketchDiv';
 import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
 
+
+import { useAuth } from '@contexts/AuthContext';
+
 const roleOptions = [
   { value: 'hostess', label: 'Hostess' },
   { value: 'manager', label: 'Manager' },
@@ -121,21 +124,25 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
               placeholder="Phone or Email"
             />
           </div>
-          <div className="form-label" style={{marginBottom: '0.3rem'}}>Select Staff Role</div>
+          <div className="form-label" style={{marginBottom: '0.3rem', display: 'none'}}>Select Staff Role</div>
           <div className="role-row">
-            {roleOptions.map(opt => (
-              <label key={opt.value}>
-                <input
-                  type="radio"
-                  name="role"
-                  value={opt.value}
-                  checked={form.role === opt.value}
-                  onChange={handleChange}
-                  className="role-radio"
-                />
-                {opt.label}
-              </label>
-            ))}
+            {
+            /*
+              roleOptions.map(opt => (
+                <label key={opt.value}>
+                  <input
+                    type="radio"
+                    name="role"
+                    value={opt.value}
+                    checked={form.role === opt.value}
+                    onChange={handleChange}
+                    className="role-radio"
+                  />
+                  {opt.label}
+                </label>
+              ))
+              */
+            }
           </div>
           <div className="form-actions">
             <SketchBtn variant="event" size="small">Save</SketchBtn>

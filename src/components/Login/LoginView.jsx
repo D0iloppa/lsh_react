@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+
 import SketchDiv from '@components/SketchDiv';
 import LoginForm from './LoginForm';
 import ImagePlaceholder from '@components/ImagePlaceholder';
@@ -46,7 +47,24 @@ const CocktailIcon = () => (
   </svg>
 );
 
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+
+
 export default function LoginView() {
+
+  const { messages, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+  useEffect(() => {
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      // setLanguage('en'); // 기본 언어 설정
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
+  }, [messages, currentLang]);
+
+
+
   return (
     <div className="login-container">
       <div className="login-wrapper">
@@ -56,6 +74,9 @@ export default function LoginView() {
             <CocktailIcon />
             <h1 className="sketch-title sketch-title--large">LeTanTon Sheriff</h1>
             <span style={{ fontSize: '20px',  marginLeft: '-8px' }}><ImagePlaceholder src="/cdn/age.png" style={{lineHeight: '0.5', marginLeft: '5px', width:'26px'}}/></span>
+          </div>
+          <div style={{ textAlign: 'center', fontSize: '0.875rem', color: '#6b7280', marginTop: '10px' }}>
+            <span>{get('manager.login.description.1')}</span>
           </div>
         </header>
 
