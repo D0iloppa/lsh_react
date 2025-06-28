@@ -458,6 +458,48 @@ const ViewReviewPage = ({
             color: #333;
             letter-spacing: 0.3px;
           }
+
+          /* 매니저 답변 스타일 */
+          .manager-response {
+            background-color: #f0f9ff;
+            border: 1px solid #e0f2fe;
+            border-left: 4px solid #0284c7;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 0.75rem;
+            position: relative;
+          }
+
+          .response-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+          }
+
+          .response-label {
+            font-size: 0.8rem;
+            color: #0369a1;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+
+          .response-badge {
+            background-color: #0284c7;
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.1rem 0.3rem;
+            border-radius: 12px;
+            font-weight: 500;
+          }
+
+          .response-text {
+            font-size: 0.9rem;
+            color: #1e40af;
+            line-height: 1.4;
+            font-style: italic;
+          }
       `}</style>
 
       <div className="view-review-container">
@@ -582,6 +624,19 @@ const ViewReviewPage = ({
                   </div>
                   <p className="review-text">{review.content}</p>
 
+                  {/* 매니저 답변 표시 */}
+                  {review.reply_content && (
+                    <div className="manager-response">
+                      <div className="response-header">
+                       <span className="response-label">매니저 답변</span>
+                       <span className="response-badge"><User size={14} /></span>
+                      </div>
+                      <div className="response-text">
+                        "{review.reply_content}"
+                      </div>
+                    </div>
+                  )}
+
                   {/* 예약하기 버튼 */}
                   {/* <div className="review-actions" style={{
                     paddingTop: '1rem',
@@ -624,7 +679,7 @@ const ViewReviewPage = ({
                     }}
                     style={{
                         width: '30%',
-                        backgroundColor: review.is_reservation ? '#10b981' : '#9ca3af', // 회색으로 비활성화 느낌
+                        backgroundColor: review.is_reservation ? '#374151' : '#9ca3af', // 회색으로 비활성화 느낌
                         color: '#fefefe',
                         padding: '0.5rem 1rem',
                         cursor: review.is_reservation ? 'pointer' : 'not-allowed',
