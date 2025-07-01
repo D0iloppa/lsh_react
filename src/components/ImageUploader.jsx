@@ -1,6 +1,8 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { ImageIcon, Upload, Camera, Folder, X } from 'lucide-react';
 import { overlay } from 'overlay-kit';
+import SketchInput from '@components/SketchInput';
+import SketchDiv from '@components/SketchDiv';
 
 export const ImageUploader = ({
   apiClient,
@@ -20,56 +22,57 @@ export const ImageUploader = ({
   showRemoveButton = true,
   // 단일 이미지 홀더 관련 props
   initialImageUrl = null,
-  imageHolderSize = { width: '120px', height: '120px' }
+  imageHolderSize = { width: '120px', height: '120px' },
+  // inputDivAsUploader 관련
+  inputDivAsUploader = false,
+  value = '',
+  onChange,
+  placeholder = '',
+  initImage = null,
 }) => {
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
-  
+  const [fileName, setFileName] = useState('');
+  const [imageUrl, setImageUrl] = useState(null);
   const [uploadState, setUploadState] = useState({
     isUploading: false
   });
 
-  // 파일 업로드 처리 함수
+  // 최초 로딩 시 initImage가 있으면 imageUrl에 반영
+  useEffect(() => {
+    if (inputDivAsUploader && initImage) {
+      setImageUrl(initImage);
+    }
+  }, [inputDivAsUploader, initImage]);
+
+  // 파일 업로드 처리 함수 (썸네일 url 저장 추가)
   const handleFileUpload = useCallback(async (file) => {
     if (!file || disabled) return;
-
     setUploadState(prev => ({ 
       ...prev, 
       isUploading: true, 
       error: undefined,
       file 
     }));
-    
+    setFileName(file.name);
     onUploadStart?.();
-
     try {
-      // 파일 검증 및 전처리
       const validatedFile = await validateAndProcessFile(file);
-      
-      // 모바일 환경에서 파일 형식 변환
       let processedFile = validatedFile;
-      
-      // 모바일 환경 감지 및 파일 변환
       if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-        //console.log('Mobile device detected, processing file...');
         processedFile = await convertFileForMobile(validatedFile);
       }
-
       const response = await apiClient.uploadImage(processedFile);
-      console.log('IMG response', response);
-      // WAS 응답 구조에 맞게 처리
       if (response.success) {
-        // content_id 필드명으로 받기
         const contentId = response.content_id || 'unknown';
-        
         setUploadState(prev => ({
           ...prev,
           isUploading: false,
           contentId,
           file: processedFile
         }));
-        
-        // containerAsUploader 모드일 때 이미지 교체
+        setFileName(processedFile.name);
+        setImageUrl(URL.createObjectURL(processedFile));
         if (containerAsUploader) {
           const newImage = {
             contentId,
@@ -78,33 +81,27 @@ export const ImageUploader = ({
             name: processedFile.name,
             size: processedFile.size
           };
-          
-          // 단일 이미지인 경우 기존 이미지를 교체
           const updatedImages = maxImages === 1 ? [newImage] : [...uploadedImages, newImage];
           onImagesChange?.(updatedImages);
         }
-        
-        // Preview overlay 표시
         if (showPreview && !containerAsUploader) {
           showImagePreview(processedFile, contentId);
         }
-        
         onUploadComplete?.(contentId, processedFile);
+        if (onChange) onChange({ target: { value: contentId, name: 'image' } });
       } else {
         throw new Error(response.error || 'Upload failed');
       }
     } catch (error) {
       const uploadError = error instanceof Error ? error : new Error('Upload failed');
-      
       setUploadState(prev => ({
         ...prev,
         isUploading: false,
         error: uploadError
       }));
-      
       onUploadError?.(uploadError);
     }
-  }, [apiClient, onUploadComplete, onUploadStart, onUploadError, disabled, showPreview, containerAsUploader, uploadedImages, onImagesChange, maxImages]);
+  }, [apiClient, onUploadComplete, onUploadStart, onUploadError, disabled, showPreview, containerAsUploader, uploadedImages, onImagesChange, maxImages, onChange]);
 
   // 이미지 제거 함수
   const handleRemoveImage = useCallback((index) => {
@@ -326,36 +323,14 @@ export const ImageUploader = ({
   // 파일 선택 핸들러
   const handleImageSelect = useCallback((event) => {
     const file = event.target.files?.[0];
-    const isCamera = event.target === cameraInputRef.current;
-    
-    /*
-    console.log('File selection event:', {
-      hasFile: !!file,
-      fileInfo: file ? {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        lastModified: file.lastModified
-      } : null,
-      source: isCamera ? 'camera' : 'gallery',
-      inputElement: event.target
-    });
-    */
-    
     if (file) {
-      // console.log('Calling handleFileUpload with file from:', isCamera ? 'camera' : 'gallery');
       handleFileUpload(file);
-    } else {
-      console.log('No file selected');
     }
-    
-    // 같은 파일을 다시 선택할 수 있도록 value 초기화
     event.target.value = '';
   }, [handleFileUpload]);
 
   // 갤러리에서 선택
   const selectFromGallery = useCallback(() => {
-    // console.log('Gallery selection triggered');
     fileInputRef.current?.click();
   }, []);
 
@@ -597,6 +572,111 @@ export const ImageUploader = ({
     };
     reader.readAsDataURL(file);
   }, []);
+
+  // 이미지 프리뷰 오버레이 함수
+  const showImagePreviewFromUrl = useCallback((url) => {
+    overlay.open(({ isOpen, close, unmount }) => (
+      <div 
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0,0,0,0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2000
+        }}
+        onClick={e => { if (e.target === e.currentTarget) unmount(); }}
+      >
+        <img src={url} alt="미리보기" style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 12, boxShadow: '0 4px 24px rgba(0,0,0,0.25)' }} />
+      </div>
+    ));
+  }, []);
+
+  // inputDivAsUploader 모드
+  if (inputDivAsUploader) {
+    return (
+      <SketchDiv style={{
+        display: 'flex',
+        alignItems: 'center',
+        width: '100%',
+        gap: 6,
+        border: '1.2px solid #d1d5db',
+        borderRadius: '8px',
+        background: '#f8f8f8',
+        padding: '0.2rem 0.7rem',
+        boxSizing: 'border-box',
+        marginBottom: 4
+      }}>
+        {/* 왼쪽 아이콘 (flex item) */}
+        <span
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 32,
+            width: 32,
+            minWidth: 32,
+            cursor: 'pointer',
+            color: '#888',
+            marginRight: 2
+          }}
+          onClick={showUploadOptions}
+          title="이미지 첨부"
+        >
+          <ImageIcon size={20} />
+        </span>
+        {/* SketchInput (flex: 1) */}
+        <input
+          name="image"
+          value={fileName || ''}
+          onChange={onChange}
+          placeholder={placeholder}
+          style={{ flex: 1, minWidth: 0, border: 'none', background: 'transparent', boxShadow: 'none', outline: 'none' }}
+          readOnly
+        />
+        {/* 오른쪽 썸네일 (flex item) */}
+        {imageUrl ? (
+          <span
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 28,
+              height: 28,
+              borderRadius: 6,
+              overflow: 'hidden',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.13)',
+              cursor: 'pointer',
+              background: '#f3f4f6',
+              marginLeft: 4
+            }}
+            onClick={() => showImagePreviewFromUrl(imageUrl)}
+            title="이미지 미리보기"
+          >
+            <img
+              src={imageUrl}
+              alt="thumbnail"
+              style={{ width: 28, height: 28, objectFit: 'cover', borderRadius: 6 }}
+            />
+          </span>
+        ) : (
+          <span style={{ width: 28, height: 28, marginLeft: 4 }} />
+        )}
+        {/* 파일 input */}
+        <input
+          type="file"
+          accept="image/*"
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          onChange={handleImageSelect}
+        />
+      </SketchDiv>
+    );
+  }
 
   // containerAsUploader 모드일 때의 렌더링
   if (containerAsUploader) {

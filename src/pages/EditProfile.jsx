@@ -12,6 +12,7 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
 import ImageUploader from '@components/ImageUploader';
+import PhotoGallery from '@components/PhotoGallery';
 
 const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
 
@@ -242,17 +243,59 @@ if (isLoadingData) {
       <div className="editprofile-container">
         <div className="image-upload-section">
           <div className="image-upload-title">{get('PROFILE_IMAGE_TITLE')}</div>
-          <ImageUploader
-            apiClient={ApiClient}
-            containerAsUploader={true}
-            uploadedImages={uploadedImages}
-            onImagesChange={setUploadedImages}
-            maxImages={1}
-            imageHolderStyle={{ width: '120px', height: '120px' }}
-            showRemoveButton={true}
-            showPreview={false}
-            initialImageUrl={staffInfo?.image_url || staffInfo?.profile_image}
-          />
+          <div style={{display: 'flex', alignItems: 'center'}}>
+            <ImageUploader
+              apiClient={ApiClient}
+              containerAsUploader={true}
+              uploadedImages={uploadedImages}
+              onImagesChange={setUploadedImages}
+              maxImages={1}
+              imageHolderStyle={{ width: '120px', height: '120px' }}
+              showRemoveButton={true}
+              showPreview={false}
+              initialImageUrl={staffInfo?.image_url || staffInfo?.profile_image}
+            />
+
+          <div style={{marginLeft: '2rem'}}>
+            <PhotoGallery
+              photoGalleryMode={{
+                fetchList: async () => {
+
+
+                  
+                  const response = await ApiClient.postForm('/api/getStaffGallery', {
+                    staff_id: user?.staff_id || user?.id
+                  });
+
+                  const { data = [] } = response;
+
+                  console.log('data', data);
+
+                  // 이미지 URL 배열 반환
+                  return (data || []).map(item => item.url);
+
+                },
+                onUpload: async (file) => {
+                  const response = await ApiClient.uploadImage(file);
+                  const { content_id = false } = response;
+
+                  if (content_id) {
+                    await ApiClient.postForm('/api/uploadStaffGallery', {
+                      staff_id: user?.staff_id || user?.id,
+                      content_id: content_id
+                    });
+                  }
+
+                }
+              }}
+            />  
+            </div>
+
+
+          </div>
+          
+
+
         </div>
 
         <div className="input-row">

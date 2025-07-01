@@ -67,7 +67,7 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
         title: promotionData.title || '',
         desc: promotionData.description || '',
         type: promotionData.promotion_type || '',
-        // image: promotionData.image_url || '',
+        image: promotionData.image_id || '',
         startDate: promotionData.start_date || '',
         endDate: promotionData.end_date || '',
         time: '', // API에 해당 필드가 없으므로 빈 값
@@ -125,6 +125,7 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
         status: 'active',
         discount_type: form.discount_type,
         discount_value: form.discount_value,
+        image_id: form.image || -1,
       };
 
       // Edit 모드일 경우 promotion_id 추가
@@ -254,17 +255,12 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
               name="image"
               apiClient={ApiClient}
               value={form.image}
-              showPreview = {true}
+              inputDivAsUploader = {true}
+              initImage={promotionData.image_url}
               onUploadComplete={(contentId) => {
                 setForm(prev => ({ ...prev, image: contentId }));
                 console.log('image uploaded, content_id:', contentId);
               }}
-              placeholder={get('PROMOTION_IMAGE_PLACEHOLDER')}
-            />
-            <SketchInput
-              name="image"
-              value={form.image}
-              onChange={handleChange}
               placeholder={get('PROMOTION_IMAGE_PLACEHOLDER')}
             />
           </div>
@@ -272,7 +268,7 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
         <div className="form-label">{get('PROMOTION_DATES_LABEL')}</div>
         <div className="date-row">
           <div className="date-field">
-            <div className="form-label" style={{fontSize: '0.3rem'}}>
+            <div className="form-label" style={{fontSize: '0.9rem'}}>
               {get('PROMOTION_START_DATE_LABEL')}
             </div>
             <SketchInput
@@ -284,7 +280,7 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
             />
           </div>
           <div className="date-field">
-            <div className="form-label" style={{fontSize: '0.3rem'}}>
+            <div className="form-label" style={{fontSize: '0.9rem'}}>
               {get('PROMOTION_END_DATE_LABEL')}
             </div>
             <SketchInput

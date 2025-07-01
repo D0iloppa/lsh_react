@@ -37,9 +37,12 @@ const StaffReviewHistory = ({ navigateToPageWithData, PAGES, goBack, pageData, .
     
   // 오늘 날짜인지 확인하는 함수
   const isToday = (dateString) => {
+    if (!dateString) return false;
+    // 마이크로초 및 공백 제거
+    const safeDateString = dateString.replace(' ', 'T').split('.')[0];
     const today = new Date();
-    const reviewDate = new Date(dateString);
-    
+    const reviewDate = new Date(safeDateString);
+
     return today.getFullYear() === reviewDate.getFullYear() &&
            today.getMonth() === reviewDate.getMonth() &&
            today.getDate() === reviewDate.getDate();
@@ -99,9 +102,10 @@ const StaffReviewHistory = ({ navigateToPageWithData, PAGES, goBack, pageData, .
           target_id: target_id
         });
 
-        console.log('responseReview', response.data);
+        console.log('responseReview', response);
 
-        const staffReviews = response.data.filter(review => review.target_type === 'staff');
+        const data = Array.isArray(response) ? response : [];
+        const staffReviews = data.filter(review => review.target_type === 'staff');
 
         // 원본 데이터 저장
         setOriginalReviews(staffReviews);
