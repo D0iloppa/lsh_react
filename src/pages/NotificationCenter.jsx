@@ -7,6 +7,7 @@ import HatchPattern from '@components/HatchPattern';
 import ApiClient from '@utils/ApiClient';
 import { useAuth } from '../contexts/AuthContext';
 import { Bell, CalendarCheck, MessageCircle, Popsicle, Martini } from 'lucide-react';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 const mockNotifications = [
   {
@@ -92,7 +93,7 @@ const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, .
   const { user, accountType, login } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const user_id = user?.manager_id || 1;
 
   // 알림 목록 로드
@@ -240,13 +241,12 @@ const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, .
           font-size: 0.95rem;
         }
       `}</style>
-      <div className="noti-container">
+        <div className="noti-container">
         <SketchHeader
-          //title="알림 센터"
-           title={
+          title={
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Bell size={18} />
-             알림 센터
+              {get('NOTIFICATION_CENTER_TITLE')}
             </span>
           }
           showBack={true}
@@ -256,13 +256,13 @@ const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, .
         {loading ? (
           <div className="loading-message">
             <Martini size={15} />
-            <span>Loading notifications...</span>
+            <span>{get('LOADING_NOTIFICATIONS')}</span>
           </div>
         ) : (
           <div className="noti-list">
             {notifications.length === 0 ? (
               <div className="no-notifications">
-                알림이 존재하지 않습니다.
+                {get('NO_NOTIFICATIONS_MESSAGE')}
               </div>
             ) : (
               notifications.map(noti => (
@@ -274,12 +274,21 @@ const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, .
                     </div>
                   </div>
                   <div className="noti-info">
-                    <div className="noti-title">{noti.title || noti.notification_title || 'Notification'}</div>
-                    <div className="noti-content">{noti.content || noti.message || noti.notification_content}</div>
+                    <div className="noti-title">
+                      {noti.title || noti.notification_title || get('NOTIFICATION_DEFAULT_TITLE')}
+                    </div>
+                    <div className="noti-content">
+                      {noti.content || noti.message || noti.notification_content}
+                    </div>
                     <div className="noti-time">{formatTime(noti.created_at)}</div>
                   </div>
-                  <SketchBtn variant="primary" size="small" className="noti-mark-btn" style={{width: '30%'}}>
-                    Mark
+                  <SketchBtn 
+                    variant="primary" 
+                    size="small" 
+                    className="noti-mark-btn" 
+                    style={{width: '30%'}}
+                  >
+                    {get('NOTIFICATION_MARK_BUTTON')}
                     <HatchPattern opacity={0.6} />
                   </SketchBtn>
                 </SketchDiv>

@@ -6,7 +6,7 @@ import SketchInput from '@components/SketchInput';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
-
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
 import { Filter, Star, Edit, Tag } from 'lucide-react';
@@ -38,107 +38,118 @@ const PromotionManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, 
   const [filterQuery, setFilterQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
+  const { messages, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+  useEffect(() => {
+      if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        // setLanguage('en'); // 기본 언어 설정
+        console.log('Current language set to:', currentLang);
+        window.scrollTo(0, 0);
+      }
+    }, [messages, currentLang]);
+
 
   // 프로모션 데이터 로딩
-  const fetchPromotions = async () => {
-    setIsLoading(true);
+const fetchPromotions = async () => {
+  setIsLoading(true);
+  try {
+    console.log('Fetching promotions for venue:', user?.venue_id);
+    
+    // 실제 API 호출
+    const response = await ApiClient.postForm('/api/getVenuePromotion', {
+      venue_id: user?.venue_id
+    });
+
+    console.log('✅ Venue promotions loaded:', response);
+    
+    const { data = [] } = response;
+    setOriginalPromotions(data);
+    setPromotions(data);
+    
+  } catch (error) {
+    console.error('Failed to fetch promotions:', error);
+    toast.error(get('PROMOTION_FETCH_ERROR'));
+    setOriginalPromotions([]);
+    setPromotions([]);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+// 필터 적용
+const handleApplyFilter = () => {
+  const keyword = filterQuery.toLowerCase();
+  const filtered = originalPromotions.filter(p =>
+    p.title?.toLowerCase().includes(keyword) ||
+    p.venue_name?.toLowerCase().includes(keyword)
+  );
+  setPromotions(filtered);
+};
+
+// 프로모션 삭제
+const handleDeletePromotion = async (promotionId) => {
+  const result = await Swal.fire({
+    title: get('PROMOTION_DELETE_TITLE'),
+    text: get('PROMOTION_DELETE_CONFIRM_TEXT'),
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: get('PROMOTION_DELETE_BUTTON'),
+    cancelButtonText: get('PROMOTION_CANCEL_BUTTON'),
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6'
+  });
+
+  if (result.isConfirmed) {
     try {
-      console.log('Fetching promotions for venue:', user?.venue_id);
+      // TODO: API 구현 후 실제 API 호출로 변경
+      console.log('Deleting promotion:', promotionId);
       
-      // 실제 API 호출
-      const response = await ApiClient.postForm('/api/getVenuePromotion', {
-        venue_id: user?.venue_id
-      });
-
-      console.log('✅ Venue promotions loaded:', response);
+      // 임시로 로컬 상태만 업데이트
+      setPromotions(prev => prev.filter(p => p.promotion_id !== promotionId));
+      setOriginalPromotions(prev => prev.filter(p => p.promotion_id !== promotionId));
       
-      const { data = [] } = response;
-      setOriginalPromotions(data);
-      setPromotions(data);
-      
+      toast.success(get('PROMOTION_DELETE_SUCCESS'));
     } catch (error) {
-      console.error('Failed to fetch promotions:', error);
-      toast.error('프로모션 목록을 불러오는데 실패했습니다.');
-      setOriginalPromotions([]);
-      setPromotions([]);
-    } finally {
-      setIsLoading(false);
+      console.error('Failed to delete promotion:', error);
+      toast.error(get('PROMOTION_DELETE_ERROR'));
     }
-  };
+  }
+};
 
-  // 필터 적용
-  const handleApplyFilter = () => {
-    const keyword = filterQuery.toLowerCase();
-    const filtered = originalPromotions.filter(p =>
-      p.title?.toLowerCase().includes(keyword) ||
-      p.venue_name?.toLowerCase().includes(keyword)
-    );
-    setPromotions(filtered);
-  };
+// 프로모션 종료
+const handleEndPromotion = async (promotionId) => {
+  const result = await Swal.fire({
+    title: get('PROMOTION_END_TITLE'),
+    text: get('PROMOTION_END_CONFIRM_TEXT'),
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: get('PROMOTION_END_BUTTON'),
+    cancelButtonText: get('PROMOTION_CANCEL_BUTTON'),
+    confirmButtonColor: '#f39c12',
+    cancelButtonColor: '#3085d6'
+  });
 
-  // 프로모션 삭제
-  const handleDeletePromotion = async (promotionId) => {
-    const result = await Swal.fire({
-      title: '프로모션 삭제',
-      text: '이 프로모션을 삭제하시겠습니까?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: '삭제',
-      cancelButtonText: '취소',
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6'
-    });
-
-    if (result.isConfirmed) {
-      try {
-        // TODO: API 구현 후 실제 API 호출로 변경
-        console.log('Deleting promotion:', promotionId);
-        
-        // 임시로 로컬 상태만 업데이트
-        setPromotions(prev => prev.filter(p => p.promotion_id !== promotionId));
-        setOriginalPromotions(prev => prev.filter(p => p.promotion_id !== promotionId));
-        
-        toast.success('프로모션이 삭제되었습니다.');
-      } catch (error) {
-        console.error('Failed to delete promotion:', error);
-        toast.error('프로모션 삭제에 실패했습니다.');
-      }
+  if (result.isConfirmed) {
+    try {
+      // TODO: API 구현 후 실제 API 호출로 변경
+      console.log('Ending promotion:', promotionId);
+      
+      // 임시로 로컬 상태만 업데이트
+      setPromotions(prev => 
+        prev.map(p => p.promotion_id === promotionId ? { ...p, status: 'inactive' } : p)
+      );
+      setOriginalPromotions(prev => 
+        prev.map(p => p.promotion_id === promotionId ? { ...p, status: 'inactive' } : p)
+      );
+      
+      toast.success(get('PROMOTION_END_SUCCESS'));
+    } catch (error) {
+      console.error('Failed to end promotion:', error);
+      toast.error(get('PROMOTION_END_ERROR'));
     }
-  };
-
-  // 프로모션 종료
-  const handleEndPromotion = async (promotionId) => {
-    const result = await Swal.fire({
-      title: '프로모션 종료',
-      text: '이 프로모션을 종료하시겠습니까?',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: '종료',
-      cancelButtonText: '취소',
-      confirmButtonColor: '#f39c12',
-      cancelButtonColor: '#3085d6'
-    });
-
-    if (result.isConfirmed) {
-      try {
-        // TODO: API 구현 후 실제 API 호출로 변경
-        console.log('Ending promotion:', promotionId);
-        
-        // 임시로 로컬 상태만 업데이트
-        setPromotions(prev => 
-          prev.map(p => p.promotion_id === promotionId ? { ...p, status: 'inactive' } : p)
-        );
-        setOriginalPromotions(prev => 
-          prev.map(p => p.promotion_id === promotionId ? { ...p, status: 'inactive' } : p)
-        );
-        
-        toast.success('프로모션이 종료되었습니다.');
-      } catch (error) {
-        console.error('Failed to end promotion:', error);
-        toast.error('프로모션 종료에 실패했습니다.');
-      }
-    }
-  };
+  }
+};
 
   // 프로모션 편집 페이지로 이동
   const handleEditPromotion = (promotion) => {

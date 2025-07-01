@@ -276,35 +276,39 @@ const handleSaveNewPassword = async () => {
         }
       `}</style>
       
-        <SketchHeader
-          title={
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <User size={18} />
-              {get('Mng.menu.3') || 'Settings'}
-            </span>
-          }
-          showBack={true}
-          onBack={goBack}
-        />
-        <div className="settings-container">
-        <div className="section-title">Manage Shop Detail</div>
+              <SketchHeader
+        title={
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <User size={18} />
+            {get('SETTINGS_PAGE_TITLE')}
+          </span>
+        }
+        showBack={true}
+        onBack={goBack}
+      />
+      <div className="settings-container">
+        <div className="section-title">{get('SETTINGS_MANAGE_SHOP_DETAIL')}</div>
         <SketchDiv className="section-box" style={{marginBottom:'1.2rem'}}>
           <SketchBtn 
-          variant="primary" 
-          size="medium" 
-          style={{ width: '100%' }}
-          onClick={handleShopDetail}
-          ><HatchPattern opacity={0.6} /><ZoomIn size={14} style={{marginRight: '5px'}}/> Shop Detail </SketchBtn>
+            variant="primary" 
+            size="medium" 
+            style={{ width: '100%' }}
+            onClick={handleShopDetail}
+          >
+            <HatchPattern opacity={0.6} />
+            <ZoomIn size={14} style={{marginRight: '5px'}}/>
+            {get('SETTINGS_SHOP_DETAIL_BUTTON')}
+          </SketchBtn>
         </SketchDiv>
 
-        <div className="section-title">Update Business Info</div>
+        <div className="section-title">{get('SETTINGS_UPDATE_BUSINESS_INFO')}</div>
         <SketchDiv className="section-box">
           <div className="input-row">
             <SketchInput
               name="businessName"
               value={business.name}
               onChange={e => setBusiness(b => ({ ...b, name: e.target.value }))}
-              placeholder="Business Name"
+              placeholder={get('SETTINGS_BUSINESS_NAME_PLACEHOLDER')}
             />
           </div>
           <div className="input-row">
@@ -312,18 +316,24 @@ const handleSaveNewPassword = async () => {
               name="businessAddress"
               value={business.address}
               onChange={e => setBusiness(b => ({ ...b, address: e.target.value }))}
-              placeholder="Business Address"
+              placeholder={get('SETTINGS_BUSINESS_ADDRESS_PLACEHOLDER')}
             />
           </div>
           <div className="save-btn-row">
             <SketchBtn 
               onClick={handleSaveBusinessInfo}
-              variant="accent" size="small" style={{width: '30%'}}><HatchPattern opacity={0.6} /> Save</SketchBtn>
+              variant="accent" 
+              size="small" 
+              style={{width: '30%'}}
+            >
+              <HatchPattern opacity={0.6} />
+              {get('SETTINGS_SAVE_BUTTON')}
+            </SketchBtn>
           </div>
         </SketchDiv>
 
         <div className="password-section">
-          <div className="section-title">Change Password</div>
+          <div className="section-title">{get('SETTINGS_CHANGE_PASSWORD')}</div>
           <SketchDiv className="section-box">
             <div className="input-row" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
               <div style={{flex: 1}}>
@@ -331,8 +341,9 @@ const handleSaveNewPassword = async () => {
                   name="currentPassword"
                   value={password.current}
                   onChange={e => setPassword(p => ({ ...p, current: e.target.value }))}
-                  placeholder="Current Password"
-                  type="password" style={{fontFamily: 'none', Height: '30px'}}
+                  placeholder={get('SETTINGS_CURRENT_PASSWORD_PLACEHOLDER')}
+                  type="password" 
+                  style={{fontFamily: 'none', Height: '30px'}}
                   disabled={isPasswordVerified}
                 />
               </div>
@@ -345,7 +356,7 @@ const handleSaveNewPassword = async () => {
                   style={{width: '80px', marginBottom : '0.7rem', padding:'0.3rem 0.5rem'}}
                 >
                   <HatchPattern opacity={0.6} />
-                  {isVerifyingPassword ? 'Checking...' : 'Check'}
+                  {isVerifyingPassword ? get('SETTINGS_CHECKING_BUTTON') : get('SETTINGS_CHECK_BUTTON')}
                 </SketchBtn>
               ) : (
                 <div style={{color: 'green', fontSize: '20px'}}>
@@ -361,7 +372,7 @@ const handleSaveNewPassword = async () => {
                     name="newPassword"
                     value={password.new}
                     onChange={e => setPassword(p => ({ ...p, new: e.target.value }))}
-                    placeholder="New Password"
+                    placeholder={get('SETTINGS_NEW_PASSWORD_PLACEHOLDER')}
                     type="password"
                   />
                 </div>
@@ -370,7 +381,7 @@ const handleSaveNewPassword = async () => {
                     name="confirmPassword"
                     value={password.confirm}
                     onChange={e => setPassword(p => ({ ...p, confirm: e.target.value }))}
-                    placeholder="Confirm Password"
+                    placeholder={get('SETTINGS_CONFIRM_PASSWORD_PLACEHOLDER')}
                     type="password"
                   />
                 </div>
@@ -381,7 +392,8 @@ const handleSaveNewPassword = async () => {
                     style={{width: '30%'}}
                     onClick={handleSaveNewPassword}
                   >
-                    <HatchPattern opacity={0.6} /> Save
+                    <HatchPattern opacity={0.6} />
+                    {get('SETTINGS_SAVE_BUTTON')}
                   </SketchBtn>
                 </div>
               </>
@@ -389,7 +401,7 @@ const handleSaveNewPassword = async () => {
           </SketchDiv> 
         </div>
 
-        <div className="section-title">Notification Preferences (아직 미구현)</div>
+        <div className="section-title">{get('SETTINGS_NOTIFICATION_PREFERENCES')}</div>
         <SketchDiv className="section-box">
           <div className="noti-row">
                <span><Mail size={14}/> {get('Staff.setting.notification.email') || 'Email Notifications'}</span>
@@ -398,7 +410,7 @@ const handleSaveNewPassword = async () => {
               size="small"  
               style={{width: '30%'}}
             ><HatchPattern opacity={0.6} />
-              {emailNoti ? 'On' : 'Off'}
+              {emailNoti ? get('SETTINGS_ON') : get('SETTINGS_OFF')}
             </SketchBtn>
           </div>
           <div className="noti-row">
@@ -408,7 +420,7 @@ const handleSaveNewPassword = async () => {
               size="small"  
               style={{width: '30%'}}
             ><HatchPattern opacity={0.6} />
-              {smsNoti ? 'On' : 'Off'}
+               {smsNoti ? get('SETTINGS_ON') : get('SETTINGS_OFF')}
             </SketchBtn>
           </div>
         </SketchDiv>
@@ -431,17 +443,17 @@ const handleSaveNewPassword = async () => {
                           fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
                           width: '212px'
                         }}>
-              <option value="en">English</option>
-              <option value="kr">Korean</option>
-              <option value="vi">Vietnamese</option>
-              <option value="ja">Japanese</option>
+              <option value="en">{get('language.name.english')}</option>
+              <option value="kr">{get('language.name.korean')}</option>
+              <option value="vi">{get('language.name.vietnamese')}</option>
+              <option value="ja">{get('language.name.japanese')}</option>
             </select>
             <SketchBtn variant="accent" size="small" style={{width: '30%'}} onClick={handleSaveLanguage}><HatchPattern opacity={0.6} /> Save</SketchBtn>
           </div>
         </SketchDiv>
         <div className="section-title" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
           <SketchBtn variant="" size="small" style={{width: '100%'}} onClick={handleLogout}>
-            <HatchPattern opacity={0.6} /> Logout
+            <HatchPattern opacity={0.6} /> {get('Staff.setting.logout')}
           </SketchBtn>
         </div>
       </div>
