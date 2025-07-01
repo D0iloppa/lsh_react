@@ -7,6 +7,7 @@ import '@components/SketchComponents.css';
 import { Calendar, MessageCircle } from 'lucide-react';
 import ApiClient from '@utils/ApiClient';
 import { useAuth } from '../contexts/AuthContext';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import Swal from 'sweetalert2';
 
 const mockBookings = [
@@ -43,8 +44,18 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
   const { user, isLoggedIn } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
   const venue_id = user.venue_id;
+
+   useEffect(() => {
+            if (messages && Object.keys(messages).length > 0) {
+              console.log('✅ Messages loaded:', messages);
+              // setLanguage('en'); // 기본 언어 설정
+              console.log('Current language set to:', currentLang);
+              window.scrollTo(0, 0);
+            }
+          }, [messages, currentLang]);
 
   // 예약 목록 로드 함수
   const loadBookings = async () => {
@@ -117,6 +128,15 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
     }
   };
 
+  const getActionText = (action) => {
+    const actionMap = {
+      'Accept': get('BOOKING_ACCEPT_BUTTON'),
+      'CUSTOMER': get('BOOKING_CUSTOMER_CHAT'),
+      'MANAGER': get('BOOKING_MANAGER_CHAT')
+    };
+    return actionMap[action] || action;
+  };
+
   return (
     <>
       <style jsx="true">{`
@@ -153,6 +173,11 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
           color: #222;
           margin-bottom: 1rem;
         }
+
+        .booking-info div{
+          padding: 0.1rem;
+        }
+
         .booking-actions {
           display: flex;
           gap: 0.3rem;
@@ -175,16 +200,21 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
           color: #666;
         }
       `}</style>
-      <div className="bookinglist-container">
+        <div className="bookinglist-container">
         <SketchHeader
-          title={<><Calendar size={20} style={{marginRight:'7px',marginBottom:'-3px'}}/>Booking List</>}
+          title={
+            <>
+              <Calendar size={20} style={{marginRight:'7px',marginBottom:'-3px'}}/>
+              {get('BOOKING_LIST_TITLE')}
+            </>
+          }
           showBack={true}
           onBack={goBack}
         />
 
         <div className='booking-list'> 
           {loading ? (
-            <div className="loading-message">Loading...</div>
+            <div className="loading-message">{get('BOOKING_LOADING')}</div>
           ) : (
             bookings.map(bk => (
               <SketchDiv key={bk.id || bk.reservation_id} className="booking-card">
@@ -194,9 +224,9 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
                   <div className="booking-status" style={getStatusStyle(bk.status)}>{bk.status}</div>
                 </div>
                 <div className="booking-info">
-                  Date: {bk.date || new Date(bk.res_date).toLocaleDateString()}<br/>
-                  Time: {bk.time || bk.res_start_time}<br/>
-                  Customer: {bk.customer || bk.user_name}
+                  <div>{get('BOOKING_DATE_LABEL')} {bk.date || new Date(bk.res_date).toLocaleDateString()}</div>
+                  <div>{get('BOOKING_TIME_LABEL')} {bk.time || bk.res_start_time}</div>
+                  <div>{get('BOOKING_CUSTOMER_LABEL')} {bk.customer || bk.user_name}</div>
                 </div>
                 <div className="booking-actions">
                   {(bk.actions || ['CUSTOMER', 'Accept', 'MANAGER']).map(action => {
@@ -216,10 +246,10 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
                         {action === 'MANAGER' || action === 'CUSTOMER' ? (
                           <>
                             <MessageCircle size={14} style={{ marginRight: '4px' }} />
-                            {action}
+                            {getActionText(action)}
                           </>
                         ) : (
-                          action
+                          getActionText(action)
                         )}
                       </SketchBtn>
                     );

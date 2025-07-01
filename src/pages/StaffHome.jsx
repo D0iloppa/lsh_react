@@ -39,6 +39,16 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
     }
   }, [messages, currentLang, user]);
 
+  // 환영 메시지 포맷 함수
+  const formatWelcomeTitle = (name) => {
+    return get('STAFF_WELCOME_TITLE').replace('{name}', name);
+  };
+
+  // 예약 수량에 따른 단수/복수 처리
+  const getReservationText = (count) => {
+    return count > 1 ? get('STAFF_RESERVATION_PLURAL') : get('STAFF_RESERVATION_SINGLE');
+  };
+
   const fetchStaffDashboardData = async () => {
     try {
       setIsLoadingData(true);
@@ -219,105 +229,108 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
           border-bottom: none;
         }
       `}</style>
-      <div className="staffhome-container"> 
-        <div className="welcome-box">
-          <HatchPattern opacity={0.6} />
-          <div className="welcome-title">Welcome, [{staffInfo.name}]!</div>
-          <div className="welcome-desc">See today's bookings, upcoming shifts, and unread notifications at a glance.</div>
-        </div>
-        
-        {dashboardInfo.urgentMessages.length > 0 && (
+          <div className="staffhome-container"> 
+          <div className="welcome-box">
+            <HatchPattern opacity={0.6} />
+            <div className="welcome-title">{formatWelcomeTitle(staffInfo.name)}</div>
+            <div className="welcome-desc">{get('STAFF_WELCOME_DESC')}</div>
+          </div>
+          
+          {dashboardInfo.urgentMessages.length > 0 && (
+            <SketchDiv className="section-card">
+              <div className="section-title">{get('STAFF_URGENT_MESSAGE_TITLE')}</div>
+              <div className="section-content">
+                {dashboardInfo.urgentMessages.map((message, index) => (
+                  <div key={index}>{message.content}</div>
+                ))}
+              </div>
+            </SketchDiv>
+          )}
+
           <SketchDiv className="section-card">
-            <div className="section-title">Alert: Urgent Message</div>
+            <HatchPattern opacity={0.6} />
+            <div className="section-title">
+              <Clock size={14} style={{marginRight: '5px'}}/> {get('STAFF_TODAYS_RESERVATIONS')} ({dashboardInfo.todaysReservations})
+            </div>
             <div className="section-content">
-              {dashboardInfo.urgentMessages.map((message, index) => (
-                <div key={index}>{message.content}</div>
-              ))}
+              {dashboardInfo.hourlyReservations.length > 0 ? (
+                dashboardInfo.hourlyReservations
+                  .filter(item => item.reservationCount > 0)
+                  .map((item, index) => (
+                    <div key={index} className="hourly-reservation">
+                      {item.hour}:00 - {item.reservationCount} {getReservationText(item.reservationCount)}
+                    </div>
+                  ))
+              ) : (
+                <div className="empty-state">{get('STAFF_NO_RESERVATIONS_TODAY')}</div>
+              )}
             </div>
           </SketchDiv>
-        )}
 
-        <SketchDiv className="section-card">
-          <HatchPattern opacity={0.6} />
-          <div className="section-title">
-            <Clock size={14} style={{marginRight: '5px'}}/>
-            Today's Reservations ({dashboardInfo.todaysReservations})
-          </div>
-          <div className="section-content">
-            {dashboardInfo.hourlyReservations.length > 0 ? (
-              dashboardInfo.hourlyReservations
-                .filter(item => item.reservationCount > 0)
-                .map((item, index) => (
-                  <div key={index} className="hourly-reservation">
-                    {item.hour}:00 - {item.reservationCount} reservation{item.reservationCount > 1 ? 's' : ''}
+          <SketchDiv className="section-card">
+            <HatchPattern opacity={0.6} />
+            <div className="section-title">
+              <Calendar size={14} opacity={0.6}/> {get('STAFF_UPCOMING_SHIFTS')} ({dashboardInfo.upcomingShifts.length})
+            </div>
+            <div className="section-content">
+              {dashboardInfo.upcomingShifts.length > 0 ? (
+                dashboardInfo.upcomingShifts.map((shift, index) => (
+                  <div key={index}>
+                    {shift.date} - {shift.startTime} to {shift.endTime}
                   </div>
                 ))
-            ) : (
-              <div className="empty-state">No reservations scheduled for today</div>
-            )}
-          </div>
-        </SketchDiv>
+              ) : (
+                <div className="empty-state">{get('STAFF_NO_UPCOMING_SHIFTS')}</div>
+              )}
+            </div>
+          </SketchDiv>
 
-        <SketchDiv className="section-card">
-          <HatchPattern opacity={0.6} />
-          <div className="section-title"><Calendar size={14} opacity={0.6}/> Upcoming Shifts ({dashboardInfo.upcomingShifts.length})</div>
-          <div className="section-content">
-            {dashboardInfo.upcomingShifts.length > 0 ? (
-              dashboardInfo.upcomingShifts.map((shift, index) => (
-                <div key={index}>
-                  {shift.date} - {shift.startTime} to {shift.endTime}
-                </div>
-              ))
-            ) : (
-              <div className="empty-state">No upcoming shifts scheduled</div>
-            )}
-          </div>
-        </SketchDiv>
+          <SketchDiv className="section-card">
+            <HatchPattern opacity={0.6} />
+            <div className="section-title">
+              <Bell size={14} opacity={0.6}/> {get('STAFF_UNREAD_NOTIFICATIONS')} ({dashboardInfo.unreadNotifications.length})
+            </div>
+            <div className="section-content">
+              {dashboardInfo.unreadNotifications.length > 0 ? (
+                dashboardInfo.unreadNotifications.map((notification, index) => (
+                  <div key={index}>{notification.content}</div>
+                ))
+              ) : (
+                <div className="empty-state">{get('STAFF_NO_UNREAD_NOTIFICATIONS')}</div>
+              )}
+            </div>
+          </SketchDiv>
 
-        <SketchDiv className="section-card">
-          <HatchPattern opacity={0.6} />
-          <div className="section-title"><Bell size={14} opacity={0.6}/> Unread Notifications ({dashboardInfo.unreadNotifications.length})</div>
-          <div className="section-content">
-            {dashboardInfo.unreadNotifications.length > 0 ? (
-              dashboardInfo.unreadNotifications.map((notification, index) => (
-                <div key={index}>{notification.content}</div>
-              ))
-            ) : (
-              <div className="empty-state">No unread notifications</div>
-            )}
+          <div className="action-row">
+            <SketchBtn 
+              size="medium" 
+              variant="secondary" 
+              className="action-btn"
+              onClick={handleEditProfile}
+            >
+              <HatchPattern opacity={0.6} />
+              {get('Staff.home.btn1')}
+            </SketchBtn>
+            <SketchBtn 
+              size="medium" 
+              variant="secondary" 
+              className="action-btn"
+              onClick={handleBookingList}
+            >
+              <HatchPattern opacity={0.6} />
+              {get('Staff.home.btn2')}
+            </SketchBtn>
+            <SketchBtn 
+              size="medium" 
+              variant="secondary" 
+              className="action-btn"
+              onClick={handleNewReviews}
+            >
+              <HatchPattern opacity={0.6} />
+              {get('Staff.home.btn3')}
+            </SketchBtn>
           </div>
-        </SketchDiv>
-
-        <div className="action-row">
-          <SketchBtn 
-            size="medium" 
-            variant="secondary" 
-            className="action-btn"
-            onClick={handleEditProfile}
-          >
-            <HatchPattern opacity={0.6} />
-            {get('Staff.home.btn1')}
-          </SketchBtn>
-          <SketchBtn 
-            size="medium" 
-            variant="secondary" 
-            className="action-btn"
-            onClick={handleBookingList}
-          >
-            <HatchPattern opacity={0.6} />
-            {get('Staff.home.btn2')}
-          </SketchBtn>
-          <SketchBtn 
-            size="medium" 
-            variant="secondary" 
-            className="action-btn"
-            onClick={handleNewReviews}
-          >
-            <HatchPattern opacity={0.6} />
-            {get('Staff.home.btn3')}
-          </SketchBtn>
         </div>
-      </div>
     </>
   );
 };

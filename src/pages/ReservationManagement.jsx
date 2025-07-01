@@ -5,6 +5,7 @@ import '@components/SketchComponents.css';
 import SketchHeader from '@components/SketchHeader';
 import HatchPattern from '@components/HatchPattern';
 import { MessageCircle, Calendar, Check, Edit } from 'lucide-react';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import { useAuth } from '../contexts/AuthContext';
 import Swal from 'sweetalert2';
@@ -107,10 +108,30 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
   const [reservations, setReservations] = useState([]); // API 연동 시 빈 배열로 시작
   const [loading, setLoading] = useState(false);
   const { user, isLoggedIn } = useAuth();
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  
+    useEffect(() => {
+        if (messages && Object.keys(messages).length > 0) {
+          console.log('✅ Messages loaded:', messages);
+          // setLanguage('en'); // 기본 언어 설정
+          console.log('Current language set to:', currentLang);
+          window.scrollTo(0, 0);
+        }
+      }, [messages, currentLang]);
 
   const venue_id = user.venue_id;
    //const venue_id = 1;
   
+  // 상태별 텍스트를 가져오는 헬퍼 함수
+  const getStatusText = (status) => {
+    const statusMap = {
+      'pending': get('RESERVATION_STATUS_PENDING'),
+      'confirmed': get('RESERVATION_STATUS_CONFIRMED'),
+      'canceled': get('RESERVATION_STATUS_CANCELED')
+    };
+    return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
 
   // 예약 목록 로드 함수 (재사용을 위해 분리)
   const loadReservations = async () => {
@@ -156,62 +177,80 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
       setReservations([]);
     }
   };
+    const formatNoReservationsMessage = (status) => {
+      const statusText = getStatusText(status);
+      return get('NO_RESERVATIONS_FOUND').replace('{status}', statusText.toLowerCase());
+    };
 
-  // 예약 관리 API 호출 함수 (승인/취소) - SweetAlert2로 변경
-  const handleReservationManage = async (reservation_id, mngCode) => {
-    const actionText = mngCode === 1 ? '승인' : '취소';
+// 예약 관리 API 호출 함수 (승인/취소) - SweetAlert2로 변경
+const handleReservationManage = async (reservation_id, mngCode) => {
+  const actionText = mngCode === 1 
+    ? get('RESERVATION_ACTION_APPROVE') 
+    : get('RESERVATION_ACTION_CANCEL');
+  
+  const confirmText = mngCode === 1 
+    ? get('RESERVATION_CONFIRM_APPROVE') 
+    : get('RESERVATION_CONFIRM_CANCEL');
+  
+  // 확인창 표시 - SweetAlert2로 변경
+  const result = await Swal.fire({
+    title: get('RESERVATION_MANAGE_TITLE'),
+    text: confirmText,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: actionText,
+    cancelButtonText: get('RESERVATION_ACTION_CANCEL'),
+    confirmButtonColor: mngCode === 1 ? '#10b981' : '#ef4444',
+    cancelButtonColor: '#6b7280'
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    setLoading(true);
     
-    // 확인창 표시 - SweetAlert2로 변경
-    const result = await Swal.fire({
-      title: '예약 관리',
-      text: `정말 ${actionText}하시겠습니까?`,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: actionText,
-      cancelButtonText: '취소',
-      confirmButtonColor: mngCode === 1 ? '#10b981' : '#ef4444',
-      cancelButtonColor: '#6b7280'
+    const response = await ApiClient.postForm('/api/reservation/manage', {
+      reservation_id: reservation_id,
+      mngCode: mngCode
     });
 
-    if (!result.isConfirmed) return;
+    console.log(`${actionText} 응답:`, response);
 
-    try {
-      setLoading(true);
-      
-      const response = await ApiClient.postForm('/api/reservation/manage', {
-        reservation_id: reservation_id,
-        mngCode: mngCode
-      });
-
-      console.log(`${actionText} 응답:`, response);
-
-      // 성공 시 예약 목록 다시 불러오기
-      await loadReservations();
-      
-      // 성공 알림 - SweetAlert2로 변경
-      Swal.fire({
-        title: '성공',
-        text: `예약이 성공적으로 ${actionText}되었습니다.`,
-        icon: 'success',
-        confirmButtonText: '확인',
-        confirmButtonColor: '#10b981'
-      });
-      
-    } catch (error) {
-      console.error(`예약 ${actionText} 실패:`, error);
-      
-      // 에러 알림 - SweetAlert2로 변경
-      Swal.fire({
-        title: '오류',
-        text: `예약 ${actionText}에 실패했습니다. 다시 시도해주세요.`,
-        icon: 'error',
-        confirmButtonText: '확인',
-        confirmButtonColor: '#ef4444'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    // 성공 시 예약 목록 다시 불러오기
+    await loadReservations();
+    
+    // 성공 알림 - SweetAlert2로 변경
+    const successMessage = mngCode === 1 
+      ? get('RESERVATION_APPROVE_SUCCESS') 
+      : get('RESERVATION_CANCEL_SUCCESS');
+    
+    Swal.fire({
+      title: get('SWAL_SUCCESS_TITLE'),
+      text: successMessage,
+      icon: 'success',
+      confirmButtonText: get('SWAL_CONFIRM_BUTTON'),
+      confirmButtonColor: '#10b981'
+    });
+    
+  } catch (error) {
+    console.error(`예약 ${actionText} 실패:`, error);
+    
+    // 에러 알림 - SweetAlert2로 변경
+    const errorMessage = mngCode === 1 
+      ? get('RESERVATION_APPROVE_ERROR') 
+      : get('RESERVATION_CANCEL_ERROR');
+    
+    Swal.fire({
+      title: get('SWAL_ERROR_TITLE'),
+      text: errorMessage,
+      icon: 'error',
+      confirmButtonText: get('SWAL_CONFIRM_BUTTON'),
+      confirmButtonColor: '#ef4444'
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   // 초기 로딩을 위한 useEffect - venue_id가 변경될 때만 호출
   useEffect(() => {
@@ -355,14 +394,14 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
            title={
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Calendar size={18} />
-              예약 관리
+              {get('Mng.menu.2.1')}
             </span>
           }
           showBack={true}
           onBack={goBack}
         />
 
-        <div className="status-filter-row">
+          <div className="status-filter-row">
           {statusList.map(s => (
             <SketchBtn
               key={s.key}
@@ -377,12 +416,12 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
         </div>
 
         {loading ? (
-          <div className="loading-message">Loading reservations...</div>
+          <div className="loading-message">{get('LOADING_RESERVATIONS')}</div>
         ) : (
           <div className="reservation-list">
             {filtered.length === 0 ? (
               <div className="loading-message">
-                No {selectedStatus} reservations found.
+                {formatNoReservationsMessage(selectedStatus)}
               </div>
             ) : (
               filtered.map(r => (
@@ -394,14 +433,14 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
                         {r.date}
                       </div>
                       <div className="reservation-venue">
-                        Staff: {r.venue}
+                        {get('RESERVATION_STAFF_LABEL')} {r.venue}
                       </div>
                     </div>
                     <div className="reservation-time">{r.time}</div>
                   </div>
                   <div className="reservation-status">
-                    Status: <span className={`status-badge status-${r.status}`}>
-                      {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                    {get('RESERVATION_STATUS_LABEL')} <span className={`status-badge status-${r.status}`}>
+                      {getStatusText(r.status)}
                     </span>
                   </div>
                   <div className="reservation-actions">
@@ -420,14 +459,16 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
                       >
                         {r.status === 'confirmed' ? (
                           <>
-                            <Check size={14} style={{marginRight: '3px'}}/> 승인됨
+                            <Check size={14} style={{marginRight: '3px'}}/>
+                            {get('RESERVATION_APPROVED_BUTTON')}
                           </>
-                        ) : 'Approve'}
+                        ) : get('RESERVATION_APPROVE_BUTTON')}
                       </SketchBtn>
                     )}
                     
                     <SketchBtn variant="primary" size="small" className="action-btn">
-                      <MessageCircle size={14} style={{marginRight: '3px'}}/> Chat
+                      <MessageCircle size={14} style={{marginRight: '3px'}}/>
+                      {get('RESERVATION_CHAT_BUTTON')}
                     </SketchBtn>
                     
                     {/* Cancel 버튼 - cancelled 상태가 아닐 때만 표시 */}
@@ -441,7 +482,7 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
                           handleReservationManage(r.id, -1); // 취소: mngCode = -1
                         }}
                       >
-                        Cancel
+                        {get('RESERVATION_CANCEL_BUTTON')}
                       </SketchBtn>
                     )}
                   </div>

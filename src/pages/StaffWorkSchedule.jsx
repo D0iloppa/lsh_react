@@ -10,6 +10,9 @@ import { useAuth } from '@contexts/AuthContext';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
+import { overlay } from 'overlay-kit';
+
+
 
 const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
   const { user, isLoggedIn } = useAuth();
@@ -24,6 +27,7 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [foldedDays, setFoldedDays] = useState(new Set()); // 접힌 날짜들
+  const [triggerRefresh, setTriggerRefresh] = useState(false);
 
   useEffect(() => {
     // 예시: 서버/유저 설정/기본값 등으로 자동 결정
@@ -43,6 +47,12 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
     }
     fetchSchedules();
   }, [messages, currentLang, currentWeek, mondayStart, view, currentMonth, currentYear]);
+
+
+  useEffect(() => {
+    fetchSchedules();
+  }, [triggerRefresh]);
+
 
   // 주차 계산 함수
   const getWeekDates = (weekOffset = 0, mondayStart = false) => {
@@ -176,22 +186,119 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
   };
 
   const handleEditSchedule = (schedule) => {
-    navigateToPageWithData(PAGES.STAFF_SCHEDULE_EDIT, { 
-      mode: 'edit', schedule_id: schedule.id, schedule
+    overlay.open(({ isOpen, close, unmount }) => {
+      const [isOn, setIsOn] = React.useState(
+        schedule.status !== null &&
+        schedule.status !== 'dayoff' &&
+        schedule.start_time &&
+        schedule.end_time
+      );
+      const [start, setStart] = React.useState(schedule.start_time);
+      const [end, setEnd] = React.useState(schedule.end_time);
+      const hourOptions = Array.from({ length: 24 }, (_, i) => {
+        const hourStr = String(i).padStart(2, '0');
+        return { value: `${hourStr}:00:00`, label: `${i}` };
+      });
+      return (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0,0,0,0.25)',
+            zIndex: 2,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: 'BMHanna, Comic Sans MS, cursive, sans-serif'
+          }}
+          onClick={e => { if (e.target === e.currentTarget) unmount(); }}
+        >
+          <div style={{ background: '#fff', borderRadius: '1rem', minWidth: 260, padding: '2rem 1.5rem', boxShadow: '0 4px 24px rgba(0,0,0,0.13)', maxWidth: 340, width: '100%' }}>
+            {/* Row 1: On/Off */}
+            <div style={{ marginBottom: 22, display: 'flex', alignItems: 'center', gap: 16 }}>
+              <span style={{ fontWeight: 600, fontSize: '1.01rem', minWidth: 70 }}>근무여부</span>
+              <select className="select-style" value={isOn ? 'on' : 'off'} onChange={e => setIsOn(e.target.value === 'on')} style={{ fontSize: '1rem' }}>
+                <option value="on">ON</option>
+                <option value="off">OFF</option>
+              </select>
+            </div>
+            {/* Row 2: Hours */}
+            {isOn && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                <span style={{ fontSize: '1.01rem', minWidth: 45 }}>Hours</span>
+                <select className="select-style" value={start} onChange={e => setStart(e.target.value)}>
+                  {hourOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                <span style={{ fontSize: '1.01rem', minWidth: 18, textAlign: 'center' }}>to</span>
+                <select className="select-style" value={end} onChange={e => setEnd(e.target.value)}>
+                  {hourOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div style={{ marginTop: 32, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <SketchBtn variant="secondary" size="small" style={{ minWidth: 80 }} onClick={unmount}>취소</SketchBtn>
+              <SketchBtn variant="primary" size="small" style={{ minWidth: 80 }} onClick={() => {
+
+
+              // 저장 로직
+
+              const formattedData = [{
+                date: schedule.work_date,
+                status: isOn ? 'available' : 'dayoff',
+                start: start,
+                end: end,
+                on: Boolean(isOn)
+              }];
+
+              const jsonDataStr = JSON.stringify(formattedData);
+              console.log('jsonDataStr:', jsonDataStr);
+        
+              const payload = {
+                staff_id: user?.staff_id,
+                jsonData: encodeURIComponent(jsonDataStr)
+              }
+        
+              ApiClient.postForm('/api/upsertStaffSchedule', payload).then((response)=>{
+                console.log('response:', response);
+        
+                Swal.fire({
+                  title: 'Schedule saved',
+                  text: 'Schedule saved successfully',
+                  icon: 'success',
+
+                  confirmButtonText: 'OK'
+                }).then((result) => {
+                  if (result.isConfirmed || result.isDismissed) {
+                    unmount();
+                    setTriggerRefresh(!triggerRefresh);
+                  }
+                });
+              }).catch((error)=>{
+                console.error('Failed to save schedule:', error);
+                Swal.fire({
+                  title: 'Failed to save schedule',
+                  text: 'Please try again',
+                  icon: 'error',
+                  confirmButtonText: 'OK'
+                });
+                unmount();
+              });
+                
+              }}>저장</SketchBtn>
+            </div>
+          </div>
+        </div>
+      );
     });
   };
 
-  const handleDeleteSchedule = async (scheduleId) => {
-    try {
-      // TODO: 실제 API 호출로 변경
-      // await ApiClient.delete(`/api/deleteStaffSchedule/${scheduleId}`);
-      
-      // 목데이터에서 제거
-      setSchedules(prev => prev.filter(s => s.id !== scheduleId));
-    } catch (error) {
-      console.error('Failed to delete schedule:', error);
-    }
-  };
 
   const handleCheckInOut = async (schedule, isCheckOut, isCheckedOut) => {
       if(isCheckedOut) return;

@@ -392,12 +392,12 @@ const handleEndPromotion = async (promotionId) => {
           }
         }
       `}</style>
-      <div className="promotion-container">
+        <div className="promotion-container">
         <SketchHeader
-           title={
+          title={
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Tag size={18} />
-                프로모션 관리
+              {get('PROMOTION_MANAGEMENT_TITLE')}
             </span>
           }
           showBack={true}
@@ -406,16 +406,22 @@ const handleEndPromotion = async (promotionId) => {
         
         <div className="content-section">
           <div className="create-btn-row">
-            <SketchBtn variant="primary" size="medium" style={{ width: '100%' }} onClick={handleCreatePromotion}>
-              + 새 프로모션 만들기 <HatchPattern opacity={0.6} />
+            <SketchBtn 
+              variant="primary" 
+              size="medium" 
+              style={{ width: '100%' }} 
+              onClick={handleCreatePromotion}
+            >
+              {get('PROMOTION_CREATE_BUTTON')}
+              <HatchPattern opacity={0.6} />
             </SketchBtn>
           </div>
 
           <div className="promotions-list">
             {isLoading ? (
               <div className="empty-state">
-                <h3>로딩 중...</h3>
-                <p>프로모션 목록을 불러오는 중입니다.</p>
+                <h3>{get('PROMOTION_LOADING_TITLE')}</h3>
+                <p>{get('PROMOTION_LOADING_MESSAGE')}</p>
               </div>
             ) : promotions.length > 0 ? (
               promotions.map((promotion, index) => (
@@ -439,30 +445,38 @@ const handleEndPromotion = async (promotionId) => {
                           <span>{promotion.description}</span>
                         </div>
                         <div className="promotion-detail">
-                          <span className="detail-label">할인:</span>
+                          <span className="detail-label">{get('PROMOTION_DISCOUNT_LABEL')}</span>
                           <span>
-                            {promotion.discount_type === 'percent' ? `${promotion.discount_value}%` : `${promotion.discount_value}원`}
+                            {promotion.discount_type === 'percent' 
+                              ? `${promotion.discount_value}%` 
+                              : `${promotion.discount_value}원`
+                            }
                           </span>
                         </div>
                         <div className="promotion-detail">
-                          <span className="detail-label">기간:</span>
+                          <span className="detail-label">{get('PROMOTION_PERIOD_LABEL')}</span>
                           <span>{promotion.start_date} ~ {promotion.end_date}</span>
                         </div>
                       </div>
 
                       <div className="promotion-actions">
-                        <SketchBtn size="small" className="action-btn" onClick={() => handleEditPromotion(promotion)}>
-                          <Edit size={13}/> EDIT
+                        <SketchBtn 
+                          size="small" 
+                          className="action-btn" 
+                          onClick={() => handleEditPromotion(promotion)}
+                        >
+                          <Edit size={13}/> {get('PROMOTION_EDIT_BUTTON')}
                         </SketchBtn>
                         <SketchBtn 
                           size="small" 
-                          className="action-btn" variant="danger"
+                          className="action-btn" 
+                          variant="danger"
                           onClick={() => handleEndPromotion(promotion.promotion_id)}
                         >
-                          END
+                          {get('PROMOTION_END_BUTTON_SHORT')}
                         </SketchBtn>
                         <SketchBtn size="small" className="action-btn">
-                          TRACK
+                          {get('PROMOTION_TRACK_BUTTON')}
                         </SketchBtn>
                       </div>
                     </div>
@@ -473,8 +487,8 @@ const handleEndPromotion = async (promotionId) => {
               <SketchDiv className="promotion-card">
                 <HatchPattern opacity={0.02} />
                 <div className="empty-state">
-                  <h3>프로모션이 없습니다</h3>
-                  <p>새로운 프로모션을 만들어보세요!</p>
+                  <h3>{get('PROMOTION_EMPTY_TITLE')}</h3>
+                  <p>{get('PROMOTION_EMPTY_MESSAGE')}</p>
                 </div>
               </SketchDiv>
             )}

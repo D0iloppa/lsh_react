@@ -7,6 +7,7 @@ import HatchPattern from '@components/HatchPattern';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import { Filter, Star, Edit, Trash2, Eye, MessagesSquare, ChevronDown, ChevronUp, Send, Store, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
 
@@ -42,6 +43,16 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
     const [reviews, setReviews] = useState([]);
     const [originalReviews, setOriginalReviews] = useState([]); // 원본 데이터 보관
     const { user } = useAuth();
+    const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+    
+      useEffect(() => {
+          if (messages && Object.keys(messages).length > 0) {
+            console.log('✅ Messages loaded:', messages);
+            // setLanguage('en'); // 기본 언어 설정
+            console.log('Current language set to:', currentLang);
+            window.scrollTo(0, 0);
+          }
+        }, [messages, currentLang]);
   
     const venue_id = user.venue_id;
   
@@ -142,70 +153,70 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
     };
   
     // 답변 제출
-    const handleSubmitResponse = async (reviewId) => {
-      let responseText = responses[reviewId];
-      
-      const currentReview = reviews.find(review => (review.review_id || review.id) === reviewId);
-      const existingResponse = currentReview?.reply_content || currentReview?.response;
-      
-      if (!responseText || responseText.trim() === '') {
-        if (!existingResponse) {
-          Swal.fire({
-            title: '입력 오류',
-            text: '답변 내용을 입력해주세요.',
-            icon: 'warning',
-            confirmButtonText: '확인',
-            confirmButtonColor: '#f59e0b'
-          });
-          return;
-        }
-        responseText = existingResponse;
-      }
-    
-      try {
-        const response = await ApiClient.postForm('/api/updateReplyContent', {
-          review_id: reviewId,
-          venue_id: venue_id,
-          reply_content: responseText
-        });
-    
-        console.log('답변 등록 응답:', response);
-    
-        // 원본 데이터와 필터된 데이터 모두 업데이트
-        setOriginalReviews(prev => prev.map(review => 
-          (review.review_id || review.id) === reviewId 
-            ? { ...review, reply_content: responseText }
-            : review
-        ));
-    
-        setResponses(prev => ({
-          ...prev,
-          [reviewId]: ''
-        }));
-        setOpenResponses(prev => ({
-          ...prev,
-          [reviewId]: false
-        }));
-    
-        Swal.fire({
-          title: '답변 등록 완료',
-          text: '리뷰에 대한 답변이 성공적으로 등록되었습니다.',
-          icon: 'success',
-          confirmButtonText: '확인',
-          confirmButtonColor: '#10b981'
-        });
-    
-      } catch (error) {
-        console.error('답변 등록 실패:', error);
-        Swal.fire({
-          title: '오류',
-          text: '답변 등록에 실패했습니다. 다시 시도해주세요.',
-          icon: 'error',
-          confirmButtonText: '확인',
-          confirmButtonColor: '#ef4444'
-        });
-      }
-    };
+const handleSubmitResponse = async (reviewId) => {
+  let responseText = responses[reviewId];
+  
+  const currentReview = reviews.find(review => (review.review_id || review.id) === reviewId);
+  const existingResponse = currentReview?.reply_content || currentReview?.response;
+  
+  if (!responseText || responseText.trim() === '') {
+    if (!existingResponse) {
+      Swal.fire({
+        title: get('REVIEW_INPUT_ERROR_TITLE'),
+        text: get('REVIEW_INPUT_ERROR_MESSAGE'),
+        icon: 'warning',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON'),
+        confirmButtonColor: '#f59e0b'
+      });
+      return;
+    }
+    responseText = existingResponse;
+  }
+
+  try {
+    const response = await ApiClient.postForm('/api/updateReplyContent', {
+      review_id: reviewId,
+      venue_id: venue_id,
+      reply_content: responseText
+    });
+
+    console.log('답변 등록 응답:', response);
+
+    // 원본 데이터와 필터된 데이터 모두 업데이트
+    setOriginalReviews(prev => prev.map(review => 
+      (review.review_id || review.id) === reviewId 
+        ? { ...review, reply_content: responseText }
+        : review
+    ));
+
+    setResponses(prev => ({
+      ...prev,
+      [reviewId]: ''
+    }));
+    setOpenResponses(prev => ({
+      ...prev,
+      [reviewId]: false
+    }));
+
+    Swal.fire({
+      title: get('REVIEW_SUBMIT_SUCCESS_TITLE'),
+      text: get('REVIEW_SUBMIT_SUCCESS_MESSAGE'),
+      icon: 'success',
+      confirmButtonText: get('SWAL_CONFIRM_BUTTON'),
+      confirmButtonColor: '#10b981'
+    });
+
+  } catch (error) {
+    console.error('답변 등록 실패:', error);
+    Swal.fire({
+      title: get('SWAL_ERROR_TITLE'),
+      text: get('REVIEW_SUBMIT_ERROR_MESSAGE'),
+      icon: 'error',
+      confirmButtonText: get('SWAL_CONFIRM_BUTTON'),
+      confirmButtonColor: '#ef4444'
+    });
+  }
+};
   
     // 별점 렌더링 함수
     const renderStars = (rating) => {
@@ -411,36 +422,38 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
             font-size: 0.9rem;
           }
         `}</style>
-        <div className="review-container">
+            <div className="review-container">
           <SketchHeader
-             title={
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={18} />
-              매니저 리뷰 관리
-            </span>
-          }
+            title={
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Star size={18} />
+                {get('REVIEW_MANAGEMENT_TITLE')}
+              </span>
+            }
             showBack={true}
             onBack={goBack}
           />
+          
           <div className="filter-row">
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <span className="filter-label">Rating</span>
+              <span className="filter-label">{get('REVIEW_FILTER_RATING')}</span>
               <select className="filter-select" value={ratingFilter} onChange={e => setRatingFilter(e.target.value)}>
-                <option value="All">All</option>
+                <option value="All">{get('REVIEW_FILTER_ALL')}</option>
                 <option value="5.0">5.0</option>
                 <option value="4.0+">4.0+</option>
                 <option value="3.0+">3.0+</option>
               </select>
             </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <span className="filter-label">Date:</span>
+              <span className="filter-label">{get('REVIEW_FILTER_DATE')}</span>
               <select className="filter-select" value={dateFilter} onChange={e => setDateFilter(e.target.value)}>
-                <option value="All">All</option>
-                <option value="Newest">Today</option>
-                <option value="Oldest">Previous</option>
+                <option value="All">{get('REVIEW_FILTER_ALL')}</option>
+                <option value="Newest">{get('REVIEW_FILTER_TODAY')}</option>
+                <option value="Oldest">{get('REVIEW_FILTER_PREVIOUS')}</option>
               </select>
             </div>
           </div>
+          
           <div className="review-list">
             {reviews.length > 0 ? reviews.map(review => (
               <SketchDiv key={review.review_id || review.id} className="review-card">
@@ -475,9 +488,9 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
                           {review.targetName || review.name}
                         </span>
                       </div>
-  
+
                       <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <span style={{ fontSize: '0.95rem' }}>작성자:</span>
+                        <span style={{ fontSize: '0.95rem' }}>{get('REVIEW_AUTHOR_LABEL')}</span>
                         <h3 className="user-name">{review.user_name || review.name}</h3>
                       </div>
                       <p className="review-meta">
@@ -491,12 +504,12 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
                   {(review.reply_content || review.response) && !openResponses[review.review_id || review.id] && (
                     <div className="existing-response">
                       <div className="existing-response-header">
-                        <span className="response-label">답변:</span>
+                        <span className="response-label">{get('REVIEW_RESPONSE_LABEL')}</span>
                       </div>
                       <div className="existing-response-text">{review.reply_content || review.response}</div>
                     </div>
                   )}
-  
+
                   <div className="review-actions">
                     <SketchBtn 
                       variant={openResponses[review.review_id || review.id] ? "secondary" : 
@@ -507,29 +520,31 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
                     >
                       {openResponses[review.review_id || review.id] ? (
                         <>
-                          <ChevronUp size={14} /> 닫기
+                          <ChevronUp size={14} /> {get('REVIEW_CLOSE_BUTTON')}
                         </>
                       ) : (
                         <>
                           {(review.reply_content || review.response) ? (
                             <>
-                              <Edit size={14} /> 답변수정
+                              <Edit size={14} /> {get('REVIEW_EDIT_RESPONSE_BUTTON')}
                             </>
                           ) : (
-                            '답변등록'
+                            get('REVIEW_ADD_RESPONSE_BUTTON')
                           )}
                         </>
                       )}
                     </SketchBtn>
-                    <SketchBtn variant="danger" size="small" className="review-action-btn">신고</SketchBtn>
+                    <SketchBtn variant="danger" size="small" className="review-action-btn">
+                      {get('REVIEW_REPORT_BUTTON')}
+                    </SketchBtn>
                   </div>
-  
+
                   {/* 답변 입력 폼 */}
                   {openResponses[review.review_id || review.id] && (
                     <div className="response-form">
                       <textarea
                         className="response-textarea"
-                        placeholder="답변을 작성해 주세요.."
+                        placeholder={get('REVIEW_RESPONSE_PLACEHOLDER')}
                         value={responses[review.review_id || review.id] || review.reply_content || review.response || ''}
                         onChange={(e) => handleResponseChange(review.review_id || review.id, e.target.value)}
                       />
@@ -540,7 +555,7 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
                           className="response-form-btn"
                           onClick={() => toggleResponse(review.review_id || review.id)}
                         >
-                          취소
+                          {get('REVIEW_CANCEL_BUTTON')}
                         </SketchBtn>
                         <SketchBtn 
                           variant="event" 
@@ -548,7 +563,7 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
                           className="response-form-btn"
                           onClick={() => handleSubmitResponse(review.review_id || review.id)}
                         >
-                          <Send size={12} /> 답변제출
+                          <Send size={12} /> {get('REVIEW_SUBMIT_RESPONSE_BUTTON')}
                         </SketchBtn>
                       </div>
                     </div>
@@ -557,7 +572,7 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
               </SketchDiv>
             )) : (
               <div className="no-reviews">
-                필터 조건에 맞는 리뷰가 없습니다.
+                {get('REVIEW_NO_REVIEWS_MESSAGE')}
               </div>
             )}
           </div>
