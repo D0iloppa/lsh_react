@@ -182,6 +182,42 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
     }
   };
 
+  const handleCheckInOut = async (schedule, isCheckOut) => {
+    try {
+      const currentTime = new Date().toISOString().slice(11, 16); // HH:MM 형식
+      
+      if (isCheckOut) {
+        // Check Out 처리
+        const response = await ApiClient.postForm('/api/checkOut', {
+          schedule_id: schedule.schedule_id,
+          check_out_time: currentTime
+        });
+        
+        // 로컬 상태 업데이트
+        setSchedules(prev => prev.map(s => 
+          s.schedule_id === schedule.schedule_id 
+            ? { ...s, check_out_time: currentTime }
+            : s
+        ));
+      } else {
+        // Check In 처리
+        const response = await ApiClient.postForm('/api/checkIn', {
+          schedule_id: schedule.schedule_id,
+          check_in_time: currentTime
+        });
+        
+        // 로컬 상태 업데이트
+        setSchedules(prev => prev.map(s => 
+          s.schedule_id === schedule.schedule_id 
+            ? { ...s, check_in_time: currentTime }
+            : s
+        ));
+      }
+    } catch (error) {
+      console.error('Failed to check in/out:', error);
+    }
+  };
+
   const toggleDayFold = (date) => {
     setFoldedDays(prev => {
       const newSet = new Set(prev);
@@ -212,7 +248,7 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
       case 'rejected': return 'Rejected';
       case 'dayoff': return 'Day Off';
       case 'no-schedule': return 'No Schedule';
-      default: return 'Unknown';
+      default: return 'No Schedule';
     }
   };
 
@@ -567,41 +603,74 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
               let actions = [];
               switch (status) {
                 case 'pending':
-                  actions = ['Edit', 'Delete'];
+                  actions = [
+                    {
+                      label: 'Request Change',
+                      handler: () => handleEditSchedule(schedule)
+                    }
+                  ];
                   break;
                 case 'available':
-                  actions = ['Check In', 'Edit'];
+                  // 출근/퇴근 상태에 따라 버튼 결정
+                  const isCheckedIn = schedule.check_in_time && !schedule.check_out_time;
+                  actions = [
+                    {
+                      label: isCheckedIn ? 'Check Out' : 'Check In',
+                      handler: () => handleCheckInOut(schedule, isCheckedIn)
+                    }
+                  ];
                   break;
                 case 'rejected':
-                  actions = ['Request Change'];
+                  actions = [
+                    {
+                      label: 'Request Change',
+                      handler: () => handleEditSchedule(schedule)
+                    }
+                  ];
                   break;
                 case 'dayoff':
-                  actions = ['Request Change'];
+                  actions = [
+                    {
+                      label: 'Request Change',
+                      handler: () => handleEditSchedule(schedule)
+                    }
+                  ];
                   break;
                 case 'no-schedule':
-                  actions = ['Apply Schedule'];
+                  actions = [
+                    {
+                      label: 'Apply Schedule',
+                      handler: () => handleCreateSchedule()
+                    }
+                  ];
                   break;
                 default:
-                  actions = ['Edit'];
+                  actions = [
+                    {
+                      label: 'Apply Schedule',
+                      handler: () => handleCreateSchedule()
+                    }
+                  ];
               }
               
               return (
                 <div key={`schedule-${schedule.schedule_id || schedule.work_date || index}`} className="schedule-row">
                   <div className="schedule-day">{dateInfo.day}</div>
                   <div className="schedule-time">
-                    {status === 'no-schedule' || !schedule.start_time ? 
-                      'Unavailable' : 
+                    {status === 'no-schedule' || status === 'dayoff' || !schedule.start_time ? 
+                      getStatusText(status) : 
                       `${schedule.start_time} - ${schedule.end_time}`
                     }
                   </div>
                   <div className="schedule-actions">
                     {actions.map((action, actionIndex) => (
                       <SketchBtn 
-                        key={`${schedule.schedule_id || schedule.work_date || index}-${action}-${actionIndex}`} 
+                        key={`${schedule.schedule_id || schedule.work_date || index}-${action.label}-${actionIndex}`} 
                         size="small" 
                         className="schedule-action-btn"
+                        onClick={action.handler}
                       >
-                        {action}
+                        {action.label}
                       </SketchBtn>
                     ))}
                   </div>

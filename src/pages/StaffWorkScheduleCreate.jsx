@@ -143,7 +143,8 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
           margin-top: 0.1rem;
         }
         .week-row {
-          display: flex;
+          display: grid;
+          grid-template-columns: 80px 70px 55px 45px 25px 45px;
           align-items: center;
           margin-bottom: 0.13rem;
           min-height: 1.7rem;
@@ -153,42 +154,35 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
           overflow: hidden;
         }
         .week-day {
-          flex: 0 0 60px;
           font-size: 0.97rem;
           color: #222;
-          padding-right: 0.1rem;
           white-space: nowrap;
         }
         .week-onoff {
-          flex: 0 0 70px;
-          min-width: 70px;
-          max-width: 70px;
-        }
-        .week-onoff select {
-          display: block;
-          width: 100%;
-          min-width: 70px;
-          max-width: 70px;
-          font-size: 0.97rem;
-          border-radius: 5px;
-          border: 1px solid #bbb;
-          padding: 0.08rem 0.5rem 0.08rem 0.3rem;
-          background: #fff;
-          color: #222;
-          box-sizing: border-box;
+          width: 1.0rem;
+          padding-left: 1.0rem;
         }
         .week-hours {
-          flex: 1 1 0;
-          display: flex;
-          align-items: center;
-          gap: 0.08rem;
-          min-width: 0;
+          display: contents;
+        }
+        .hours-label {
+          font-size: 0.97rem;
+          color: #222;
+          margin-left: 1.5rem;
+          min-width: 40px;
+        }
+        .to-label {
+          font-size: 0.97rem;
+          color: #222;
+          text-align: center;
+        }
+        .week-hours select{
+          margin-left: 0.6rem;
         }
         .select-style {
-          display: block;
-          width: 38px;
-          min-width: 32px;
-          max-width: 38px;
+          width: 50px;
+          min-width: 50px;
+          max-width: 50px;
           font-size: 0.93rem;
           border-radius: 5px;
           border: 1px solid #bbb;
@@ -227,24 +221,11 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
           .workschedule-container {
             padding: 0 0.1rem 1rem 0.1rem;
           }
+          .week-row {
+            grid-template-columns: 60px 54px 40px 36px 18px 36px;
+          }
           .week-day {
-            flex-basis: 44px;
             font-size: 0.91rem;
-          }
-          .week-onoff {
-            min-width: 54px;
-            max-width: 54px;
-          }
-          .week-onoff select {
-            min-width: 54px;
-            max-width: 54px;
-            font-size: 0.91rem;
-          }
-          .select-style {
-            font-size: 0.91rem;
-            min-width: 28px;
-            max-width: 32px;
-            width: 32px;
           }
         }
       `}</style>
@@ -297,36 +278,40 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
                 </div>
                 {isOn && (
                   <div className="week-hours">
-                    <span style={{ marginLeft: '1.5rem', fontSize: '0.97rem', color: '#222' }}>Hours</span>
-                    <select 
-                      value={dayData?.start_time || ''} 
-                      onChange={e => {
-                        const newWeekData = [...weekData];
-                        newWeekData[index] = { ...dayData, start_time: e.target.value };
-                        setWeekData(newWeekData);
-                      }} 
-                      className="select-style"
-                    >
-                      <option value="">--</option>
-                      {hourOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                    <span style={{ fontSize: '0.97rem', color: '#222' }}>to</span>
-                    <select 
-                      value={dayData?.end_time || ''} 
-                      onChange={e => {
-                        const newWeekData = [...weekData];
-                        newWeekData[index] = { ...dayData, end_time: e.target.value };
-                        setWeekData(newWeekData);
-                      }} 
-                      className="select-style"
-                    >
-                      <option value="">--</option>
-                      {hourOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
+                    <div style={{marginLeft:'0.6rem', display:'flex',alignItems:'center'}}>
+                      <span className="hours-label">Hours</span>
+                      <select 
+                        value={dayData?.start_time || ''} 
+                        onChange={e => {
+                          const newWeekData = [...weekData];
+                          newWeekData[index] = { ...dayData, start_time: e.target.value };
+                          setWeekData(newWeekData);
+                        }} 
+                        className="select-style"
+                      >
+                        <option value="">--</option>
+                        {hourOptions.map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div style={{marginLeft:'6.2rem', display:'flex',alignItems:'center'}}>
+                      <span className="to-label">to</span>
+                      <select 
+                        value={dayData?.end_time || ''} 
+                        onChange={e => {
+                          const newWeekData = [...weekData];
+                          newWeekData[index] = { ...dayData, end_time: e.target.value };
+                          setWeekData(newWeekData);
+                        }} 
+                        className="select-style"
+                      >
+                        <option value="">--</option>
+                        {hourOptions.map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 )}
               </div>
