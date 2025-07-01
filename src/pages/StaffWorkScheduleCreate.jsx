@@ -99,19 +99,16 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
       const response = await ApiClient.postForm('/api/upsertStaffSchedule', payload);
       console.log('response:', response);
 
+
       Swal.fire({
-        title: 'Schedule saved',
-        text: 'Schedule saved successfully',
+        title: get('schedule.save.success.title'),
+        text: get('schedule.save.success.message'),
         icon: 'success',
-        confirmButtonText: 'OK'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          goBack();
-        }
-      });
+        confirmButtonText: get('Common.Confirm')
+      })
       
     } catch (error) {
-      console.error('Failed to save schedule:', error);
+      console.error(get('schedule.save.error') + ':', error);
     }
   };
 
@@ -119,7 +116,7 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
     return (
       <div className="workschedulecreate-container">
         <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <div>Loading week data...</div>
+          <div>{get('schedule.loading.week')}</div>
         </div>
       </div>
     );
@@ -137,13 +134,15 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
           margin: 0 auto;
           background: #fff;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
-          padding: 0 0.5rem 1rem 0.5rem;
+          padding: 0.3rem;
         }
         .week-title {
-          font-size: 1.02rem;
+          padding-bottom: 1rem;
+          border-bottom: 1px solid #cccccc;
+          font-size: 1.3rem;
           font-weight: 600;
-          margin: 1.1rem 0 1.1rem 0;
-          text-align: left;
+          margin: 1.1rem 0 1rem 0;
+          text-align: center;
           color: #222;
         }
         .week-range {
@@ -156,21 +155,22 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
           display: grid;
           grid-template-columns: 80px 70px 55px 45px 25px 45px;
           align-items: center;
-          margin-bottom: 0.13rem;
-          min-height: 1.7rem;
+          margin-bottom: 0.7rem;
+          min-height: 2.3rem;
           gap: 0.13rem;
           width: 100%;
           flex-wrap: nowrap;
-          overflow: hidden;
+          
         }
         .week-day {
-          font-size: 0.97rem;
+          font-size: 1.1rem;
+          font-weight: 600;
           color: #222;
           white-space: nowrap;
         }
         .week-onoff {
           width: 1.0rem;
-          padding-left: 1.0rem;
+          padding-left: 1rem;
         }
         .week-hours {
           display: contents;
@@ -185,19 +185,21 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
           font-size: 0.97rem;
           color: #222;
           text-align: center;
+          margin-right: 13px;
         }
         .week-hours select{
-          margin-left: 0.6rem;
+          //margin-left: 0.6rem;
           // text-align: right;
         }
         .select-style {
+          height: 27px;
           width: 50px;
           min-width: 50px;
           max-width: 50px;
           font-size: 0.93rem;
-          border-radius: 5px;
-          border: 1px solid #bbb;
+          border-radius: 3px;
           padding: 0.08rem 0.3rem 0.08rem 0.2rem;
+          border: 0.8px solid #666;
           background: #fff;
           color: #222;
           box-sizing: border-box;
@@ -229,9 +231,9 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
           background: #ecec;
         }
         @media (max-width: 500px) {
-          .workschedule-container {
-            padding: 0 0.1rem 1rem 0.1rem;
-          }
+          // .workschedule-container {
+          //   padding: 0 0.1rem 1rem 0.1rem;
+          // }
           .week-row {
             grid-template-columns: 60px 54px 40px 36px 18px 36px;
           }
@@ -241,12 +243,12 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
         }
       `}</style>
       <SketchHeader
-        title={<><Calendar size={20} style={{marginRight:'7px',marginBottom:'-3px'}}/>Work Schedule</>}
+        title={<><Calendar size={20} style={{marginRight:'7px',marginBottom:'-3px'}}/>{get('schedule.work.title')}</>}
         showBack={true}
         onBack={goBack}
       />
       <div className="workschedule-container">
-        <div className="week-title">weekly work Schedule</div>
+        <div className="week-title">{get('schedule.weekly.title')}</div>
         <div>
           {weekData.map((dayData, index) => {
             const day = days[index];
@@ -283,14 +285,14 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
                     }} 
                     className="select-style"
                   >
-                    <option value="on">on</option>
-                    <option value="off">off</option>
+                    <option value="on">{get('schedule.status.on')}</option>
+                    <option value="off">{get('schedule.status.off')}</option>
                   </select>
                 </div>
                 {isOn && (
                   <div className="week-hours">
                     <div style={{marginLeft:'0.6rem', display:'flex',alignItems:'center'}}>
-                      <span className="hours-label">Hours</span>
+                      <span className="hours-label">{get('schedule.hours.label')}</span>
                       <select 
                         value={dayData?.start_time || ''} 
                         onChange={e => {
@@ -307,7 +309,7 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
                       </select>
                     </div>
                     <div style={{marginLeft:'6.2rem', display:'flex',alignItems:'center'}}>
-                      <span className="to-label">to</span>
+                      <span className="to-label">{get('schedule.time.to')}</span>
                       <select 
                         value={dayData?.end_time || ''} 
                         onChange={e => {
@@ -317,7 +319,7 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
                         }} 
                         className="select-style"
                       >
-                        <option value="">--</option>
+                        <option value="">{get('common.select.empty')}</option>
                         {hourOptions.map(opt => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
@@ -330,7 +332,9 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
           })}
         </div>
         <div className="save-btn-row">
-          <SketchBtn className="save-btn" variant="event" onClick={handleSave}>SAVE SCHEDULE</SketchBtn>
+          <SketchBtn className="save-btn" variant="event" onClick={handleSave}>
+          <HatchPattern opacity={0.4} /> {get('schedule.save.button')}
+        </SketchBtn>
         </div>
       </div>
     </>

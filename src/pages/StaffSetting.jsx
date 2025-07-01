@@ -5,6 +5,7 @@ import SketchDiv from '@components/SketchDiv';
 import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
 import HatchPattern from '@components/HatchPattern';
+
 import { MessageCircle, Mail, Calendar,Settings, Clock, MapPin, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 
 import Swal from 'sweetalert2';
@@ -29,6 +30,22 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
   const [tempLang, setTempLang] = useState(currentLang);
   const [emailNoti, setEmailNoti] = useState(true);
   const [smsNoti, setSmsNoti] = useState(false);
+  
+    useEffect(() => {
+      if (currentLang) {
+        document.body.classList.remove('lang-ko', 'lang-en', 'lang-ja', 'lang-vi');
+        document.body.classList.add(`lang-${currentLang}`);
+      }
+    }, [currentLang]);
+
+  useEffect(() => {
+      if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        // setLanguage('en'); // 기본 언어 설정
+        console.log('Current language set to:', currentLang);
+        window.scrollTo(0, 0);
+      }
+    }, [messages, currentLang]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -70,144 +87,145 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
   };
 
   // 현재 비밀번호 인증
-  const handleVerifyCurrentPassword = async () => {
-    if (!password.current.trim()) {
+const handleVerifyCurrentPassword = async () => {
+  if (!password.current.trim()) {
+    Swal.fire({
+      title: get('SWAL_ERROR_TITLE'),
+      text: get('PASSWORD_ENTER_CURRENT'),
+      icon: 'error'
+    });
+    return;
+  }
+
+  setIsVerifyingPassword(true);
+  try {
+    const response = await verifyPassword({
+      login_id: user.login_id,
+      email: user.login_id,
+      passwd: password.current,
+      login_type: user.login_type,
+      account_type: user.type
+    });
+    
+    console.log('response', response);
+
+    const { success = false } = response;
+
+    if (success) {
+      setIsPasswordVerified(true);
+      setShowNewPasswordFields(true);
       Swal.fire({
-        title: 'Error',
-        text: 'Please enter your current password',
-        icon: 'error'
+        title: get('SWAL_SUCCESS_TITLE'),
+        text: get('PASSWORD_VERIFY_SUCCESS'),
+        icon: 'success',
+        timer: 1500
       });
-      return;
-    }
-
-    setIsVerifyingPassword(true);
-    try {
-      const response = await verifyPassword({
-        login_id: user.login_id,
-        email: user.login_id,
-        passwd: password.current,
-        login_type: user.login_type,
-        account_type: user.type
-      });
-      
-      console.log('response', response);
-
-      const { success = false } = response;
-
-      if (success) {
-        setIsPasswordVerified(true);
-        setShowNewPasswordFields(true);
-        Swal.fire({
-          title: 'Success',
-          text: 'Password verified successfully',
-          icon: 'success',
-          timer: 1500
-        });
-      } else {
-        setIsPasswordVerified(false);
-        Swal.fire({
-          title: 'Error',
-          text: 'Current password is incorrect',
-          icon: 'error'
-        });
-      }
-    } catch (error) {
-      console.error('Password verification error:', error);
+    } else {
       setIsPasswordVerified(false);
       Swal.fire({
-        title: 'Error',
-        text: 'Failed to verify password',
-        icon: 'error'
-      });
-    } finally {
-      setIsVerifyingPassword(false);
-    }
-  };
-
-  // 새 비밀번호 저장
-  const handleSaveNewPassword = async () => {
-    // 1. Current Password vs New Password 체크
-    if (password.current === password.new) {
-      Swal.fire({
-        title: 'Error',
-        text: 'New password must be different from current password',
-        icon: 'error'
-      });
-      return;
-    }
-
-    // 2. New Password vs Confirm Password 체크
-    if (password.new !== password.confirm) {
-      Swal.fire({
-        title: 'Error',
-        text: 'New password and confirm password do not match',
-        icon: 'error'
-      });
-      return;
-    }
-
-    // 3. 새 비밀번호 길이 체크
-    if (password.new.length < 6) {
-      Swal.fire({
-        title: 'Error',
-        text: 'New password must be at least 6 characters long',
-        icon: 'error'
-      });
-      return;
-    }
-
-    try {
-      const response = await ApiClient.postForm('/api/UpdatePassword', {
-        login_type: user.login_type,
-        account_type: user.account_type,
-        login_id: user.login_id,
-        email: user.login_id,
-        passwd: password.new,
-        rePasswd: password.confirm,
-      });
-
-      if (response.success) {
-        Swal.fire({
-          title: 'Success',
-          text: 'Password updated successfully',
-          icon: 'success'
-        });
-        
-        // 폼 초기화
-        setPassword({ current: '', new: '', confirm: '' });
-        setIsPasswordVerified(false);
-        setShowNewPasswordFields(false);
-      } else {
-        Swal.fire({
-          title: 'Error',
-          text: response.message || 'Failed to update password',
-          icon: 'error'
-        });
-      }
-    } catch (error) {
-      console.error('Password update error:', error);
-      Swal.fire({
-        title: 'Error',
-        text: 'Failed to update password',
+        title: get('SWAL_ERROR_TITLE'),
+        text: get('PASSWORD_CURRENT_INCORRECT'),
         icon: 'error'
       });
     }
-  };
-
-  // 언어 저장 버튼 클릭 시 호출
-  const handleSaveLanguage = () => {
-    setLanguage(tempLang);
+  } catch (error) {
+    console.error('Password verification error:', error);
+    setIsPasswordVerified(false);
     Swal.fire({
-      title: 'Success',
-      text: 'Language updated successfully',
-      icon: 'success',
-      timer: 1500
+      title: get('SWAL_ERROR_TITLE'),
+      text: get('PASSWORD_VERIFY_FAILED'),
+      icon: 'error'
     });
-  };
+  } finally {
+    setIsVerifyingPassword(false);
+  }
+};
+
+// 새 비밀번호 저장
+const handleSaveNewPassword = async () => {
+  // 1. Current Password vs New Password 체크
+  if (password.current === password.new) {
+    Swal.fire({
+      title: get('SWAL_ERROR_TITLE'),
+      text: get('PASSWORD_MUST_BE_DIFFERENT'),
+      icon: 'error'
+    });
+    return;
+  }
+
+  // 2. New Password vs Confirm Password 체크
+  if (password.new !== password.confirm) {
+    Swal.fire({
+      title: get('SWAL_ERROR_TITLE'),
+      text: get('PASSWORD_CONFIRM_MISMATCH'),
+      icon: 'error'
+    });
+    return;
+  }
+
+  // 3. 새 비밀번호 길이 체크
+  if (password.new.length < 6) {
+    Swal.fire({
+      title: get('SWAL_ERROR_TITLE'),
+      text: get('PASSWORD_MIN_LENGTH'),
+      icon: 'error'
+    });
+    return;
+  }
+
+  try {
+    const response = await ApiClient.postForm('/api/UpdatePassword', {
+      login_type: user.login_type,
+      account_type: user.account_type,
+      login_id: user.login_id,
+      email: user.login_id,
+      passwd: password.new,
+      rePasswd: password.confirm,
+    });
+
+    if (response.success) {
+      Swal.fire({
+        title: get('SWAL_SUCCESS_TITLE'),
+        text: get('PASSWORD_UPDATE_SUCCESS'),
+        icon: 'success'
+      });
+      
+      // 폼 초기화
+      setPassword({ current: '', new: '', confirm: '' });
+      setIsPasswordVerified(false);
+      setShowNewPasswordFields(false);
+    } else {
+      Swal.fire({
+        title: get('SWAL_ERROR_TITLE'),
+        text: response.message || get('PASSWORD_UPDATE_FAILED'),
+        icon: 'error'
+      });
+    }
+  } catch (error) {
+    console.error('Password update error:', error);
+    Swal.fire({
+      title: get('SWAL_ERROR_TITLE'),
+      text: get('PASSWORD_UPDATE_FAILED'),
+      icon: 'error'
+    });
+  }
+};
+
+// 언어 저장 버튼 클릭 시 호출
+const handleSaveLanguage = () => {
+  setLanguage(tempLang);
+  Swal.fire({
+    title: get('SWAL_SUCCESS_TITLE'),
+    text: get('LANGUAGE_UPDATE_SUCCESS'), // 이 메시지 코드를 DB에 추가해야 함
+    icon: 'success',
+    timer: 1500
+  });
+};
 
   return (
     <>
       <style jsx="true">{`
+      
         .settings-container {
           max-width: 28rem;
           margin: 0 auto;
@@ -246,18 +264,20 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
       `}</style>
       
       <SketchHeader
-          title={
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <User size={18} />
-              {get('Mng.menu.3') || 'Settings'}
-            </span>
-          }
-          showBack={true}
-          onBack={goBack}
-        />
+        title={
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <User size={18} />
+            {get('Mng.menu.3') || get('SETTINGS_PAGE_TITLE')}
+          </span>
+        }
+        showBack={true}
+        onBack={goBack}
+      />
 
       <div className="settings-container">
-        <div className="section-title">{get('Staff.setting.profile.title') || 'Edit Profile'}</div>
+        <div className="section-title">
+          {get('Staff.setting.profile.title') || get('STAFF_SETTINGS_EDIT_PROFILE_TITLE')}
+        </div>
         <SketchDiv className="section-box" style={{marginBottom:'1.2rem'}}>
           <SketchBtn 
             variant="primary" 
@@ -266,12 +286,15 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
             onClick={handleEditProfile}
           >
             <HatchPattern opacity={0.6} />
-            <Edit size={14}/> {get('Staff.setting.profile.edit') || 'Edit Personal Info'}
+            <Edit size={14}/> 
+            {get('Staff.setting.profile.edit') || get('STAFF_SETTINGS_EDIT_PERSONAL_INFO')}
           </SketchBtn>
         </SketchDiv>
 
         <div className="password-section">
-          <div className="section-title">{get('Staff.setting.password.title') || 'Change Password'}</div>
+          <div className="section-title">
+            {get('Staff.setting.password.title') || get('STAFF_SETTINGS_CHANGE_PASSWORD_TITLE')}
+          </div>
           <SketchDiv className="section-box">
             <div className="input-row" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
               <div style={{flex: 1}}>
@@ -279,7 +302,7 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
                   name="currentPassword"
                   value={password.current}
                   onChange={e => setPassword(p => ({ ...p, current: e.target.value }))}
-                  placeholder={get('Staff.setting.password.current') || 'Current Password'}
+                  placeholder={get('Staff.setting.password.current') || get('STAFF_SETTINGS_CURRENT_PASSWORD_PLACEHOLDER')}
                   type="password"
                   disabled={isPasswordVerified}
                 />
@@ -293,7 +316,10 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
                   style={{width: '80px', marginBottom : '0.7rem', padding:'0.3rem 0.5rem'}}
                 >
                   <HatchPattern opacity={0.6} />
-                  {isVerifyingPassword ? 'Checking...' : 'Check'}
+                  {isVerifyingPassword 
+                    ? get('STAFF_SETTINGS_CHECKING_BUTTON') 
+                    : get('STAFF_SETTINGS_CHECK_BUTTON')
+                  }
                 </SketchBtn>
               ) : (
                 <div style={{color: 'green', fontSize: '20px'}}>
@@ -309,7 +335,7 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
                     name="newPassword"
                     value={password.new}
                     onChange={e => setPassword(p => ({ ...p, new: e.target.value }))}
-                    placeholder={get('Staff.setting.password.new') || 'New Password'}
+                    placeholder={get('Staff.setting.password.new') || get('STAFF_SETTINGS_NEW_PASSWORD_PLACEHOLDER')}
                     type="password"
                   />
                 </div>
@@ -318,7 +344,7 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
                     name="confirmPassword"
                     value={password.confirm}
                     onChange={e => setPassword(p => ({ ...p, confirm: e.target.value }))}
-                    placeholder={get('Staff.setting.password.confirm') || 'Confirm Password'}
+                    placeholder={get('Staff.setting.password.confirm') || get('STAFF_SETTINGS_CONFIRM_PASSWORD_PLACEHOLDER')}
                     type="password"
                   />
                 </div>
@@ -329,7 +355,8 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
                     style={{width: '30%'}}
                     onClick={handleSaveNewPassword}
                   >
-                    <HatchPattern opacity={0.6} /> Save
+                    <HatchPattern opacity={0.6} />
+                    {get('STAFF_SAVE_BUTTON') || get('STAFF_SETTINGS_SAVE_BUTTON')}
                   </SketchBtn>
                 </div>
               </>
@@ -337,10 +364,14 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
           </SketchDiv> 
         </div>
 
-        <div className="section-title">{get('Staff.setting.notification.title') || 'Notification Preferences'}</div>
+        <div className="section-title">
+          {get('Staff.setting.notification.title') || get('STAFF_SETTINGS_NOTIFICATION_TITLE')}
+        </div>
         <SketchDiv className="section-box">
           <div className="noti-row">
-            <span><Mail size={14}/> {get('Staff.setting.notification.email') || 'Email Notifications'}</span>
+            <span>
+              <Mail size={14}/> {get('Staff.setting.notification.email') || get('STAFF_SETTINGS_EMAIL_NOTIFICATIONS')}
+            </span>
             <SketchBtn 
               variant={emailNoti ? "green" : "danger"} 
               size="small"  
@@ -348,11 +379,16 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
               onClick={() => setEmailNoti(!emailNoti)}
             >
               <HatchPattern opacity={0.6} />
-               {emailNoti ? 'On' : 'Off'}
+              {emailNoti 
+                ? get('STAFF_SETTINGS_ON') 
+                : get('STAFF_SETTINGS_OFF')
+              }
             </SketchBtn>
           </div>
           <div className="noti-row">
-            <span><MessageCircle size={14}/> {get('Staff.setting.notification.sms') || 'SMS Notifications'}</span>
+            <span>
+              <MessageCircle size={14}/> {get('Staff.setting.notification.sms') || get('STAFF_SETTINGS_SMS_NOTIFICATIONS')}
+            </span>
             <SketchBtn 
               variant={smsNoti ? "green" : "danger"} 
               size="small"  
@@ -360,44 +396,63 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
               onClick={() => setSmsNoti(!smsNoti)}
             >
               <HatchPattern opacity={0.6} />
-              {smsNoti ? 'On' : 'Off'}
+              {smsNoti 
+                ? get('STAFF_SETTINGS_ON') 
+                : get('STAFF_SETTINGS_OFF')
+              }
             </SketchBtn>
           </div>
         </SketchDiv>
 
-        <div className="section-title">{get('Staff.setting.language.title') || 'Language'}</div>
+        <div className="section-title">
+          {get('Staff.setting.language.title') || get('STAFF_SETTINGS_LANGUAGE_TITLE')}
+        </div>
         <SketchDiv className="section-box">
           <div className="lang-row">
-            <select value={tempLang} 
-                    onChange={(e) => {
-                      setTempLang(e.target.value);
-                    }} 
-                    style={{ 
-                          fontSize: '1rem', 
-                          padding: '0.3rem 1.2rem 0.3rem 0.5rem', 
-                          background: '#fff',
-                          borderTopLeftRadius: '6px 8px',
-                          borderTopRightRadius: '10px 5px',
-                          borderBottomRightRadius: '8px 12px',
-                          borderBottomLeftRadius: '12px 6px',
-                          transform: 'rotate(0.2deg)',
-                          fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
-                          width: '212px'
-                        }}>
-              <option value="en">English</option>
-              <option value="kr">Korean</option>
-              <option value="vi">Vietnamese</option>
-              <option value="ja">Japanese</option>
+            <select 
+              value={tempLang} 
+              onChange={(e) => {
+                setTempLang(e.target.value);
+              }} 
+              style={{ 
+                    fontSize: '1rem', 
+                    padding: '0.3rem 1.2rem 0.3rem 0.5rem', 
+                    background: '#fff',
+                    borderTopLeftRadius: '6px 8px',
+                    borderTopRightRadius: '10px 5px',
+                    borderBottomRightRadius: '8px 12px',
+                    borderBottomLeftRadius: '12px 6px',
+                    transform: 'rotate(0.2deg)',
+                    fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
+                    width: '212px'
+                  }}
+            >
+              <option value="en">{get('STAFF_SETTINGS_ENGLISH')}</option>
+              <option value="kr">{get('STAFF_SETTINGS_KOREAN')}</option>
+              <option value="vi">{get('STAFF_SETTINGS_VIETNAMESE')}</option>
+              <option value="ja">{get('STAFF_SETTINGS_JAPANESE')}</option>
             </select>
-            <SketchBtn variant="accent" size="small" style={{width: '30%'}} onClick={handleSaveLanguage}>
-              <HatchPattern opacity={0.6} /> Save
+            <SketchBtn 
+              variant="accent" 
+              size="small" 
+              style={{width: '30%'}} 
+              onClick={handleSaveLanguage}
+            >
+              <HatchPattern opacity={0.6} />
+              {get('STAFF_SETTINGS_SAVE_BUTTON')}
             </SketchBtn>
           </div>
         </SketchDiv>
 
         <div className="section-title" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-          <SketchBtn variant="" size="small" style={{width: '100%'}} onClick={handleLogout}>
-            <HatchPattern opacity={0.6} /> {get('Staff.setting.logout') || 'Logout'}
+          <SketchBtn 
+            variant="" 
+            size="small" 
+            style={{width: '100%'}} 
+            onClick={handleLogout}
+          >
+            <HatchPattern opacity={0.6} />
+            {get('Staff.setting.logout') || get('STAFF_SETTINGS_LOGOUT_BUTTON')}
           </SketchBtn>
         </div>
       </div>

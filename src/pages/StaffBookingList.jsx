@@ -83,7 +83,7 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
         setBookings(apiData);
       } else {
         console.log("데이터가 없습니다");
-        setBookings(mockBookings); // API 데이터가 없으면 목 데이터 사용
+        setBookings([]); // API 데이터가 없으면 목 데이터 사용
       }
 
     } catch (error) {

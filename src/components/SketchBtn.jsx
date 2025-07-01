@@ -69,6 +69,12 @@ const SketchBtn = ({
           color: white;
         }
 
+         .status-btn.selected {
+          border: 2px solid #000; /* 강조 테두리 */
+          font-weight: bold;
+          background-color: #f0f0f0; /* 강조 배경 */
+        }
+          
         .sketch-btn.primary {
           background-color: white;
           color: #1f2937;
@@ -84,10 +90,14 @@ const SketchBtn = ({
           color: #1f2937;
         }
 
+          .sketch-btn.violet {
+          background-color: #7c3aed;
+          color: white;
+        }
+
         .sketch-btn.danger {
-         background-color:rgba(243, 27, 27, 0.66);
-          color:rgb(255, 255, 255);
-          // box-shadow: 2px 2px 0px rgb(255, 73, 73);
+         background-color: white;
+          color: #1f2937;
         }
 
         .sketch-btn.danger:hover:not(:disabled) {

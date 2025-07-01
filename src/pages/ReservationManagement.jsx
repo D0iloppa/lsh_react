@@ -400,20 +400,21 @@ const handleReservationManage = async (reservation_id, mngCode) => {
           showBack={true}
           onBack={goBack}
         />
-
-          <div className="status-filter-row">
+        
+        <div className="status-filter-row">
           {statusList.map(s => (
             <SketchBtn
               key={s.key}
               variant={s.key === 'canceled' ? 'danger' : 'primary'}
               onClick={() => setSelectedStatus(s.key)}
-              className="status-btn"
+              className={`status-btn ${selectedStatus === s.key ? 'selected' : ''}`}
               size="small"
             >
               {s.label}
             </SketchBtn>
           ))}
         </div>
+
 
         {loading ? (
           <div className="loading-message">{get('LOADING_RESERVATIONS')}</div>

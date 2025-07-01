@@ -9,6 +9,8 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
 
+import ImageUploader from '@components/ImageUploader';
+
 import Swal from 'sweetalert2';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -247,12 +249,25 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
         </div>
         <div className="form-field">
           <div className="form-label">{get('PROMOTION_UPLOAD_IMAGE_LABEL')}</div>
-          <SketchInput
-            name="image"
-            value={form.image}
-            onChange={handleChange}
-            placeholder={get('PROMOTION_IMAGE_PLACEHOLDER')}
-          />
+          <div style={{display: 'flex', alignItems: 'center'}}>
+            <ImageUploader
+              name="image"
+              apiClient={ApiClient}
+              value={form.image}
+              showPreview = {true}
+              onUploadComplete={(contentId) => {
+                setForm(prev => ({ ...prev, image: contentId }));
+                console.log('image uploaded, content_id:', contentId);
+              }}
+              placeholder={get('PROMOTION_IMAGE_PLACEHOLDER')}
+            />
+            <SketchInput
+              name="image"
+              value={form.image}
+              onChange={handleChange}
+              placeholder={get('PROMOTION_IMAGE_PLACEHOLDER')}
+            />
+          </div>
         </div>
         <div className="form-label">{get('PROMOTION_DATES_LABEL')}</div>
         <div className="date-row">

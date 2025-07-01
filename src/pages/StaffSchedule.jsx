@@ -6,6 +6,7 @@ import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
 import dayjs from 'dayjs';
 import { CheckCircle, XCircle, ClipboardList} from 'lucide-react';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
@@ -22,7 +23,7 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
   const [selectedDate, setSelectedDate] = useState(null);
   const [staffList, setStaffList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-
+  const { messages, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const { user } = useAuth();
 
   const calendarScrollRef = useRef(null);
@@ -37,6 +38,18 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
   const prevMonthLastDay = dayjs(`${prevYear}-${prevMonth + 1}-01`).daysInMonth();
 
   const calendarCells = [];
+
+
+   useEffect(() => {
+            if (messages && Object.keys(messages).length > 0) {
+              console.log('✅ Messages loaded:', messages);
+              // setLanguage('en'); // 기본 언어 설정
+              console.log('Current language set to:', currentLang);
+              window.scrollTo(0, 0);
+            }
+          }, [messages, currentLang]);
+    
+
   for (let i = 0; i < startDay; i++) {
     calendarCells.push({
       date: dayjs(`${prevYear}-${prevMonth + 1}-${prevMonthLastDay - startDay + i + 1}`),
@@ -92,6 +105,17 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
     }
   };
 
+  // 요일 다국어 배열 (필요한 경우 사용)
+  const getDayLabels = () => [
+    get('DAY_SUN'),
+    get('DAY_MON'),
+    get('DAY_TUE'),
+    get('DAY_WED'),
+    get('DAY_THU'),
+    get('DAY_FRI'),
+    get('DAY_SAT')
+  ];
+
   // 날짜 선택 시 스태프 목록을 가져오는 함수
   const fetchStaffList = async (date) => {
     setIsLoading(true);
@@ -128,116 +152,122 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
     }
   };
 
-  // 스케줄 상태 변경 핸들러
-  const handleStatusChange = async (scheduleId, newStatus) => {
-    try {
-      // 해당 스태프 정보 찾기
-      const staff = staffList.find(s => s.schedule_id === scheduleId);
-      const staffName = staff ? staff.staff_name : 'Unknown Staff';
-      
-      // 상태 변경 확인 메시지
-      const result = await customSwal.fire({
-        title: '스케줄 설정',
-        text: '스케줄을 설정하시겠습니까?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: '확인',
-        cancelButtonText: '취소',
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33'
-      });
 
-      // 사용자가 취소한 경우
-      if (!result.isConfirmed) {
-        return;
-      }
+// 메시지 포맷 헬퍼 함수
+const formatScheduleMessage = (messageKey, staffName) => {
+  return get(messageKey).replace('{staffName}', staffName);
+};
 
-      console.log('Updating schedule status:', scheduleId, 'to:', newStatus);
+// 스케줄 상태 변경 핸들러
+const handleStatusChange = async (scheduleId, newStatus) => {
+  try {
+    // 해당 스태프 정보 찾기
+    const staff = staffList.find(s => s.schedule_id === scheduleId);
+    const staffName = staff ? staff.staff_name : 'Unknown Staff';
+    
+    // 상태 변경 확인 메시지
+    const result = await customSwal.fire({
+      title: get('SCHEDULE_SETTING_TITLE'),
+      text: get('SCHEDULE_SETTING_CONFIRM'),
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: get('SWAL_CONFIRM_BUTTON'),
+      cancelButtonText: get('STAFF_CANCEL_BUTTON'),
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33'
+    });
 
-      // 실제 스케줄 상태 변경 API 호출
-      const response = await ApiClient.postForm('/api/updateShift', {
-        schedule_id: scheduleId,
-        status: newStatus
-      });
+    // 사용자가 취소한 경우
+    if (!result.isConfirmed) {
+      return;
+    }
 
-      console.log('✅ Schedule status update response:', response);
-      
-      // 성공 시 로컬 상태 업데이트
-      setStaffList(prev => 
-        prev.map(staff => 
-          staff.schedule_id === scheduleId 
-            ? { ...staff, status: newStatus }
-            : staff
-        )
+    console.log('Updating schedule status:', scheduleId, 'to:', newStatus);
+
+    // 실제 스케줄 상태 변경 API 호출
+    const response = await ApiClient.postForm('/api/updateShift', {
+      schedule_id: scheduleId,
+      status: newStatus
+    });
+
+    console.log('✅ Schedule status update response:', response);
+    
+    // 성공 시 로컬 상태 업데이트
+    setStaffList(prev => 
+      prev.map(staff => 
+        staff.schedule_id === scheduleId 
+          ? { ...staff, status: newStatus }
+          : staff
+      )
+    );
+    
+    console.log('✅ Schedule status updated:', newStatus);
+
+    // 성공 시 결과 알림
+    if (newStatus === 'available') {
+      toast.info(
+        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <CheckCircle color="#4caf50" size={20} />
+          {formatScheduleMessage('SCHEDULE_APPROVED_MESSAGE', staffName)}
+        </span>,
+        {icon:false}
       );
-      
-      console.log('✅ Schedule status updated:', newStatus);
+    } else {
+      toast.info(
+        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <XCircle color="#f44336" size={20} />
+          {formatScheduleMessage('SCHEDULE_REJECTED_MESSAGE', staffName)}
+        </span>,
+        {icon:false}
+      );
+    }
+    
+  } catch (error) {
+    console.error('Failed to update schedule status:', error);
 
-      // 성공 시 결과 알림
-      if (newStatus === 'available') {
-        toast.info(
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <CheckCircle color="#4caf50" size={20} />
-            {`${staffName}의 스케줄이 승인되었습니다.`}
-          </span>,
-          {icon:false}
-        );
-      } else {
-        toast.info(
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <XCircle color="#f44336" size={20} />
-            {`${staffName}의 스케줄이 거절되었습니다.`}
-          </span>,
-          {icon:false}
-        );
+    // 실패 시 결과 알림
+    toast.error(get('SCHEDULE_UPDATE_ERROR'));
+  }
+};
+
+// 날짜 선택 핸들러
+const handleDateSelect = (date) => {
+  setSelectedDate(date);
+  fetchStaffList(date);
+};
+
+// 페이지 진입 시 오늘 날짜로 스크롤 이동
+useEffect(() => {
+  const scrollToToday = () => {
+    if (calendarScrollRef.current) {
+      const todayIdx = calendarCells.findIndex(cell => cell.date.isSame(today, 'date'));
+      
+      if (todayIdx !== -1) {
+        // 오늘 날짜가 있는 주(2주 단위)를 찾기
+        const weekIndex = Math.floor(todayIdx / 14);
+        
+        // 실제 DOM 요소의 높이를 계산
+        const calendar2WeeksElements = calendarScrollRef.current.querySelectorAll('.calendar-2weeks');
+        
+        if (calendar2WeeksElements[weekIndex]) {
+          const elementHeight = calendar2WeeksElements[weekIndex].offsetHeight;
+          
+          // 간단한 방법: 각 2주 블록의 높이를 기준으로 계산
+          const scrollPosition = weekIndex * elementHeight;
+          
+          // 부드러운 스크롤 애니메이션
+          calendarScrollRef.current.scrollTo({
+            top: scrollPosition,
+            behavior: 'smooth'
+          });
+        }
       }
-      
-    } catch (error) {
-      console.error('Failed to update schedule status:', error);
-
-      // 실패 시 결과 알림
-      toast.error('스케줄 상태 변경에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
-  // 날짜 선택 핸들러
-  const handleDateSelect = (date) => {
-    setSelectedDate(date);
-    fetchStaffList(date);
-  };
-
-  // 페이지 진입 시 오늘 날짜로 스크롤 이동
-  useEffect(() => {
-    const scrollToToday = () => {
-      if (calendarScrollRef.current) {
-        const todayIdx = calendarCells.findIndex(cell => cell.date.isSame(today, 'date'));
-        
-        if (todayIdx !== -1) {
-          // 오늘 날짜가 있는 주(2주 단위)를 찾기
-          const weekIndex = Math.floor(todayIdx / 14);
-          
-          // 실제 DOM 요소의 높이를 계산
-          const calendar2WeeksElements = calendarScrollRef.current.querySelectorAll('.calendar-2weeks');
-          
-          if (calendar2WeeksElements[weekIndex]) {
-            const elementHeight = calendar2WeeksElements[weekIndex].offsetHeight;
-            
-            // 간단한 방법: 각 2주 블록의 높이를 기준으로 계산
-            const scrollPosition = weekIndex * elementHeight;
-            
-            // 부드러운 스크롤 애니메이션
-            calendarScrollRef.current.scrollTo({
-              top: scrollPosition,
-              behavior: 'smooth'
-            });
-          }
-        }
-      }
-    };
-
-    // 즉시 실행
-    scrollToToday();
-  }, [month, year]); // calendarCells 대신 month, year를 의존성으로 변경
+  // 즉시 실행
+  scrollToToday();
+}, [month, year]); // calendarCells 대신 month, year를 의존성으로 변경
 
   // 최초 로딩 시 오늘 날짜 선택 및 스태프 목록 가져오기
   useEffect(() => {
@@ -405,27 +435,48 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
           transform: translateX(0);
         }
       `}</style>
-      <div className="schedule-container">
+        <div className="schedule-container">
         <SketchHeader
-           title={
+          title={
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <ClipboardList size={18} />
-              Staff Schedule
+              {get('STAFF_SCHEDULE_TITLE')}
             </span>
           }
           showBack={true}
           onBack={goBack}
         />
+        
         <div className="month-row">
-          <SketchBtn variant="event" size="small" className="month-nav-btn" onClick={handlePrevMonth}>Previous<HatchPattern opacity={0.6} /></SketchBtn>
-          <div className="month-label">{dayjs().month(month).format('MMMM')} {year}</div>
-          <SketchBtn variant="event" size="small" className="month-nav-btn" onClick={handleNextMonth}>Next<HatchPattern opacity={0.6} /></SketchBtn>
+          <SketchBtn 
+            variant="event" 
+            size="small" 
+            className="month-nav-btn" 
+            onClick={handlePrevMonth}
+          >
+            {get('SCHEDULE_PREVIOUS_BUTTON')}
+            <HatchPattern opacity={0.6} />
+          </SketchBtn>
+          <div className="month-label">
+            {dayjs().month(month).format('MMMM')} {year}
+          </div>
+          <SketchBtn 
+            variant="event" 
+            size="small" 
+            className="month-nav-btn" 
+            onClick={handleNextMonth}
+          >
+            {get('SCHEDULE_NEXT_BUTTON')}
+            <HatchPattern opacity={0.6} />
+          </SketchBtn>
         </div>
+        
         <div className="calendar">
           {days.map(day => (
             <div key={day} className="calendar-day">{day}</div>
           ))}
         </div>
+        
         <div className="calendar-scroll" ref={calendarScrollRef}>
           {Array.from({ length: Math.ceil(calendarCells.length / 14) }).map((_, twoWeekIdx) => (
             <div className="calendar-2weeks" key={twoWeekIdx}>
@@ -452,10 +503,10 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
           ))}
         </div>
         
-        <div className="assign-title">Schedule Approval</div>
+        <div className="assign-title">{get('SCHEDULE_APPROVAL_TITLE')}</div>
         {isLoading ? (
           <div style={{ textAlign: 'center', padding: '1rem', color: '#666' }}>
-            Loading staff list...
+            {get('SCHEDULE_LOADING_STAFF')}
           </div>
         ) : (
           staffList.map(staff => (

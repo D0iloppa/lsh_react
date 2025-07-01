@@ -103,6 +103,8 @@ const handleDeletePromotion = async (promotionId) => {
   if (result.isConfirmed) {
     try {
       // TODO: API 구현 후 실제 API 호출로 변경
+
+      
       console.log('Deleting promotion:', promotionId);
       
       // 임시로 로컬 상태만 업데이트
@@ -133,6 +135,11 @@ const handleEndPromotion = async (promotionId) => {
   if (result.isConfirmed) {
     try {
       // TODO: API 구현 후 실제 API 호출로 변경
+
+      const response = await ApiClient.postForm('/api/promotionEnd', {
+        promotion_id: promotionId
+      });
+      
       console.log('Ending promotion:', promotionId);
       
       // 임시로 로컬 상태만 업데이트

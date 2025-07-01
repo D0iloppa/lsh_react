@@ -51,12 +51,12 @@ export const ImageUploader = ({
       
       // 모바일 환경 감지 및 파일 변환
       if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-        console.log('Mobile device detected, processing file...');
+        //console.log('Mobile device detected, processing file...');
         processedFile = await convertFileForMobile(validatedFile);
       }
 
       const response = await apiClient.uploadImage(processedFile);
-      
+      console.log('IMG response', response);
       // WAS 응답 구조에 맞게 처리
       if (response.success) {
         // content_id 필드명으로 받기
@@ -114,11 +114,13 @@ export const ImageUploader = ({
 
   // 파일 검증 및 전처리 함수
   const validateAndProcessFile = useCallback(async (file) => {
+    /*
     console.log('Validating file:', {
       name: file.name,
       size: file.size,
       type: file.type
     });
+    */
 
     // 파일 크기 제한 (50MB)
     const maxSize = 50 * 1024 * 1024; // 50MB
@@ -286,12 +288,14 @@ export const ImageUploader = ({
                 lastModified: Date.now()
               });
               
+              /*
               console.log('File converted for mobile:', {
                 originalSize: file.size,
                 convertedSize: convertedFile.size,
                 originalType: file.type,
                 convertedType: convertedFile.type
               });
+              */
               
               resolve(convertedFile);
             } else {
@@ -324,6 +328,7 @@ export const ImageUploader = ({
     const file = event.target.files?.[0];
     const isCamera = event.target === cameraInputRef.current;
     
+    /*
     console.log('File selection event:', {
       hasFile: !!file,
       fileInfo: file ? {
@@ -335,9 +340,10 @@ export const ImageUploader = ({
       source: isCamera ? 'camera' : 'gallery',
       inputElement: event.target
     });
+    */
     
     if (file) {
-      console.log('Calling handleFileUpload with file from:', isCamera ? 'camera' : 'gallery');
+      // console.log('Calling handleFileUpload with file from:', isCamera ? 'camera' : 'gallery');
       handleFileUpload(file);
     } else {
       console.log('No file selected');
@@ -349,7 +355,7 @@ export const ImageUploader = ({
 
   // 갤러리에서 선택
   const selectFromGallery = useCallback(() => {
-    console.log('Gallery selection triggered');
+    // console.log('Gallery selection triggered');
     fileInputRef.current?.click();
   }, []);
 

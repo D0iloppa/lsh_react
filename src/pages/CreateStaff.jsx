@@ -7,6 +7,7 @@ import SketchInput from '@components/SketchInput';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import '@components/SketchComponents.css';
 
+import Swal from 'sweetalert2';
 
 import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
@@ -47,6 +48,31 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
       created_by: user?.id
     }).then(res=>{
       console.log('res', res);
+
+      const {registerInfo = false} = res;
+      if(registerInfo){
+        Swal.fire({
+          title: 'Staff created',
+          text: 'Staff created successfully',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        }).then((result) => {
+          if (result.isConfirmed || result.isDismissed) {
+            goBack();
+          }
+        });
+      }else{
+        Swal.fire({
+          title: 'Failed to create staff',
+          text: 'Please try again',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
+
+      
+
+
     });
   };
 

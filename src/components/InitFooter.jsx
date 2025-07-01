@@ -16,7 +16,7 @@ const InitFooter = ({
   
   // 컴포넌트 최상위에서 hooks 사용
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
-  
+
   // useEffect도 컴포넌트 최상위에서 사용
   useEffect(() => {
     if (messages && Object.keys(messages).length > 0) {

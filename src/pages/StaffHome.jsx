@@ -26,6 +26,13 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
     hourlyReservations: [] // 시간별 예약 데이터 추가
   });
   const [isLoadingData, setIsLoadingData] = useState(true);
+  console.log('메시지 내용:', messages['Staff.home.btn1']); 
+    useEffect(() => {
+      if (currentLang) {
+        document.body.classList.remove('lang-ko', 'lang-en', 'lang-ja', 'lang-vi');
+        document.body.classList.add(`lang-${currentLang}`);
+      }
+    }, [currentLang]);
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -151,6 +158,12 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
   return (
     <>
       <style jsx="true">{`
+
+
+        body.lang-ja .staffhome-container {
+          font-family: 'NotoSansJP', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif !important;
+        }
+
         .staffhome-container {
           max-width: 28rem;
           margin: 0 auto;
@@ -168,7 +181,7 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
           border-bottom-right-radius: 12px 6px;
           border-bottom-left-radius: 6px 14px;
           padding: 1.1rem 0.9rem 0.7rem 0.9rem;
-          margin-bottom: 1.1rem;
+          margin-bottom: 0.7rem;
           text-align: center;
         }
         .welcome-title {
@@ -184,13 +197,14 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
           position: relative;
           background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #e8f9ff 100%);
           padding: 0.8rem 0.9rem 1.1rem 0.9rem;
-          margin-bottom: 0.3rem;
+          margin-bottom: 0.4rem;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          border: 1px solid #999999;
         }
         .section-title {
           font-size: 1.08rem;
           font-weight: 600;
-          margin-bottom: 0.2rem;
+          margin-bottom: 0.5rem;
         }
         .section-content {
           font-size: 0.97rem;
@@ -201,7 +215,7 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
           bottom: 94px;
           left: 50%;
           transform: translateX(-50%);
-          width: 95%;
+          width: 91%;
           max-width: 28rem;
           display: flex;
           gap: 0.3rem;
@@ -247,6 +261,7 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
             </SketchDiv>
           )}
 
+        <div style={{padding: '0.2rem 0.9rem'}}>
           <SketchDiv className="section-card">
             <HatchPattern opacity={0.6} />
             <div className="section-title">
@@ -301,20 +316,22 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
             </div>
           </SketchDiv>
 
+          </div>
+
           <div className="action-row">
             <SketchBtn 
               size="medium" 
               variant="secondary" 
-              className="action-btn"
+              className="action-btn" style={{border: '1px solid #999999'}}
               onClick={handleEditProfile}
             >
               <HatchPattern opacity={0.6} />
-              {get('Staff.home.btn1')}
+               {get('Staff.home.btn1')}
             </SketchBtn>
             <SketchBtn 
               size="medium" 
               variant="secondary" 
-              className="action-btn"
+              className="action-btn" style={{border: '1px solid #999999'}}
               onClick={handleBookingList}
             >
               <HatchPattern opacity={0.6} />
@@ -323,7 +340,7 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
             <SketchBtn 
               size="medium" 
               variant="secondary" 
-              className="action-btn"
+              className="action-btn" style={{border: '1px solid #999999'}}
               onClick={handleNewReviews}
             >
               <HatchPattern opacity={0.6} />

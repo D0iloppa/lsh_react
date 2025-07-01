@@ -3,7 +3,7 @@ import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
-import { Calendar, Clock, MapPin, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, CheckCircle, XCircle } from 'lucide-react';
 import HatchPattern from '@components/HatchPattern';
 
 import { useAuth } from '@contexts/AuthContext';
@@ -216,25 +216,92 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
           }}
           onClick={e => { if (e.target === e.currentTarget) unmount(); }}
         >
-          <div style={{ background: '#fff', borderRadius: '1rem', minWidth: 260, padding: '2rem 1.5rem', boxShadow: '0 4px 24px rgba(0,0,0,0.13)', maxWidth: 340, width: '100%' }}>
+          <div style={{ 
+            background: '#fff', 
+            borderRadius: '1rem', 
+            minWidth: 260, 
+            padding: '2rem 1.5rem', 
+            boxShadow: '0 4px 24px rgba(0,0,0,0.13)', 
+            maxWidth: 275, 
+            width: '100%' 
+          }}>
             {/* Row 1: On/Off */}
-            <div style={{ marginBottom: 22, display: 'flex', alignItems: 'center', gap: 16 }}>
-              <span style={{ fontWeight: 600, fontSize: '1.01rem', minWidth: 70 }}>근무여부</span>
-              <select className="select-style" value={isOn ? 'on' : 'off'} onChange={e => setIsOn(e.target.value === 'on')} style={{ fontSize: '1rem' }}>
-                <option value="on">ON</option>
-                <option value="off">OFF</option>
-              </select>
+            <div className='modal-top'>
+              <span style={{ fontWeight: 600, fontSize: '1.01rem', minWidth: 70 }}>
+                {get('SCHEDULE_MODAL_WORK_STATUS')}
+              </span>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                  <input 
+                    type="radio" 
+                    name="workStatus" 
+                    value="on" 
+                    checked={isOn} 
+                    onChange={() => setIsOn(true)}
+                    style={{
+                      appearance: 'none',
+                      width: '18px',
+                      height: '18px',
+                      border: '2px solid #ddd',
+                      borderRadius: '50%',
+                      position: 'relative',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      borderColor: isOn ? '#2bb4bb' : '#ddd',
+                      background: isOn ? '#2bb4bb' : 'transparent'
+                    }}
+                  />
+                  <span style={{ fontSize: '1rem', fontWeight: 500, color: '#374151' }}>
+                    {get('SCHEDULE_MODAL_ON')}
+                  </span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                  <input 
+                    type="radio" 
+                    name="workStatus" 
+                    value="off" 
+                    checked={!isOn} 
+                    onChange={() => setIsOn(false)}
+                    style={{
+                      appearance: 'none',
+                      width: '18px',
+                      height: '18px',
+                      border: '2px solid #ddd',
+                      borderRadius: '50%',
+                      position: 'relative',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      borderColor: !isOn ? '#2bb4bb' : '#ddd',
+                      background: !isOn ? '#2bb4bb' : 'transparent'
+                    }}
+                  />
+                  <span style={{ fontSize: '1rem', fontWeight: 500, color: '#374151' }}>
+                    {get('SCHEDULE_MODAL_OFF')}
+                  </span>
+                </label>
+              </div>
             </div>
+            
             {/* Row 2: Hours */}
             {isOn && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                <span style={{ fontSize: '1.01rem', minWidth: 45 }}>Hours</span>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 10, 
+                marginBottom: 10, 
+                justifyContent: 'center' 
+              }}>
+                <span style={{ fontSize: '1.01rem', minWidth: 45, fontWeight: 600}}>
+                  {get('SCHEDULE_MODAL_HOURS')}
+                </span>
                 <select className="select-style" value={start} onChange={e => setStart(e.target.value)}>
                   {hourOptions.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
-                <span style={{ fontSize: '1.01rem', minWidth: 18, textAlign: 'center' }}>to</span>
+                <span style={{ fontSize: '1.01rem', minWidth: 18, textAlign: 'center' }}>
+                  {get('SCHEDULE_MODAL_TO')}
+                </span>
                 <select className="select-style" value={end} onChange={e => setEnd(e.target.value)}>
                   {hourOptions.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -242,56 +309,57 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
                 </select>
               </div>
             )}
+            
             <div style={{ marginTop: 32, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <SketchBtn variant="secondary" size="small" style={{ minWidth: 80 }} onClick={unmount}>취소</SketchBtn>
+              <SketchBtn variant="danger" size="small" style={{ minWidth: 80 }} onClick={unmount}>
+                {get('SCHEDULE_MODAL_CANCEL')}
+              </SketchBtn>
               <SketchBtn variant="primary" size="small" style={{ minWidth: 80 }} onClick={() => {
+                // 저장 로직
+                const formattedData = [{
+                  date: schedule.work_date,
+                  status: isOn ? 'available' : 'dayoff',
+                  start: start,
+                  end: end,
+                  on: Boolean(isOn)
+                }];
 
+                const jsonDataStr = JSON.stringify(formattedData);
+                console.log('jsonDataStr:', jsonDataStr);
 
-              // 저장 로직
+                const payload = {
+                  staff_id: user?.staff_id,
+                  jsonData: encodeURIComponent(jsonDataStr)
+                }
 
-              const formattedData = [{
-                date: schedule.work_date,
-                status: isOn ? 'available' : 'dayoff',
-                start: start,
-                end: end,
-                on: Boolean(isOn)
-              }];
+                ApiClient.postForm('/api/upsertStaffSchedule', payload).then((response)=>{
+                  console.log('response:', response);
 
-              const jsonDataStr = JSON.stringify(formattedData);
-              console.log('jsonDataStr:', jsonDataStr);
-        
-              const payload = {
-                staff_id: user?.staff_id,
-                jsonData: encodeURIComponent(jsonDataStr)
-              }
-        
-              ApiClient.postForm('/api/upsertStaffSchedule', payload).then((response)=>{
-                console.log('response:', response);
-        
-                Swal.fire({
-                  title: 'Schedule saved',
-                  text: 'Schedule saved successfully',
-                  icon: 'success',
-
-                  confirmButtonText: 'OK'
-                }).then((result) => {
-                  if (result.isConfirmed || result.isDismissed) {
-                    unmount();
-                    setTriggerRefresh(!triggerRefresh);
-                  }
+                  Swal.fire({
+                    title: get('SCHEDULE_SAVE_SUCCESS_TITLE'),
+                    text: get('SCHEDULE_SAVE_SUCCESS_MESSAGE'),
+                    icon: 'success',
+                    confirmButtonText: get('SCHEDULE_MODAL_OK')
+                  }).then((result) => {
+                    if (result.isConfirmed || result.isDismissed) {
+                      unmount();
+                      setTriggerRefresh(!triggerRefresh);
+                    }
+                  });
+                }).catch((error)=>{
+                  console.error('Failed to save schedule:', error);
+                  Swal.fire({
+                    title: get('SCHEDULE_SAVE_ERROR_TITLE'),
+                    text: get('SCHEDULE_SAVE_ERROR_MESSAGE'),
+                    icon: 'error',
+                    confirmButtonText: get('SCHEDULE_MODAL_OK')
+                  });
+                  unmount();
                 });
-              }).catch((error)=>{
-                console.error('Failed to save schedule:', error);
-                Swal.fire({
-                  title: 'Failed to save schedule',
-                  text: 'Please try again',
-                  icon: 'error',
-                  confirmButtonText: 'OK'
-                });
-                unmount();
-              });
-                
-              }}>저장</SketchBtn>
+              }}>
+                <HatchPattern opacity={0.6} />
+                {get('SCHEDULE_MODAL_SAVE')}
+              </SketchBtn>
             </div>
           </div>
         </div>
@@ -301,117 +369,135 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
 
 
   const handleCheckInOut = async (schedule, isCheckOut, isCheckedOut) => {
-      if(isCheckedOut) return;
+  if(isCheckedOut) return;
+
+  console.log(schedule);
+  try {
+    const {schedule_id = false , work_date = false} = schedule;
+    if(!schedule_id || !work_date) return;
+
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD 형식
+    if(work_date !== today) {
+      console.warn('Cannot check in/out for different date:', work_date, 'vs', today);
+      // 사용자에게 알림 표시
+      Swal.fire({
+        title: get('CHECKIN_DATE_ERROR'),
+        icon: 'warning',
+        confirmButtonText: get('SCHEDULE_MODAL_OK')
+      });
+      return;
+    }
+
+    const status = isCheckOut ? 'check_out' : 'check_in';
     
-      console.log(schedule);
-      try {
-
-        const {schedule_id = false , work_date = false} = schedule;
-        if(!schedule_id || !work_date) return;
-
-        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD 형식
-        if(work_date !== today) {
-          console.warn('Cannot check in/out for different date:', work_date, 'vs', today);
-          // 사용자에게 알림 표시
-          Swal.fire({
-            title: '오늘 날짜가 아닌 일정에는 체크인/아웃할 수 없습니다.',
-            icon: 'warning',
-            confirmButtonText: 'OK'
-          });
-          return;
-        }
-
-
-        const status = isCheckOut ? 'check_out' : 'check_in';
-        
-        // DB에서 업데이트하고 실제 저장된 시간 반환받기
-        const response = await ApiClient.postForm('/api/checkInOut', {
-          status,
-          schedule_id: schedule_id
-        });
-        
-        // 성공했을 때만 로컬 상태 업데이트
-        if(response.success) {
-          const updatedTime = response.updated_time;
-          setSchedules(prev => prev.map(s => 
-            s.schedule_id === schedule_id 
-              ? { ...s, [status]: updatedTime }
-              : s
-          ));
-        } else {
-          // 실패한 경우 에러 처리
-          console.error('Check in/out failed:', response.err);
-          // 사용자에게 알림 표시 등...
-        }
-        
-      } catch (error) {
-        console.error('Failed to check in/out:', error);
-      }
-  };
-
-  const toggleDayFold = (date) => {
-    setFoldedDays(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(date)) {
-        newSet.delete(date);
-      } else {
-        newSet.add(date);
-      }
-      return newSet;
+    // DB에서 업데이트하고 실제 저장된 시간 반환받기
+    const response = await ApiClient.postForm('/api/checkInOut', {
+      status,
+      schedule_id: schedule_id
     });
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'available': return 'green';
-      case 'pending': return 'yellow';
-      case 'rejected': return 'red';
-      case 'dayoff': return 'purple';
-      case 'no-schedule': return 'gray';
-      default: return 'gray';
-    }
-  };
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'available': return 'Available';
-      case 'pending': return 'Pending';
-      case 'rejected': return 'Rejected';
-      case 'dayoff': return 'Day Off';
-      case 'no-schedule': return 'No Schedule';
-      default: return 'No Schedule';
-    }
-  };
-
-  // month 이동 함수
-  const handlePrevMonth = () => {
-    if (currentMonth === 0) {
-      setCurrentMonth(11);
-      setCurrentYear(y => y - 1);
+    
+    // 성공했을 때만 로컬 상태 업데이트
+    if(response.success) {
+      const updatedTime = response.updated_time;
+      setSchedules(prev => prev.map(s => 
+        s.schedule_id === schedule_id 
+          ? { ...s, [status]: updatedTime }
+          : s
+      ));
     } else {
-      setCurrentMonth(m => m - 1);
+      // 실패한 경우 에러 처리
+      console.error('Check in/out failed:', response.err);
+      // 사용자에게 알림 표시 등...
     }
-  };
-  const handleNextMonth = () => {
-    if (currentMonth === 11) {
-      setCurrentMonth(0);
-      setCurrentYear(y => y + 1);
-    } else {
-      setCurrentMonth(m => m + 1);
-    }
-  };
-
-  if (isLoadingData) {
-    return (
-      <div className="workschedule-container">
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <div>Loading schedules...</div>
-        </div>
-      </div>
-    );
+    
+  } catch (error) {
+    console.error('Failed to check in/out:', error);
   }
+};
+
+const toggleDayFold = (date) => {
+  setFoldedDays(prev => {
+    const newSet = new Set(prev);
+    if (newSet.has(date)) {
+      newSet.delete(date);
+    } else {
+      newSet.add(date);
+    }
+    return newSet;
+  });
+};
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'available': return 'green';
+    case 'pending': return 'yellow';
+    case 'rejected': return 'red';
+    case 'dayoff': return 'red';
+    case 'no-schedule': return 'gray';
+    default: return 'gray';
+  }
+};
+
+const getStatusText = (status) => {
+  switch (status) {
+    case 'available': return get('SCHEDULE_STATUS_AVAILABLE');
+    case 'pending': return get('SCHEDULE_STATUS_PENDING');
+    case 'rejected': return get('SCHEDULE_STATUS_REJECTED');
+    case 'dayoff': return get('SCHEDULE_STATUS_DAYOFF');
+    case 'no-schedule': return get('SCHEDULE_STATUS_NO_SCHEDULE');
+    default: return get('SCHEDULE_STATUS_NO_SCHEDULE');
+  }
+};
+
+// month 이동 함수
+const handlePrevMonth = () => {
+  if (currentMonth === 0) {
+    setCurrentMonth(11);
+    setCurrentYear(y => y - 1);
+  } else {
+    setCurrentMonth(m => m - 1);
+  }
+};
+
+const handleNextMonth = () => {
+  if (currentMonth === 11) {
+    setCurrentMonth(0);
+    setCurrentYear(y => y + 1);
+  } else {
+    setCurrentMonth(m => m + 1);
+  }
+};
+
+if (isLoadingData) {
+  return (
+    <div className="workschedule-container">
+      <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <div>{get('SCHEDULE_LOADING')}</div>
+      </div>
+    </div>
+  );
+}
 
   const weekDates = getWeekDates(currentWeek, mondayStart);
+
+   // 액션 라벨을 가져오는 함수
+  const getActionLabel = (status, schedule) => {
+    switch (status) {
+      case 'pending':
+      case 'rejected':
+      case 'dayoff':
+        return get('WORK_SCHEDULE_REQUEST_CHANGE');
+      case 'available':
+        const isCheckedIn = schedule.check_in && !schedule.check_out;
+        const isCheckedOut = schedule.check_out ? true : false;
+        if (isCheckedOut) return get('WORK_SCHEDULE_END');
+        if (isCheckedIn) return get('WORK_SCHEDULE_CHECK_OUT');
+        return get('WORK_SCHEDULE_CHECK_IN');
+      case 'no-schedule':
+      default:
+        return get('WORK_SCHEDULE_APPLY_SCHEDULE');
+    }
+  };
 
   return (
     <>
@@ -424,17 +510,17 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
           padding: 0.5rem;
         }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin: 1rem 0 1.2rem 0; }
-        .toggle-btns { display: flex; gap: 0.5rem; }
-        .toggle-btn { padding: 0.4rem 1.2rem; font-size: 1.01rem; border: 1.2px solid #222; background: #f8f8f8; color: #222; font-weight: 600; border-radius: 0.5rem; cursor: pointer; }
+        .toggle-btns { display: flex; gap: 0.3rem; }
+        .toggle-btn { position:relative; padding: 0.4rem 1.2rem; font-size: 1.01rem; border: 1.2px solid #222; background: #f8f8f8; color: #222; font-weight: 600; border-radius: 0.5rem; cursor: pointer; }
         .toggle-btn.active { background: #222; color: #fff; }
         .date-nav { display: flex; align-items: center; gap: 0.7rem; }
-        .date-btn { border: 1px solid #bbb; background: #fff; border-radius: 0.4rem; padding: 0.2rem 0.7rem; font-size: 1rem; cursor: pointer; }
+        .date-btn { border: 1px solid #bbb; background: #fff; border-radius: 0.4rem; padding: 0.2rem 0.5rem; font-size: 1rem; cursor: pointer; }
         .week-title, .month-title { font-size: 1.1rem; font-weight: 600; color: #1f2937; text-align: center; flex: 1; }
-        .schedule-list { margin-top: 1.2rem; }
-        .schedule-row { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.7rem; }
-        .schedule-day { flex: 1.2; font-size: 1.05rem; }
-        .schedule-time { flex: 2.5; font-size: 1.05rem; }
-        .schedule-actions { flex: 1.5; display: flex; gap: 0.3rem; }
+        .schedule-list { margin-top: 1.5rem; }
+        .schedule-row { display: flex; align-items: center; gap: 0.7rem; padding: 3px; margin-bottom: 5px;}
+        .schedule-day { flex: 1; font-size: 1.05rem; justify-content: space-between;  max-width: 52px; min-height: 24px;}
+        .schedule-time { flex: 2; font-size: 1.05rem; }
+        .schedule-actions { flex: 1.2; display: flex;}
         .schedule-action-btn { min-width: 90px; font-size: 0.95rem; padding: 0.18rem 0.5rem; }
         .create-btn-row { margin: 1.2rem 0 0.7rem 0; }
         .week-navigation {
@@ -465,7 +551,7 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
           background: #2bb4bb;
           color: white;
           box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
-          width: 100%;
+         
         }
         .toggle-btn.inactive {
           background: transparent;
@@ -529,7 +615,7 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
           color: #1f2937;
           display: flex;
           align-items: center;
-          gap: 0.2rem;
+          max-width: 52px;
         }
         .schedule-card.folded .schedule-day {
           font-size: 1rem;
@@ -556,6 +642,17 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
+
+        .schedule-time-dayoff {
+            color: #dc2626 !important; /* 빨간색 */
+            font-weight: 500;
+          }
+
+          .schedule-time-no-schedule {
+            color: #9ca3af !important; /* 회색 + 투명도 */
+            opacity: 0.7;
+          }
+
         .schedule-card.folded .schedule-status {
           padding: 0.2rem 0.6rem;
           font-size: 0.7rem;
@@ -596,7 +693,6 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
         }
         .schedule-actions {
           display: flex;
-          gap: 0.5rem;
           flex-wrap: wrap;
           transition: all 0.3s ease;
         }
@@ -670,9 +766,11 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
           font-size: 0.8rem;
           font-weight: 400;
           letter-spacing: 0.01em;
+          m
         }
 
         .check-outed{
+          padding: 4px;
           background: #f3e8ff !important;
           color: #7c3aed !important;
         }
@@ -687,10 +785,210 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
           letter-spacing: 0.02em;
           vertical-align: middle;
         }
+        .approved-badge {
+          background: #2bb4bb;
+          color: #fff;
+          font-size: 0.72rem;
+          border-radius: 8px;
+          padding: 0.13em 0.7em;
+          margin-left: 0.5em;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          vertical-align: middle;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.25);
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        .modal-content {
+            background: #fff;
+            border-radius: 1rem;
+            min-width: 260px;
+            padding: 2rem 1.5rem;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+            max-width: 275px;
+            width: 100%;
+        }
+
+        .form-row {
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 1.01rem;
+            min-width: 70px;
+        }
+
+        /* 라디오 버튼 컨테이너 */
+        .radio-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        /* 커스텀 라디오 버튼 스타일 */
+        .radio-input {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .radio-input:checked {
+            border-color: #2bb4bb;
+            background: #2bb4bb;
+        }
+
+        .radio-input:checked::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: white;
+        }
+
+        .radio-input:hover {
+            border-color: #2bb4bb;
+        }
+
+        .radio-label {
+            font-weight: 500;
+            color: #374151;
+            user-select: none;
+        }
+
+        /* 시간 선택 영역 */
+        .hours-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .select-style {
+            padding: 0.4rem 0.6rem;
+           border-top-left-radius: 12px 7px;
+          border-top-right-radius: 6px 14px;
+          border-bottom-right-radius: 10px 5px;
+          border-bottom-left-radius: 8px 11px;
+          border: 0.8px solid #666;
+            font-size: 0.9rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .hours-label {
+            font-size: 1.01rem;
+            min-width: 45px;
+        }
+
+        .hours-separator {
+            font-size: 1.01rem;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        /* 버튼 영역 */
+        .button-row {
+            margin-top: 32px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn {
+            min-width: 80px;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-primary {
+            background: #2bb4bb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #259ca3;
+        }
+
+        .demo-section {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .demo-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #374151;
+        }
+
+        .modal-top {    
+        margin-bottom: 22px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        border-bottom: 1px solid #dddddd;
+        padding-bottom: 15px;
+        justify-content: center;}
       `}</style>
       
       <SketchHeader
-        title={<><Calendar size={18} style={{marginRight:'7px',marginBottom:'-3px'}}/>Work Schedule</>}
+        title={
+          <>
+            <Calendar size={18} style={{marginRight:'7px',marginBottom:'-3px'}}/>
+            {get('WORK_SCHEDULE_TITLE')}
+          </>
+        }
         showBack={true}
         onBack={goBack}
       />
@@ -698,8 +996,20 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
       <div className="workschedule-container">
         <div className="top-bar">
           <div className="toggle-btns">
-            <button className={`toggle-btn${view==='week'?' active':''}`} onClick={()=>setView('week')}>Week</button>
-            <button className={`toggle-btn${view==='month'?' active':''}`} onClick={()=>setView('month')}>Month</button>
+            <button 
+              className={`toggle-btn${view==='week'?' active':''}`} 
+              onClick={()=>setView('week')}
+            >
+              <HatchPattern opacity={0.6} />
+              {get('WORK_SCHEDULE_WEEK')}
+            </button>
+            <button 
+              className={`toggle-btn${view==='month'?' active':''}`} 
+              onClick={()=>setView('month')}
+            >
+              <HatchPattern opacity={0.6} />
+              {get('WORK_SCHEDULE_MONTH')}
+            </button>
           </div>
           <div className="date-nav">
             {view === 'week' ? (
@@ -729,7 +1039,7 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
                 localStorage.setItem('mondayStart', 'false');
               }}
             >
-              일요일 시작
+              {get('WORK_SCHEDULE_START_SUNDAY')}
             </button>
             <button 
               className={`toggle-btn ${mondayStart ? 'active' : 'inactive'}`}
@@ -738,7 +1048,7 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
                 localStorage.setItem('mondayStart', 'true');
               }}
             >
-              월요일 시작
+              {get('WORK_SCHEDULE_START_MONDAY')}
             </button>
           </div>
         )}
@@ -757,27 +1067,28 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
                 case 'pending':
                   actions = [
                     {
-                      label: 'Request Change',
+                      label: get('WORK_SCHEDULE_REQUEST_CHANGE'),
                       handler: () => handleEditSchedule(schedule)
                     }
                   ];
                   break;
                 case 'available':
-                  // 출근/퇴근 상태에 따라 버튼 결정
-                  const isCheckedIn = schedule.check_in && !schedule.check_out;
-                  const isCheckedOut = (schedule.check_out) ? true : false;
-                  actions = [
-                    {
-                      label: isCheckedOut ? 'END' :
-                             isCheckedIn ? 'Check Out' : 'Check In',
-                      handler: () => handleCheckInOut(schedule, isCheckedIn, isCheckedOut)
-                    }
-                  ];
-                  break;
+                // 출근/퇴근 상태에 따라 버튼 결정
+                const isCheckedIn = schedule.check_in && !schedule.check_out;
+                const isCheckedOut = (schedule.check_out) ? true : false;
+                actions = [
+                  {
+                    label: isCheckedOut ? get('WORK_SCHEDULE_END') :
+                          isCheckedIn ? get('WORK_SCHEDULE_CHECK_OUT') : get('WORK_SCHEDULE_CHECK_IN'),
+                    handler: () => handleCheckInOut(schedule, isCheckedIn, isCheckedOut),
+                    ...(isCheckedOut && { variant: 'violet' }) // isCheckedOut이 true일 때만 variant 추가
+                  }
+                ];
+                break;
                 case 'rejected':
                   actions = [
                     {
-                      label: 'Request Change',
+                      label: get('WORK_SCHEDULE_REQUEST_CHANGE'),
                       handler: () => handleEditSchedule(schedule)
                     }
                   ];
@@ -785,7 +1096,7 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
                 case 'dayoff':
                   actions = [
                     {
-                      label: 'Request Change',
+                      label: get('WORK_SCHEDULE_REQUEST_CHANGE'),
                       handler: () => handleEditSchedule(schedule)
                     }
                   ];
@@ -793,7 +1104,7 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
                 case 'no-schedule':
                   actions = [
                     {
-                      label: 'Apply Schedule',
+                      label: get('WORK_SCHEDULE_APPLY_SCHEDULE'),
                       handler: () => handleCreateSchedule()
                     }
                   ];
@@ -801,8 +1112,8 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
                 default:
                   actions = [
                     {
-                      label: 'Apply Schedule',
-                      handler: () => handleCreateSchedule()
+                      label: get('WORK_SCHEDULE_APPLY_SCHEDULE'),
+                      handler: () => handleCreateSchedule(),
                     }
                   ];
               }
@@ -810,10 +1121,20 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
               return (
                 <div key={`schedule-${schedule.schedule_id || schedule.work_date || index}`} 
                      className={`schedule-row${schedule.check_out ? ' check-outed' : ''}`}>
-                  <div className="schedule-day">{dateInfo.day}</div>
+                  <div className="schedule-day">
+                    {dateInfo.day}
+                    {status === 'available' && (
+                      <CheckCircle size={13} color="#2bb4bb" style={{marginLeft: '0.3em', verticalAlign: 'middle'}} />
+                    )}
+                    {status === 'rejected' && (
+                      <XCircle size={13} color="#e11d48" style={{marginLeft: '0.3em', verticalAlign: 'middle'}} />
+                    )}
+                  </div>
                   <div className="schedule-time">
                     {status === 'no-schedule' || status === 'dayoff' || !schedule.start_time ? 
-                      getStatusText(status) : 
+                      <span className={`${status === 'dayoff' ? 'schedule-time-dayoff' : status === 'no-schedule' ? 'schedule-time-no-schedule' : ''}`}>
+                        {getStatusText(status)}
+                      </span> : 
                       <>
                         <span className="schedule-time-text">
                           {`${formatTimeToAMPM(schedule.start_time)} - ${formatTimeToAMPM(schedule.end_time)}`}
@@ -821,7 +1142,7 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
                         {schedule.check_out && (
                           <>
                             <CheckCircle size={14} color="#7c3aed" style={{marginLeft: '0.5em', verticalAlign: 'middle'}} />
-                            <span className="checked-out-badge">Checked Out</span>
+                            <span className="checked-out-badge">{get('WORK_SCHEDULE_CHECKED_OUT')}</span>
                           </>
                         )}
                       </>
@@ -833,8 +1154,10 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
                         key={`${schedule.schedule_id || schedule.work_date || index}-${action.label}-${actionIndex}`} 
                         size="small" 
                         className="schedule-action-btn"
+                        variant={action.variant}
                         onClick={action.handler}
                       >
+                        <HatchPattern opacity={0.6} />
                         {action.label}
                       </SketchBtn>
                     ))}
@@ -843,11 +1166,15 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
               );
             })
           ) : (
-            <div style={{textAlign:'center',color:'#888',marginTop:'2rem'}}>월별 렌더링 예정</div>
+            <div style={{textAlign:'center',color:'#888',marginTop:'2rem'}}>
+              {get('WORK_SCHEDULE_MONTH_VIEW_COMING')}
+            </div>
           )}
         </div>
         <div className="create-btn-row">
-          <SketchBtn variant="primary" size="medium" style={{ width: '100%' }} onClick={handleCreateSchedule}>Create schedule</SketchBtn>
+          <SketchBtn variant="event" size="medium" style={{ width: '100%' }} onClick={handleCreateSchedule}><HatchPattern opacity={0.4} />
+            {get('WORK_SCHEDULE_CREATE_SCHEDULE')}
+          </SketchBtn>
         </div>
       </div>
     </>

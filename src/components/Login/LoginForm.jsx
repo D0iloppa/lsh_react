@@ -60,10 +60,22 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
     setTimeout(() => {
       if (accountType === 'manager') {
       
-        const venueId = user?.venue_id;
-      
+        const venueId = result.user.venue_id;
+        
         if (!venueId || venueId == 0 || venueId == null) {
           // venue_id가 null, 0, 또는 없으면 튜토리얼로 이동
+
+
+
+
+
+
+
+
+
+
+
+
           navigate('/managerTuto');
         } else {
           // venue_id가 있으면 메인으로 이동

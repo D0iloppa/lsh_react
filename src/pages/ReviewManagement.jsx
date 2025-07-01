@@ -95,11 +95,6 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
         const dateA = new Date(a.created_at);
         const dateB = new Date(b.created_at);
         
-        if (dateFilter === 'Newest') {
-          return dateB - dateA; // 최신순
-        } else {
-          return dateA - dateB; // 오래된순
-        }
       });
   
       setReviews(filtered);
@@ -549,14 +544,7 @@ const handleSubmitResponse = async (reviewId) => {
                         onChange={(e) => handleResponseChange(review.review_id || review.id, e.target.value)}
                       />
                       <div className="response-form-actions">
-                        <SketchBtn 
-                          variant="secondary" 
-                          size="small" 
-                          className="response-form-btn"
-                          onClick={() => toggleResponse(review.review_id || review.id)}
-                        >
-                          {get('REVIEW_CANCEL_BUTTON')}
-                        </SketchBtn>
+                        
                         <SketchBtn 
                           variant="event" 
                           size="small" 
@@ -564,6 +552,14 @@ const handleSubmitResponse = async (reviewId) => {
                           onClick={() => handleSubmitResponse(review.review_id || review.id)}
                         >
                           <Send size={12} /> {get('REVIEW_SUBMIT_RESPONSE_BUTTON')}
+                        </SketchBtn>
+                        <SketchBtn 
+                          variant="secondary" 
+                          size="small" 
+                          className="response-form-btn"
+                          onClick={() => toggleResponse(review.review_id || review.id)}
+                        >
+                          {get('REVIEW_CANCEL_BUTTON')}
                         </SketchBtn>
                       </div>
                     </div>

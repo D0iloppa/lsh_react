@@ -10,6 +10,8 @@ import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
 import { useNavigate } from 'react-router-dom';
 
+import Swal from 'sweetalert2';
+
 const defaultForm = {
   name: '',
   description: '',
@@ -87,70 +89,71 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   // 검증 함수들
   const validateName = (name) => {
     if (!name.trim()) {
-      return 'Venue name is required';
+      return get('VENUE_ERROR_NAME_REQUIRED');
     }
     if (name.trim().length < 2) {
-      return 'Venue name must be at least 2 characters';
+      return get('VENUE_ERROR_NAME_MIN_LENGTH');
     }
     if (name.trim().length > 50) {
-      return 'Venue name must be less than 50 characters';
+      return get('VENUE_ERROR_NAME_MAX_LENGTH');
     }
     return '';
   };
 
   const validateAddress = (address) => {
     if (!address.trim()) {
-      return 'Address is required';
+      return get('VENUE_ERROR_ADDRESS_REQUIRED');
     }
     if (address.trim().length < 5) {
-      return 'Address must be at least 5 characters';
+      return get('VENUE_ERROR_ADDRESS_MIN_LENGTH');
     }
     if (address.trim().length > 200) {
-      return 'Address must be less than 200 characters';
+      return get('VENUE_ERROR_ADDRESS_MAX_LENGTH');
     }
     return '';
   };
 
   const validatePhone = (phone) => {
-    if (!phone.trim()) {
-      return 'Phone number is required';
-    }
-    // 숫자, 하이픈, 괄호, 공백, + 기호만 허용
-    const phoneRegex = /^[\d\s\-\(\)\+]+$/;
-    if (!phoneRegex.test(phone)) {
-      return 'Invalid phone number format';
-    }
-    // 숫자만 추출해서 길이 확인
-    const numbersOnly = phone.replace(/\D/g, '');
-    if (numbersOnly.length < 8 || numbersOnly.length > 15) {
-      return 'Phone number must be between 8-15 digits';
-    }
-    return '';
-  };
+  if (!phone.trim()) {
+    return get('VENUE_ERROR_PHONE_REQUIRED');
+  }
+  const phoneRegex = /^[\d\s\-\(\)\+]+$/;
+  if (!phoneRegex.test(phone)) {
+    return get('VENUE_ERROR_PHONE_FORMAT');
+  }
+  const numbersOnly = phone.replace(/\D/g, '');
+  if (numbersOnly.length < 8 || numbersOnly.length > 15) {
+    return get('VENUE_ERROR_PHONE_LENGTH');
+  }
+  return '';
+};
 
   const validateOpenTime = (time) => {
-    if (!time.trim()) {
-      return 'Opening time is required';
-    }
-    // 시간 형식 검증 (HH:MM)
-    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    if (!timeRegex.test(time)) {
-      return 'Invalid time format (HH:MM)';
-    }
-    return '';
-  };
+  if (!time.trim()) {
+    return get('VENUE_ERROR_OPEN_TIME_REQUIRED');
+  }
+  const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  if (!timeRegex.test(time)) {
+    return get('VENUE_ERROR_TIME_FORMAT');
+  }
+  return '';
+};
 
   const validateCloseTime = (time) => {
-    if (!time.trim()) {
-      return 'Closing time is required';
-    }
-    // 시간 형식 검증 (HH:MM)
-    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    if (!timeRegex.test(time)) {
-      return 'Invalid time format (HH:MM)';
-    }
-    
-    // 시작 시간과 종료 시간 비교 (둘 다 입력되었을 때만)
+  if (!time.trim()) {
+    return get('VENUE_ERROR_CLOSE_TIME_REQUIRED');
+  }
+  const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  if (!timeRegex.test(time)) {
+    return get('VENUE_ERROR_TIME_FORMAT');
+  }
+  // if (form.open_time && time) {
+  //   // ... 시간 비교 로직 ...
+  //   if (closeTotalMinutes <= openTotalMinutes) {
+  //     return get('VENUE_ERROR_CLOSE_TIME_AFTER_OPEN');
+  //   }
+  // }
+  
     if (form.open_time && time) {
       const openHour = parseInt(form.open_time.split(':')[0]);
       const openMinute = parseInt(form.open_time.split(':')[1]);
@@ -161,12 +164,11 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       const closeTotalMinutes = closeHour * 60 + closeMinute;
       
       if (closeTotalMinutes <= openTotalMinutes) {
-        return 'Closing time must be after opening time';
+        return get('VENUE_ERROR_CLOSE_TIME_AFTER_OPEN');
       }
     }
-    
-    return '';
-  };
+  return '';
+};
 
   // 시간을 HH:MM:SS 형식으로 변환하는 함수
   const formatTimeToSeconds = (timeString) => {
@@ -185,17 +187,17 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   };
 
   const validateIntro = (intro) => {
-    if (!intro.trim()) {
-      return 'Introduction is required';
-    }
-    if (intro.trim().length < 10) {
-      return 'Introduction must be at least 10 characters';
-    }
-    if (intro.trim().length > 500) {
-      return 'Introduction must be less than 500 characters';
-    }
-    return '';
-  };
+  if (!intro.trim()) {
+    return get('VENUE_ERROR_INTRO_REQUIRED');
+  }
+  if (intro.trim().length < 10) {
+    return get('VENUE_ERROR_INTRO_MIN_LENGTH');
+  }
+  if (intro.trim().length > 500) {
+    return get('VENUE_ERROR_INTRO_MAX_LENGTH');
+  }
+  return '';
+};
 
   // 전체 폼 검증
   const validateForm = () => {
@@ -271,7 +273,13 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     
     // 성공 응답 체크 (API 응답 구조에 따라 조정)
     if (response && (response.success || response.data || response.venue_id)) {
-      alert('Venue setup completed successfully!');
+      // SweetAlert로 성공 메시지 표시
+      await Swal.fire({
+        title: get('SWAL_SUCCESS_TITLE'),
+        text: get('SETTINGS_SAVE_SUCCESS'),
+        icon: 'success',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+      });
       // /manager 페이지로 이동
       navigate('/manager');
     } else {
@@ -299,9 +307,17 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     
     console.log('API response:', response);
 
-
-
-
+    // 수정 성공 시 SweetAlert 표시
+    if (response && (response.success || response.data)) {
+      await Swal.fire({
+        title: get('SWAL_SUCCESS_TITLE'),
+        text: get('SETTINGS_SAVE_SUCCESS'),
+        icon: 'success',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+      });
+    } else {
+      throw new Error('Invalid response from server');
+    }
   };
 
   const handleSave = async () => {
@@ -326,26 +342,33 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       }
     } catch (error) {
       console.error('Venue setup failed:', error);
-      let errorMessage = 'Failed to save venue information. Please try again.';
+      let errorMessage = get('VENUE_ERROR_SAVE_FAILED');
       if (error.response) {
         const status = error.response.status;
         const errorData = error.response.data;
         if (status === 400) {
-          errorMessage = errorData.message || 'Invalid venue information provided.';
+          errorMessage = errorData.message || get('VENUE_ERROR_INVALID_INFO');
         } else if (status === 401) {
-          errorMessage = 'Please login again.';
+          errorMessage = get('VENUE_ERROR_LOGIN_AGAIN');
         } else if (status === 403) {
-          errorMessage = 'You do not have permission to create a venue.';
+          errorMessage = get('VENUE_ERROR_NO_PERMISSION');
         } else if (status === 409) {
-          errorMessage = 'Venue with this information already exists.';
+          errorMessage = get('VENUE_ERROR_ALREADY_EXISTS');
         } else if (status >= 500) {
-          errorMessage = 'Server error. Please try again later.';
+          errorMessage = get('VENUE_ERROR_SERVER');
         }
         console.error('API error details:', errorData);
       } else if (error.request) {
-        errorMessage = 'Network error. Please check your connection.';
+        errorMessage = get('VENUE_ERROR_NETWORK');
       }
-      alert(errorMessage);
+      
+      // SweetAlert로 에러 메시지 표시
+      Swal.fire({
+        title: get('SWAL_ERROR_TITLE'),
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -493,7 +516,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         
         <div className="time-input-row">
           <div className="time-input-col">
-            <div className="time-label">시작 시간</div>
+            <div className="time-label">{get('VENUE_START_TIME')}</div>
             <SketchInput
               name="open_time"
               type="time"
@@ -505,7 +528,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
             />
           </div>
           <div className="time-input-col">
-            <div className="time-label">종료 시간</div>
+            <div className="time-label">{get('VENUE_END_TIME')}</div>
             <SketchInput
               name="close_time" style={{width: '99%'}}
               type="time"
@@ -540,7 +563,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
             disabled={isSubmitting}
           >
             <HatchPattern opacity={0.8} />
-            {isSubmitting ? 'Saving...' : get('VENUE_SAVE_ACTIVATE')}
+            {isSubmitting ? get('VENUE_SAVING') : get('VENUE_SAVE_ACTIVATE')}
           </SketchBtn>
         </div>
         
