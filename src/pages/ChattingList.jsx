@@ -5,6 +5,7 @@ import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
 import { useAuth } from '@contexts/AuthContext';
 import axios from 'axios';
+import { Calendar, Users, ClipboardList, Tag, Star, Headphones, Bell, Settings, MessagesSquare } from 'lucide-react';
 
 const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
   const [staffs, setStaffs] = useState([]);
@@ -157,7 +158,16 @@ const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
       `}</style>
 
       <div className="staff-container">
-        <SketchHeader title="Chatting List" showBack={true} onBack={goBack} />
+        <SketchHeader 
+          title={
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <MessagesSquare size={16} />
+              <span>Chatting List</span>
+            </div>
+          }
+          showBack={true} 
+          onBack={goBack} 
+        />
         <div className="staff-list">
           {staffs.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>

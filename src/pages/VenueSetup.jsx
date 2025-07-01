@@ -419,7 +419,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           font-size: 0.875rem;
           color: #888;
           text-align: center;
-          margin-top: 1.2rem;
+          margin-top: 1rem;
           line-height: 1.4;
         }
         .required-field {
@@ -507,13 +507,13 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           <div className="time-input-col">
             <div className="time-label">종료 시간</div>
             <SketchInput
-              name="close_time"
+              name="close_time" style={{width: '99%'}}
               type="time"
               value={form.close_time}
               onChange={handleChange}
               onBlur={handleBlur}
               placeholder="22:00"
-              error={errors.close_time}
+              error={errors.close_time} 
             />
           </div>
         </div>

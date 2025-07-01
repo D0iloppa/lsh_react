@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
+import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
-import { Calendar } from 'lucide-react';
+import { Calendar, MessageCircle } from 'lucide-react';
+import ApiClient from '@utils/ApiClient';
+import { useAuth } from '../contexts/AuthContext';
+import Swal from 'sweetalert2';
 
 const mockBookings = [
   {
@@ -13,7 +17,7 @@ const mockBookings = [
     date: '12th Nov, 2023',
     time: '8:00 PM',
     customer: 'Minh Tran',
-    actions: ['Details', 'Accept', 'CHAT MANAGER']
+    actions: ['CUSTOMER', 'Accept', 'MANAGER']
   },
   {
     id: 2,
@@ -22,7 +26,7 @@ const mockBookings = [
     date: '15th Oct, 2023',
     time: '10:00 PM',
     customer: 'An Nguyen',
-    actions: ['Details', 'Decline', 'CHAT MANAGER']
+    actions: ['CUSTOMER', 'Accept', 'MANAGER']
   },
   {
     id: 3,
@@ -31,11 +35,88 @@ const mockBookings = [
     date: '20th Sep, 2023',
     time: '9:00 PM',
     customer: 'Linh Vu',
-    actions: ['Details', 'Review', 'CHAT MANAGER']
+    actions: ['CUSTOMER', 'Accept', 'MANAGER']
   },
 ];
 
 const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
+  const { user, isLoggedIn } = useAuth();
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const venue_id = user.venue_id;
+
+  // 예약 목록 로드 함수
+  const loadBookings = async () => {
+    if (!venue_id) return;
+
+    try {
+      setLoading(true);
+      const response = await ApiClient.get('/api/getReservationList_mng', {
+        params: { venue_id: venue_id }
+      });
+
+      // API 응답 처리
+      let apiData = null;
+      
+      if (Array.isArray(response)) {
+        apiData = response;
+      } else if (response && response.data && Array.isArray(response.data)) {
+        apiData = response.data;
+      } else if (response && Array.isArray(response.data)) {
+        apiData = response.data;
+      }
+      
+      if (apiData && apiData.length > 0) {
+        console.log("API 데이터:", apiData);
+        setBookings(apiData);
+      } else {
+        console.log("데이터가 없습니다");
+        setBookings(mockBookings); // API 데이터가 없으면 목 데이터 사용
+      }
+
+    } catch (error) {
+      console.error('예약 리스트 로딩 실패:', error);
+      setBookings(mockBookings); // 에러 시 목 데이터 사용
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    if (venue_id) {
+      loadBookings();
+    } else {
+      setBookings(mockBookings); // venue_id가 없으면 목 데이터 사용
+    }
+  }, [venue_id]);
+  
+  // action에 따른 variant 결정 함수
+  const getButtonVariant = (action) => {
+    switch(action) {
+      case 'Accept':
+        return 'event';
+      case 'Decline':
+        return 'danger';
+      case 'Review':
+        return 'secondary';
+    }
+  };
+
+  const getStatusStyle = (status) => {
+    switch(status) {
+      case 'Confirmed':
+        return { color: '#059669'}; // 초록색
+      case 'Cancelled':
+        return { color: '#dc2626'}; // 빨간색
+      case 'Completed':
+        return { color: '#3b82f6'}; // 파란색
+      default:
+        return { color: '#6b7280'}; // 기본 회색
+    }
+  };
+
   return (
     <>
       <style jsx="true">{`
@@ -43,15 +124,14 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
           max-width: 28rem;
           margin: 0 auto;
           background: #fff;
-          min-height: 100vh;
+          min-height: 75vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
         .booking-card {
-          border: 1px solid #e5e7eb;
-          border-radius: 7px;
+          position: relative;
           background: #fff;
           padding: 0.8rem 0.9rem 1.1rem 0.9rem;
-          margin-bottom: 1.1rem;
+          margin-bottom: 0.5rem;
         }
         .booking-header {
           display: flex;
@@ -68,18 +148,31 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
           color: #222;
         }
         .booking-info {
+          margin-top: 0.5rem;
           font-size: 0.97rem;
           color: #222;
-          margin-bottom: 0.5rem;
+          margin-bottom: 1rem;
         }
         .booking-actions {
           display: flex;
-          gap: 0.7rem;
+          gap: 0.3rem;
         }
         .booking-action-btn {
           min-width: 54px;
           font-size: 0.95rem;
           padding: 0.18rem 0.5rem;
+        }
+        .booking-action-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        .booking-list {
+          padding: 0.5rem;
+        }
+        .loading-message {
+          text-align: center;
+          padding: 2rem;
+          color: #666;
         }
       `}</style>
       <div className="bookinglist-container">
@@ -88,27 +181,57 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
           showBack={true}
           onBack={goBack}
         />
-        {mockBookings.map(bk => (
-          <SketchDiv key={bk.id} className="booking-card">
-            <div className="booking-header">
-              <div className="booking-venue">{bk.venue}</div>
-              <div className="booking-status">{bk.status}</div>
-            </div>
-            <div className="booking-info">
-              Date: {bk.date}<br/>
-              Time: {bk.time}<br/>
-              Customer: {bk.customer}
-            </div>
-            <div className="booking-actions">
-              {bk.actions.map(action => (
-                <SketchBtn key={action} variant="event" size="small" className="booking-action-btn">{action}</SketchBtn>
-              ))}
-            </div>
-          </SketchDiv>
-        ))}
+
+        <div className='booking-list'> 
+          {loading ? (
+            <div className="loading-message">Loading...</div>
+          ) : (
+            bookings.map(bk => (
+              <SketchDiv key={bk.id || bk.reservation_id} className="booking-card">
+                <HatchPattern opacity={0.6} />
+                <div className="booking-header">
+                  <div className="booking-venue">{bk.venue || bk.target_name}</div>
+                  <div className="booking-status" style={getStatusStyle(bk.status)}>{bk.status}</div>
+                </div>
+                <div className="booking-info">
+                  Date: {bk.date || new Date(bk.res_date).toLocaleDateString()}<br/>
+                  Time: {bk.time || bk.res_start_time}<br/>
+                  Customer: {bk.customer || bk.user_name}
+                </div>
+                <div className="booking-actions">
+                  {(bk.actions || ['CUSTOMER', 'Accept', 'MANAGER']).map(action => {
+                    // Accept 버튼 활성화 조건: user.staff_id와 target_id가 같을 때만
+                    const isAcceptDisabled = action === 'Accept' && 
+                      (!user.staff_id || !bk.target_id || user.staff_id !== bk.target_id);
+                    
+                    return (
+                      <SketchBtn 
+                        key={action} 
+                        variant={getButtonVariant(action)} 
+                        size="small" 
+                        className="booking-action-btn"
+                        disabled={isAcceptDisabled}
+                        style={isAcceptDisabled ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                      >
+                        {action === 'MANAGER' || action === 'CUSTOMER' ? (
+                          <>
+                            <MessageCircle size={14} style={{ marginRight: '4px' }} />
+                            {action}
+                          </>
+                        ) : (
+                          action
+                        )}
+                      </SketchBtn>
+                    );
+                  })}
+                </div>
+              </SketchDiv>
+            ))
+          )}
+        </div>
       </div>
     </>
   );
 };
 
-export default StaffBookingList; 
+export default StaffBookingList;

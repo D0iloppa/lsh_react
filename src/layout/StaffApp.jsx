@@ -1,7 +1,7 @@
 // src/layout/StaffApp.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, Search, MessageCircle, User, Map, ChevronUp } from 'lucide-react';
+import { Home, Search, Calendar, MessageCircle, User, Map, ChevronUp } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
@@ -20,7 +20,7 @@ const StaffApp = () => {
     const { user, isLoggedIn } = useAuth();
     const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
     
-    console.log('Welcome manager!', user);
+    console.log('Welcome Staff!', user);
 
 
     useEffect(() => {
@@ -73,8 +73,9 @@ const StaffApp = () => {
     // 네비게이션 메뉴들
     const navigationItems = [
         { id: PAGES.STAFF_HOME, icon: Home, label: get('Footer1.3') || '대시보드' },
-        { id: PAGES.RESERVATION_MANAGEMENT, icon: MessageCircle, label: get('Staff.menu.2') || '예약관리' },
-        { id: PAGES.MANAGER_ACCOUNT, icon: User, label: get('Staff.menu.3') || '계정' }
+        { id: PAGES.STAFF_WORK_SCHEDULE, icon: Calendar, label: get('Staff.menu.1') || '예약관리' },
+        { id: PAGES.CHATTINGLIST, icon: MessageCircle, label: get('Staff.menu.2') || '예약관리' },
+        { id: PAGES.STAFF_SETTING, icon: User, label: get('Mng.menu.3') || '계정' }
     ];
 
     return (

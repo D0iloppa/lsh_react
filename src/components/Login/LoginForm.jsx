@@ -29,7 +29,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   
-  const [loginType, setLoginType] = useState('manager');
+  const [accountType, setAccountType] = useState('manager');
   // setStatus가 props로 전달된다고 가정 (없으면 주석처리)
   // const { setStatus } = props;
 
@@ -42,20 +42,23 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
     setErrors({});
     setMessage('');
 
+
+    let login_type = (accountType === 'manager') ? 'email' : 'id';
+    
     const result = await login({
       login_id: email,
       passwd: password,
-      account_type: loginType,
-      login_type: 'email'
+      account_type: accountType,
+      login_type: login_type
     });
     
     if (result.success) {
       setMessage(result.message);
-      // AuthContext에 loginType 저장
-      setAuthLoginType(loginType);
+      // AuthContext에 accountType 저장
+      setAuthLoginType(accountType);
     
     setTimeout(() => {
-      if (loginType === 'manager') {
+      if (accountType === 'manager') {
       
         const venueId = user?.venue_id;
       
@@ -66,7 +69,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
           // venue_id가 있으면 메인으로 이동
           navigate('/manager');
         }
-      } else if (loginType === 'staff') {
+      } else if (accountType === 'staff') {
         navigate('/staff');
       } else {
         navigate('/manager'); // 기본값
@@ -103,18 +106,18 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
       <h2 style={{display: 'none'}} className="sketch-title">{ get('Login1.1') } </h2>
 
 
-    {/* Login Type Radio Buttons */}
+    {/* Account Type Radio Buttons */}
     <div style={{ margin: '1rem 0', textAlign: 'center' }}>
             <label>
               <input
                 type="radio"
-                name="loginType"
+                name="accountType"
                 value="manager"
-                checked={loginType === 'manager'}
+                checked={accountType === 'manager'}
                 onChange={() => {
-                  setLoginType('manager');
+                  setAccountType('manager');
                   setAuthLoginType('manager'); // AuthContext에도 즉시 저장
-                  if (typeof setStatus === 'function') setStatus({ loginType: 'manager' });
+                  if (typeof setStatus === 'function') setStatus({ accountType: 'manager' });
                 }}
               />
               MANAGER
@@ -122,13 +125,13 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
             <label style={{ marginLeft: '1rem' }}>
               <input
                 type="radio"
-                name="loginType"
+                name="accountType"
                 value="staff"
-                checked={loginType === 'staff'}
+                checked={accountType === 'staff'}
                 onChange={() => {
-                  setLoginType('staff');
+                  setAccountType('staff');
                   setAuthLoginType('staff'); // AuthContext에도 즉시 저장
-                  if (typeof setStatus === 'function') setStatus({ loginType: 'staff' });
+                  if (typeof setStatus === 'function') setStatus({ accountType: 'staff' });
                 }}
               />
               STAFF

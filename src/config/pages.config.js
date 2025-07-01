@@ -97,6 +97,7 @@ export const PAGES = {
     ANALYTICS: 'ANALYTICS',
     CREATE_STAFF: 'CREATE_STAFF',
     STAFF_SCHEDULE: 'STAFF_SCHEDULE',
+    STAFF_SCHEDULE_CREATE: 'STAFF_SCHEDULE_CREATE',
     PROMOTION_MANAGEMENT: 'PROMOTION_MANAGEMENT',
     CREATE_PROMOTION: 'CREATE_PROMOTION',
     REVIEW_MANAGEMENT: 'REVIEW_MANAGEMENT',
@@ -104,15 +105,17 @@ export const PAGES = {
     NOTIFICATION_CENTER: 'NOTIFICATION_CENTER',
     SETTINGS: 'SETTINGS',
     VENUE_SETUP: 'VENUE_SETUP',
+    MANAGER_SETTINGS: 'MANAGER_SETTINGS',
     STAFF_HOME: 'STAFF_HOME',
     EDIT_PROFILE: 'EDIT_PROFILE',
     STAFF_BOOKING_LIST: 'STAFF_BOOKING_LIST',
     STAFF_WORK_SCHEDULE: 'STAFF_WORK_SCHEDULE',
     CHATTING: 'CHATTING',
     CHATTINGLIST: 'CHATTINGLIST',
-    StaffWorkScheduleCreate,
-    StaffReviewHistory,
-    StaffSetting,
+    StaffWorkScheduleCreate:'StaffWorkScheduleCreate',
+    StaffReviewHistory:'StaffReviewHistory',
+    STAFF_SETTING: 'STAFF_SETTING',
+    STAFF_EDIT_PROFILE: 'STAFF_EDIT_PROFILE'
 };
 
 // 페이지 컴포넌트 매핑
@@ -145,17 +148,20 @@ export const PAGE_COMPONENTS = {
     [PAGES.ANALYTICS]: ManagerDashboard, // 임시로 대시보드 사용
     [PAGES.CREATE_STAFF]: CreateStaff,
     [PAGES.STAFF_SCHEDULE]: StaffSchedule,
+    [PAGES.STAFF_SCHEDULE_CREATE]: StaffWorkScheduleCreate,
     [PAGES.PROMOTION_MANAGEMENT]: PromotionManagement,
     [PAGES.CREATE_PROMOTION]: CreatePromotion,
     [PAGES.REVIEW_MANAGEMENT]: ReviewManagement,
     [PAGES.CUSTOMER_SUPPORT]: CustomerSupport,
     [PAGES.NOTIFICATION_CENTER]: NotificationCenter,
-    [PAGES.ManagerSettings]: ManagerSettings,
+    [PAGES.MANAGER_SETTINGS]: ManagerSettings,
     [PAGES.VENUE_SETUP]: VenueSetup,
     [PAGES.STAFF_HOME]: StaffHome,
-    [PAGES.EDIT_PROFILE]: EditProfile,
+    [PAGES.STAFF_EDIT_PROFILE]: EditProfile,
     [PAGES.STAFF_BOOKING_LIST]: StaffBookingList,
     [PAGES.STAFF_WORK_SCHEDULE]: StaffWorkSchedule,
+    [PAGES.STAFF_REVIEWS]: StaffReviewHistory,
+    [PAGES.STAFF_SETTING]: StaffSetting,
     [PAGES.CHATTING]: Chatting,
     [PAGES.CHATTINGLIST]: ChattingList
 };

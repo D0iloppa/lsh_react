@@ -31,7 +31,7 @@ const VenueTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES}) => {
   };
 
   const handleRemindLater = () => {
-    navigate('/login');
+    navigate('/');
   };
 
   return (

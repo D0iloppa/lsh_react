@@ -7,7 +7,7 @@ import ToggleRadio from '@components/ToggleRadio';
 import '@components/SketchComponents.css';
 import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
-import { Star } from 'lucide-react';
+import { Star, Users } from 'lucide-react';
 
 import Swal from 'sweetalert2';
 
@@ -298,7 +298,12 @@ const StaffManagement = ({  navigateToPage, navigateToPageWithData, PAGES, goBac
       `}</style>
       <div className="staff-container">
         <SketchHeader
-          title="Staff Management"
+           title={
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Users size={18} />
+              Staff Management
+            </span>
+          }
           showBack={true}
           onBack={goBack}
         />

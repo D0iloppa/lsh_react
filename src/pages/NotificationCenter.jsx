@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 import HatchPattern from '@components/HatchPattern';
-import { Bell, CalendarCheck, MessageCircle, Popsicle } from 'lucide-react';
+import ApiClient from '@utils/ApiClient';
+import { useAuth } from '../contexts/AuthContext';
+import { Bell, CalendarCheck, MessageCircle, Popsicle, Martini } from 'lucide-react';
 
 const mockNotifications = [
   {
@@ -45,7 +47,93 @@ const getIconClass = (title) => {
   }
 };
 
+// 알림 타입에 따른 아이콘 반환
+const getNotificationIcon = (type) => {
+  switch(type) {
+    case 'system':
+    case 'alert':
+      return <Bell size={22} />;
+    case 'booking':
+    case 'reservation':
+      return <CalendarCheck size={22} />;
+    case 'message':
+    case 'chat':
+      return <MessageCircle size={22} />;
+    default:
+      return <Bell size={22} />;
+  }
+};
+
+// 시간 포맷팅 함수
+const formatTime = (timestamp) => {
+  try {
+    const now = new Date();
+    const notificationTime = new Date(timestamp);
+    const diffInMs = now - notificationTime;
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInMinutes < 1) {
+      return 'Just now';
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes} mins ago`;
+    } else if (diffInHours < 24) {
+      return `${diffInHours} hours ago`;
+    } else {
+      return `${diffInDays} days ago`;
+    }
+  } catch (error) {
+    return 'Recently';
+  }
+};
+
 const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
+  const { user, accountType, login } = useAuth();
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const user_id = user?.manager_id || 1;
+
+  // 알림 목록 로드
+  useEffect(() => {
+    const loadNotifications = async () => {
+      if (!user_id) return;
+
+      try {
+        setLoading(true);
+        const response = await ApiClient.get('/api/getNotificationList', {
+          params: { user_id: user_id }
+        });
+
+        // API 응답 처리 (배열 직접 반환 또는 data 프로퍼티)
+        let apiData = null;
+        
+        if (Array.isArray(response)) {
+          apiData = response;
+        } else if (response && response.data && Array.isArray(response.data)) {
+          apiData = response.data;
+        }
+        
+        if (apiData && apiData.length >= 0) {
+          setNotifications(apiData);
+        } else {
+          console.log('No notification data found');
+          setNotifications([]);
+        }
+
+      } catch (error) {
+        console.error('Failed to load notifications:', error);
+        // 에러 시 빈 배열로 설정
+        setNotifications([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadNotifications();
+  }, [user_id]);
+
   return (
     <>
       <style jsx="true">{`
@@ -128,34 +216,77 @@ const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, .
           color: #10b981;
           border-color: rgba(16, 185, 129, 0.3);
         }
+
+        .icon-default {
+          background-color: #f3f4f6;
+          color: #6b7280;
+          border-color: rgba(107, 114, 128, 0.3);
+        }
+
+        .loading-message {
+          text-align: center;
+          padding: 2rem;
+          color: #666;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
+
+        .no-notifications {
+          text-align: center;
+          padding: 2rem;
+          color: #888;
+          font-size: 0.95rem;
+        }
       `}</style>
       <div className="noti-container">
         <SketchHeader
-          title="Notification Center"
+          //title="알림 센터"
+           title={
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Bell size={18} />
+             알림 센터
+            </span>
+          }
           showBack={true}
           onBack={goBack}
         />
-        <div className="noti-list">
-          {mockNotifications.map(noti => (
-            <SketchDiv key={noti.id} className="noti-card">
-              <HatchPattern opacity={0.4} />
-              <div className="noti-icon">
-                <div className={`notification-icon ${getIconClass(noti.title)}`}>
-                  {noti.icon}
-                </div>
+        
+        {loading ? (
+          <div className="loading-message">
+            <Martini size={15} />
+            <span>Loading notifications...</span>
+          </div>
+        ) : (
+          <div className="noti-list">
+            {notifications.length === 0 ? (
+              <div className="no-notifications">
+                알림이 존재하지 않습니다.
               </div>
-              <div className="noti-info">
-                <div className="noti-title">{noti.title}</div>
-                <div className="noti-content">{noti.content}</div>
-                <div className="noti-time">{noti.time}</div>
-              </div>
-              <SketchBtn variant="primary" size="small" className="noti-mark-btn" style={{width: '30%'}}>
-                Mark
-                <HatchPattern opacity={0.6} />
-              </SketchBtn>
-            </SketchDiv>
-          ))}
-        </div>
+            ) : (
+              notifications.map(noti => (
+                <SketchDiv key={noti.notification_id || noti.id} className="noti-card">
+                  <HatchPattern opacity={0.4} />
+                  <div className="noti-icon">
+                    <div className={`notification-icon ${getIconClass(noti.title || noti.type)}`}>
+                      {getNotificationIcon(noti.type || noti.notification_type)}
+                    </div>
+                  </div>
+                  <div className="noti-info">
+                    <div className="noti-title">{noti.title || noti.notification_title || 'Notification'}</div>
+                    <div className="noti-content">{noti.content || noti.message || noti.notification_content}</div>
+                    <div className="noti-time">{formatTime(noti.created_at)}</div>
+                  </div>
+                  <SketchBtn variant="primary" size="small" className="noti-mark-btn" style={{width: '30%'}}>
+                    Mark
+                    <HatchPattern opacity={0.6} />
+                  </SketchBtn>
+                </SketchDiv>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </>
   );

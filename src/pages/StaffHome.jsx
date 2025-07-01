@@ -1,10 +1,143 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
+import HatchPattern from '@components/HatchPattern';
+import { useAuth } from '@contexts/AuthContext';
+import { Calendar, Clock, Bell, MapPin, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import ApiClient from '@utils/ApiClient';
 
 const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
+
+  const { user, isLoggedIn } = useAuth();
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+  const [staffInfo, setStaffInfo] = useState({});
+  const [dashboardInfo, setDashboardInfo] = useState({
+    recentReviews: 0,
+    todaysReservations: 0,
+    activePromotions: 0,
+    urgentMessages: [],
+    todaysBookings: [],
+    upcomingShifts: [],
+    unreadNotifications: [],
+    hourlyReservations: [] // 시간별 예약 데이터 추가
+  });
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    if (messages && Object.keys(messages).length > 0) {
+      window.scrollTo(0, 0);
+    }
+
+    if (user) {
+      setStaffInfo(user);
+      fetchStaffDashboardData();
+    }
+  }, [messages, currentLang, user]);
+
+  const fetchStaffDashboardData = async () => {
+    try {
+      setIsLoadingData(true);
+      
+      // venue_id와 staff_id가 있는지 확인
+      if (!user?.venue_id || !user?.staff_id) {
+        console.error('venue_id 또는 staff_id가 없습니다:', user);
+        return;
+      }
+
+      // 스태프 대시보드 데이터 가져오기
+      const response = await ApiClient.get('/api/getStaffDashboardInfo', {
+        params: {
+          venue_id: user.venue_id,
+          target_id: user.staff_id
+        }
+      });
+
+      console.log('대시보드 API 응답:', response);
+
+      // API 응답 처리
+      let apiData = null;
+      
+      if (Array.isArray(response)) {
+        apiData = response;
+      } else if (response && response.data && Array.isArray(response.data)) {
+        apiData = response.data;
+      } else if (response && Array.isArray(response.data)) {
+        apiData = response.data;
+      }
+
+      if (apiData && apiData.length > 0) {
+        // 시간별 예약 데이터 처리
+        const hourlyData = apiData.map(item => ({
+          hour: item.hour,
+          reservationCount: item.reservation_count || 0
+        }));
+
+        // 총 예약 수 계산
+        const totalReservations = hourlyData.reduce((sum, item) => sum + item.reservationCount, 0);
+
+        setDashboardInfo(prev => ({
+          ...prev,
+          todaysReservations: totalReservations,
+          hourlyReservations: hourlyData,
+          // 시간별 데이터를 todaysBookings 형태로 변환
+          todaysBookings: hourlyData
+            .filter(item => item.reservationCount > 0)
+            .map(item => ({
+              time: `${item.hour}:00`,
+              location: 'Staff Service',
+              guestCount: item.reservationCount
+            }))
+        }));
+      } else {
+        console.log("대시보드 데이터가 없습니다");
+        setDashboardInfo(prev => ({
+          ...prev,
+          todaysReservations: 0,
+          hourlyReservations: [],
+          todaysBookings: []
+        }));
+      }
+
+    } catch (error) {
+      console.error('스태프 대시보드 데이터 로딩 실패:', error);
+      setDashboardInfo(prev => ({
+        ...prev,
+        todaysReservations: 0,
+        hourlyReservations: [],
+        todaysBookings: []
+      }));
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
+  const handleEditProfile = () => {
+    navigateToPageWithData(PAGES.STAFF_EDIT_PROFILE, { staffId: user?.id });
+  };
+
+  const handleBookingList = () => {
+    navigateToPageWithData(PAGES.STAFF_BOOKING_LIST, { staffId: user?.id });
+  };
+
+  const handleNewReviews = () => {
+    navigateToPageWithData(PAGES.STAFF_REVIEWS, { staffId: user?.id });
+  };
+
+  if (isLoadingData) {
+    return (
+      <div className="staffhome-container">
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <div>Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <style jsx="true">{`
@@ -12,13 +145,18 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
           max-width: 28rem;
           margin: 0 auto;
           background: #fff;
-          min-height: 100vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+          padding-bottom: 80px; /* 고정 버튼 공간 확보 */
         }
         .welcome-box {
+          position: relative;
           background: #fff;
-          border: 1px solid #e5e7eb;
-          border-radius: 7px;
+          box-sizing: border-box;
+          border: 0.8px solid #666;
+          border-top-left-radius: 15px 8px;
+          border-top-right-radius: 8px 12px;
+          border-bottom-right-radius: 12px 6px;
+          border-bottom-left-radius: 6px 14px;
           padding: 1.1rem 0.9rem 0.7rem 0.9rem;
           margin-bottom: 1.1rem;
           text-align: center;
@@ -33,11 +171,11 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
           color: #222;
         }
         .section-card {
-          border: 1px solid #e5e7eb;
-          border-radius: 7px;
-          background: #fff;
+          position: relative;
+          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #e8f9ff 100%);
           padding: 0.8rem 0.9rem 1.1rem 0.9rem;
-          margin-bottom: 1.1rem;
+          margin-bottom: 0.3rem;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         .section-title {
           font-size: 1.08rem;
@@ -49,56 +187,139 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
           color: #222;
         }
         .action-row {
+          position: fixed;
+          bottom: 94px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 95%;
+          max-width: 28rem;
           display: flex;
-          gap: 0.7rem;
-          margin: 1.2rem 0 1.1rem 0;
+          gap: 0.3rem;
+          margin: 0;
+          padding: 0.8rem;
+          z-index: 1000;
         }
         .action-btn {
           flex: 1;
           font-size: 1.05rem;
           min-width: 0;
+          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
+          border: 1px solid #d1d5db;
+        }
+        .empty-state {
+          color: #6b7280;
+          font-style: italic;
+        }
+        .hourly-reservation {
+          margin-bottom: 0.3rem;
+          padding: 0.3rem 0;
+          border-bottom: 1px solid #f0f0f0;
+        }
+        .hourly-reservation:last-child {
+          border-bottom: none;
         }
       `}</style>
-      <div className="staffhome-container">
+      <div className="staffhome-container"> 
         <div className="welcome-box">
-          <div className="welcome-title">Welcome, [Staff Name]!</div>
+          <HatchPattern opacity={0.6} />
+          <div className="welcome-title">Welcome, [{staffInfo.name}]!</div>
           <div className="welcome-desc">See today's bookings, upcoming shifts, and unread notifications at a glance.</div>
         </div>
+        
+        {dashboardInfo.urgentMessages.length > 0 && (
+          <SketchDiv className="section-card">
+            <div className="section-title">Alert: Urgent Message</div>
+            <div className="section-content">
+              {dashboardInfo.urgentMessages.map((message, index) => (
+                <div key={index}>{message.content}</div>
+              ))}
+            </div>
+          </SketchDiv>
+        )}
+
         <SketchDiv className="section-card">
-          <div className="section-title">Alert: Urgent Message</div>
-          <div className="section-content">There is an urgent update regarding the event at XYZ Club.<br/>Please check your notifications for details.</div>
-        </SketchDiv>
-        <SketchDiv className="section-card">
-          <div className="section-title">Today's Bookings</div>
+          <HatchPattern opacity={0.6} />
+          <div className="section-title">
+            <Clock size={14} style={{marginRight: '5px'}}/>
+            Today's Reservations ({dashboardInfo.todaysReservations})
+          </div>
           <div className="section-content">
-            7:00 PM - Lounge Bar - 5 guests<br/>
-            9:00 PM - Sky Deck - 8 guests<br/>
-            10:30 PM - Club Inferno - 12 guests
+            {dashboardInfo.hourlyReservations.length > 0 ? (
+              dashboardInfo.hourlyReservations
+                .filter(item => item.reservationCount > 0)
+                .map((item, index) => (
+                  <div key={index} className="hourly-reservation">
+                    {item.hour}:00 - {item.reservationCount} reservation{item.reservationCount > 1 ? 's' : ''}
+                  </div>
+                ))
+            ) : (
+              <div className="empty-state">No reservations scheduled for today</div>
+            )}
           </div>
         </SketchDiv>
+
         <SketchDiv className="section-card">
-          <div className="section-title">Upcoming Shifts</div>
+          <HatchPattern opacity={0.6} />
+          <div className="section-title"><Calendar size={14} opacity={0.6}/> Upcoming Shifts ({dashboardInfo.upcomingShifts.length})</div>
           <div className="section-content">
-            Tomorrow - 6:00 PM to 2:00 AM<br/>
-            Friday - 7:00 PM to 3:00 AM
+            {dashboardInfo.upcomingShifts.length > 0 ? (
+              dashboardInfo.upcomingShifts.map((shift, index) => (
+                <div key={index}>
+                  {shift.date} - {shift.startTime} to {shift.endTime}
+                </div>
+              ))
+            ) : (
+              <div className="empty-state">No upcoming shifts scheduled</div>
+            )}
           </div>
         </SketchDiv>
+
         <SketchDiv className="section-card">
-          <div className="section-title">Unread Notifications</div>
+          <HatchPattern opacity={0.6} />
+          <div className="section-title"><Bell size={14} opacity={0.6}/> Unread Notifications ({dashboardInfo.unreadNotifications.length})</div>
           <div className="section-content">
-            New review on your performance<br/>
-            Schedule update for next week<br/>
-            Reminder: Update your profile
+            {dashboardInfo.unreadNotifications.length > 0 ? (
+              dashboardInfo.unreadNotifications.map((notification, index) => (
+                <div key={index}>{notification.content}</div>
+              ))
+            ) : (
+              <div className="empty-state">No unread notifications</div>
+            )}
           </div>
         </SketchDiv>
+
         <div className="action-row">
-          <SketchBtn variant="event" size="medium" className="action-btn">Edit Profile</SketchBtn>
-          <SketchBtn variant="event" size="medium" className="action-btn">Booking List</SketchBtn>
-          <SketchBtn variant="event" size="medium" className="action-btn">New Reviews</SketchBtn>
+          <SketchBtn 
+            size="medium" 
+            variant="secondary" 
+            className="action-btn"
+            onClick={handleEditProfile}
+          >
+            <HatchPattern opacity={0.6} />
+            {get('Staff.home.btn1')}
+          </SketchBtn>
+          <SketchBtn 
+            size="medium" 
+            variant="secondary" 
+            className="action-btn"
+            onClick={handleBookingList}
+          >
+            <HatchPattern opacity={0.6} />
+            {get('Staff.home.btn2')}
+          </SketchBtn>
+          <SketchBtn 
+            size="medium" 
+            variant="secondary" 
+            className="action-btn"
+            onClick={handleNewReviews}
+          >
+            <HatchPattern opacity={0.6} />
+            {get('Staff.home.btn3')}
+          </SketchBtn>
         </div>
       </div>
     </>
   );
 };
 
-export default StaffHome; 
+export default StaffHome;

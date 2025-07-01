@@ -9,7 +9,7 @@ import '@components/SketchComponents.css';
 
 import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
-import { Filter, Star, Edit, Trash2, Eye } from 'lucide-react';
+import { Filter, Star, Edit, Tag } from 'lucide-react';
 
 import Swal from 'sweetalert2';
 import { toast, ToastContainer } from 'react-toastify';
@@ -383,7 +383,12 @@ const PromotionManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, 
       `}</style>
       <div className="promotion-container">
         <SketchHeader
-          title="프로모션 관리"
+           title={
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Tag size={18} />
+                프로모션 관리
+            </span>
+          }
           showBack={true}
           onBack={goBack}
         />

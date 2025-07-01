@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 
-
-
 import { Calendar, Users, ClipboardList, Tag, Star, Headphones, Bell, Settings, MessagesSquare } from 'lucide-react';
 
 import SketchHeader from '@components/SketchHeader';
@@ -13,10 +11,21 @@ import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import { useAuth } from '@contexts/AuthContext';
+
+import ApiClient from '@utils/ApiClient';
 
 export default function ManagerDashboard({ navigateToPage, navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) {
   
+
+  const { user, verifyPassword, logout } = useAuth();
+  
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  const [dashboardInfo, setDashboardInfo] = useState({
+    recentReviews: 0,
+    todaysReservations: 0,
+    activePromotions: 0
+  });
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -28,8 +37,21 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
         window.scrollTo(0, 0);
       }
 
+    // 대시보드 정보 불러오기
+    const fetchDashboardInfo = async () => {
+      try {
+        // venue_id는 pageData 또는 otherProps에서 받아온다고 가정
+        const venue_id = user?.venue_id
+        if (!venue_id) return;
+        const res = await ApiClient.postForm('/api/getManagerDashboardInfo', { venue_id });
+        setDashboardInfo(res);
+      } catch (e) {
+        console.error('Dashboard info fetch error:', e);
+      }
+    };
+    fetchDashboardInfo();
 
-  }, [ messages, currentLang]);
+  }, [ messages, currentLang ]);
   
   
   
@@ -43,7 +65,7 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
         <span>Today's Reservations</span>
       </div>
     ),
-      content: 'You have 12 reservations today.'
+      content: `You have ${dashboardInfo.todaysReservations} reservations today.`
     },
     {
       //title: 'Active Promotions',
@@ -53,7 +75,7 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
         <span>Active Promotions</span>
       </div>
     ),
-      content: '3 ongoing promotions.'
+      content: `${dashboardInfo.activePromotions} ongoing promotions.`
     },
     {
       //title: 'Recent Reviews',
@@ -63,7 +85,7 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
         <span>Recent Reviews</span>
       </div>
     ),
-      content: '5 new reviews.'
+      content: `${dashboardInfo.recentReviews} new reviews.`
     }
   ];
 
@@ -104,13 +126,21 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       page: PAGES.REVIEW_MANAGEMENT,
       menuEvent: () => { navigateToPage(PAGES.REVIEW_MANAGEMENT); }
     },
-    { 
+     { 
       id: 6, 
-      icon: <Headphones size={24} />, 
-      name: 'Support', 
-      page: PAGES.CUSTOMER_SUPPORT,
-      menuEvent: () => { navigateToPage(PAGES.CUSTOMER_SUPPORT); }
+      icon: <MessagesSquare size={24} />, 
+      name: 'Chatting', 
+      page: PAGES.CHATTING,
+      menuEvent: () => { navigateToPage(PAGES.CHATTINGLIST); } 
     },
+    // { 
+    //   id: 6, 
+    //   icon: <Headphones size={24} />, 
+    //   name: 'Support', 
+    //   page: PAGES.CUSTOMER_SUPPORT,
+    //   menuEvent: () => { navigateToPage(PAGES.CUSTOMER_SUPPORT); }
+    // },
+
     { 
       id: 7, 
       icon: <Bell size={24} />, 
@@ -122,47 +152,71 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       id: 8, 
       icon: <Settings size={24} />, 
       name: 'Settings', 
-      page: PAGES.SETTINGS,
-      menuEvent: () => { navigateToPage(PAGES.ManagerSettings); }
+      page: PAGES.MANAGER_SETTINGS,
+      menuEvent: () => { navigateToPage(PAGES.MANAGER_SETTINGS); }
     }
-    ,
-    { 
-      id: 9, 
-      icon: <MessagesSquare size={24} />, 
-      name: 'Chatting', 
-      page: PAGES.CHATTING,
-      menuEvent: () => { navigateToPage(PAGES.CHATTINGLIST); }
-    }
+    
+    // { 
+    //   id: 9, 
+    //   icon: <MessagesSquare size={24} />, 
+    //   name: 'Chatting', 
+    //   page: PAGES.CHATTING,
+    //   menuEvent: () => { navigateToPage(PAGES.CHATTINGLIST); }
+    // }
   ];
 
   return (
     <>
     <style jsx="true">{` 
       .menu-item { 
-      position: relative;
-      padding: 0.75rem 1rem;
-      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
-      border: 1px solid #d1d5db;
-      border-radius: 12px 10px 8px 14px;
-      transform: rotate(0.4deg);
-      transition: all 0.2s ease;
-      cursor: pointer;
-      box-sizing: border-box;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(0, 0, 0, 0.05)
+        position: relative;
+        padding: 0.75rem 1rem;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
+        border: 1px solid #d1d5db;
+        border-radius: 12px 10px 8px 14px;
+        transform: rotate(0.4deg);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        box-sizing: border-box;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+        height: 60px; /* 고정 높이 설정 */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
       }
-      .item-content{
-      position: relative;
+      
+      .menu-item-wrapper {
+        flex: 1 1 45%;
+        minWidth: 140px;
+        height: 60px; /* wrapper도 같은 높이로 고정 */
+      }
+      
+      .item-content {
+        position: relative;
         background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #e8f9ff 100%);
         color: #1f2937;
         border-color: #666;
         box-shadow: 
-        0 2px 4px rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.05);}
-          .menu-icon {margin-top: 3px;
-          }
+          0 2px 4px rgba(0, 0, 0, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.8),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+      }
+      
+      .menu-icon {
+        margin-top: 3px;
+      }
+      
+      /* 메뉴 텍스트가 두 줄일 때를 위한 스타일 */
+      .menu-item .menu-text {
+        font-size: 0.9rem;
+        line-height: 1.2;
+        text-align: center;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
     `}</style>
-
 
     <div className="account-container">
     <SketchHeader 
@@ -171,7 +225,6 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
         onBack={goBack}
         rightButtons={[]}
       />
-
 
       <div style={{ padding: '0.7rem 0 0 0' }}>
         {summary.map((item, idx) => (
@@ -190,15 +243,19 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
                 <div style={{ color: '#555', fontSize: '0.92rem', lineHeight: 1.3 }}>{item.content}</div>
               </div>
             </SketchDiv>
-            
-            
           </div>
         ))}
-        </div>
+      </div>
     
-      <div className="menu-section" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', padding: '1rem 0.7rem 1.5rem', alignItems: 'stretch' }}>
+      <div className="menu-section" style={{ 
+        display: 'flex', 
+        flexWrap: 'wrap', 
+        gap: '0.3rem', 
+        padding: '1rem 0.7rem 1.5rem',
+        alignItems: 'stretch' 
+      }}>
         {menus.map((menu) => (
-          <div key={menu.id} style={{ flex: '1 1 45%', minWidth: '140px' }}>
+          <div key={menu.id} className="menu-item-wrapper">
             <SketchMenuBtn
               icon={menu.icon}
               name={menu.name}
@@ -209,8 +266,7 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
           </div>
         ))}
       </div>
-      {/* 하단 네비게이션 바는 별도 컴포넌트로 분리되어 있을 수 있음 */}
     </div>
     </>
   );
-} 
+}

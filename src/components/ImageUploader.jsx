@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
-import { ImageIcon, Upload, Camera, Folder } from 'lucide-react';
+import { ImageIcon, Upload, Camera, Folder, X } from 'lucide-react';
 import { overlay } from 'overlay-kit';
 
 export const ImageUploader = ({
@@ -7,10 +7,20 @@ export const ImageUploader = ({
   onUploadComplete,
   onUploadStart,
   onUploadError,
+  containerAsUploader = false,
   showContextMenu = false,
   showPreview = true,
   className = '',
-  disabled = false
+  disabled = false,
+  // containerAsUploader 관련 props
+  uploadedImages = [],
+  onImagesChange,
+  maxImages = 1,
+  imageHolderStyle = {},
+  showRemoveButton = true,
+  // 단일 이미지 홀더 관련 props
+  initialImageUrl = null,
+  imageHolderSize = { width: '120px', height: '120px' }
 }) => {
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
@@ -59,8 +69,23 @@ export const ImageUploader = ({
           file: processedFile
         }));
         
+        // containerAsUploader 모드일 때 이미지 교체
+        if (containerAsUploader) {
+          const newImage = {
+            contentId,
+            file: processedFile,
+            previewUrl: URL.createObjectURL(processedFile),
+            name: processedFile.name,
+            size: processedFile.size
+          };
+          
+          // 단일 이미지인 경우 기존 이미지를 교체
+          const updatedImages = maxImages === 1 ? [newImage] : [...uploadedImages, newImage];
+          onImagesChange?.(updatedImages);
+        }
+        
         // Preview overlay 표시
-        if (showPreview) {
+        if (showPreview && !containerAsUploader) {
           showImagePreview(processedFile, contentId);
         }
         
@@ -79,7 +104,13 @@ export const ImageUploader = ({
       
       onUploadError?.(uploadError);
     }
-  }, [apiClient, onUploadComplete, onUploadStart, onUploadError, disabled, showPreview]);
+  }, [apiClient, onUploadComplete, onUploadStart, onUploadError, disabled, showPreview, containerAsUploader, uploadedImages, onImagesChange, maxImages]);
+
+  // 이미지 제거 함수
+  const handleRemoveImage = useCallback((index) => {
+    const updatedImages = uploadedImages.filter((_, i) => i !== index);
+    onImagesChange?.(updatedImages);
+  }, [uploadedImages, onImagesChange]);
 
   // 파일 검증 및 전처리 함수
   const validateAndProcessFile = useCallback(async (file) => {
@@ -209,7 +240,7 @@ export const ImageUploader = ({
         img.src = e.target.result;
       };
       reader.onerror = () => {
-        reject(new Error('Failed to read file for conversion'));
+        reject(new Error('Failed to read file'));
       };
       reader.readAsDataURL(file);
     });
@@ -561,6 +592,167 @@ export const ImageUploader = ({
     reader.readAsDataURL(file);
   }, []);
 
+  // containerAsUploader 모드일 때의 렌더링
+  if (containerAsUploader) {
+    const currentImage = uploadedImages[0]; // 단일 이미지만 표시
+    
+    return (
+      <div className={`image-uploader-container ${className}`}>
+        {/* 이미지 홀더 영역 */}
+        <div
+          className="image-holder"
+          onClick={showUploadOptions}
+          style={{
+            width: imageHolderSize.width,
+            height: imageHolderSize.height,
+            border: '2px dashed #d1d5db',
+            borderRadius: '8px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            backgroundColor: '#f9fafb',
+            transition: 'all 0.2s ease',
+            overflow: 'hidden',
+            position: 'relative',
+            ...imageHolderStyle
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = '#9ca3af';
+            e.currentTarget.style.backgroundColor = '#f3f4f6';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = '#d1d5db';
+            e.currentTarget.style.backgroundColor = '#f9fafb';
+          }}
+        >
+          {uploadState.isUploading ? (
+            <>
+              <Upload size={24} className="animate-pulse" />
+              <span style={{ fontSize: '12px', marginTop: '4px' }}>업로드 중...</span>
+            </>
+          ) : currentImage ? (
+            <>
+              <img
+                src={currentImage.previewUrl}
+                alt={currentImage.name}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  borderRadius: '6px'
+                }}
+              />
+              {/* 제거 버튼 */}
+              {showRemoveButton && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveImage(0);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: '4px',
+                    right: '4px',
+                    background: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '20px',
+                    height: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    fontSize: '10px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                  }}
+                >
+                  <X size={10} />
+                </button>
+              )}
+              {/* Content ID 표시 (개발용) */}
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '4px',
+                  left: '4px',
+                  background: 'rgba(0,0,0,0.7)',
+                  color: 'white',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  fontSize: '10px',
+                  fontFamily: 'monospace'
+                }}
+              >
+                {currentImage.contentId}
+              </div>
+            </>
+          ) : initialImageUrl ? (
+            <>
+              <img
+                src={initialImageUrl}
+                alt="Profile"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  borderRadius: '6px'
+                }}
+              />
+              {/* 교체 버튼 */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '0',
+                  left: '0',
+                  right: '0',
+                  bottom: '0',
+                  background: 'rgba(0,0,0,0.5)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: 0,
+                  transition: 'opacity 0.2s ease'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = 0}
+              >
+                <span style={{ color: 'white', fontSize: '12px' }}>클릭하여 교체</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <ImageIcon size={24} />
+              <span style={{ fontSize: '12px', marginTop: '4px' }}>이미지 추가</span>
+            </>
+          )}
+        </div>
+
+        {/* 갤러리 파일 선택용 input */}
+        <input
+          type="file"
+          accept="image/*"
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          onChange={handleImageSelect}
+        />
+
+        {/* 카메라 촬영용 input */}
+        <input
+          type="file"
+          accept="image/*"
+          ref={cameraInputRef}
+          style={{ display: 'none' }}
+          onChange={handleImageSelect}
+          capture="environment"
+        />
+      </div>
+    );
+  }
+
+  // 기존 모드 렌더링
   return (
     <div className={`image-uploader ${className}`}>
       <button

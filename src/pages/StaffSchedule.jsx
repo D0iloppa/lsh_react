@@ -5,7 +5,7 @@ import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
 import dayjs from 'dayjs';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, ClipboardList} from 'lucide-react';
 
 import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
@@ -407,7 +407,12 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
       `}</style>
       <div className="schedule-container">
         <SketchHeader
-          title="Staff Schedule"
+           title={
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <ClipboardList size={18} />
+              Staff Schedule
+            </span>
+          }
           showBack={true}
           onBack={goBack}
         />

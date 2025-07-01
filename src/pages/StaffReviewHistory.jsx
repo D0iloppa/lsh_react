@@ -1,148 +1,543 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
-import { Star, StarOff } from 'lucide-react';
-
-const reviews = [
-  {
-    venue: 'The Rooftop Bar',
-    date: 'Oct 10, 2023',
-    rating: 4.5,
-    text: 'Amazing atmosphere with a stunning view of the city. Highly recommend for a fun night out!'
-  },
-  {
-    venue: 'Jazz Night Club',
-    date: 'Sep 28, 2023',
-    rating: 5,
-    text: 'The live music was incredible, and the cocktails were top-notch. Will definitely visit again!'
-  },
-  {
-    venue: 'Club Viva',
-    date: 'Sep 15, 2023',
-    rating: 3.5,
-    text: 'Great vibe and excellent service. The DJ kept the energy high all night!'
-  }
-];
-
-function renderStars(rating) {
-  const stars = [];
-  for (let i = 1; i <= 5; i++) {
-    if (i <= Math.floor(rating)) {
-      stars.push(<Star key={i} size={28} fill="#fff" stroke="#222" style={{marginRight:2}}/>);
-    } else if (i - rating < 1) {
-      stars.push(<Star key={i} size={28} fill="#fff" stroke="#222" style={{marginRight:2}}><polygon points="0,0 28,0 14,28" fill="#fff"/></Star>);
-      stars.push(<StarOff key={i+0.5} size={28} stroke="#222" style={{position:'absolute',marginLeft:-30}}/>);
-      break;
-    } else {
-      stars.push(<StarOff key={i} size={28} stroke="#222" style={{marginRight:2}}/>);
-    }
-  }
-  return <span style={{display:'flex',alignItems:'center'}}>{stars}</span>;
-}
+import SketchDiv from '@components/SketchDiv';
+import '@components/SketchComponents.css';
+import HatchPattern from '@components/HatchPattern';
+import ImagePlaceholder from '@components/ImagePlaceholder';
+import { Filter, Star, Edit, Trash2, Eye, MessagesSquare, ChevronDown, ChevronUp, Send, Store, User } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import ApiClient from '@utils/ApiClient';
+import Swal from 'sweetalert2';
 
 const StaffReviewHistory = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
+  const [ratingFilter, setRatingFilter] = useState('All');
+  const [dateFilter, setDateFilter] = useState('All');
+  const [openResponses, setOpenResponses] = useState({});
+  const [responses, setResponses] = useState({});
+  const [reviews, setReviews] = useState([]);
+  const [originalReviews, setOriginalReviews] = useState([]); // 원본 데이터 보관
+  const { user } = useAuth();
+
+  console.log('user', user)
+
+  const venue_id = user.venue_id;
+  const target_id = user.staff_id;
+
+  // 오늘 날짜인지 확인하는 함수
+  const isToday = (dateString) => {
+    const today = new Date();
+    const reviewDate = new Date(dateString);
+    
+    return today.getFullYear() === reviewDate.getFullYear() &&
+           today.getMonth() === reviewDate.getMonth() &&
+           today.getDate() === reviewDate.getDate();
+  };
+
+  // 필터링 및 정렬 함수
+  const applyFilters = () => {
+    let filtered = [...originalReviews];
+
+    // Rating 필터 적용
+    if (ratingFilter !== 'All') {
+      if (ratingFilter === '5.0') {
+        filtered = filtered.filter(review => review.rating === 5);
+      } else if (ratingFilter === '4.0+') {
+        filtered = filtered.filter(review => review.rating >= 4);
+      } else if (ratingFilter === '3.0+') {
+        filtered = filtered.filter(review => review.rating >= 3);
+      }
+    }
+
+    // 날짜 필터 적용
+    if (dateFilter === 'Newest') {
+      // 오늘 작성된 리뷰만 보여주기
+      filtered = filtered.filter(review => isToday(review.created_at));
+    } else if (dateFilter === 'Oldest') {
+      // 오늘이 아닌 리뷰들만 보여주기
+      filtered = filtered.filter(review => !isToday(review.created_at));
+    }
+
+    // 날짜순 정렬
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.created_at);
+      const dateB = new Date(b.created_at);
+      
+      if (dateFilter === 'Newest') {
+        return dateB - dateA; // 최신순
+      } else {
+        return dateA - dateB; // 오래된순
+      }
+    });
+
+    setReviews(filtered);
+  };
+
+  // 필터가 변경될 때마다 적용
+  useEffect(() => {
+    applyFilters();
+  }, [ratingFilter, dateFilter, originalReviews]);
+
+  useEffect(() => {
+    const loadVenueReview = async () => {
+      if (!venue_id || !target_id) return;
+
+      try {
+        const response = await ApiClient.postForm('/api/getStaffReviewList', {
+          venue_id: venue_id,
+          target_id: target_id
+        });
+
+        console.log('responseReview', response.data);
+
+        const staffReviews = response.data.filter(review => review.target_type === 'staff');
+
+        // 원본 데이터 저장
+        setOriginalReviews(staffReviews);
+       
+      } catch (error) {
+        setOriginalReviews([]);
+        setReviews([]);
+        console.error('리뷰 로딩 실패:', error);
+      }
+    };
+
+    loadVenueReview();
+  }, [venue_id, target_id]);
+
+  // 답변 영역 토글
+  const toggleResponse = (reviewId) => {
+    setOpenResponses(prev => ({
+      ...prev,
+      [reviewId]: !prev[reviewId]
+    }));
+  };
+
+  // 답변 텍스트 변경
+  const handleResponseChange = (reviewId, text) => {
+    setResponses(prev => ({
+      ...prev,
+      [reviewId]: text
+    }));
+  };
+
+  // 답변 제출
+  const handleSubmitResponse = async (reviewId) => {
+    let responseText = responses[reviewId];
+    
+    const currentReview = reviews.find(review => (review.review_id || review.id) === reviewId);
+    const existingResponse = currentReview?.reply_content || currentReview?.response;
+    
+    if (!responseText || responseText.trim() === '') {
+      if (!existingResponse) {
+        Swal.fire({
+          title: '입력 오류',
+          text: '답변 내용을 입력해주세요.',
+          icon: 'warning',
+          confirmButtonText: '확인',
+          confirmButtonColor: '#f59e0b'
+        });
+        return;
+      }
+      responseText = existingResponse;
+    }
+  
+    try {
+      const response = await ApiClient.postForm('/api/updateReplyContent', {
+        review_id: reviewId,
+        venue_id: venue_id,
+        reply_content: responseText
+      });
+  
+      console.log('답변 등록 응답:', response);
+  
+      // 원본 데이터와 필터된 데이터 모두 업데이트
+      setOriginalReviews(prev => prev.map(review => 
+        (review.review_id || review.id) === reviewId 
+          ? { ...review, reply_content: responseText }
+          : review
+      ));
+  
+      setResponses(prev => ({
+        ...prev,
+        [reviewId]: ''
+      }));
+      setOpenResponses(prev => ({
+        ...prev,
+        [reviewId]: false
+      }));
+  
+      Swal.fire({
+        title: '답변 등록 완료',
+        text: '리뷰에 대한 답변이 성공적으로 등록되었습니다.',
+        icon: 'success',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#10b981'
+      });
+  
+    } catch (error) {
+      console.error('답변 등록 실패:', error);
+      Swal.fire({
+        title: '오류',
+        text: '답변 등록에 실패했습니다. 다시 시도해주세요.',
+        icon: 'error',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#ef4444'
+      });
+    }
+  };
+
+  // 별점 렌더링 함수
+  const renderStars = (rating) => {
+    return (
+      <>
+        {[...Array(5)].map((_, i) => (
+          <Star
+            key={i}
+            size={14}
+            fill={i < rating ? '#fbbf24' : 'none'}
+            color={i < rating ? '#fbbf24' : '#d1d5db'}
+            style={{ marginRight: 2 }}
+          />
+        ))}
+      </>
+    );
+  };
+
   return (
     <>
       <style jsx="true">{`
-        .reviewhistory-container {
+        .review-container {
           max-width: 28rem;
           margin: 0 auto;
           background: #fff;
           min-height: 100vh;
+          padding-bottom: 1rem;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
-        .review-card {
-          border: 3px solid #222;
-          border-radius: 7px;
-          margin: 1.1rem 0.2rem 0 0.2rem;
-          padding: 1.1rem 1.2rem 0.7rem 1.2rem;
+        .filter-row {
+          padding: 0.3rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin: 0.5rem 0 0.5rem 0;
+        }
+        .filter-label {
+          font-size: 1rem;
+          margin-right: 0.5rem;
+        }
+        .filter-select {
+          border-top-left-radius: 12px 7px;
+          border-top-right-radius: 6px 14px;
+          border-bottom-right-radius: 10px 5px;
+          border-bottom-left-radius: 8px 11px;
+          transform: rotate(0.3deg);
+          font-size: 1rem;
+          border: 1px solid #666;
+          padding: 0.2rem 1.2rem 0.2rem 0.5rem;
           background: #fff;
-          box-shadow: 0 2px 0 #eee;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+        }
+        .review-list {
+          display: flex;
+          flex-direction: column;
+        }
+        .review-card {
+          background-color: #f8fafc;
+          padding: 1rem;
+          margin-bottom: 1rem;
+          transform: rotate(0.2deg);
+          position: relative;
+          overflow: hidden;
+        }
+        .review-card:nth-child(even) {
+          transform: rotate(-0.2deg);
+        }
+        .review-content {
+          position: relative;
+          z-index: 10;
         }
         .review-header {
           display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          font-size: 1.2rem;
-          font-weight: 600;
+          align-items: center;
+          gap: 0.75rem;
+          margin-bottom: 0.75rem;
         }
-        .review-date {
-          font-size: 1.05rem;
-          font-weight: 400;
-          margin-top: 0.2rem;
+        .user-avatar {
+          width: 60px;
+          height: 60px;
+          flex-shrink: 0;
         }
-        .review-stars {
-          margin: 0.5rem 0 0.2rem 0;
+        .user-info {
+          flex: 1;
+        }
+        .user-name {
+          font-size: 0.95rem;
+          font-weight: bold;
+          color: #1f2937;
+          margin: 0;
+        }
+        .review-meta {
+          font-size: 0.8rem;
+          color: #6b7280;
+          margin: 0.25rem 0 0 0;
         }
         .review-text {
-          font-size: 1.08rem;
-          margin-bottom: 0.7rem;
-          margin-top: 0.2rem;
+          font-size: 0.9rem;
+          color: #374151;
+          line-height: 1.4;
+          margin: 0 0 1rem 0;
         }
-        .review-btn-row {
-          display: flex;
-          gap: 1.1rem;
-          margin-bottom: 0.2rem;
+        .review-target-name {
+          font-size: 15px;
+          font-weight: 500;
+          color: #333;
+          letter-spacing: 0.3px;
         }
-        .bottom-nav {
-          position: fixed;
-          left: 0; right: 0; bottom: 0;
-          width: 100vw;
-          max-width: 28rem;
-          margin: 0 auto;
-          background: #fff;
-          border-top: 2.5px solid #222;
+        .review-actions {
           display: flex;
-          justify-content: space-around;
+          gap: 0.7rem;
+          margin-bottom: 0.5rem;
+        }
+        .review-action-btn {
+          min-width: 54px;
+          font-size: 0.95rem;
+          padding: 0.18rem 0.5rem;
+        }
+        .existing-response {
+          background-color: white;
+          border: 1px solid #c4c4c4;
+          border-radius: 8px;
+          padding: 0.75rem;
+          margin-top: 0.5rem;
+          position: relative;
+          margin-bottom: 1rem;
+        }
+        .existing-response-header {
+          display: flex;
+          justify-content: space-between;
           align-items: center;
-          padding: 0.7rem 0 0.3rem 0;
-          z-index: 10;
+          margin-bottom: 0.5rem;
         }
-        .nav-item {
+        .response-label {
+          font-size: 0.85rem;
+          color: #64748b;
+          font-weight: 600;
+        }
+        .edit-response-btn {
+          font-size: 0.8rem;
+          padding: 0.1rem 0.4rem;
+          min-width: auto;
+        }
+        .existing-response-text {
+          font-size: 0.9rem;
+          color: #374151;
+          line-height: 1.4;
+        }
+        .response-form {
+          margin-top: 0.5rem;
+          padding: 0.75rem;
+          background-color: #f9fafb;
+          border: 1px solid #d1d5db;
+          border-radius: 8px;
+          animation: slideDown 0.2s ease-out;
+        }
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+          }
+          to {
+            opacity: 1;
+            max-height: 200px;
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+          }
+        }
+        .response-textarea {
+          width: 100%;
+          min-height: 80px;
+          padding: 0.5rem;
+          border: 1px solid #d1d5db;
+          border-radius: 6px;
+          font-size: 0.9rem;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+          resize: vertical;
+          box-sizing: border-box;
+        }
+        .response-textarea:focus {
+          outline: none;
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+        .response-form-actions {
           display: flex;
-          flex-direction: column;
-          align-items: center;
-          font-size: 1.1rem;
+          gap: 0.5rem;
+          margin-top: 0.5rem;
+          justify-content: flex-end;
+        }
+        .response-form-btn {
+          font-size: 0.85rem;
+          padding: 0.3rem 0.7rem;
+          min-width: auto;
+        }
+        .no-reviews {
+          text-align: center;
+          color: #6b7280;
+          padding: 2rem;
+          font-size: 0.9rem;
         }
       `}</style>
-      <div className="reviewhistory-container">
+      <div className="review-container">
         <SketchHeader
-          title={<><span style={{marginRight:'7px',marginBottom:'-3px'}}>★</span>Review History</>}
+          title="스태프 리뷰 관리"
           showBack={true}
           onBack={goBack}
         />
-        {reviews.map((r, idx) => (
-          <div className="review-card" key={idx}>
-            <div className="review-header">
-              <span>{r.venue}</span>
-              <span className="review-date">{r.date}</span>
+        <div className="filter-row">
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <span className="filter-label">Rating</span>
+            <select className="filter-select" value={ratingFilter} onChange={e => setRatingFilter(e.target.value)}>
+              <option value="All">All</option>
+              <option value="5.0">5.0</option>
+              <option value="4.0+">4.0+</option>
+              <option value="3.0+">3.0+</option>
+            </select>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <span className="filter-label">Date:</span>
+            <select className="filter-select" value={dateFilter} onChange={e => setDateFilter(e.target.value)}>
+              <option value="All">All</option>
+              <option value="Newest">Today</option>
+              <option value="Oldest">Previous</option>
+            </select>
+          </div>
+        </div>
+        <div className="review-list">
+          {reviews.length > 0 ? reviews.map(review => (
+            <SketchDiv key={review.review_id || review.id} className="review-card">
+              <HatchPattern opacity={0.03} />
+              <div className="review-content">
+                <div className="review-header">
+                  <ImagePlaceholder
+                    src={review.targetImage || '/placeholder-user.jpg'}
+                    className="user-avatar" 
+                    alt="profile"
+                  />
+                  <div className="user-info">
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '8px'
+                    }}>
+                      <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        backgroundColor: '#fef3c7',
+                        color: '#d97706'
+                      }}>
+                        <User size={14} />
+                      </div>
+                      <span className="review-target-name">
+                        {review.targetName || review.name}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span style={{ fontSize: '0.95rem' }}>작성자:</span>
+                      <h3 className="user-name">{review.user_name || review.name}</h3>
+                    </div>
+                    <p className="review-meta">
+                      {renderStars(review.rating)} - {new Date(review.created_at || Date.now()).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                <p className="review-text">"{review.content}"</p>
+                
+                {/* 기존 답변이 있는 경우 표시 */}
+                {(review.reply_content || review.response) && !openResponses[review.review_id || review.id] && (
+                  <div className="existing-response">
+                    <div className="existing-response-header">
+                      <span className="response-label">답변:</span>
+                    </div>
+                    <div className="existing-response-text">{review.reply_content || review.response}</div>
+                  </div>
+                )}
+
+                <div className="review-actions">
+                  <SketchBtn 
+                    variant={openResponses[review.review_id || review.id] ? "secondary" : 
+                            ((review.reply_content || review.response) ? "primary" : "event")} 
+                    size="small" 
+                    className="review-action-btn"
+                    onClick={() => toggleResponse(review.review_id || review.id)}
+                  >
+                    {openResponses[review.review_id || review.id] ? (
+                      <>
+                        <ChevronUp size={14} /> 닫기
+                      </>
+                    ) : (
+                      <>
+                        {(review.reply_content || review.response) ? (
+                          <>
+                            <Edit size={14} /> 답변수정
+                          </>
+                        ) : (
+                          '답변등록'
+                        )}
+                      </>
+                    )}
+                  </SketchBtn>
+                  <SketchBtn variant="danger" size="small" className="review-action-btn">신고</SketchBtn>
+                </div>
+
+                {/* 답변 입력 폼 */}
+                {openResponses[review.review_id || review.id] && (
+                  <div className="response-form">
+                    <textarea
+                      className="response-textarea"
+                      placeholder="답변을 작성해 주세요.."
+                      value={responses[review.review_id || review.id] || review.reply_content || review.response || ''}
+                      onChange={(e) => handleResponseChange(review.review_id || review.id, e.target.value)}
+                    />
+                    <div className="response-form-actions">
+                      <SketchBtn 
+                        variant="secondary" 
+                        size="small" 
+                        className="response-form-btn"
+                        onClick={() => toggleResponse(review.review_id || review.id)}
+                      >
+                        취소
+                      </SketchBtn>
+                      <SketchBtn 
+                        variant="event" 
+                        size="small" 
+                        className="response-form-btn"
+                        onClick={() => handleSubmitResponse(review.review_id || review.id)}
+                      >
+                        <Send size={12} /> 답변제출
+                      </SketchBtn>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </SketchDiv>
+          )) : (
+            <div className="no-reviews">
+              필터 조건에 맞는 리뷰가 없습니다.
             </div>
-            <div className="review-stars">{renderStars(r.rating)}</div>
-            <div className="review-text">"{r.text}"</div>
-            <div className="review-btn-row">
-              <SketchBtn variant="secondary" size="medium">Reply</SketchBtn>
-              <SketchBtn variant="primary" size="medium">DECLARE</SketchBtn>
-            </div>
-          </div>
-        ))}
-        <div style={{height:'5.5rem'}}></div>
-        <div className="bottom-nav">
-          <div className="nav-item">
-            <span style={{fontSize:'2rem'}}>📅</span>
-            <span>Bookings</span>
-          </div>
-          <div className="nav-item">
-            <span style={{fontSize:'2rem'}}>👥</span>
-            <span>Chatting</span>
-          </div>
-          <div className="nav-item">
-            <span style={{fontSize:'2rem'}}>⚙️</span>
-            <span>Settings</span>
-          </div>
+          )}
         </div>
       </div>
     </>
   );
 };
 
-export default StaffReviewHistory; 
+export default StaffReviewHistory;

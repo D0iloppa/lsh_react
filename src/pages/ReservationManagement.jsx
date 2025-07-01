@@ -106,9 +106,9 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
   const [selectedStatus, setSelectedStatus] = useState('pending');
   const [reservations, setReservations] = useState([]); // API 연동 시 빈 배열로 시작
   const [loading, setLoading] = useState(false);
-   const { user, isLoggedIn } = useAuth();
+  const { user, isLoggedIn } = useAuth();
 
-    const venue_id = user.venue_id;
+  const venue_id = user.venue_id;
    //const venue_id = 1;
   
 
@@ -352,7 +352,12 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
       `}</style>
       <div className="reservation-container">
         <SketchHeader
-          title="Reservations"
+           title={
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Calendar size={18} />
+              예약 관리
+            </span>
+          }
           showBack={true}
           onBack={goBack}
         />

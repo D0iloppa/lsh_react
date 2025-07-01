@@ -1,105 +1,344 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
 import { Calendar } from 'lucide-react';
+import HatchPattern from '@components/HatchPattern';
 
-const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+import { useAuth } from '@contexts/AuthContext';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import ApiClient from '@utils/ApiClient';
 
 const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
-  const [week, setWeek] = useState({
-    Monday: { on: false, start: '', end: '' },
-    Tuesday: { on: true, start: '20:00', end: '02:00' },
-    Wednesday: { on: false, start: '', end: '' },
-    Thursday: { on: false, start: '', end: '' },
-    Friday: { on: false, start: '', end: '' },
-    Saturday: { on: false, start: '', end: '' },
-    Sunday: { on: false, start: '', end: '' },
+  const { user, isLoggedIn } = useAuth();
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [weekData, setWeekData] = useState([]);
+  const [scheduleData, setScheduleData] = useState([]);
+  const [weekInfo, setWeekInfo] = useState({
+    monday_start: false,
+    week_offset: 0,
+    start_date: '',
+    week_dates: []
   });
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    if (messages && Object.keys(messages).length > 0) {
+      window.scrollTo(0, 0);
+    }
+
+    const {mode, staff_id, start_date, scheduleData: initialScheduleData} = otherProps;
+
+    console.log('pageData', mode, staff_id, start_date, initialScheduleData);
+
+    // scheduleData가 있으면 초기 데이터로 설정
+    if (initialScheduleData && Array.isArray(initialScheduleData)) {
+      setScheduleData(initialScheduleData);
+      setWeekData(initialScheduleData); // 원본 데이터를 그대로 사용
+      setIsLoadingData(false);
+    } else {
+      // scheduleData가 없으면 빈 배열로 초기화
+      setScheduleData([]);
+      setWeekData([]);
+      setIsLoadingData(false);
+    }
+  }, [messages, currentLang, pageData]);
+
+  // 날짜 포맷팅
+  const formatDateRange = () => {
+    if (weekData.length >= 2) {
+      const startDate = new Date(weekData[0]?.work_date);
+      const endDate = new Date(weekData[6]?.work_date);
+      
+      const formatDate = (date) => {
+        return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+      };
+      
+      return `${formatDate(startDate)} ~ ${formatDate(endDate)}`;
+    }
+    return '';
+  };
+
+  // 시간 옵션 생성
+  const hourOptions = Array.from({ length: 24 }, (_, i) => {
+    const hourStr = String(i).padStart(2, '0');
+    return { value: `${hourStr}:00:00`, label: `${i}` };
+  });
+
+  const handleSave = async () => {
+    try {
+      console.log('weekData before save:', weekData);
+      
+      // Java 코드에 맞춰 필요한 필드만 포함하여 저장
+      const formattedData = weekData.map(item => {
+        return {
+          date: item.work_date,
+          start: item.start_time || '',
+          end: item.end_time || '',
+          status: item.status || 'dayoff',
+          on: Boolean(item.status !== null && 
+                     item.status !== 'dayoff' &&
+                     item.start_time && 
+                     item.end_time)
+        };
+      });
+      
+      const jsonDataStr = JSON.stringify(formattedData);
+      console.log('jsonDataStr:', jsonDataStr);
+
+      const payload = {
+        staff_id: user?.staff_id,
+        jsonData: encodeURIComponent(jsonDataStr)
+      }
+
+      const response = await ApiClient.postForm('/api/upsertStaffSchedule', payload);
+      console.log('response:', response);
+
+      //goBack();
+      
+    } catch (error) {
+      console.error('Failed to save schedule:', error);
+    }
+  };
+
+  if (isLoadingData) {
+    return (
+      <div className="workschedulecreate-container">
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <div>Loading week data...</div>
+        </div>
+      </div>
+    );
+  }
+
+  const days = weekInfo.monday_start 
+    ? ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   return (
     <>
       <style jsx="true">{`
-        .workschedulecreate-container {
+        .workschedule-container {
           max-width: 28rem;
           margin: 0 auto;
           background: #fff;
-          min-height: 100vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+          padding: 0 0.5rem 1rem 0.5rem;
         }
         .week-title {
-          font-size: 1.08rem;
+          font-size: 1.02rem;
           font-weight: 600;
-          margin: 1.2rem 0 0.7rem 0;
-          text-align: center;
+          margin: 1.1rem 0 1.1rem 0;
+          text-align: left;
+          color: #222;
+        }
+        .week-range {
+          font-size: 0.92rem;
+          color: #6b7280;
+          margin-bottom: 0.7rem;
+          margin-top: 0.1rem;
         }
         .week-row {
           display: flex;
           align-items: center;
-          margin-bottom: 0.7rem;
+          margin-bottom: 0.13rem;
+          min-height: 1.7rem;
+          gap: 0.13rem;
+          width: 100%;
+          flex-wrap: nowrap;
+          overflow: hidden;
         }
         .week-day {
-          flex: 1.2;
-          font-size: 1.05rem;
+          flex: 0 0 60px;
+          font-size: 0.97rem;
+          color: #222;
+          padding-right: 0.1rem;
+          white-space: nowrap;
         }
         .week-onoff {
-          flex: 1.2;
-          margin-right: 0.5rem;
+          flex: 0 0 70px;
+          min-width: 70px;
+          max-width: 70px;
+        }
+        .week-onoff select {
+          display: block;
+          width: 100%;
+          min-width: 70px;
+          max-width: 70px;
+          font-size: 0.97rem;
+          border-radius: 5px;
+          border: 1px solid #bbb;
+          padding: 0.08rem 0.5rem 0.08rem 0.3rem;
+          background: #fff;
+          color: #222;
+          box-sizing: border-box;
         }
         .week-hours {
-          flex: 3;
+          flex: 1 1 0;
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.08rem;
+          min-width: 0;
+        }
+        .select-style {
+          display: block;
+          width: 38px;
+          min-width: 32px;
+          max-width: 38px;
+          font-size: 0.93rem;
+          border-radius: 5px;
+          border: 1px solid #bbb;
+          padding: 0.08rem 0.3rem 0.08rem 0.2rem;
+          background: #fff;
+          color: #222;
+          box-sizing: border-box;
+        }
+        .select-style:focus {
+          outline: none;
+          border-color: #2bb4bb;
         }
         .save-btn-row {
-          margin: 1.2rem 0 0.7rem 0;
+          margin: 1.1rem 0 0.5rem 0;
+          display: flex;
+          justify-content: center;
+        }
+        .save-btn {
+          width: 100%;
+          max-width: 320px;
+          font-size: 1.01rem;
+          font-family: inherit;
+          border-radius: 0;
+          border: 1.2px solid #222;
+          background: #f8f8f8;
+          color: #222;
+          font-weight: 600;
+          letter-spacing: 0.01em;
+          box-shadow: none;
+          padding: 0.5rem 0;
+        }
+        .save-btn:active {
+          background: #ecec;
+        }
+        @media (max-width: 500px) {
+          .workschedule-container {
+            padding: 0 0.1rem 1rem 0.1rem;
+          }
+          .week-day {
+            flex-basis: 44px;
+            font-size: 0.91rem;
+          }
+          .week-onoff {
+            min-width: 54px;
+            max-width: 54px;
+          }
+          .week-onoff select {
+            min-width: 54px;
+            max-width: 54px;
+            font-size: 0.91rem;
+          }
+          .select-style {
+            font-size: 0.91rem;
+            min-width: 28px;
+            max-width: 32px;
+            width: 32px;
+          }
         }
       `}</style>
-      <div className="workschedulecreate-container">
-        <SketchHeader
-          title={<><Calendar size={20} style={{marginRight:'7px',marginBottom:'-3px'}}/>Work Schedule</>}
-          showBack={true}
-          onBack={goBack}
-        />
-        <div className="week-title">Weekly Work Schedule (2025.05.01 ~ 2025.05.08)</div>
-        {days.map(day => (
-          <div className="week-row" key={day}>
-            <div className="week-day">{day}:</div>
-            <div className="week-onoff">
-              <select value={week[day].on ? 'on' : 'off'} onChange={e => setWeek(w => ({ ...w, [day]: { ...w[day], on: e.target.value === 'on' } }))} style={{ fontSize: '1rem', borderRadius: '6px', border: '1px solid #e5e7eb', padding: '0.2rem 1.2rem 0.2rem 0.5rem', background: '#fff' }}>
-                <option value="on">on</option>
-                <option value="off">off</option>
-              </select>
-            </div>
-            {week[day].on && (
-              <div className="week-hours">
-                Hours:
-                <select value={week[day].start} onChange={e => setWeek(w => ({ ...w, [day]: { ...w[day], start: e.target.value } }))} style={{ fontSize: '1rem', borderRadius: '6px', border: '1px solid #e5e7eb', padding: '0.2rem 1.2rem 0.2rem 0.5rem', background: '#fff' }}>
-                  <option value="">--</option>
-                  <option value="20:00">20:00</option>
-                  <option value="21:00">21:00</option>
-                  <option value="22:00">22:00</option>
-                </select>
-                to
-                <select value={week[day].end} onChange={e => setWeek(w => ({ ...w, [day]: { ...w[day], end: e.target.value } }))} style={{ fontSize: '1rem', borderRadius: '6px', border: '1px solid #e5e7eb', padding: '0.2rem 1.2rem 0.2rem 0.5rem', background: '#fff' }}>
-                  <option value="">--</option>
-                  <option value="02:00">02:00</option>
-                  <option value="03:00">03:00</option>
-                  <option value="04:00">04:00</option>
-                </select>
+      <SketchHeader
+        title={<><Calendar size={20} style={{marginRight:'7px',marginBottom:'-3px'}}/>Work Schedule</>}
+        showBack={true}
+        onBack={goBack}
+      />
+      <div className="workschedule-container">
+        <div className="week-title">weekly work Schedule</div>
+        <div>
+          {weekData.map((dayData, index) => {
+            const day = days[index];
+            // status와 시간 값만으로 on 상태 계산
+            const isOn = dayData.status !== null && 
+                        dayData.status !== 'dayoff' &&
+                        dayData.start_time && 
+                        dayData.end_time;
+            
+            return (
+              <div key={`${dayData?.work_date || index}`} className="week-row">
+                <div className="week-day">{day}</div>
+                <div className="week-onoff">
+                  <select 
+                    value={isOn ? 'on' : 'off'} 
+                    onChange={e => {
+                      const newWeekData = [...weekData];
+                      if (e.target.value === 'on') {
+                        newWeekData[index] = { 
+                          ...dayData, 
+                          status: 'pending',
+                          start_time: dayData.start_time || '00:00:00',
+                          end_time: dayData.end_time || '01:00:00'
+                        };
+                      } else {
+                        newWeekData[index] = { 
+                          ...dayData, 
+                          status: 'dayoff',
+                          start_time: '',
+                          end_time: ''
+                        };
+                      }
+                      setWeekData(newWeekData);
+                    }} 
+                    className="select-style"
+                  >
+                    <option value="on">on</option>
+                    <option value="off">off</option>
+                  </select>
+                </div>
+                {isOn && (
+                  <div className="week-hours">
+                    <span style={{ marginLeft: '1.5rem', fontSize: '0.97rem', color: '#222' }}>Hours</span>
+                    <select 
+                      value={dayData?.start_time || ''} 
+                      onChange={e => {
+                        const newWeekData = [...weekData];
+                        newWeekData[index] = { ...dayData, start_time: e.target.value };
+                        setWeekData(newWeekData);
+                      }} 
+                      className="select-style"
+                    >
+                      <option value="">--</option>
+                      {hourOptions.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                    <span style={{ fontSize: '0.97rem', color: '#222' }}>to</span>
+                    <select 
+                      value={dayData?.end_time || ''} 
+                      onChange={e => {
+                        const newWeekData = [...weekData];
+                        newWeekData[index] = { ...dayData, end_time: e.target.value };
+                        setWeekData(newWeekData);
+                      }} 
+                      className="select-style"
+                    >
+                      <option value="">--</option>
+                      {hourOptions.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        ))}
+            );
+          })}
+        </div>
         <div className="save-btn-row">
-          <SketchBtn variant="primary" size="medium" style={{ width: '100%' }}>Save schedule</SketchBtn>
+          <SketchBtn className="save-btn" variant="event" onClick={handleSave}>SAVE SCHEDULE</SketchBtn>
         </div>
       </div>
     </>
   );
 };
 
-export default StaffWorkScheduleCreate; 
+export default StaffWorkScheduleCreate;

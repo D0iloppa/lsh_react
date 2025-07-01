@@ -10,6 +10,8 @@ export default function SketchInput({
   variant = 'default',
   className = '',
   style = {},
+  as = 'input',
+  rows = 3,
   ...props
 }) {
   const getInputClassName = () => {
@@ -18,18 +20,29 @@ export default function SketchInput({
     return `${baseClass} ${variantClass} ${className}`.trim();
   };
 
+  const inputProps = {
+    placeholder,
+    value,
+    onChange,
+    className: getInputClassName(),
+    disabled,
+    style,
+    ...props
+  };
+
   return (
     <div className="sketch-input-group">
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        className={getInputClassName()}
-        disabled={disabled}
-        style={style}
-        {...props}
-      />
+      {as === 'textarea' ? (
+        <textarea
+          {...inputProps}
+          rows={rows}
+        />
+      ) : (
+        <input
+          type={type}
+          {...inputProps}
+        />
+      )}
       {error && (
         <div className="sketch-error-message">{error}</div>
       )}

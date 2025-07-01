@@ -5,7 +5,7 @@ import SketchDiv from '@components/SketchDiv';
 import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
 import HatchPattern from '@components/HatchPattern';
-
+import { MessageCircle, Mail, User } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
@@ -26,6 +26,8 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
   const [isPasswordVerified, setIsPasswordVerified] = useState(false);
   const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
   const [showNewPasswordFields, setShowNewPasswordFields] = useState(false);
+
+  const [tempLang, setTempLang] = useState(currentLang);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -229,6 +231,10 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
     }
   }, [venueData]);
 
+  // 언어 저장 버튼 클릭 시 호출
+  const handleSaveLanguage = () => {
+    setLanguage(tempLang);
+  };
 
   return (
     <>
@@ -272,7 +278,12 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
       `}</style>
       
         <SketchHeader
-          title="Settings"
+          title={
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <User size={18} />
+              {get('Mng.menu.3') || 'Settings'}
+            </span>
+          }
           showBack={true}
           onBack={goBack}
         />
@@ -322,7 +333,7 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
                   value={password.current}
                   onChange={e => setPassword(p => ({ ...p, current: e.target.value }))}
                   placeholder="Current Password"
-                  type="password"
+                  type="password" style={{fontFamily: 'none', Height: '30px'}}
                   disabled={isPasswordVerified}
                 />
               </div>
@@ -382,7 +393,7 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
         <div className="section-title">Notification Preferences (아직 미구현)</div>
         <SketchDiv className="section-box">
           <div className="noti-row">
-            <span>Email Notifications</span>
+               <span><Mail size={14}/> {get('Staff.setting.notification.email') || 'Email Notifications'}</span>
             <SketchBtn 
               variant={emailNoti ? "green" : "danger"} 
               size="small"  
@@ -392,7 +403,7 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
             </SketchBtn>
           </div>
           <div className="noti-row">
-            <span>SMS Notifications</span>
+            <span><MessageCircle size={14}/> {get('Staff.setting.notification.sms') || 'SMS Notifications'}</span>
             <SketchBtn 
               variant={smsNoti ? "green" : "danger"} 
               size="small"  
@@ -405,24 +416,28 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
         <div className="section-title">Language</div>
         <SketchDiv className="section-box">
           <div className="lang-row">
-            <select value={'English'} onChange={(e) => {} } style={{ 
-                  fontSize: '1rem', 
-                  padding: '0.3rem 1.2rem 0.3rem 0.5rem', 
-                  background: '#fff',
-                  borderTopLeftRadius: '6px 8px',
-                  borderTopRightRadius: '10px 5px',
-                  borderBottomRightRadius: '8px 12px',
-                  borderBottomLeftRadius: '12px 6px',
-                  transform: 'rotate(0.2deg)',
-                  fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
-                  width: '212px'
-                }}>
-              <option>English</option>
-              <option>Korean</option>
-              <option>Vietnamese</option>
-              <option>Japanese</option>
+            <select value={tempLang} 
+                    onChange={(e) => {
+                      setTempLang(e.target.value);
+                    }} 
+                    style={{ 
+                          fontSize: '1rem', 
+                          padding: '0.3rem 1.2rem 0.3rem 0.5rem', 
+                          background: '#fff',
+                          borderTopLeftRadius: '6px 8px',
+                          borderTopRightRadius: '10px 5px',
+                          borderBottomRightRadius: '8px 12px',
+                          borderBottomLeftRadius: '12px 6px',
+                          transform: 'rotate(0.2deg)',
+                          fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
+                          width: '212px'
+                        }}>
+              <option value="en">English</option>
+              <option value="kr">Korean</option>
+              <option value="vi">Vietnamese</option>
+              <option value="ja">Japanese</option>
             </select>
-            <SketchBtn variant="accent" size="small" style={{width: '30%'}}><HatchPattern opacity={0.6} /> Save</SketchBtn>
+            <SketchBtn variant="accent" size="small" style={{width: '30%'}} onClick={handleSaveLanguage}><HatchPattern opacity={0.6} /> Save</SketchBtn>
           </div>
         </SketchDiv>
 
