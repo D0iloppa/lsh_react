@@ -262,7 +262,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
                     fontSize: '10px',
                   }}
                 >
-                  {availCnt > 0 ? '예약 가능' : '예약 마감'}
+                  {availCnt > 0 ? get('DiscoverPage1.1.able') : get('DiscoverPage1.1.disable')}
                 </span>
               )}
             </div>
@@ -284,7 +284,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
               const images = girl.images || [girl.image_url];
               const hasMultipleImages = images.length > 1;
 
-              console.log("images", images, images.length)
+              //console.log("images", images, images.length)
 
               // 이미지가 1개면 같은 이미지를 3-4번 복제
               const slidesToShow = hasMultipleImages ? images : Array(3).fill(images[0]);

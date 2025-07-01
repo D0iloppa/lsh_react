@@ -289,17 +289,16 @@ const Profile = ({
                 <img src={userInfo.image_url} alt="profile" />
             </div>
               <div className="profile-details">
-                <h2>{userInfo?.nickname || '닉네임 없음'}</h2>
-                <p>{userInfo?.email || '이메일 없음'}</p>
+                <h2>{userInfo?.nickname || get('PROFILE_NO_NICKNAME')}</h2>
+                <p>{userInfo?.email || get('PROFILE_NO_EMAIL')}</p>
                 <p>{userInfo?.created_at
-                ? `Member since ${new Date(userInfo.created_at).toLocaleString('en-US', {
-                    year: 'numeric',
-                    month: 'long'
-                  })}`
-                : '가입일 정보 없음'}</p>
+                  ? `${get('PROFILE_MEMBER_SINCE')} ${new Date(userInfo.created_at).toLocaleString('en-US', {
+                      year: 'numeric',
+                      month: 'long'
+                    })}`
+                  : get('PROFILE_NO_JOIN_DATE')}</p>
               </div>
             </div>
-
             <div className="profile-stats">
             <div className="stat-item">
               <span className="stat-number">{userInfo?.booking_cnt ?? 0}</span>

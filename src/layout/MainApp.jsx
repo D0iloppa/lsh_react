@@ -20,6 +20,7 @@ const MainApp = () => {
     const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
     
 
+    console.log('welcome!', user);
 
     useEffect(() => {
         window.scrollTo(0, 0);

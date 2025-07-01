@@ -459,7 +459,7 @@ const ViewReviewPage = ({
             letter-spacing: 0.3px;
           }
 
-          /* 매니저 답변 스타일 */
+          /* 매니저 답변 스타일 (기존) */
           .manager-response {
             background-color: #f0f9ff;
             border: 1px solid #e0f2fe;
@@ -468,6 +468,13 @@ const ViewReviewPage = ({
             padding: 0.75rem;
             margin-top: 0.75rem;
             position: relative;
+          }
+
+          /* 스태프 답변 스타일 (노란색) */
+          .manager-response.staff-response {
+            background-color: #fffbeb;
+            border: 1px solid #fed7aa;
+            border-left: 4px solid #f59e0b;
           }
 
           .response-header {
@@ -485,6 +492,11 @@ const ViewReviewPage = ({
             letter-spacing: 0.5px;
           }
 
+          /* 스태프 답변일 때 라벨 색상 */
+          .staff-response .response-label {
+            color: #d97706;
+          }
+
           .response-badge {
             background-color: #0284c7;
             color: white;
@@ -494,11 +506,21 @@ const ViewReviewPage = ({
             font-weight: 500;
           }
 
+          /* 스태프 답변일 때 배지 색상 */
+          .staff-response .response-badge {
+            background-color: #f59e0b;
+          }
+
           .response-text {
             font-size: 0.9rem;
             color: #1e40af;
             line-height: 1.4;
             font-style: italic;
+          }
+
+          /* 스태프 답변일 때 텍스트 색상 */
+          .staff-response .response-text {
+            color: #92400e;
           }
       `}</style>
 
@@ -624,12 +646,17 @@ const ViewReviewPage = ({
                   </div>
                   <p className="review-text">{review.content}</p>
 
-                  {/* 매니저 답변 표시 */}
+                  {/* 매니저/스태프 답변 표시 */}
                   {review.reply_content && (
-                    <div className="manager-response">
+                    <div className={`manager-response ${review.target_type === 'staff' ? 'staff-response' : ''}`}>
                       <div className="response-header">
-                       <span className="response-label">매니저 답변</span>
-                       <span className="response-badge"><User size={14} /></span>
+                        <span className="response-label">
+                          {review.target_type === 'venue' 
+                            ? get('REVIEW_MANAGER_RESPONSE') 
+                            : get('REVIEW_STAFF_RESPONSE')
+                          }
+                        </span>
+                        <span className="response-badge"><User size={14} /></span>
                       </div>
                       <div className="response-text">
                         "{review.reply_content}"
@@ -674,7 +701,7 @@ const ViewReviewPage = ({
                   }}>
                   <SketchBtn 
                     onClick={() => {
-                      console.log('버튼 클릭됨!');
+                      //console.log('버튼 클릭됨!');
                       handleViewDetail(review);
                     }}
                     style={{
@@ -688,8 +715,7 @@ const ViewReviewPage = ({
                   >
                     {get('COMMON_VIEW_DETAILS') || '상세보기'}
                   </SketchBtn>
-</div>
-
+                  </div>
                 </div>
               </SketchDiv>
             ))

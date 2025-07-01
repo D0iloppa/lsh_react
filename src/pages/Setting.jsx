@@ -12,6 +12,7 @@ import { useAuth } from '../contexts/AuthContext';
 import qs from 'qs';
 import LoadingScreen from '@components/LoadingScreen';
 
+
 const SettingsPage = ({ 
   navigateToPageWithData, 
   PAGES,
@@ -117,11 +118,11 @@ const { messages, isLoading, error, get, currentLang, availableLanguages, refres
         }
       );
 
-      alert('설정이 저장되었습니다.');
-    } catch (error) {
-      console.error('설정 저장 실패:', error);
-      alert('설정 저장 중 오류가 발생했습니다.');
-    }
+        alert(get('SETTINGS_SAVE_SUCCESS'));
+        } catch (error) {
+          console.error(get('SETTINGS_SAVE_ERROR_LOG'), error);
+          alert(get('SETTINGS_SAVE_ERROR'));
+        }
   };
 
 
@@ -349,7 +350,7 @@ const { messages, isLoading, error, get, currentLang, availableLanguages, refres
              <div className="form-field">
                 <label className="field-label">{get('title.text.1')}</label>
                 <span style={{ display: 'inline-block', padding: '0.5rem 0' }}>
-                  {email || '이메일 없음'}
+                  {email || get('PROFILE_NO_EMAIL')}
                 </span>
               </div>
               <div className="form-field">

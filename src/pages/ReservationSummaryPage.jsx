@@ -5,6 +5,7 @@ import SketchBtn from '@components/SketchBtn';
 import '@components/SketchComponents.css';
 import SketchHeader from '@components/SketchHeader';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import { useAuth } from '@contexts/AuthContext';
 import LoadingScreen from '@components/LoadingScreen';
 import ApiClient from '@utils/ApiClient';
 
@@ -34,6 +35,8 @@ const ReserveSummaryPage = ({
   });
   const [isConfirming, setIsConfirming] = useState(false);
 
+
+  const { user, isLoggedIn } = useAuth();
 
   const [agreements, setAgreements] = useState({
     policyTerms: false
@@ -89,6 +92,7 @@ const ReserveSummaryPage = ({
         end_time: endTime,
         duration: duration,
         note: memo || '',
+        mngCode:0,
         venueToItem, pickupService
       };
 

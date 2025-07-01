@@ -450,13 +450,13 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
                     height: '13px'
                   }}
                 >
-                  {spot.is_reservation ? '예약 가능' : '예약 마감'}
+                  {spot.is_reservation ? get('DiscoverPage1.1.able') : get('DiscoverPage1.1.disable')}
                 </div>
             <div style={{ fontSize: '14px', color: '#333', marginTop: '6px' }}>
               <MapPin size={14}/> {spot.address}
             </div>
             <div style={{ fontSize: '14px', color: '#555', marginTop: '4px' }}>
-              <Clock size={14}/> {openHoursText}  / <Users size={14}/> {spot.staff_cnt} staff
+              <Clock size={14}/> {openHoursText}  / <Users size={14}/> {spot.staff_cnt} {get('title.text.16')}
             </div>
 
             {/* 평점 (4번째부터만) */}

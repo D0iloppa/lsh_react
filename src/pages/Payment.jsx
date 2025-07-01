@@ -8,7 +8,7 @@ import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 
 import SketchHeader from '@components/SketchHeader';
-
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 import { useAuth } from '../contexts/AuthContext';
 
@@ -22,6 +22,16 @@ const Payment = ({
   const [userInfo, setUserInfo] = useState({});
   const [userReviews, setUserReviews] = useState([]);
   const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+  useEffect(() => {
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      // setLanguage('en'); // 기본 언어 설정
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
+  }, [messages, currentLang]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -68,7 +78,7 @@ const Payment = ({
 
       <div className="account-container">
         <SketchHeader
-          title="Payment"
+          title={get('Menu1.7')}
           showBack={true}
           onBack={handleBack}
           rightButtons={[]}

@@ -242,17 +242,17 @@ const SubscriptionPaymentPage = ({
                 onChange={(e) => setDuration(e.target.value)}
               >
                 <option value="">{get('SubscripPay1.6')}</option>
-                <option value="7">7 Days</option>
-                <option value="30">30 Days</option>
-                <option value="90">90 Days</option>
-                <option value="365">365 Days</option>
+                <option value="7">7{get('SubscripPay1.6')}</option>
+                <option value="30">30{get('SubscripPay1.6')}</option>
+                <option value="90">90{get('SubscripPay1.6')}</option>
+                <option value="365">365{get('SubscripPay1.6')}</option>
               </select>
             </div>
           </div>
 
           {/* Payment Information */}
           <div className="section" style={{marginBottom: '0px'}}>
-            <div className="section-title">Payment Information</div>
+            <div className="section-title">{get('PAYMENT_INFORMATION_TITLE')}</div>
             
             <div className="form-field">
               <SketchInput
@@ -305,7 +305,7 @@ const SubscriptionPaymentPage = ({
           size="normal"
           onClick={handleConfirmPay}
         >
-          Confirm & Pay
+          {get('btn.back.1')} & {get('Menu1.7')}
           <HatchPattern opacity={0.8} />
         </SketchBtn>
       </div></div>

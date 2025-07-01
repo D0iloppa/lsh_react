@@ -197,7 +197,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
 
 <div style={{ display: 'none' }}>
   <SketchHeader 
-    title="지도 검색"
+    title={get('btn.searchMap.1.1')}
     showBack={true}
     onBack={handleBack}
     rightButtons={[]}
@@ -240,10 +240,10 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
                   <option value="RESTAURANT">RESTAURANT</option>
                 </select>
                 <select className="select-box" value={sortRating} onChange={(e) => setSortRating(e.target.value)}>
-                  <option value="RATING_ALL">평점 전체</option>
-                  <option value="RATING_5">5+ 이상</option>
-                  <option value="RATING_4">4+ 이상</option>
-                  <option value="RATING_3">3+ 이상</option>
+                  <option value="RATING_ALL">{get('main.filter.rating.all')}</option>
+                  <option value="RATING_5">{get('main.filter.rating.5plus')}</option>
+                  <option value="RATING_4">{get('main.filter.rating.4plus')}</option>
+                  <option value="RATING_3">{get('main.filter.rating.3plus')}</option>
                 </select>
             
                 <select
@@ -268,7 +268,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
                     onChange={(e) => setIsReservationOnly(e.target.checked)}
                     style={{ transform: 'scale(1.1)' }}
                   />
-                  예약 가능 업체
+                   {get('main.filter.reservation.available')}
                 </label>
             </div>
 

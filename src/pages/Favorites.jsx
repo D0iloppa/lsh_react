@@ -297,17 +297,6 @@ const FavoritesPage = ({
                   onBack={goBack}
                   rightButtons={[]}
                 />
-        {/* <div className="header">
-          <div className="logo">≡ LeTanTon Sheriff</div>
-          <SketchBtn 
-            variant="secondary" 
-            size="small"
-            onClick={handleProfile}
-          >
-            PROFILE
-          </SketchBtn>
-        </div> */}
-
         {/* Content Section */}
         <div className="content-section">
           {/* Section Header */}
