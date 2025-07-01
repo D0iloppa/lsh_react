@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import { ImageUploader } from '@components/ImageUploader';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '../contexts/AuthContext';
 import '@components/SketchComponents.css';
 import ApiClient from '@utils/ApiClient';
@@ -8,7 +9,7 @@ import axios from 'axios';
 
 const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const room_sn = otherProps?.room_sn || null;
-
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const { user } = useAuth();
   const user_id = user?.user_id;
   const nickname = user?.name;
@@ -21,6 +22,15 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const messageEndRef = useRef(null);
   const chatBoxRef = useRef(null);
   const firstLoadRef = useRef(true);
+
+  useEffect(() => {
+      if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        // setLanguage('en'); // 기본 언어 설정
+        console.log('Current language set to:', currentLang);
+        window.scrollTo(0, 0);
+      }
+    }, [messages, currentLang]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -351,7 +361,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       `}</style>
 
       <div className="chat-container">
-        <SketchHeader title="1:1 채팅" showBack={true} onBack={goBack} rightButtons={[]} />
+        <SketchHeader title={get('CHAT_ONE_ON_ONE_TITLE')} showBack={true} onBack={goBack} rightButtons={[]} />
         <div className="chat-messages" ref={chatBoxRef}>
           {console.log('Rendering chat_messages:', chat_messages)}
           {chat_messages.map((msg) => (
@@ -402,14 +412,14 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           <input
             className="chat-input"
             type="text"
-            placeholder="메시지를 입력하세요..."
+            placeholder={get('CHAT_INPUT_PLACEHOLDER')}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             style={{ width: '20px' }}
           />
           <button className="send-button" onClick={handleSend}>
-            전송
+            {get('CHAT_SEND_BUTTON')}
           </button>
         </div>
       </div>

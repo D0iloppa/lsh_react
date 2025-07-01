@@ -11,6 +11,7 @@ import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
 import LoadingScreen from '@components/LoadingScreen';
 import SketchHeader from '@components/SketchHeader'
+import Swal from 'sweetalert2';
 
 const CSPage1 = ({ 
   navigateToPageWithData, 
@@ -87,7 +88,15 @@ const CSPage1 = ({
             );
 
       // 성공 시 처리
-       alert('문의사항등록이 완료되었습니다.');
+      
+
+       Swal.fire({
+          title: get('SWAL_SUCCESS_TITLE'),
+          text: get('INQUIRY_SUBMIT_SUCCESS'),
+          icon: 'success',
+          confirmButtonText: get('SWAL_CONFIRM_BUTTON'),
+          confirmButtonColor: '#10b981'
+        });
 
       // 성공한 경우에만 페이지 이동
       navigateToPageWithData && navigateToPageWithData(PAGES.CS_PAGE_2, { 
@@ -99,7 +108,13 @@ const CSPage1 = ({
       console.error('문의 등록 실패:', error);
       
       // 에러 처리 - 사용자에게 알림 표시
-      alert('문의 등록에 실패했습니다. 다시 시도해주세요.');
+       Swal.fire({
+          title: get('SWAL_ERROR_TITLE'),
+          text: get('INQUIRY_SUBMIT_ERROR'),
+          icon: 'error',
+          confirmButtonText: get('SWAL_CONFIRM_BUTTON'),
+          confirmButtonColor: '#ef4444'
+        });
       
       // 또는 에러와 함께 페이지 이동
       // navigateToPageWithData && navigateToPageWithData(PAGES.CS_PAGE_2, { 

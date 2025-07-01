@@ -5,6 +5,7 @@ import SketchDiv from '@components/SketchDiv';
 import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
 import HatchPattern from '@components/HatchPattern';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
 
@@ -36,6 +37,17 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
 
   const { mode, venue_id, promotionData = false } = otherProps;
   const isEditMode = mode === 'edit';
+    const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  
+  
+    useEffect(() => {
+        if (messages && Object.keys(messages).length > 0) {
+          console.log('✅ Messages loaded:', messages);
+          // setLanguage('en'); // 기본 언어 설정
+          console.log('Current language set to:', currentLang);
+          window.scrollTo(0, 0);
+        }
+      }, [messages, currentLang]);
 
   // 페이지 진입 시 모드 디버그
   useEffect(() => {
@@ -71,31 +83,31 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
 
   // 폼 제출 처리
   const handleSubmit = async () => {
-    // 필수 필드 검증
-    if (!form.title.trim()) {
-      toast.error('프로모션 제목을 입력해주세요.');
-      return;
-    }
-    if (!form.desc.trim()) {
-      toast.error('프로모션 설명을 입력해주세요.');
-      return;
-    }
-    if (!form.type) {
-      toast.error('프로모션 타입을 선택해주세요.');
-      return;
-    }
-    if (!form.startDate) {
-      toast.error('시작 날짜를 입력해주세요.');
-      return;
-    }
-    if (!form.endDate) {
-      toast.error('종료 날짜를 입력해주세요.');
-      return;
-    }
-    if (!form.discount_value || form.discount_value <= 0 || form.discount_value > 100) {
-      toast.error('할인율을 1-100 사이의 값으로 입력해주세요.');
-      return;
-    }
+  // 필수 필드 검증
+  if (!form.title.trim()) {
+    toast.error(get('PROMOTION_TITLE_REQUIRED'));
+    return;
+  }
+  if (!form.desc.trim()) {
+    toast.error(get('PROMOTION_DESC_REQUIRED'));
+    return;
+  }
+  if (!form.type) {
+    toast.error(get('PROMOTION_TYPE_REQUIRED'));
+    return;
+  }
+  if (!form.startDate) {
+    toast.error(get('PROMOTION_START_DATE_REQUIRED'));
+    return;
+  }
+  if (!form.endDate) {
+    toast.error(get('PROMOTION_END_DATE_REQUIRED'));
+    return;
+  }
+  if (!form.discount_value || form.discount_value <= 0 || form.discount_value > 100) {
+    toast.error(get('PROMOTION_DISCOUNT_INVALID'));
+    return;
+  }
 
     setIsSubmitting(true);
     try {
@@ -125,21 +137,24 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
       console.log('✅ Promotion response:', response);
 
       if (response.success) {
-        toast.success(isEditMode ? '프로모션이 수정되었습니다.' : '프로모션이 생성되었습니다.');
+        toast.success(isEditMode 
+          ? get('PROMOTION_UPDATE_SUCCESS') 
+          : get('PROMOTION_CREATE_SUCCESS')
+        );
         
         // 잠시 후 이전 페이지로 이동
         setTimeout(() => {
           goBack();
         }, 1500);
       } else {
-        toast.error('프로모션 저장에 실패했습니다.');
+        toast.error(get('PROMOTION_SAVE_FAILED'));
       }
-    } catch (error) {
+      } catch (error) {
       console.error('Failed to submit promotion:', error);
-      toast.error('프로모션 저장 중 오류가 발생했습니다.');
-    } finally {
+      toast.error(get('PROMOTION_SAVE_ERROR'));
+      } finally {
       setIsSubmitting(false);
-    }
+      }
   };
 
   return (
@@ -186,33 +201,35 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           width: 100%;
         }
       `}</style>
-      <div className="create-container">
+        <div className="create-container">
         <SketchHeader
-          title={isEditMode ? "프로모션 편집" : "새 프로모션 만들기"}
+          title={isEditMode ? get('PROMOTION_EDIT_TITLE') : get('PROMOTION_CREATE_TITLE')}
           showBack={true}
           onBack={goBack}
         />
         <div className="form-field" style={{paddingTop:'1.0rem'}}>
-          <div className="form-label">Promotion Title</div>
+          <div className="form-label">{get('PROMOTION_TITLE_LABEL')}</div>
           <SketchInput
             name="title"
             value={form.title}
             onChange={handleChange}
-            placeholder="Enter title"
+            placeholder={get('PROMOTION_TITLE_PLACEHOLDER')}
           />
         </div>
         <div className="form-field">
-          <div className="form-label">Short Description</div>
+          <div className="form-label">{get('PROMOTION_DESC_LABEL')}</div>
           <SketchInput
             name="desc"
             value={form.desc}
             onChange={handleChange}
-            placeholder="Enter description"
+            placeholder={get('PROMOTION_DESC_PLACEHOLDER')}
             as="textarea"
             rows={2}
           />
         </div>
-        <div className="form-label" style={{marginBottom: '0.3rem'}}>Promotion Type</div>
+        <div className="form-label" style={{marginBottom: '0.3rem'}}>
+          {get('PROMOTION_TYPE_LABEL')}
+        </div>
         <div className="type-row">
           {typeOptions.map(opt => (
             <label key={opt.value}>
@@ -229,18 +246,20 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           ))}
         </div>
         <div className="form-field">
-          <div className="form-label">Upload a Cover Image</div>
+          <div className="form-label">{get('PROMOTION_UPLOAD_IMAGE_LABEL')}</div>
           <SketchInput
             name="image"
             value={form.image}
             onChange={handleChange}
-            placeholder="Image URL or upload"
+            placeholder={get('PROMOTION_IMAGE_PLACEHOLDER')}
           />
         </div>
-        <div className="form-label">Promotion Dates</div>
+        <div className="form-label">{get('PROMOTION_DATES_LABEL')}</div>
         <div className="date-row">
           <div className="date-field">
-            <div className="form-label" style={{fontSize: '0.3rem'}}>- Start Date</div>
+            <div className="form-label" style={{fontSize: '0.3rem'}}>
+              {get('PROMOTION_START_DATE_LABEL')}
+            </div>
             <SketchInput
               name="startDate"
               value={form.startDate}
@@ -250,7 +269,9 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
             />
           </div>
           <div className="date-field">
-            <div className="form-label" style={{fontSize: '0.3rem'}}>- End Date</div>
+            <div className="form-label" style={{fontSize: '0.3rem'}}>
+              {get('PROMOTION_END_DATE_LABEL')}
+            </div>
             <SketchInput
               name="endDate"
               value={form.endDate}
@@ -261,16 +282,18 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           </div>
         </div>
         <div className="form-field">
-          <div className="form-label">Applicable Days/Times</div>
+          <div className="form-label">{get('PROMOTION_APPLICABLE_TIMES_LABEL')}</div>
           <SketchInput
             name="time"
             value={form.time}
             onChange={handleChange}
-            placeholder="e.g. weekdays, 6 PM - 9 PM"
+            placeholder={get('PROMOTION_TIME_PLACEHOLDER')}
           />
         </div>
         <div className="form-field">
-          <div className="form-label" style={{marginBottom:'-13px'}}>Discount</div>
+          <div className="form-label" style={{marginBottom:'-13px'}}>
+            {get('PROMOTION_DISCOUNT_LABEL')}
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <select
               name="discount_type"
@@ -289,7 +312,7 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
                   fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"
                 }}
             >
-              <option value="percent">Percent</option>
+              <option value="percent">{get('PROMOTION_DISCOUNT_PERCENT')}</option>
             </select>
             <div id="discount_value">
               <SketchInput
@@ -297,7 +320,7 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
                 type="number"
                 value={form.discount_value}
                 onChange={handleChange}
-                placeholder="10"
+                placeholder={get('PROMOTION_DISCOUNT_PLACEHOLDER')}
                 min="0"
                 max="100"
                 style={{ flex: 1 , marginTop : '1.0rem'}}
@@ -307,19 +330,21 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           </div>
         </div>
         <div className="form-actions">
-          { /*
-          <SketchBtn variant="event" size="medium" style={{ width: '100%' }}>
-            {isEditMode ? "미리보기" : "미리보기"}
-          </SketchBtn>
-          */}
           <SketchBtn 
             variant="event" 
             size="medium" 
             style={{ width: '100%' }}
             onClick={handleSubmit}
             disabled={isSubmitting}
-          ><HatchPattern opacity={0.8} />
-            {isSubmitting ? '처리 중...' : (isEditMode ? "수정 완료" : "저장 및 활성화")}
+          >
+            <HatchPattern opacity={0.8} />
+            {isSubmitting 
+              ? get('PROMOTION_PROCESSING') 
+              : (isEditMode 
+                  ? get('PROMOTION_UPDATE_COMPLETE') 
+                  : get('PROMOTION_SAVE_ACTIVATE')
+                )
+            }
           </SketchBtn>
         </div>
 

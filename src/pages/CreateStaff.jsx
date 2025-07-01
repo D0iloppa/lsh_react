@@ -4,6 +4,7 @@ import SketchBtn from '@components/SketchBtn';
 import HatchPattern from '@components/HatchPattern'
 import SketchDiv from '@components/SketchDiv';
 import SketchInput from '@components/SketchInput';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import '@components/SketchComponents.css';
 
 
@@ -19,7 +20,7 @@ const roleOptions = [
 const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
 
   const { user } = useAuth();
-  
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [venue, setVenue] = useState(-1);
   const [form, setForm] = useState({
     name: '',
@@ -48,6 +49,15 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
       console.log('res', res);
     });
   };
+
+    useEffect(() => {
+        if (messages && Object.keys(messages).length > 0) {
+          console.log('✅ Messages loaded:', messages);
+          // setLanguage('en'); // 기본 언어 설정
+          console.log('Current language set to:', currentLang);
+          window.scrollTo(0, 0);
+        }
+      }, [messages, currentLang]);
 
   useEffect(() => {
     setVenue(user?.venue_id);
@@ -99,78 +109,84 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
           margin-top: 1.1rem;
         }
       `}</style>
-      <div className="create-container">
-        <SketchHeader
-          title="Create New Staff"
-          showBack={true}
-          onBack={goBack}
-        />
-        <div className="form-title">Create New Staff Account</div>
-        <SketchDiv className="form-box">
-          <HatchPattern opacity={0.4} />
-          <div className="form-field">
-            <div className="form-label">Staff Member's Name</div>
-            <SketchInput
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Enter name"
-            />
-          </div>
-          <div className="form-field">
-            <div className="form-label">Unique ID (Username)</div>
-            <SketchInput
-              name="username"
-              value={form.username}
-              onChange={handleChange}
-              placeholder="Enter username"
-            />
-          </div>
-          <div className="form-field">
-            <div className="form-label">Temporary Password</div>
-            <SketchInput
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              placeholder="Enter temporary password"
-              type="password"
-            />
-          </div>
-          <div className="form-field">
-            <div className="form-label">Contact Information</div>
-            <SketchInput
-              name="contact"
-              value={form.contact}
-              onChange={handleChange}
-              placeholder="Phone or Email"
-            />
-          </div>
-          <div className="form-label" style={{marginBottom: '0.3rem', display: 'none'}}>Select Staff Role</div>
-          <div className="role-row">
-            {
-            /*
-              roleOptions.map(opt => (
-                <label key={opt.value}>
-                  <input
-                    type="radio"
-                    name="role"
-                    value={opt.value}
-                    checked={form.role === opt.value}
-                    onChange={handleChange}
-                    className="role-radio"
-                  />
-                  {opt.label}
-                </label>
-              ))
-              */
-            }
-          </div>
-          <div className="form-actions">
-            <SketchBtn variant="event" size="small" onClick={handleAddStaff}>Save</SketchBtn>
-            <SketchBtn variant="danger" size="small" onClick={goBack}>Cancel</SketchBtn>
-          </div>
-        </SketchDiv>
-      </div>
+          <div className="create-container">
+          <SketchHeader
+            title={get('STAFF_CREATE_HEADER_TITLE')}
+            showBack={true}
+            onBack={goBack}
+          />
+          <div className="form-title">{get('STAFF_CREATE_FORM_TITLE')}</div>
+          <SketchDiv className="form-box">
+            <HatchPattern opacity={0.4} />
+            <div className="form-field">
+              <div className="form-label">{get('STAFF_NAME_LABEL')}</div>
+              <SketchInput
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder={get('STAFF_NAME_PLACEHOLDER')}
+              />
+            </div>
+            <div className="form-field">
+              <div className="form-label">{get('STAFF_USERNAME_LABEL')}</div>
+              <SketchInput
+                name="username"
+                value={form.username}
+                onChange={handleChange}
+                placeholder={get('STAFF_USERNAME_PLACEHOLDER')}
+              />
+            </div>
+            <div className="form-field">
+              <div className="form-label">{get('STAFF_PASSWORD_LABEL')}</div>
+              <SketchInput
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder={get('STAFF_PASSWORD_PLACEHOLDER')}
+                type="password"
+              />
+            </div>
+            <div className="form-field">
+              <div className="form-label">{get('STAFF_CONTACT_LABEL')}</div>
+              <SketchInput
+                name="contact"
+                value={form.contact}
+                onChange={handleChange}
+                placeholder={get('STAFF_CONTACT_PLACEHOLDER')}
+              />
+            </div>
+            <div className="form-label" style={{marginBottom: '0.3rem', display: 'none'}}>
+              {get('STAFF_ROLE_LABEL')}
+            </div>
+            <div className="role-row">
+              {
+              /*
+                roleOptions.map(opt => (
+                  <label key={opt.value}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value={opt.value}
+                      checked={form.role === opt.value}
+                      onChange={handleChange}
+                      className="role-radio"
+                    />
+                    {opt.label}
+                  </label>
+                ))
+                */
+              }
+            </div>
+            <div className="form-actions">
+              <SketchBtn variant="event" size="small" onClick={handleAddStaff}>
+                {get('STAFF_SAVE_BUTTON')}
+              </SketchBtn>
+              <SketchBtn variant="danger" size="small" onClick={goBack}>
+                {get('STAFF_CANCEL_BUTTON')}
+              </SketchBtn>
+            </div>
+          </SketchDiv>
+        </div>
     </>
   );
 };

@@ -3,12 +3,13 @@ import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
-import { Calendar, Clock, MapPin, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react';
 import HatchPattern from '@components/HatchPattern';
 
 import { useAuth } from '@contexts/AuthContext';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
+import Swal from 'sweetalert2';
 
 const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
   const { user, isLoggedIn } = useAuth();
@@ -103,6 +104,16 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
     return `Week ${weekOffset > 0 ? '+' : ''}${weekOffset}`;
   };
 
+  // 시간 포맷 변환 함수 추가
+  function formatTimeToAMPM(timeStr) {
+    if (!timeStr) return '';
+    const [hour, minute] = timeStr.split(':');
+    let h = parseInt(hour, 10);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${String(h).padStart(2, '0')}:${minute} ${ampm}`;
+  }
+
   // API 연계를 위한 함수
   const fetchSchedules = async () => {
     try {
@@ -182,40 +193,53 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
     }
   };
 
-  const handleCheckInOut = async (schedule, isCheckOut) => {
-    try {
-      const currentTime = new Date().toISOString().slice(11, 16); // HH:MM 형식
-      
-      if (isCheckOut) {
-        // Check Out 처리
-        const response = await ApiClient.postForm('/api/checkOut', {
-          schedule_id: schedule.schedule_id,
-          check_out_time: currentTime
+  const handleCheckInOut = async (schedule, isCheckOut, isCheckedOut) => {
+      if(isCheckedOut) return;
+    
+      console.log(schedule);
+      try {
+
+        const {schedule_id = false , work_date = false} = schedule;
+        if(!schedule_id || !work_date) return;
+
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD 형식
+        if(work_date !== today) {
+          console.warn('Cannot check in/out for different date:', work_date, 'vs', today);
+          // 사용자에게 알림 표시
+          Swal.fire({
+            title: '오늘 날짜가 아닌 일정에는 체크인/아웃할 수 없습니다.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
+          });
+          return;
+        }
+
+
+        const status = isCheckOut ? 'check_out' : 'check_in';
+        
+        // DB에서 업데이트하고 실제 저장된 시간 반환받기
+        const response = await ApiClient.postForm('/api/checkInOut', {
+          status,
+          schedule_id: schedule_id
         });
         
-        // 로컬 상태 업데이트
-        setSchedules(prev => prev.map(s => 
-          s.schedule_id === schedule.schedule_id 
-            ? { ...s, check_out_time: currentTime }
-            : s
-        ));
-      } else {
-        // Check In 처리
-        const response = await ApiClient.postForm('/api/checkIn', {
-          schedule_id: schedule.schedule_id,
-          check_in_time: currentTime
-        });
+        // 성공했을 때만 로컬 상태 업데이트
+        if(response.success) {
+          const updatedTime = response.updated_time;
+          setSchedules(prev => prev.map(s => 
+            s.schedule_id === schedule_id 
+              ? { ...s, [status]: updatedTime }
+              : s
+          ));
+        } else {
+          // 실패한 경우 에러 처리
+          console.error('Check in/out failed:', response.err);
+          // 사용자에게 알림 표시 등...
+        }
         
-        // 로컬 상태 업데이트
-        setSchedules(prev => prev.map(s => 
-          s.schedule_id === schedule.schedule_id 
-            ? { ...s, check_in_time: currentTime }
-            : s
-        ));
+      } catch (error) {
+        console.error('Failed to check in/out:', error);
       }
-    } catch (error) {
-      console.error('Failed to check in/out:', error);
-    }
   };
 
   const toggleDayFold = (date) => {
@@ -300,9 +324,9 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
         .date-btn { border: 1px solid #bbb; background: #fff; border-radius: 0.4rem; padding: 0.2rem 0.7rem; font-size: 1rem; cursor: pointer; }
         .week-title, .month-title { font-size: 1.1rem; font-weight: 600; color: #1f2937; text-align: center; flex: 1; }
         .schedule-list { margin-top: 1.2rem; }
-        .schedule-row { display: flex; align-items: center; gap: 1.2rem; margin-bottom: 0.7rem; }
+        .schedule-row { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.7rem; }
         .schedule-day { flex: 1.2; font-size: 1.05rem; }
-        .schedule-time { flex: 1.5; font-size: 1.05rem; }
+        .schedule-time { flex: 2.5; font-size: 1.05rem; }
         .schedule-actions { flex: 1.5; display: flex; gap: 0.3rem; }
         .schedule-action-btn { min-width: 90px; font-size: 0.95rem; padding: 0.18rem 0.5rem; }
         .create-btn-row { margin: 1.2rem 0 0.7rem 0; }
@@ -535,6 +559,27 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
           background: #f3f4f6 !important;
           color: #6b7280 !important;
         }
+        .schedule-time-text {
+          font-size: 0.8rem;
+          font-weight: 400;
+          letter-spacing: 0.01em;
+        }
+
+        .check-outed{
+          background: #f3e8ff !important;
+          color: #7c3aed !important;
+        }
+        .checked-out-badge {
+          background: #7c3aed;
+          color: #fff;
+          font-size: 0.72rem;
+          border-radius: 8px;
+          padding: 0.13em 0.7em;
+          margin-left: 0.7em;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          vertical-align: middle;
+        }
       `}</style>
       
       <SketchHeader
@@ -612,11 +657,13 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
                   break;
                 case 'available':
                   // 출근/퇴근 상태에 따라 버튼 결정
-                  const isCheckedIn = schedule.check_in_time && !schedule.check_out_time;
+                  const isCheckedIn = schedule.check_in && !schedule.check_out;
+                  const isCheckedOut = (schedule.check_out) ? true : false;
                   actions = [
                     {
-                      label: isCheckedIn ? 'Check Out' : 'Check In',
-                      handler: () => handleCheckInOut(schedule, isCheckedIn)
+                      label: isCheckedOut ? 'END' :
+                             isCheckedIn ? 'Check Out' : 'Check In',
+                      handler: () => handleCheckInOut(schedule, isCheckedIn, isCheckedOut)
                     }
                   ];
                   break;
@@ -654,12 +701,23 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
               }
               
               return (
-                <div key={`schedule-${schedule.schedule_id || schedule.work_date || index}`} className="schedule-row">
+                <div key={`schedule-${schedule.schedule_id || schedule.work_date || index}`} 
+                     className={`schedule-row${schedule.check_out ? ' check-outed' : ''}`}>
                   <div className="schedule-day">{dateInfo.day}</div>
                   <div className="schedule-time">
                     {status === 'no-schedule' || status === 'dayoff' || !schedule.start_time ? 
                       getStatusText(status) : 
-                      `${schedule.start_time} - ${schedule.end_time}`
+                      <>
+                        <span className="schedule-time-text">
+                          {`${formatTimeToAMPM(schedule.start_time)} - ${formatTimeToAMPM(schedule.end_time)}`}
+                        </span>
+                        {schedule.check_out && (
+                          <>
+                            <CheckCircle size={14} color="#7c3aed" style={{marginLeft: '0.5em', verticalAlign: 'middle'}} />
+                            <span className="checked-out-badge">Checked Out</span>
+                          </>
+                        )}
+                      </>
                     }
                   </div>
                   <div className="schedule-actions">

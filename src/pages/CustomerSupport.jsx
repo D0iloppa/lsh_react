@@ -6,6 +6,7 @@ import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 import ApiClient from '@utils/ApiClient';
 import { useAuth } from '../contexts/AuthContext';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { Martini } from 'lucide-react';
 
 const mockInquiries = [
@@ -73,11 +74,21 @@ const CustomerSupport = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
   const { user } = useAuth();
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
   const user_id = user?.manager_id||1;
 
   console.log('CustomerSupport 렌더링, user:', user);
   console.log('user_id:', user_id);
+
+    useEffect(() => {
+        if (messages && Object.keys(messages).length > 0) {
+          console.log('✅ Messages loaded:', messages);
+          // setLanguage('en'); // 기본 언어 설정
+          console.log('Current language set to:', currentLang);
+          window.scrollTo(0, 0);
+        }
+      }, [messages, currentLang]);
 
   // 고객문의 목록 로드
   useEffect(() => {
@@ -194,56 +205,58 @@ const CustomerSupport = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           font-size: 0.95rem;
         }
       `}</style>
-      <div className="support-container">
-        <SketchHeader
-          title="고객 문의"
-          showBack={true}
-          onBack={goBack}
-        />
-        <div className="inquiry-title">고객 문의</div>
-        
-        {loading ? (
-          <div className="loading-message">
-            <Martini size={15} />
-            <span>Loading inquiries...</span>
-          </div>
-        ) : (
-          <div className="inquiry-list">
-            {inquiries.length === 0 ? (
-              <div className="no-inquiries">
-                고객 문의가 존재하지 않습니다.
-              </div>
-            ) : (
-              inquiries.map(inq => (
-                <SketchDiv key={inq.id} className="inquiry-card">
-                  <HatchPattern opacity={0.3} />
-                  <div className="inquiry-info">
-                    <div className="inquiry-title-main">
-                      {inq.name || 'Customer Inquiry'}
+          <div className="support-container">
+          <SketchHeader
+            title={get('CUSTOMER_INQUIRY_TITLE')}
+            showBack={true}
+            onBack={goBack}
+          />
+          <div className="inquiry-title">{get('CUSTOMER_INQUIRY_TITLE')}</div>
+          
+          {loading ? (
+            <div className="loading-message">
+              <Martini size={15} />
+              <span>{get('LOADING_INQUIRIES')}</span>
+            </div>
+          ) : (
+            <div className="inquiry-list">
+              {inquiries.length === 0 ? (
+                <div className="no-inquiries">
+                  {get('NO_INQUIRIES_MESSAGE')}
+                </div>
+              ) : (
+                inquiries.map(inq => (
+                  <SketchDiv key={inq.id} className="inquiry-card">
+                    <HatchPattern opacity={0.3} />
+                    <div className="inquiry-info">
+                      <div className="inquiry-title-main">
+                        {inq.name || get('CUSTOMER_INQUIRY_DEFAULT')}
+                      </div>
+                      <div className="inquiry-meta">
+                        {inq.contents}
+                      </div>
+                      <div style={{padding: '3px', color: '#8e8e8e'}}>
+                        {formatDate(inq.created_at)}
+                      </div>
                     </div>
-                    <div className="inquiry-meta">
-                      {inq.contents}
-                    </div>
-                    <div style={{padding: '3px', color: '#8e8e8e'}}>{formatDate(inq.created_at)}</div>
-                  </div>
-                  <SketchBtn 
-                    variant="primary" 
-                    size="small" 
-                    className="inquiry-status-btn"  
-                    style={{
-                      width: '35%',
-                      ...getStatusStyle('New') // 기본 상태로 설정
-                    }}
-                  >
-                    New
-                    <HatchPattern opacity={0.6} />
-                  </SketchBtn>
-                </SketchDiv>
-              ))
-            )}
-          </div>
-        )}
-      </div>
+                    <SketchBtn 
+                      variant="primary" 
+                      size="small" 
+                      className="inquiry-status-btn"  
+                      style={{
+                        width: '35%',
+                        ...getStatusStyle('New') // 기본 상태로 설정
+                      }}
+                    >
+                      {get('INQUIRY_STATUS_NEW')}
+                      <HatchPattern opacity={0.6} />
+                    </SketchBtn>
+                  </SketchDiv>
+                ))
+              )}
+            </div>
+          )}
+        </div>
     </>
   );
 };

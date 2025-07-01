@@ -67,156 +67,155 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
     });
   }
 
-  const handleSaveBusinessInfo = () => {
-
-    ApiClient.postForm('/api/venueEdit', {
-      venue_id: venueData?.venue_id,
-      name: business.name,
-      address: business.address
-    }).then(res=>{
-      console.log('res', res);
-      Swal.fire({
-        title: 'Success',
-        text: 'Business info updated successfully',
-        icon: 'success'
-      });
+// 컴포넌트 상단에 추가 (useTranslation import가 있다고 가정)
+const handleSaveBusinessInfo = () => {
+  ApiClient.postForm('/api/venueEdit', {
+    venue_id: venueData?.venue_id,
+    name: business.name,
+    address: business.address
+  }).then(res=>{
+    console.log('res', res);
+    Swal.fire({
+      title: get('SWAL_SUCCESS_TITLE'),
+      text: get('BUSINESS_INFO_UPDATE_SUCCESS'),
+      icon: 'success'
     });
+  });
+}
 
+const handleLogout = async () => {
+    console.log('logout')
+    await logout();
+    navigate('/login'); 
+}
+
+// 현재 비밀번호 인증
+const handleVerifyCurrentPassword = async () => {
+  if (!password.current.trim()) {
+    Swal.fire({
+      title: get('SWAL_ERROR_TITLE'),
+      text: get('PASSWORD_ENTER_CURRENT'),
+      icon: 'error'
+    });
+    return;
   }
 
-  const handleLogout = async () => {
-      console.log('logout')
-      await logout();
-      navigate('/login'); 
-  }
+  setIsVerifyingPassword(true);
+  try {
+    // 비밀번호 검증 전용 함수 사용 (navigate 없음)
+    const response = await verifyPassword({
+      login_id: user.login_id,
+      email: user.login_id,
+      passwd: password.current,
+      login_type: user.login_type,
+      account_type: user.type
+    });
+    
+    console.log('response', response);
 
-  // 현재 비밀번호 인증
-  const handleVerifyCurrentPassword = async () => {
-    if (!password.current.trim()) {
+    const { success = false } = response;
+
+    if (success) {
+      setIsPasswordVerified(true);
+      setShowNewPasswordFields(true);
       Swal.fire({
-        title: 'Error',
-        text: 'Please enter your current password',
-        icon: 'error'
+        title: get('SWAL_SUCCESS_TITLE'),
+        text: get('PASSWORD_VERIFY_SUCCESS'),
+        icon: 'success',
+        timer: 1500
       });
-      return;
-    }
-
-    setIsVerifyingPassword(true);
-    try {
-      // 비밀번호 검증 전용 함수 사용 (navigate 없음)
-      const response = await verifyPassword({
-        login_id: user.login_id,
-        email: user.login_id,
-        passwd: password.current,
-        login_type: user.login_type,
-        account_type: user.type
-      });
-      
-      console.log('response', response);
-
-      const { success = false } = response;
-
-      if (success) {
-        setIsPasswordVerified(true);
-        setShowNewPasswordFields(true);
-        Swal.fire({
-          title: 'Success',
-          text: 'Password verified successfully',
-          icon: 'success',
-          timer: 1500
-        });
-      } else {
-        setIsPasswordVerified(false);
-        Swal.fire({
-          title: 'Error',
-          text: 'Current password is incorrect',
-          icon: 'error'
-        });
-      }
-    } catch (error) {
-      console.error('Password verification error:', error);
+    } else {
       setIsPasswordVerified(false);
       Swal.fire({
-        title: 'Error',
-        text: 'Failed to verify password',
+        title: get('SWAL_ERROR_TITLE'),
+        text: get('PASSWORD_CURRENT_INCORRECT'),
         icon: 'error'
       });
-    } finally {
-      setIsVerifyingPassword(false);
     }
-  };
+  } catch (error) {
+    console.error('Password verification error:', error);
+    setIsPasswordVerified(false);
+    Swal.fire({
+      title: get('SWAL_ERROR_TITLE'),
+      text: get('PASSWORD_VERIFY_FAILED'),
+      icon: 'error'
+    });
+  } finally {
+    setIsVerifyingPassword(false);
+  }
+};
 
-  // 새 비밀번호 저장
-  const handleSaveNewPassword = async () => {
-    // 1. Current Password vs New Password 체크
-    if (password.current === password.new) {
+// 새 비밀번호 저장
+const handleSaveNewPassword = async () => {
+  // 1. Current Password vs New Password 체크
+  if (password.current === password.new) {
+    Swal.fire({
+      title: get('SWAL_ERROR_TITLE'),
+      text: get('PASSWORD_MUST_BE_DIFFERENT'),
+      icon: 'error'
+    });
+    return;
+  }
+
+  // 2. New Password vs Confirm Password 체크
+  if (password.new !== password.confirm) {
+    Swal.fire({
+      title: get('SWAL_ERROR_TITLE'),
+      text: get('PASSWORD_CONFIRM_MISMATCH'),
+      icon: 'error'
+    });
+    return;
+  }
+
+  // 3. 새 비밀번호 길이 체크
+  if (password.new.length < 6) {
+    Swal.fire({
+      title: get('SWAL_ERROR_TITLE'),
+      text: get('PASSWORD_MIN_LENGTH'),
+      icon: 'error'
+    });
+    return;
+  }
+
+  try {
+    // API 호출 (백엔드에서 구현 예정)
+    const response = await ApiClient.postForm('/api/UpdatePassword', {
+      // 인자는 백엔드에서 결정
+      login_type: user.login_type,
+      account_type: user.account_type,
+      login_id: user.login_id,
+      email: user.login_id,
+      passwd: password.new,
+      rePasswd: password.confirm,
+    });
+
+    if (response.success) {
       Swal.fire({
-        title: 'Error',
-        text: 'New password must be different from current password',
-        icon: 'error'
+        title: get('SWAL_SUCCESS_TITLE'),
+        text: get('PASSWORD_UPDATE_SUCCESS'),
+        icon: 'success'
       });
-      return;
-    }
-
-    // 2. New Password vs Confirm Password 체크
-    if (password.new !== password.confirm) {
+      
+      // 폼 초기화
+      setPassword({ current: '', new: '', confirm: '' });
+      setIsPasswordVerified(false);
+      setShowNewPasswordFields(false);
+    } else {
       Swal.fire({
-        title: 'Error',
-        text: 'New password and confirm password do not match',
-        icon: 'error'
-      });
-      return;
-    }
-
-    // 3. 새 비밀번호 길이 체크
-    if (password.new.length < 6) {
-      Swal.fire({
-        title: 'Error',
-        text: 'New password must be at least 6 characters long',
-        icon: 'error'
-      });
-      return;
-    }
-
-    try {
-      // API 호출 (백엔드에서 구현 예정)
-      const response = await ApiClient.postForm('/api/UpdatePassword', {
-        // 인자는 백엔드에서 결정
-        login_type: user.login_type,
-        account_type: user.account_type,
-        login_id: user.login_id,
-        email: user.login_id,
-        passwd: password.new,
-        rePasswd: password.confirm,
-      });
-
-      if (response.success) {
-        Swal.fire({
-          title: 'Success',
-          text: 'Password updated successfully',
-          icon: 'success'
-        });
-        
-        // 폼 초기화
-        setPassword({ current: '', new: '', confirm: '' });
-        setIsPasswordVerified(false);
-        setShowNewPasswordFields(false);
-      } else {
-        Swal.fire({
-          title: 'Error',
-          text: response.message || 'Failed to update password',
-          icon: 'error'
-        });
-      }
-    } catch (error) {
-      console.error('Password update error:', error);
-      Swal.fire({
-        title: 'Error',
-        text: 'Failed to update password',
+        title: get('SWAL_ERROR_TITLE'),
+        text: response.message || get('PASSWORD_UPDATE_FAILED'),
         icon: 'error'
       });
     }
-  };
+  } catch (error) {
+    console.error('Password update error:', error);
+    Swal.fire({
+      title: get('SWAL_ERROR_TITLE'),
+      text: get('PASSWORD_UPDATE_FAILED'),
+      icon: 'error'
+    });
+  }
+};
 
   const [business, setBusiness] = useState({ name: '', address: '' });
   const [emailNoti, setEmailNoti] = useState(true);
@@ -413,7 +412,7 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
             </SketchBtn>
           </div>
         </SketchDiv>
-        <div className="section-title">Language</div>
+        <div className="section-title">{get('Staff.setting.language.title')}</div>
         <SketchDiv className="section-box">
           <div className="lang-row">
             <select value={tempLang} 
@@ -440,16 +439,11 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
             <SketchBtn variant="accent" size="small" style={{width: '30%'}} onClick={handleSaveLanguage}><HatchPattern opacity={0.6} /> Save</SketchBtn>
           </div>
         </SketchDiv>
-
-
         <div className="section-title" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
           <SketchBtn variant="" size="small" style={{width: '100%'}} onClick={handleLogout}>
             <HatchPattern opacity={0.6} /> Logout
           </SketchBtn>
         </div>
-        
-          
-        
       </div>
     </>
   );

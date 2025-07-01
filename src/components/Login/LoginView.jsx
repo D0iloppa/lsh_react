@@ -150,7 +150,7 @@ export default function LoginView() {
               {/* <h2 className="brand-subtitle">All Girlsbars Here</h2> */}
               
               <p className="brand-description" style={{marginTop: '0.875rem'}}>
-                Welcome to Le Thanh Ton Sheriff Manager Portal. Manage your reservations, staff, and promotions easily.
+                {get('BRAND_DESCRIPTION_WELCOME')}
               </p>
             </div>
       </div>

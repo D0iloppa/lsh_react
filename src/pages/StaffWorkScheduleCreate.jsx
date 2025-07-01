@@ -11,6 +11,8 @@ import { useAuth } from '@contexts/AuthContext';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 
+import Swal from 'sweetalert2';
+
 const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
   const { user, isLoggedIn } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
@@ -71,7 +73,6 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
 
   const handleSave = async () => {
     try {
-      console.log('weekData before save:', weekData);
       
       // Java 코드에 맞춰 필요한 필드만 포함하여 저장
       const formattedData = weekData.map(item => {
@@ -98,7 +99,16 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
       const response = await ApiClient.postForm('/api/upsertStaffSchedule', payload);
       console.log('response:', response);
 
-      //goBack();
+      Swal.fire({
+        title: 'Schedule saved',
+        text: 'Schedule saved successfully',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          goBack();
+        }
+      });
       
     } catch (error) {
       console.error('Failed to save schedule:', error);
@@ -178,6 +188,7 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
         }
         .week-hours select{
           margin-left: 0.6rem;
+          // text-align: right;
         }
         .select-style {
           width: 50px;

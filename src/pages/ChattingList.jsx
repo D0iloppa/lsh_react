@@ -3,6 +3,7 @@ import SketchHeader from '@components/SketchHeader';
 import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
 import axios from 'axios';
 import { Calendar, Users, ClipboardList, Tag, Star, Headphones, Bell, Settings, MessagesSquare } from 'lucide-react';
@@ -11,6 +12,16 @@ const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
   const [staffs, setStaffs] = useState([]);
   const { user } = useAuth();
   const intervalRef = useRef(null);
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+  useEffect(() => {
+      if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        // setLanguage('en'); // 기본 언어 설정
+        console.log('Current language set to:', currentLang);
+        window.scrollTo(0, 0);
+      }
+    }, [messages, currentLang]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -162,7 +173,7 @@ const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           title={
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <MessagesSquare size={16} />
-              <span>Chatting List</span>
+              <span>{get('CHATTING_LIST_TITLE')}</span>
             </div>
           }
           showBack={true} 
@@ -171,7 +182,7 @@ const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
         <div className="staff-list">
           {staffs.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>
-              채팅 기록이 없습니다.
+              {get('CHAT_NO_HISTORY')}
             </div>
           ) : (
             staffs.map((staff) => (

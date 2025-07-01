@@ -54,116 +54,117 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
   }, [ messages, currentLang ]);
   
   
-  
+  const formatMessage = (messageKey, count) => {
+    return get(messageKey).replace('{count}', count);
+  };
   
   // 대시보드 상단 요약 정보
   const summary = [
     {
       title: (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <Calendar size={16} opacity={0.5}/>
-        <span>Today's Reservations</span>
-      </div>
-    ),
-      content: `You have ${dashboardInfo.todaysReservations} reservations today.`
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Calendar size={16} opacity={0.5}/>
+          <span>{get('DASHBOARD_TODAYS_RESERVATIONS')}</span>
+        </div>
+      ),
+      content: formatMessage('DASHBOARD_RESERVATIONS_COUNT', dashboardInfo.todaysReservations)
     },
     {
-      //title: 'Active Promotions',
       title: (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <Tag size={16} opacity={0.5}/>
-        <span>Active Promotions</span>
-      </div>
-    ),
-      content: `${dashboardInfo.activePromotions} ongoing promotions.`
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Tag size={16} opacity={0.5}/>
+          <span>{get('DASHBOARD_ACTIVE_PROMOTIONS')}</span>
+        </div>
+      ),
+      content: formatMessage('DASHBOARD_PROMOTIONS_COUNT', dashboardInfo.activePromotions)
     },
     {
-      //title: 'Recent Reviews',
       title: (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <Star size={16} opacity={0.5}/>
-        <span>Recent Reviews</span>
-      </div>
-    ),
-      content: `${dashboardInfo.recentReviews} new reviews.`
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Star size={16} opacity={0.5}/>
+          <span>{get('DASHBOARD_RECENT_REVIEWS')}</span>
+        </div>
+      ),
+      content: formatMessage('DASHBOARD_REVIEWS_COUNT', dashboardInfo.recentReviews)
     }
   ];
 
   // 대시보드 주요 메뉴
-  const menus = [
-    {
-      id: 1,
-      icon: <Calendar size={24} />,
-      name: 'Reservations',
-      page: PAGES.RESERVATION_MANAGEMENT,
-      menuEvent: () => { navigateToPage(PAGES.RESERVATION_MANAGEMENT); }
-    },
-    {
-      id: 2,
-      icon: <Users size={24} />,
-      name: 'Staff Management',
-      page: PAGES.STAFF_MANAGEMENT,
-      menuEvent: () => { navigateToPage(PAGES.STAFF_MANAGEMENT); }
-    },
-    {
-      id: 3,
-      icon: <ClipboardList size={24} />,
-      name: 'Staff Schedule',
-      page: PAGES.STAFF_SCHEDULE,
-      menuEvent: () => { navigateToPage(PAGES.STAFF_SCHEDULE); }
-    },
-    { 
-      id: 4, 
-      icon: <Tag size={24} />, 
-      name: 'Promotions', 
-      page: PAGES.PROMOTION_MANAGEMENT,
-      menuEvent: () => { navigateToPage(PAGES.PROMOTION_MANAGEMENT); }
-    },
-    { 
-      id: 5, 
-      icon: <Star size={24} />, 
-      name: 'Reviews', 
-      page: PAGES.REVIEW_MANAGEMENT,
-      menuEvent: () => { navigateToPage(PAGES.REVIEW_MANAGEMENT); }
-    },
-     { 
-      id: 6, 
-      icon: <MessagesSquare size={24} />, 
-      name: 'Chatting', 
-      page: PAGES.CHATTING,
-      menuEvent: () => { navigateToPage(PAGES.CHATTINGLIST); } 
-    },
-    // { 
-    //   id: 6, 
-    //   icon: <Headphones size={24} />, 
-    //   name: 'Support', 
-    //   page: PAGES.CUSTOMER_SUPPORT,
-    //   menuEvent: () => { navigateToPage(PAGES.CUSTOMER_SUPPORT); }
-    // },
 
-    { 
-      id: 7, 
-      icon: <Bell size={24} />, 
-      name: 'Notifications', 
-      page: PAGES.NOTIFICATION_CENTER,
-      menuEvent: () => { navigateToPage(PAGES.NOTIFICATION_CENTER); }
-    },
-    { 
-      id: 8, 
-      icon: <Settings size={24} />, 
-      name: 'Settings', 
-      page: PAGES.MANAGER_SETTINGS,
-      menuEvent: () => { navigateToPage(PAGES.MANAGER_SETTINGS); }
-    }
-    
-    // { 
-    //   id: 9, 
-    //   icon: <MessagesSquare size={24} />, 
-    //   name: 'Chatting', 
-    //   page: PAGES.CHATTING,
-    //   menuEvent: () => { navigateToPage(PAGES.CHATTINGLIST); }
-    // }
-  ];
+const menus = [
+  {
+    id: 1,
+    icon: <Calendar size={24} />,
+    name: get('MENU_RESERVATIONS'),
+    page: PAGES.RESERVATION_MANAGEMENT,
+    menuEvent: () => { navigateToPage(PAGES.RESERVATION_MANAGEMENT); }
+  },
+  {
+    id: 2,
+    icon: <Users size={24} />,
+    name: get('MENU_STAFF_MANAGEMENT'),
+    page: PAGES.STAFF_MANAGEMENT,
+    menuEvent: () => { navigateToPage(PAGES.STAFF_MANAGEMENT); }
+  },
+  {
+    id: 3,
+    icon: <ClipboardList size={24} />,
+    name: get('MENU_STAFF_SCHEDULE'),
+    page: PAGES.STAFF_SCHEDULE,
+    menuEvent: () => { navigateToPage(PAGES.STAFF_SCHEDULE); }
+  },
+  { 
+    id: 4, 
+    icon: <Tag size={24} />, 
+    name: get('MENU_PROMOTIONS'), 
+    page: PAGES.PROMOTION_MANAGEMENT,
+    menuEvent: () => { navigateToPage(PAGES.PROMOTION_MANAGEMENT); }
+  },
+  { 
+    id: 5, 
+    icon: <Star size={24} />, 
+    name: get('MENU_REVIEWS'), 
+    page: PAGES.REVIEW_MANAGEMENT,
+    menuEvent: () => { navigateToPage(PAGES.REVIEW_MANAGEMENT); }
+  },
+   { 
+    id: 6, 
+    icon: <MessagesSquare size={24} />, 
+    name: get('MENU_CHATTING'), 
+    page: PAGES.CHATTING,
+    menuEvent: () => { navigateToPage(PAGES.CHATTINGLIST); } 
+  },
+  // { 
+  //   id: 6, 
+  //   icon: <Headphones size={24} />, 
+  //   name: 'Support', 
+  //   page: PAGES.CUSTOMER_SUPPORT,
+  //   menuEvent: () => { navigateToPage(PAGES.CUSTOMER_SUPPORT); }
+  // },
+
+  { 
+    id: 7, 
+    icon: <Bell size={24} />, 
+    name: get('MENU_NOTIFICATIONS'), 
+    page: PAGES.NOTIFICATION_CENTER,
+    menuEvent: () => { navigateToPage(PAGES.NOTIFICATION_CENTER); }
+  },
+  { 
+    id: 8, 
+    icon: <Settings size={24} />, 
+    name: get('MENU_SETTINGS'), 
+    page: PAGES.MANAGER_SETTINGS,
+    menuEvent: () => { navigateToPage(PAGES.MANAGER_SETTINGS); }
+  }
+  
+  // { 
+  //   id: 9, 
+  //   icon: <MessagesSquare size={24} />, 
+  //   name: 'Chatting', 
+  //   page: PAGES.CHATTING,
+  //   menuEvent: () => { navigateToPage(PAGES.CHATTINGLIST); }
+  // }
+];
 
   return (
     <>
@@ -220,7 +221,7 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
 
     <div className="account-container">
     <SketchHeader 
-        title={[<CocktailIcon key="icon" />, "LetanTon Sheriff Manager"]}
+        title={[<CocktailIcon key="icon" />, get('APP_TITLE')]}
         showBack={false}
         onBack={goBack}
         rightButtons={[]}

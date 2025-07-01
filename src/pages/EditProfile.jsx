@@ -93,68 +93,68 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
   };
 
   const handleSave = async () => {
-    try {
-      setIsSaving(true);
-      
-      const imageContentId = uploadedImages.length > 0 
-        ? parseInt(uploadedImages[0].contentId, 10) 
-        : 0;
+  try {
+    setIsSaving(true);
+    
+    const imageContentId = uploadedImages.length > 0 
+      ? parseInt(uploadedImages[0].contentId, 10) 
+      : 0;
 
-        const payload = {
-          staff_id: user?.staff_id || user?.id,
-          nickname: form.nickname,
-          birth_year: form.birth_year,
-          languages: form.languages,
-          description: form.intro,
-          profile_content_id: imageContentId, // 단일 long 값 (0 또는 실제 ID)
-        };
+      const payload = {
+        staff_id: user?.staff_id || user?.id,
+        nickname: form.nickname,
+        birth_year: form.birth_year,
+        languages: form.languages,
+        description: form.intro,
+        profile_content_id: imageContentId, // 단일 long 값 (0 또는 실제 ID)
+      };
 
-        console.log('payload', payload);
+      console.log('payload', payload);
 
-      const response = await ApiClient.postForm('/api/updateStaff', payload);
+    const response = await ApiClient.postForm('/api/updateStaff', payload);
 
-      if (response.success) {
-        Swal.fire({
-          title: 'Success',
-          text: 'Profile updated successfully',
-          icon: 'success',
-          timer: 1500
-        });
-        
-        // 업데이트된 데이터로 staffInfo 갱신
-        setStaffInfo(prev => ({
-          ...prev,
-          ...form,
-          profile_content_id: imageContentId
-        }));
-      } else {
-        Swal.fire({
-          title: 'Error',
-          text: response.message || 'Failed to update profile',
-          icon: 'error'
-        });
-      }
-    } catch (error) {
-      console.error('Profile update error:', error);
+    if (response.success) {
       Swal.fire({
-        title: 'Error',
-        text: 'Failed to update profile',
+        title: get('PROFILE_UPDATE_SUCCESS_TITLE'),
+        text: get('PROFILE_UPDATE_SUCCESS_MESSAGE'),
+        icon: 'success',
+        timer: 1500
+      });
+      
+      // 업데이트된 데이터로 staffInfo 갱신
+      setStaffInfo(prev => ({
+        ...prev,
+        ...form,
+        profile_content_id: imageContentId
+      }));
+    } else {
+      Swal.fire({
+        title: get('PROFILE_UPDATE_ERROR_TITLE'),
+        text: response.message || get('PROFILE_UPDATE_ERROR_MESSAGE'),
         icon: 'error'
       });
-    } finally {
-      setIsSaving(false);
     }
-  };
-
-  if (isLoadingData) {
-    return (
-      <div className="editprofile-container">
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <div>Loading profile data...</div>
-        </div>
-      </div>
-    );
+  } catch (error) {
+    console.error('Profile update error:', error);
+    Swal.fire({
+      title: get('PROFILE_UPDATE_ERROR_TITLE'),
+      text: get('PROFILE_UPDATE_ERROR_MESSAGE'),
+      icon: 'error'
+    });
+  } finally {
+    setIsSaving(false);
   }
+};
+
+if (isLoadingData) {
+  return (
+    <div className="editprofile-container">
+      <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <div>{get('LOADING_PROFILE_DATA')}</div>
+      </div>
+    </div>
+  );
+}
 
   return (
     <>
@@ -230,13 +230,18 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
       `}</style>
 
        <SketchHeader
-          title={<><User size={20} style={{marginRight:'7px',marginBottom:'-3px'}}/>Edit Profile</>}
-          showBack={true}
-          onBack={goBack}
-        />
+        title={
+          <>
+            <User size={20} style={{marginRight:'7px',marginBottom:'-3px'}}/>
+            {get('EDIT_PROFILE_TITLE')}
+          </>
+        }
+        showBack={true}
+        onBack={goBack}
+      />
       <div className="editprofile-container">
         <div className="image-upload-section">
-          <div className="image-upload-title">Profile Image</div>
+          <div className="image-upload-title">{get('PROFILE_IMAGE_TITLE')}</div>
           <ImageUploader
             apiClient={ApiClient}
             containerAsUploader={true}
@@ -251,40 +256,40 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
         </div>
 
         <div className="input-row">
-          <div style={{marginBottom: '0.3rem'}}>Nickname</div>
+          <div style={{marginBottom: '0.3rem'}}>{get('NICKNAME_LABEL')}</div>
           <SketchInput
             name="nickname"
             value={form.nickname}
             onChange={handleChange}
-            placeholder="Enter your nickname"
+            placeholder={get('NICKNAME_PLACEHOLDER')}
           />
         </div>
         <div className="input-row">
-          <div style={{marginBottom: '0.3rem'}}>BirthYear</div>
+          <div style={{marginBottom: '0.3rem'}}>{get('BIRTH_YEAR_LABEL')}</div>
           <SketchInput
             name="birth_year"
             value={form.birth_year}
             onChange={handleChange}
-            placeholder="Enter your birth year"
+            placeholder={get('BIRTH_YEAR_PLACEHOLDER')}
             type="number"
           />
         </div>
         <div className="input-row">
-          <div style={{marginBottom: '0.3rem'}}>Languages</div>
+          <div style={{marginBottom: '0.3rem'}}>{get('LANGUAGES_LABEL')}</div>
           <SketchInput
             name="languages"
             value={form.languages}
             onChange={handleChange}
-            placeholder="Enter languages you speak"
+            placeholder={get('LANGUAGES_PLACEHOLDER')}
           />
         </div>
         <div className="input-row">
-          <div style={{marginBottom: '0.3rem'}}>Self-Introduction</div>
+          <div style={{marginBottom: '0.3rem'}}>{get('SELF_INTRODUCTION_LABEL')}</div>
           <SketchInput
             name="intro"
             value={form.intro}
             onChange={handleChange}
-            placeholder="Write something about yourself"
+            placeholder={get('SELF_INTRO_PLACEHOLDER')}
             as="textarea"
             rows={4}
           />
@@ -296,8 +301,9 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
             style={{ width: '100%' }}
             onClick={handleSave}
             disabled={isSaving}
-          ><HatchPattern opacity={0.6} />
-            {isSaving ? 'Saving...' : 'Save Changes'}
+          >
+            <HatchPattern opacity={0.6} />
+            {isSaving ? get('SAVING_BUTTON') : get('SAVE_CHANGES_BUTTON')}
           </SketchBtn>
         </div>
       </div>
