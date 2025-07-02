@@ -23,6 +23,10 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [uploadedImages, setUploadedImages] = useState([]);
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [galleryImagesContentId, setGalleryImagesContentId] = useState([]);
+  const [galleryImagesMap, setGalleryImagesMap] = useState([]); // {url, contentId} 형태로 관리
+  
 
   const [form, setForm] = useState({
     nickname: '',
@@ -32,13 +36,16 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
   });
 
   useEffect(() => {
-    window.scrollTo(0, 0);
     if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      console.log('Current language set to:', currentLang);
       window.scrollTo(0, 0);
     }
-
-    fetchStaffData();
   }, [messages, currentLang]);
+
+  useEffect(() => {
+    fetchStaffData();
+  }, []);
 
   const fetchStaffData = async () => {
     try {
@@ -115,6 +122,24 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
     const response = await ApiClient.postForm('/api/updateStaff', payload);
 
     if (response.success) {
+      // 성공 후 갤러리 이미지들 DB에 저장
+      if (galleryImagesContentId.length > 0) {
+        for (const contentId of galleryImagesContentId) {
+          try {
+            await ApiClient.postForm('/api/uploadStaffGallery', {
+              staff_id: user?.staff_id || user?.id,
+              content_id: contentId
+            });
+          } catch (error) {
+            console.error('Gallery image upload failed:', error);
+          }
+        }
+      }
+      
+      // galleryImages 초기화
+      setGalleryImages([]);
+      setGalleryImagesContentId([]);
+      
       Swal.fire({
         title: get('PROFILE_UPDATE_SUCCESS_TITLE'),
         text: get('PROFILE_UPDATE_SUCCESS_MESSAGE'),
@@ -246,6 +271,7 @@ if (isLoadingData) {
           <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-around'}}>
             <ImageUploader
               apiClient={ApiClient}
+              usingCameraModule={true}
               containerAsUploader={true}
               uploadedImages={uploadedImages}
               onImagesChange={setUploadedImages}
@@ -268,22 +294,35 @@ if (isLoadingData) {
 
                   console.log('data', data);
 
-                  // 이미지 URL 배열 반환
-                  return (data || []).map(item => item.url);
-
+                  // 기존 DB 이미지 + 새로 추가된 이미지들 합치기
+                  const dbImages = (data || []).map(item => item.url);
+                  return [...galleryImages, ...dbImages];
                 },
                 onUpload: async (file) => {
                   const response = await ApiClient.uploadImage(file);
-                  const { content_id = false } = response;
+                  const { content_id = false, accessUrl } = response;
 
                   if (content_id) {
-                    await ApiClient.postForm('/api/uploadStaffGallery', {
-                      staff_id: user?.staff_id || user?.id,
-                      content_id: content_id
-                    });
+                    // 임시로 galleryImages에 추가 (DB 저장 전까지)
+                    setGalleryImages(prev => [...prev, accessUrl]);
+                    setGalleryImagesContentId(prev => [...prev, content_id]);
+                    setGalleryImagesMap(prev => [...prev, { url: accessUrl, contentId: content_id }]);
                   }
-
                 }
+              }}
+              appendedImages={galleryImages}
+              onAppendedImagesChange={setGalleryImages}
+              onDeleted={(deletedImageUrl) => {
+                console.log('deletedImageUrl', deletedImageUrl, galleryImages);
+                // galleryImages에서 삭제된 이미지 제거
+                setGalleryImages(prev => prev.filter(img => img !== deletedImageUrl));
+                
+                // galleryImagesMap에서 해당 항목 제거하고 contentId 배열 업데이트
+                setGalleryImagesMap(prev => {
+                  const filtered = prev.filter(item => item.url !== deletedImageUrl);
+                  setGalleryImagesContentId(filtered.map(item => item.contentId));
+                  return filtered;
+                });
               }}
             />  
             </div>

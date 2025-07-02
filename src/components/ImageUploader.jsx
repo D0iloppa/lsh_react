@@ -3,12 +3,14 @@ import { ImageIcon, Upload, Camera, Folder, X } from 'lucide-react';
 import { overlay } from 'overlay-kit';
 import SketchInput from '@components/SketchInput';
 import SketchDiv from '@components/SketchDiv';
+import FaceDetectionCamera from '@components/FaceDetectionCamera';
 
 export const ImageUploader = ({
   apiClient,
   onUploadComplete,
   onUploadStart,
   onUploadError,
+  usingCameraModule = false,
   containerAsUploader = false,
   showContextMenu = false,
   showPreview = true,
@@ -44,6 +46,145 @@ export const ImageUploader = ({
       setImageUrl(initImage);
     }
   }, [inputDivAsUploader, initImage]);
+
+  // base64 이미지를 File 객체로 변환하는 함수
+  const base64ToFile = useCallback((base64Data, fileName = 'camera-capture.jpg') => {
+    // base64 데이터에서 헤더 제거
+    const base64WithoutHeader = base64Data.split(',')[1];
+    const byteCharacters = atob(base64WithoutHeader);
+    const byteNumbers = new Array(byteCharacters.length);
+    
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'image/jpeg' });
+    
+    return new File([blob], fileName, {
+      type: 'image/jpeg',
+      lastModified: Date.now()
+    });
+  }, []);
+
+  // 얼굴 인식 카메라에서 사진을 받았을 때 처리하는 함수
+  const handleCameraCapture = useCallback((imageData) => {
+    try {
+      // base64 이미지를 File 객체로 변환
+      const file = base64ToFile(imageData, `face-capture-${Date.now()}.jpg`);
+      
+      console.log('Camera capture received:', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+      });
+      
+      // 기존 파일 업로드 로직으로 전달
+      handleFileUpload(file);
+    } catch (error) {
+      console.error('카메라 캡처 처리 오류:', error);
+      onUploadError?.(new Error('카메라에서 촬영한 이미지 처리에 실패했습니다.'));
+    }
+  }, [base64ToFile]);
+
+  // 얼굴 인식 카메라 모달을 표시하는 함수
+  const showFaceDetectionCamera = useCallback(() => {
+    overlay.open(({ isOpen, close, unmount }) => {
+      const handleCameraClose = () => {
+        unmount();
+      };
+
+      const handleCameraError = (error) => {
+        console.error('카메라 오류:', error);
+        onUploadError?.(error);
+        unmount();
+      };
+
+      return (
+        <div 
+          className={`camera-modal ${isOpen ? 'open' : ''}`}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '90%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2000,
+            padding: '20px'
+          }}
+        >
+          {/* 헤더 */}
+          <div style={{
+            position: 'absolute',
+            top: '20px',
+            left: '20px',
+            right: '20px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            color: 'white',
+            zIndex: 2001
+          }}>
+            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>
+              얼굴 인식 카메라
+            </h2>
+            <button
+              onClick={handleCameraClose}
+              style={{
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: 'none',
+                color: 'white',
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '20px'
+              }}
+            >
+              ×
+            </button>
+          </div>
+
+          {/* 카메라 컴포넌트 */}
+          <div style={{
+            width: '100%',
+            maxWidth: '800px',
+            height: 'auto',
+            marginTop: '80px'
+          }}>
+            <FaceDetectionCamera 
+              onCapture={(imageData) => {
+                handleCameraCapture(imageData);
+                unmount(); // 사진 촬영 후 모달 닫기
+              }}
+            />
+          </div>
+
+          {/* 하단 안내 */}
+          <div style={{
+            position: 'absolute',
+            bottom: '20px',
+            left: '20px',
+            right: '20px',
+            color: 'white',
+            textAlign: 'center',
+            fontSize: '14px',
+            opacity: 0.8
+          }}>
+            얼굴이 감지되면 자동으로 사진을 촬영합니다. ESC 키를 누르면 닫힙니다.
+          </div>
+        </div>
+      );
+    });
+  }, [handleCameraCapture, onUploadError]);
 
   // 파일 업로드 처리 함수 (썸네일 url 저장 추가)
   const handleFileUpload = useCallback(async (file) => {
@@ -111,14 +252,6 @@ export const ImageUploader = ({
 
   // 파일 검증 및 전처리 함수
   const validateAndProcessFile = useCallback(async (file) => {
-    /*
-    console.log('Validating file:', {
-      name: file.name,
-      size: file.size,
-      type: file.type
-    });
-    */
-
     // 파일 크기 제한 (50MB)
     const maxSize = 50 * 1024 * 1024; // 50MB
     if (file.size > maxSize) {
@@ -285,15 +418,6 @@ export const ImageUploader = ({
                 lastModified: Date.now()
               });
               
-              /*
-              console.log('File converted for mobile:', {
-                originalSize: file.size,
-                convertedSize: convertedFile.size,
-                originalType: file.type,
-                convertedType: convertedFile.type
-              });
-              */
-              
               resolve(convertedFile);
             } else {
               reject(new Error('Failed to convert image'));
@@ -334,16 +458,30 @@ export const ImageUploader = ({
     fileInputRef.current?.click();
   }, []);
 
-  // 카메라로 촬영
+  // 카메라로 촬영 (기존 방식 또는 얼굴 인식 모듈)
   const selectFromCamera = useCallback(() => {
-    console.log('Camera selection triggered');
-    cameraInputRef.current?.click();
-  }, []);
+    console.log('Camera selection triggered, usingCameraModule:', usingCameraModule);
+    
+    if (usingCameraModule) {
+      // 얼굴 인식 카메라 모듈 실행
+      showFaceDetectionCamera();
+    } else {
+      // 기존 방식 (파일 input의 capture 속성 사용)
+      cameraInputRef.current?.click();
+    }
+  }, [usingCameraModule, showFaceDetectionCamera]);
 
   // 컨텍스트 메뉴 표시
   const showUploadOptions = useCallback((event) => {
     if (!showContextMenu) {
-      selectFromGallery();
+      // 컨텍스트 메뉴를 사용하지 않는 경우
+      if (usingCameraModule) {
+        // 얼굴 인식 카메라 바로 실행
+        showFaceDetectionCamera();
+      } else {
+        // 갤러리에서 선택
+        selectFromGallery();
+      }
       return;
     }
 
@@ -433,12 +571,12 @@ export const ImageUploader = ({
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
             <Camera size={16} />
-            카메라로 촬영
+            {usingCameraModule ? '얼굴 인식 카메라' : '카메라로 촬영'}
           </button>
         </div>
       );
     });
-  }, [showContextMenu, selectFromGallery, selectFromCamera]);
+  }, [showContextMenu, selectFromGallery, selectFromCamera, usingCameraModule, showFaceDetectionCamera]);
 
   // 이미지 preview overlay 표시
   const showImagePreview = useCallback((file, contentId) => {
@@ -625,9 +763,9 @@ export const ImageUploader = ({
             marginRight: 2
           }}
           onClick={showUploadOptions}
-          title="이미지 첨부"
+          title={usingCameraModule ? "얼굴 인식 카메라로 촬영" : "이미지 첨부"}
         >
-          <ImageIcon size={20} />
+          {usingCameraModule ? <Camera size={20} /> : <ImageIcon size={20} />}
         </span>
         {/* SketchInput (flex: 1) */}
         <input
@@ -674,6 +812,17 @@ export const ImageUploader = ({
           style={{ display: 'none' }}
           onChange={handleImageSelect}
         />
+        {/* 카메라 input (기존 방식용) */}
+        {!usingCameraModule && (
+          <input
+            type="file"
+            accept="image/*"
+            ref={cameraInputRef}
+            style={{ display: 'none' }}
+            onChange={handleImageSelect}
+            capture="environment"
+          />
+        )}
       </SketchDiv>
     );
   }
@@ -805,13 +954,17 @@ export const ImageUploader = ({
                 onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
                 onMouseLeave={(e) => e.currentTarget.style.opacity = 0}
               >
-                <span style={{ color: 'white', fontSize: '12px' }}>클릭하여 교체</span>
+                <span style={{ color: 'white', fontSize: '12px' }}>
+                  {usingCameraModule ? '얼굴 인식으로 교체' : '클릭하여 교체'}
+                </span>
               </div>
             </>
           ) : (
             <>
-              <ImageIcon size={24} />
-              <span style={{ fontSize: '12px', marginTop: '4px' }}>이미지 추가</span>
+              {usingCameraModule ? <Camera size={24} /> : <ImageIcon size={24} />}
+              <span style={{ fontSize: '12px', marginTop: '4px' }}>
+                {usingCameraModule ? '얼굴 인식 촬영' : '이미지 추가'}
+              </span>
             </>
           )}
         </div>
@@ -825,15 +978,17 @@ export const ImageUploader = ({
           onChange={handleImageSelect}
         />
 
-        {/* 카메라 촬영용 input */}
-        <input
-          type="file"
-          accept="image/*"
-          ref={cameraInputRef}
-          style={{ display: 'none' }}
-          onChange={handleImageSelect}
-          capture="environment"
-        />
+        {/* 카메라 촬영용 input (기존 방식용) */}
+        {!usingCameraModule && (
+          <input
+            type="file"
+            accept="image/*"
+            ref={cameraInputRef}
+            style={{ display: 'none' }}
+            onChange={handleImageSelect}
+            capture="environment"
+          />
+        )}
       </div>
     );
   }
@@ -852,9 +1007,12 @@ export const ImageUploader = ({
           cursor: disabled ? 'not-allowed' : 'pointer',
           opacity: disabled ? 0.5 : 1
         }}
+        title={usingCameraModule ? "얼굴 인식 카메라로 촬영" : "이미지 업로드"}
       >
         {uploadState.isUploading ? (
           <Upload size={22} strokeWidth={1.6} className="animate-pulse" />
+        ) : usingCameraModule ? (
+          <Camera size={22} strokeWidth={1.6} />
         ) : (
           <ImageIcon size={22} strokeWidth={1.6} />
         )}
@@ -869,15 +1027,17 @@ export const ImageUploader = ({
         onChange={handleImageSelect}
       />
 
-      {/* 카메라 촬영용 input */}
-      <input
-        type="file"
-        accept="image/*"
-        ref={cameraInputRef}
-        style={{ display: 'none' }}
-        onChange={handleImageSelect}
-        capture="environment"
-      />
+      {/* 카메라 촬영용 input (기존 방식용) */}
+      {!usingCameraModule && (
+        <input
+          type="file"
+          accept="image/*"
+          ref={cameraInputRef}
+          style={{ display: 'none' }}
+          onChange={handleImageSelect}
+          capture="environment"
+        />
+      )}
     </div>
   );
 };
@@ -914,4 +1074,4 @@ export const useImageUploader = () => {
 };
 
 // 기본 export (기존 코드와의 호환성을 위해)
-export default ImageUploader; 
+export default ImageUploader;
