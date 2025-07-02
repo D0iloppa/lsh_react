@@ -9,7 +9,6 @@ import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import { useAuth } from '../contexts/AuthContext';
 import { useMsg } from '@contexts/MsgContext';
-import LoadingScreen from '@components/LoadingScreen';
 import { useNavigate } from 'react-router-dom';
 
 const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAGES }) => {
@@ -28,6 +27,21 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   const [favorites, setFavorits] = useState([]);
 
   useEffect(() => {
+    // PopupProvider가 마운트된 후에 testPopup이 생성됨
+    if (window.testPopup) {
+      //console.log('✅ testPopup 사용 가능');
+      window.testPopup.emit('adViewCount');
+      window.testPopup.emit('adViewCount');
+      window.testPopup.emit('adViewCount');
+    } else {
+      console.log('❌ testPopup이 아직 생성되지 않음');
+    }
+  }, []); // 컴포넌트 마운트 후 실행
+
+
+
+  useEffect(() => {
+
     const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
 
     const fetchFavorits = async () => {

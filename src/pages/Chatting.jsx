@@ -299,11 +299,11 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           cursor: pointer;
         }
         .chat-input-wrapper {
-          display: flex;
-          align-items: center;
-          padding: 0.75rem;
-          border-top: 1px solid #ddd;
-          background-color: white;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            background-color: white;
+            padding-bottom: 1.2rem;
         }
         .chat-input {
           flex: 1;

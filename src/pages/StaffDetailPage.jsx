@@ -284,10 +284,21 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
               const images = girl.images || [girl.image_url];
               const hasMultipleImages = images.length > 1;
 
-              //console.log("images", images, images.length)
+              // 유효한 이미지만 필터링 (null, undefined, 빈 문자열 제외)
+              const validImages = images.filter(img => img && img.trim() !== '');
+              const hasValidImages = validImages.length > 0;
 
-              // 이미지가 1개면 같은 이미지를 3-4번 복제
-              const slidesToShow = hasMultipleImages ? images : Array(3).fill(images[0]);
+              //console.log("images", images, "validImages", validImages, "hasValidImages", hasValidImages);
+
+              let slidesToShow;
+
+              if (!hasValidImages || validImages.length === 1) {
+                // 유효한 이미지가 없으면 1개의 placeholder만
+                slidesToShow = [null];
+              } else {
+                // 여러 유효한 이미지가 있으면 그대로 사용
+                slidesToShow = validImages;
+              }
               
               return slidesToShow.map((imageUrl, index) => (
                 <div key={index} className="profile-slide">
@@ -295,6 +306,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
                     <div className="image-left">
                       <ImagePlaceholder
                         src={imageUrl}
+                        placeholder={true}
                         className="profile-image"
                       />
                     </div>

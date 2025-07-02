@@ -9,7 +9,7 @@ import '@components/SketchComponents.css';
 
 import SketchHeader from '@components/SketchHeader';
 
-import { Star, Edit3 } from 'lucide-react';
+import { Star, Edit3, User } from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '../contexts/AuthContext';
 import LoadingScreen from '@components/LoadingScreen';
@@ -66,6 +66,38 @@ const Profile = ({
   const handleBack = () => {
     navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
   };
+
+// 리뷰 삭제 함수
+const deleteReview = async (reviewId) => {
+  try {
+    // 삭제 확인 다이얼로그
+    const confirmDelete = window.confirm('정말로 이 리뷰를 삭제하시겠습니까?');
+    
+    if (!confirmDelete) {
+      return; // 사용자가 취소한 경우
+    }
+
+     const response = await axios.post(`${API_HOST}/api/deleteReview`, {
+      user_id: user?.user_id || 1, 
+      review_id: reviewId
+    });
+    
+
+    if (response.status == '200') {
+      alert(get('REVIEW_DELETE_SUCCESS') || '리뷰가 성공적으로 삭제되었습니다.');
+      
+      // 리뷰 목록 새로고침
+      const updatedReviews = userReviews.filter(review => review.review_id !== reviewId);
+      setUserReviews(updatedReviews);
+      
+    } else {
+      throw new Error(response.data.message || 'Delete failed');
+    }
+  } catch (error) {
+    console.error('리뷰 삭제 실패:', error);
+    alert(get('REVIEW_DELETE_ERROR') || '리뷰 삭제 중 오류가 발생했습니다.');
+  }
+};
 
   return (
     <>
@@ -178,12 +210,14 @@ const Profile = ({
         }
 
         .section-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 1rem;
-          position: relative;
-          z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.3rem;
+            position: relative;
+            z-index: 2;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #d7d7d7;
         }
 
         .section-title {
@@ -206,8 +240,8 @@ const Profile = ({
         .review-item {
           display: flex;
           gap: 0.75rem;
-          padding: 0.75rem 0;
-          border-bottom: 1px dashed #e5e7eb;
+          padding: 0.75rem 0.5rem;
+          border-bottom: 1px dashed #a7a7a7;
         }
 
         .review-content {
@@ -215,11 +249,17 @@ const Profile = ({
         }
 
         .review-venue {
-          font-weight: 500;
-          color: #1f2937;
-          font-size: 0.875rem;
-          margin-bottom: 0.25rem;
+           display: flex;
+           justify-content: space-between; /* 좌우 양끝 정렬 */
+           align-items: center; /* 세로 중앙 정렬 */
+           width: 100%; /* 전체 너비 사용 */
         }
+           .venue-info {
+              display: flex;
+              align-items: center;
+              gap: 0.25rem; /* 아이콘과 텍스트 간격 */
+              max-width: 226px;
+            }
 
         .review-rating {
           display: flex;
@@ -269,6 +309,103 @@ const Profile = ({
                 margin-right: 4px;
                 vertical-align: middle;
               }
+
+              /* 매니저 답변 스타일 (기존) */
+          .manager-response {
+            background-color: #f0f9ff;
+            border: 1px solid #e0f2fe;
+            border-left: 4px solid #0284c7;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 0.75rem;
+            position: relative;
+          }
+
+          /* 스태프 답변 스타일 (노란색) */
+          .manager-response.staff-response {
+            background-color: #fffbeb;
+            border: 1px solid #fed7aa;
+            border-left: 4px solid #f59e0b;
+          }
+
+          .response-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+          }
+
+          .response-label {
+            font-size: 0.8rem;
+            color: #0369a1;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+
+          /* 스태프 답변일 때 라벨 색상 */
+          .staff-response .response-label {
+            color: #d97706;
+          }
+
+          .response-badge {
+            background-color: #0284c7;
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.1rem 0.3rem;
+            border-radius: 12px;
+            font-weight: 500;
+          }
+
+          /* 스태프 답변일 때 배지 색상 */
+          .staff-response .response-badge {
+            background-color: #f59e0b;
+          }
+
+          .response-text {
+            font-size: 0.9rem;
+            color: #1e40af;
+            line-height: 1.4;
+            font-style: italic;
+          }
+
+          /* 스태프 답변일 때 텍스트 색상 */
+          .staff-response .response-text {
+            color: #92400e;
+          }
+
+         .btn-set {
+            display: flex;
+            justify-content: flex-end; /* 오른쪽 정렬 */
+            align-items: center; /* 세로 중앙 정렬 */
+            gap: 3px;
+            flex-shrink: 0; /* 줄어들지 않도록 고정 */
+            min-width: 80px; /* 최소 너비 보장 */
+          }
+
+        .delete-btn {    
+          padding: 3px 10px; /* 좌우 패딩 추가 */
+          background: #fb7272;
+          border-radius: 12px;
+          color: white;
+          font-size: 0.75rem;
+          cursor: pointer;
+          transition: background-color 0.2s;
+          border: none;
+          white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+        }
+
+       .modify-btn {
+          padding: 3px 10px; /* 좌우 패딩 추가 */
+          background: #ebebeb;
+          border-radius: 12px;
+          color: #666;
+          font-size: 0.75rem;
+          cursor: pointer;
+          transition: background-color 0.2s;
+          border: none;
+          white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+        }
 
       `}</style>
 
@@ -325,21 +462,30 @@ const Profile = ({
               {userReviews.map((review) => (
                 <div key={review.id} className="review-item">
                   <div className="review-content">
+                   
                     <div className="review-venue">
-                      {review.target_type === 'venue' && (
-                        <svg className="icon-tiny" viewBox="0 0 24 24">
-                          <path d="M3 9L12 2L21 9V20A1 1 0 0 1 20 21H4A1 1 0 0 1 3 20V9Z" stroke="black" strokeWidth="1.5" fill="none"/>
-                          <path d="M9 21V12H15V21" stroke="black" strokeWidth="1.5" fill="none"/>
-                        </svg>
-                      )}
-                      {review.target_type === 'staff' && (
-                        <svg className="icon-tiny" viewBox="0 0 24 24">
-                          <circle cx="12" cy="7" r="4" stroke="black" strokeWidth="1.5" fill="none"/>
-                          <path d="M5.5 21a6.5 6.5 0 0 1 13 0" stroke="black" strokeWidth="1.5" fill="none"/>
-                        </svg>
-                      )}
-                      <span>{review.venue_name}</span>
+                      <div className="venue-info">
+                        {review.target_type === 'venue' && (
+                          <svg className="icon-tiny" viewBox="0 0 24 24">
+                            <path d="M3 9L12 2L21 9V20A1 1 0 0 1 20 21H4A1 1 0 0 1 3 20V9Z" stroke="black" strokeWidth="1.5" fill="none"/>
+                            <path d="M9 21V12H15V21" stroke="black" strokeWidth="1.5" fill="none"/>
+                          </svg>
+                        )}
+                        {review.target_type === 'staff' && (
+                          <svg className="icon-tiny" viewBox="0 0 24 24">
+                            <circle cx="12" cy="7" r="4" stroke="black" strokeWidth="1.5" fill="none"/>
+                            <path d="M5.5 21a6.5 6.5 0 0 1 13 0" stroke="black" strokeWidth="1.5" fill="none"/>
+                          </svg>
+                        )}
+                        <span>{review.venue_name}</span>
+                      </div>
+                      <div className='btn-set'>
+                        {/* <button className='modify-btn'>수정</button> */}
+                        <button className='delete-btn' onClick={() => deleteReview(review.review_id)}>삭제</button>
+                      </div>
                     </div>
+
+                 
 
                     <div className="review-rating">
                       {[...Array(5)].map((_, i) => (
@@ -368,6 +514,24 @@ const Profile = ({
                           }).replace(/\./g, '-').replace(' ', ' ').replace(/- /g, '-')
                         : ''}
                     </div>
+                          {review.reply_content && (
+                    <div className={`manager-response ${review.target_type === 'staff' ? 'staff-response' : ''}`}>
+                      <div className="response-header">
+                        <span className="response-label">
+                          {review.target_type === 'venue' 
+                            ? get('REVIEW_MANAGER_RESPONSE') 
+                            : get('REVIEW_STAFF_RESPONSE')
+                          }
+                        </span>
+                        <span className="response-badge"><User size={14} /></span>
+                      </div>
+                      <div className="response-text">
+                        "{review.reply_content}"
+                      </div>
+                    </div>
+                  )}
+
+
                   </div>
                 </div>
               ))}

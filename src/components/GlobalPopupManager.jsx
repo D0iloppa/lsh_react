@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { usePopup } from '@contexts/PopupContext';
 import { useMsg } from '@contexts/MsgContext';
 import HatchPattern from '@components/HatchPattern';
+import { Pencil } from 'lucide-react';
 
 const GlobalPopupManager = () => {
   const { activePopups, closePopup } = usePopup();
@@ -23,6 +24,15 @@ const GlobalPopupManager = () => {
 const PopupModal = ({ popup, onClose }) => {
   const { get } = useMsg();
   const [activeTab, setActiveTab] = useState('premium'); // 'premium' | 'today'
+
+  // 오늘 하루 열지 않음 체크박스 핸들러
+  const handleTodayClose = (e) => {
+    if (e.target.checked) {
+      const today = new Date().toDateString();
+      localStorage.setItem('popupClosedDate', today);
+      onClose(); // 체크하자마자 모달 닫기
+    }
+  };
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -141,14 +151,14 @@ const PopupModal = ({ popup, onClose }) => {
         
         .popup-content {
           background: white;
-          border: 3px solid #333;
+          border: 1px solid #666;
           border-radius: 8px 12px 6px 10px;
           max-width: 400px;
           width: 100%;
           position: relative;
           animation: popupSlide 0.3s ease-out;
           transform: rotate(-0.5deg);
-          box-shadow: 6px 6px 0px #333;
+          box-shadow: 6px 6px 0px #c1c1c1;
           overflow: hidden;
         }
 
@@ -176,8 +186,7 @@ const PopupModal = ({ popup, onClose }) => {
 
         .popup-tabs {
           display: flex;
-          border-bottom: 2px solid #333;
-          background-color: #f8fafc;
+          background-color: white;
           position: relative;
         }
 
@@ -185,13 +194,14 @@ const PopupModal = ({ popup, onClose }) => {
           flex: 1;
           background: none;
           border: none;
-          padding: 1rem;
+          padding-right: 1rem;
           cursor: pointer;
           font-size: 0.9rem;
           font-weight: 600;
           color: #666;
           transition: all 0.2s ease;
           position: relative;
+          background-color: #e0e0e0;
         }
 
         .popup-tab.active {
@@ -226,7 +236,7 @@ const PopupModal = ({ popup, onClose }) => {
 
         .popup-header.with-tabs {
           border-bottom: none;
-          padding: 1rem 1.5rem;
+          padding: 1rem 1.5rem 0.5rem 1.5rem;
         }
 
         .popup-title {
@@ -246,45 +256,51 @@ const PopupModal = ({ popup, onClose }) => {
           font-size: 0.9rem;
           color: #555;
           line-height: 1.5;
-          margin-bottom: 1.5rem;
+          margin-bottom: 0.5rem;
           text-align: center;
         }
 
         .popup-features {
-          margin-bottom: 2rem;
+          border: 1px solid #adcfff;
+          padding: 1rem;
+          background: #f5fbff;
+          margin-bottom: 0.5rem;
+          color: #ffffff;
+          max-height: 225px;
+          overflow-y: auto;
         }
 
         .popup-feature-item {
           font-size: 0.85rem;
-          color: #666;
-          margin-bottom: 0.6rem;
-          padding-left: 1rem;
+          color: #0f1434;
+          margin-bottom: 0.4rem;
           position: relative;
           line-height: 1.4;
+           display: flex;
+          align-items: flex-start;
         }
 
-        .popup-feature-item::before {
-          content: '•';
-          position: absolute;
-          left: 0;
-          color: #333;
-          font-weight: bold;
+        .icon-wrap {
+          min-width: 16px;
+          margin-right: 4px;
         }
+          .feature-text {
+            word-break: break-word;
+          }
 
         .popup-feature-item:last-child {
           margin-bottom: 0;
         }
 
         .popup-notice {
-          background-color: #fef3c7;
-          border: 1px solid #f59e0b;
-          border-radius: 4px;
-          padding: 0.75rem;
-          font-size: 0.8rem;
-          color: #92400e;
-          margin-bottom: 1.5rem;
-          text-align: center;
-          line-height: 1.4;
+            background-color: #f6f6f6;
+            border-radius: 4px;
+            padding: 0.75rem;
+            font-size: 0.8rem;
+            color: #666666;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            line-height: 1.4;
         }
 
         .popup-footer {
@@ -296,8 +312,11 @@ const PopupModal = ({ popup, onClose }) => {
 
         .popup-btn {
           background-color: #f8fafc;
-          border: 2px solid #333;
-          border-radius: 6px 8px 4px 6px;
+          border: 1px solid #666;
+          border-top-left-radius: 12px 7px;
+          border-top-right-radius: 6px 14px;
+          border-bottom-right-radius: 10px 5px;
+          border-bottom-left-radius: 8px 11px;
           padding: 0.7rem 1.2rem;
           font-size: 0.9rem;
           font-weight: 600;
@@ -306,12 +325,13 @@ const PopupModal = ({ popup, onClose }) => {
           position: relative;
           color: #333;
           min-width: 100px;
+          box-shadow: 2px 2px 0px #c1c1c1;
         }
 
         .popup-btn:hover {
           background-color: #e2e8f0;
           transform: translateY(-1px);
-          box-shadow: 2px 2px 0px #333;
+          box-shadow: 2px 2px 0px #c1c1c1;
         }
 
         .popup-btn:active {
@@ -320,17 +340,42 @@ const PopupModal = ({ popup, onClose }) => {
         }
 
         .popup-btn.primary {
-          background-color: #fef3c7;
-          color: #92400e;
+          background: linear-gradient(135deg, #00f0ff, #fff0d8);
+          color: #515f71;
         }
 
         .popup-btn.primary:hover {
-          background-color: #fde68a;
+           background: linear-gradient(135deg, #00f0ff, #fff0d8);
         }
 
         .popup-btn.secondary {
           background-color: #f1f5f9;
           color: #475569;
+        }
+
+        /* 오늘 하루 열지 않음 체크박스 스타일 */
+        .today-close {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 1rem 1.5rem;
+          border-top: 1px solid #e5e7eb;
+          background-color: #f9fafb;
+          font-size: 0.85rem;
+          color: #6b7280;
+        }
+
+        .today-close input[type="checkbox"] {
+          width: 16px;
+          height: 16px;
+          cursor: pointer;
+          accent-color: #3b82f6;
+        }
+
+        .today-close label {
+          cursor: pointer;
+          user-select: none;
+          flex: 1;
         }
 
         /* 반응형 */
@@ -341,7 +386,7 @@ const PopupModal = ({ popup, onClose }) => {
           }
 
           .popup-tab {
-            padding: 0.8rem 0.5rem;
+            padding: 0.8rem 1.2rem 0.8rem 0.5rem;
             font-size: 0.85rem;
           }
 
@@ -349,12 +394,8 @@ const PopupModal = ({ popup, onClose }) => {
             padding: 1.2rem 1.2rem 0.8rem;
           }
 
-          .popup-header.with-tabs {
-            padding: 1rem 1.2rem;
-          }
-
           .popup-body {
-            padding: 1.2rem;
+            padding: 0.1rem 1rem;
           }
 
           .popup-title {
@@ -372,19 +413,26 @@ const PopupModal = ({ popup, onClose }) => {
           .popup-footer {
             flex-direction: column;
             gap: 0.5rem;
-            padding: 0 1.2rem 1.2rem;
+            padding: 0 1.2rem 0.2rem;
           }
 
           .popup-btn {
             width: 100%;
             min-width: auto;
           }
+
+          .today-close {    
+            font-size: 13px;
+            margin-left: 1rem;
+            padding: 0.4rem;
+            font-size: 13px;
+          }
         }
       `}</style>
 
       <div className="popup-overlay" onClick={handleOverlayClick}>
         <div className="popup-content" onClick={(e) => e.stopPropagation()}>
-          <HatchPattern opacity={0.1} />
+          <HatchPattern opacity={0.4} />
           
           {/* 닫기 버튼 */}
           <button className="popup-close-btn" onClick={onClose}>
@@ -404,7 +452,7 @@ const PopupModal = ({ popup, onClose }) => {
                 className={`popup-tab ${activeTab === 'today' ? 'active' : ''}`}
                 onClick={() => setActiveTab('today')}
               >
-                {get('Popup.Tab.Today') || '오늘 하루'}
+                {get('Popup.Tab.Today') || '일일 혜택'}
               </button>
             </div>
           )}
@@ -424,20 +472,23 @@ const PopupModal = ({ popup, onClose }) => {
               </div>
             )}
 
-            {content.features && content.features.length > 0 && (
-              <div className="popup-features">
-                {content.features.map((feature, index) => (
-                  <div key={index} className="popup-feature-item">
-                    {feature}
-                  </div>
-                ))}
+           {content.features && content.features.length > 0 && (
+          <div className="popup-features">
+            {content.features.map((feature, index) => (
+              <div key={index} className="popup-feature-item">
+                <span className="icon-wrap">
+                  <Pencil size={12} fill="#b4b4b4" />
+                </span>
+                <span className="feature-text">{feature}</span>
               </div>
-            )}
+            ))}
+          </div>
+        )}
 
             {/* 오늘 하루 탭의 안내 문구 */}
             {activeTab === 'today' && content.notice && (
               <div className="popup-notice">
-                {content.notice}
+                * {content.notice}
               </div>
             )}
           </div>
@@ -454,43 +505,21 @@ const PopupModal = ({ popup, onClose }) => {
               </button>
             ))}
           </div>
+          
+          {/* 오늘 하루 열지 않음 체크박스 */}
+          <div className='today-close'>
+            <input 
+              type="checkbox" 
+              id="todayClosePopup"
+              onChange={handleTodayClose}
+            />
+            <label htmlFor="todayClosePopup">
+              {get('Popup.TodayClose') || '오늘 하루 열지 않음'}
+            </label>
+          </div>
         </div>
       </div>
     </>
-  );
-};
-
-// 사용 예시
-const ExampleUsage = () => {
-  const [showPopup, setShowPopup] = React.useState(false);
-
-  // 탭 팝업 예시
-  const tabPopup = {
-    id: 'premium-tabs-popup',
-    type: 'premium-tabs',
-    onConfirm: () => {
-      alert('프리미엄 가입!');
-      setShowPopup(false);
-    },
-    onTodayTrial: () => {
-      alert('오늘만 무료체험!');
-      setShowPopup(false);
-    }
-  };
-
-  return (
-    <div style={{ padding: '2rem' }}>
-      <button onClick={() => setShowPopup(tabPopup)}>
-        탭 팝업 테스트
-      </button>
-
-      {showPopup && (
-        <PopupModal
-          popup={showPopup}
-          onClose={() => setShowPopup(false)}
-        />
-      )}
-    </div>
   );
 };
 

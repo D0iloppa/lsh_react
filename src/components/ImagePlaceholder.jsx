@@ -7,9 +7,12 @@ const ImagePlaceholder = ({
   className = '',
   imageSize = 'w-full h-full',
   fallbackClassName = '',
-  style = {}
+  style = {},
+  placeholder = '',
 }) => {
   const [imageError, setImageError] = useState(false);
+
+  const shouldShowPlaceholder = !src || imageError;
 
   const handleImageError = () => {
     setImageError(true);
@@ -21,7 +24,7 @@ const ImagePlaceholder = ({
 
   return (
     <div className={`relative ${className}`} style={style}>
-      {!imageError ? (
+      {!shouldShowPlaceholder ? (
         <img
           src={src}
           alt={alt}

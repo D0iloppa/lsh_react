@@ -3,6 +3,13 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react';
 
 const PopupContext = createContext();
 
+// shouldShowPopup 함수를 여기서 정의
+const shouldShowPopup = () => {
+  const today = new Date().toDateString();
+  const closedDate = localStorage.getItem('popupClosedDate');
+  return closedDate !== today;
+};
+
 const initialState = {
   events: {
     adViewCount: 0,
@@ -68,18 +75,25 @@ const EVENT_CONDITIONS = {
 export const PopupProvider = ({ children }) => {
   const [state, dispatch] = useReducer(popupReducer, initialState);
 
-  // 이벤트 조건 체크
+  // 이벤트 조건 체크 (오늘 하루 닫기 설정 포함)
   useEffect(() => {
     Object.entries(EVENT_CONDITIONS).forEach(([eventType, condition]) => {
       const currentCount = state.events[eventType];
       
       if (currentCount >= condition.threshold) {
+        // 🔥 오늘 하루 닫기 설정 확인
+        if (!shouldShowPopup()) {
+          console.log(`오늘 하루 팝업 닫기 설정으로 인해 ${eventType} 팝업이 열리지 않습니다.`);
+          return;
+        }
+
         // 이미 같은 팝업이 활성화되어 있는지 체크
         const isAlreadyActive = state.activePopups.some(
           popup => popup.id === condition.popup.id
         );
         
         if (!isAlreadyActive) {
+          console.log(`🎉 ${eventType} 조건 달성! 팝업을 표시합니다.`);
           dispatch({ type: 'SHOW_POPUP', popup: condition.popup });
           
           // resetAfterShow가 true면 카운터 리셋
@@ -92,25 +106,77 @@ export const PopupProvider = ({ children }) => {
   }, [state.events]);
 
   const emitEvent = (eventType) => {
+    console.log(`📡 이벤트 발생: ${eventType}`);
     dispatch({ type: 'EMIT_EVENT', eventType });
   };
 
   const closePopup = (popupId) => {
+    console.log(`❌ 팝업 닫기: ${popupId}`);
     dispatch({ type: 'CLOSE_POPUP', popupId });
   };
 
   const resetEvent = (eventType) => {
+    console.log(`🔄 이벤트 리셋: ${eventType}`);
     dispatch({ type: 'RESET_EVENT', eventType });
   };
 
+  // 수동으로 팝업 표시하는 함수 (오늘 하루 닫기 설정 체크 포함)
+  const showPopup = (popupConfig) => {
+    if (!shouldShowPopup()) {
+      console.log('오늘 하루 팝업 닫기 설정으로 인해 수동 팝업이 열리지 않습니다.');
+      return false;
+    }
+    
+    const popup = {
+      ...popupConfig,
+      id: popupConfig.id || `popup-${Date.now()}`
+    };
+    
+    dispatch({ type: 'SHOW_POPUP', popup });
+    return true;
+  };
 
+  // 강제로 팝업 표시 (테스트/디버깅용)
+  const forceShowPopup = (popupConfig) => {
+    const popup = {
+      ...popupConfig,
+      id: popupConfig.id || `force-popup-${Date.now()}`
+    };
+    
+    console.log('🚨 강제 팝업 표시:', popup.id);
+    dispatch({ type: 'SHOW_POPUP', popup });
+    return true;
+  };
+
+  // 이벤트 emitter (개발자 콘솔용)
   useEffect(() => {
     window.testPopup = {
-        emit: emitEvent,
-        reset: resetEvent,
-        showEvents: () => console.log('Current events:', state.events),
-        showPopups: () => console.log('Active popups:', state.activePopups)
-      };
+      emit: emitEvent,
+      reset: resetEvent,
+      showEvents: () => console.log('Current events:', state.events),
+      showPopups: () => console.log('Active popups:', state.activePopups),
+      
+      // 🔥 추가된 테스트 함수들
+      forceEmit: (eventType) => {
+        console.log(`🚨 강제 이벤트 발생: ${eventType}`);
+        // 기존 이벤트 조건을 무시하고 직접 팝업 표시
+        const condition = EVENT_CONDITIONS[eventType];
+        if (condition) {
+          dispatch({ type: 'SHOW_POPUP', popup: condition.popup });
+        }
+      },
+      
+      checkTodayClose: () => {
+        const result = shouldShowPopup();
+        console.log('오늘 하루 닫기 설정:', result ? '비활성' : '활성');
+        return result;
+      },
+      
+      resetTodayClose: () => {
+        localStorage.removeItem('popupClosedDate');
+        console.log('✅ 오늘 하루 닫기 설정이 초기화되었습니다.');
+      }
+    };
   }, [state.events, state.activePopups]);
 
   return (
@@ -118,7 +184,10 @@ export const PopupProvider = ({ children }) => {
       ...state,
       emitEvent,
       closePopup,
-      resetEvent
+      resetEvent,
+      showPopup,
+      forceShowPopup,
+      shouldShowPopup // 다른 컴포넌트에서도 사용 가능
     }}>
       {children}
     </PopupContext.Provider>
@@ -132,3 +201,6 @@ export const usePopup = () => {
   }
   return context;
 };
+
+// shouldShowPopup 함수를 외부에서도 사용할 수 있도록 export
+export { shouldShowPopup };

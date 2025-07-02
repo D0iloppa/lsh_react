@@ -288,6 +288,7 @@ const { messages, isLoading, error, get, currentLang, setLanguage: setGlobalLang
 
         .logout-section {
           text-align: center;
+          padding-bottom: 1rem;
         }
 
         .logout-button {
@@ -335,13 +336,13 @@ const { messages, isLoading, error, get, currentLang, setLanguage: setGlobalLang
               <h2 className="section-title">{get('Setting1.1')}</h2>
               <select 
                 className="language-select"
-                value={currentLang}
+                value={language}
                 onChange={(e) => setLanguage(e.target.value)}
               >
-                <option value="vi">Tiếng Việt</option>
-                <option value="kr">한국어</option>
-                <option value="en">English</option>
-                <option value="ja">일본어</option>  
+                <option value="vi">{get('language.name.vietnamese')}</option>
+                <option value="kr">{get('language.name.korean')}</option>
+                <option value="en">{get('language.name.english')}</option>
+                <option value="ja">{get('language.name.japanese')}</option>  
               </select>
             </div>
           </SketchDiv>
