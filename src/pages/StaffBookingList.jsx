@@ -10,35 +10,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import Swal from 'sweetalert2';
 
-const mockBookings = [
-  {
-    id: 1,
-    venue: 'The Sunset Bar',
-    status: 'Confirmed',
-    date: '12th Nov, 2023',
-    time: '8:00 PM',
-    customer: 'Minh Tran',
-    actions: ['CUSTOMER', 'Accept', 'MANAGER']
-  },
-  {
-    id: 2,
-    venue: 'Lotus Lounge',
-    status: 'Cancelled',
-    date: '15th Oct, 2023',
-    time: '10:00 PM',
-    customer: 'An Nguyen',
-    actions: ['CUSTOMER', 'Accept', 'MANAGER']
-  },
-  {
-    id: 3,
-    venue: 'Moonlight Terrace',
-    status: 'Completed',
-    date: '20th Sep, 2023',
-    time: '9:00 PM',
-    customer: 'Linh Vu',
-    actions: ['CUSTOMER', 'Accept', 'MANAGER']
-  },
-];
+import BookingSummary from '@components/BookingSummary';
+import { overlay } from 'overlay-kit';
+
+const mockBookings = [];
 
 const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
   const { user, isLoggedIn } = useAuth();
@@ -132,9 +107,202 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
     const actionMap = {
       'Accept': get('BOOKING_ACCEPT_BUTTON'),
       'CUSTOMER': get('BOOKING_CUSTOMER_CHAT'),
-      'MANAGER': get('BOOKING_MANAGER_CHAT')
+      'MANAGER': get('BOOKING_MANAGER_CHAT'),
+      'Detail': get('BOOKING_DETAIL_BUTTON')
     };
     return actionMap[action] || action;
+  };
+
+  const handleBtn = (action, bk) => {
+
+    switch(action){
+      case 'Accept':
+        acceptBooking(bk);
+        break;
+      case 'Detail':
+        detailBooking(bk);
+        break;
+      case 'MANAGER':
+        chatWithManager(bk);
+        break;
+    }
+  };
+
+  const chatWithManager = async(bk) => {
+    console.log('chatWithManager', bk);
+
+
+    // 1. room_sn 조회
+    const chatList = await ApiClient.get('/api/getChattingList', {
+      params: {
+        venue_id: user.venue_id,
+        staff_id: user.staff_id,
+        account_type: user.type
+      }
+    })
+
+    let room_sn = null;
+    if(chatList.length > 0){
+      room_sn = chatList[0].room_sn;
+      console.log('room_sn', room_sn);
+    }
+
+    navigateToPageWithData(PAGES.CHATTING, { 
+      initType: 'booking',
+      reservation_id: bk.reservation_id,
+      room_sn: room_sn,
+      ...bk
+    });
+
+
+    /*
+    navigateToPageWithData(PAGES.CHATTING, { 
+      initType: 'booking',
+      reservation_id: bk.reservation_id,
+      ...bk
+    });
+    */
+  };
+
+  const detailBooking = (bk) => {
+    console.log('detailBooking', bk);
+
+    // 시간 계산 로직
+    const startTime = bk.res_start_time;
+    const endTime = bk.res_end_time;
+    
+    // res_end_time에 1시간 추가
+    const endTimeDate = new Date(`2000-01-01T${endTime}`);
+    endTimeDate.setHours(endTimeDate.getHours() + 1);
+    const adjustedEndTime = endTimeDate.toTimeString().slice(0, 5); // HH:MM 형식
+    
+    // duration 계산 (분 단위)
+    const startDate = new Date(`2000-01-01T${startTime}`);
+    const endDate = new Date(`2000-01-01T${adjustedEndTime}`);
+    const durationMinutes = (endDate - startDate) / (1000 * 60);
+    const durationHours = durationMinutes / 60;
+    
+    
+    // 예약 데이터를 BookingSummary 컴포넌트용으로 변환
+    const displayData = {
+      targetName: bk.target_name,
+      date: formatDate(bk.reserved_at),
+      startTime: startTime,
+      endTime: adjustedEndTime,
+      duration: durationHours ? `${durationHours}시간` : '',
+      attendee: `${bk.attendee}명`,
+      memo: bk.note || ''
+    };
+  
+    // 메시지 객체 생성
+    const messages = {
+      targetLabel: get('BookingSum.Target') || '예약 대상',
+      dateLabel: get('BookingSum1.2') || '날짜',
+      timeLabel: get('BookingSum1.3') || '시간',
+      attendeeLabel: get('ReservationCompo1.1') || '참석자',
+      memoLabel: get('Reservation.MemoLabel') || '메모',
+      noMemo: get('BookingSum.NoMemo') || '메모 없음'
+    };
+  
+    // 오버레이로 BookingSummary 표시
+    overlay.open(({ isOpen, close, unmount }) => {
+      return (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 3000,
+            padding: '1rem'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              unmount();
+            }
+          }}
+        >
+          <div style={{
+            maxWidth: '330px',
+            width: '100%',
+            maxHeight: '80vh',
+            overflow: 'auto',
+            margin: 'auto',
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)'
+          }}>
+            <BookingSummary 
+              displayData={displayData}
+              messages={messages}
+            />
+          </div>
+        </div>
+      );
+    });
+  };
+  
+  // 날짜 포맷팅 함수 추가
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    
+    // 다국어 요일 처리
+    const dayOfWeek = getDayOfWeek(date.getDay());
+    
+    return `${year}.${month}.${day} (${dayOfWeek})`;
+  };
+  
+  // 요일 다국어 처리 함수 추가
+  const getDayOfWeek = (dayIndex) => {
+    const days = [
+      get('Day.Sunday') || '일',
+      get('Day.Monday') || '월', 
+      get('Day.Tuesday') || '화',
+      get('Day.Wednesday') || '수',
+      get('Day.Thursday') || '목',
+      get('Day.Friday') || '금',
+      get('Day.Saturday') || '토'
+    ];
+    return days[dayIndex];
+  };
+
+  const acceptBooking = (bk) => {
+    const { status = false } = bk;
+
+    if(status === 'pending'){
+      // accept를 할 수 있는 경우에만 진행
+      ApiClient.postForm('/api/reservation/manage', {
+        reservation_id: bk.reservation_id,
+        mngCode:3
+      }).then(res=>{
+        // 성공 시 예약 목록 갱신
+        Swal.fire({
+          title: '예약 수락 완료',
+          text: '예약이 수락되었습니다.',
+          icon: 'success',
+          confirmButtonText: '확인'
+        }).then(()=>{
+          loadBookings();
+        });
+        
+      }).catch(err=>{
+        console.log('err', err);
+      });
+    }else{
+      console.log('[acceptBooking]', bk, 'status is not pending');
+    }
+    
   };
 
   return (
@@ -226,10 +394,15 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
                 <div className="booking-info">
                   <div>{get('BOOKING_DATE_LABEL')} {bk.date || new Date(bk.res_date).toLocaleDateString()}</div>
                   <div>{get('BOOKING_TIME_LABEL')} {bk.time || bk.res_start_time}</div>
-                  <div>{get('BOOKING_CUSTOMER_LABEL')} {bk.customer || bk.user_name}</div>
+                  <div>{get('BOOKING_CUSTOMER_LABEL')} {bk.client_name || bk.user_name}</div>
+                  <div style={{
+                    fontSize: '0.8rem',
+                    color: '#666',
+                    marginTop: '0.2rem'
+                  }} className="booking-reservedAt">{get('BOOKING_RESERVED_AT_LABEL')} : {new Date(bk.reserved_at).toLocaleString()}</div>
                 </div>
                 <div className="booking-actions">
-                  {(bk.actions || ['CUSTOMER', 'Accept', 'MANAGER']).map(action => {
+                  {(['Detail', 'Accept', 'MANAGER']).map(action => {
                     // Accept 버튼 활성화 조건: user.staff_id와 target_id가 같을 때만
                     const isAcceptDisabled = action === 'Accept' && 
                       (!user.staff_id || !bk.target_id || user.staff_id !== bk.target_id);
@@ -241,6 +414,9 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
                         size="small" 
                         className="booking-action-btn"
                         disabled={isAcceptDisabled}
+                        onClick={()=>{
+                          handleBtn(action, bk);
+                        }}
                         style={isAcceptDisabled ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
                       >
                         {action === 'MANAGER' || action === 'CUSTOMER' ? (

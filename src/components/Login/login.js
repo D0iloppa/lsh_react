@@ -63,7 +63,7 @@ export const loginPost = async ({login_id, passwd, login_type ='email'}) => {
         );
     
 
-        let { error=false, errMsg=false, user=false, staff=false, manager=false } = response.data;
+        let { error=false, errMsg=false, errCode=false, user=false, staff=false, manager=false } = response.data;
 
         // type decoration
         user = user && { type: 'user', 
@@ -82,7 +82,7 @@ export const loginPost = async ({login_id, passwd, login_type ='email'}) => {
             return {
                 success: false,
                 errors: {
-                  general: errMsg || 'Invalid login'
+                  general: errCode || errMsg || 'Invalid login'
                 }
               };
         }

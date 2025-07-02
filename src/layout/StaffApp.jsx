@@ -74,9 +74,11 @@ const StaffApp = () => {
     const navigationItems = [
         { id: PAGES.STAFF_HOME, icon: Home, label: get('Footer1.3') || '대시보드' },
         { id: PAGES.STAFF_WORK_SCHEDULE, icon: Calendar, label: get('Staff.menu.1') || '예약관리' },
-        { id: PAGES.CHATTINGLIST, icon: MessageCircle, label: get('Staff.menu.2') || '예약관리' },
+        { id: PAGES.CHATTINGLIST, data: { chatRoomType: 'staff' }, icon: MessageCircle, label: get('Staff.menu.2') || '채팅' },
         { id: PAGES.STAFF_SETTING, icon: User, label: get('Mng.menu.3') || '계정' }
     ];
+
+    console.log('navigationItems', navigationItems);
 
     return (
         
@@ -90,10 +92,17 @@ const StaffApp = () => {
             <nav className="bottom-navigation">
                 <div className="nav-container">
                     {<HatchPattern opacity={0.3} />}
-                    {navigationItems.map(({ id, icon: Icon, label }) => (
+                    {navigationItems.map(({ id, icon: Icon, label, data=false }) => (
                         <button
                             key={id}
-                            onClick={() => navigateToPage(id)}
+                            onClick={() => {
+                                if(data){
+                                    console.log('data', data);
+                                    navigateToPageWithData(id, data);
+                                }else{
+                                    navigateToPage(id);
+                                }
+                            }}
                             className={`nav-item ${currentPage === id ? 'active' : ''}`}
                         >
                             <Icon className="nav-icon" />

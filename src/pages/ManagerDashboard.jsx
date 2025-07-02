@@ -132,7 +132,7 @@ const menus = [
     icon: <MessagesSquare size={24} />, 
     name: get('MENU_CHATTING'), 
     page: PAGES.CHATTING,
-    menuEvent: () => { navigateToPage(PAGES.CHATTINGLIST); } 
+    menuEvent: () => { navigateToPageWithData(PAGES.CHATTINGLIST, { chatRoomType: 'manager' }); } 
   },
   // { 
   //   id: 6, 

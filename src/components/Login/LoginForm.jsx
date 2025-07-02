@@ -53,6 +53,8 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
     });
     
     if (result.success) {
+
+        
       setMessage(result.message);
       // AuthContext에 accountType 저장
       setAuthLoginType(accountType);
@@ -60,9 +62,8 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
     setTimeout(() => {
       if (accountType === 'manager') {
       
-        //const venueId = result.user.venue_id;
-
-        const venueId = 0;
+        const venueId = result.user.venue_id;
+        //const venueId = 0;
         
         if (!venueId || venueId == 0 || venueId == null) {
           // venue_id가 null, 0, 또는 없으면 튜토리얼로 이동
@@ -179,7 +180,14 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
 
         {/* General Error/Success Message */}
         {errors.general && (
-          <div className="sketch-error-message" style={{marginTop: '-0.5rem', marginBottom: '0.5rem'}}>{errors.general}</div>
+          <div className="sketch-error-message" style={{marginTop: '-0.5rem', marginBottom: '0.5rem'}}>
+            {(() => {
+              const errCode = errors.general || errors.errCode || errors.errMsg;
+
+              const tmp = get(errCode);
+              return tmp; // 또는 원하는 JSX 반환
+            })()}
+          </div>
         )}
         {message && (
           <div className="sketch-success-message" style={{marginTop: '-0.5rem', marginBottom: '0.5rem'}}>{message}</div>
@@ -197,18 +205,6 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
           { get('Login1.1') }
         </SketchBtn>
       </form>
-
-      {/* Forgot Password */}
-      <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-        <button
-          type="button"
-          onClick={onForgotPassword}
-          disabled={isLoading}
-          className="sketch-btn sketch-btn--secondary"
-        >
-          { get('Login1.2') }
-        </button>
-      </div>
 
       {/* Sign Up Link */}
       <div style={{ display: 'none', textAlign: 'center', fontSize: '0.875rem', color: '#6b7280', marginTop: '10px' }}>

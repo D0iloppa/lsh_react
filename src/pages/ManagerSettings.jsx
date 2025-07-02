@@ -300,7 +300,7 @@ const handleSaveNewPassword = async () => {
             {get('SETTINGS_SHOP_DETAIL_BUTTON')}
           </SketchBtn>
         </SketchDiv>
-
+      {/*
         <div className="section-title">{get('SETTINGS_UPDATE_BUSINESS_INFO')}</div>
         <SketchDiv className="section-box">
           <div className="input-row">
@@ -331,6 +331,7 @@ const handleSaveNewPassword = async () => {
             </SketchBtn>
           </div>
         </SketchDiv>
+        */}
 
         <div className="password-section">
           <div className="section-title">{get('SETTINGS_CHANGE_PASSWORD')}</div>
@@ -373,7 +374,7 @@ const handleSaveNewPassword = async () => {
                     value={password.new}
                     onChange={e => setPassword(p => ({ ...p, new: e.target.value }))}
                     placeholder={get('SETTINGS_NEW_PASSWORD_PLACEHOLDER')}
-                    type="password"
+                    type="password" style={{fontFamily: 'none'}}
                   />
                 </div>
                 <div className="input-row">
@@ -382,7 +383,7 @@ const handleSaveNewPassword = async () => {
                     value={password.confirm}
                     onChange={e => setPassword(p => ({ ...p, confirm: e.target.value }))}
                     placeholder={get('SETTINGS_CONFIRM_PASSWORD_PLACEHOLDER')}
-                    type="password"
+                    type="password" style={{fontFamily: 'none'}}
                   />
                 </div>
                 <div className="save-btn-row">

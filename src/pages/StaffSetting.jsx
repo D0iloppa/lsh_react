@@ -330,7 +330,7 @@ const handleSaveLanguage = () => {
                   value={password.current}
                   onChange={e => setPassword(p => ({ ...p, current: e.target.value }))}
                   placeholder={get('Staff.setting.password.current') || get('STAFF_SETTINGS_CURRENT_PASSWORD_PLACEHOLDER')}
-                  type="password"
+                  type="password" style={{fontFamily: 'none'}}
                   disabled={isPasswordVerified}
                 />
               </div>
@@ -363,7 +363,7 @@ const handleSaveLanguage = () => {
                     value={password.new}
                     onChange={e => setPassword(p => ({ ...p, new: e.target.value }))}
                     placeholder={get('Staff.setting.password.new') || get('STAFF_SETTINGS_NEW_PASSWORD_PLACEHOLDER')}
-                    type="password"
+                    type="password" style={{fontFamily: 'none'}}
                   />
                 </div>
                 <div className="input-row">
@@ -372,7 +372,7 @@ const handleSaveLanguage = () => {
                     value={password.confirm}
                     onChange={e => setPassword(p => ({ ...p, confirm: e.target.value }))}
                     placeholder={get('Staff.setting.password.confirm') || get('STAFF_SETTINGS_CONFIRM_PASSWORD_PLACEHOLDER')}
-                    type="password"
+                    type="password" style={{fontFamily: 'none'}}
                   />
                 </div>
                 <div className="save-btn-row">

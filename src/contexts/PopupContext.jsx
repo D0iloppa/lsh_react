@@ -104,14 +104,14 @@ export const PopupProvider = ({ children }) => {
   };
 
 
-  useEffect(() => {
-    window.testPopup = {
-        emit: emitEvent,
-        reset: resetEvent,
-        showEvents: () => console.log('Current events:', state.events),
-        showPopups: () => console.log('Active popups:', state.activePopups)
-      };
-  }, [state.events, state.activePopups]);
+  // useEffect(() => {
+  //   window.testPopup = {
+  //       emit: emitEvent,
+  //       reset: resetEvent,
+  //       showEvents: () => console.log('Current events:', state.events),
+  //       showPopups: () => console.log('Active popups:', state.activePopups)
+  //     };
+  // }, [state.events, state.activePopups]);
 
   return (
     <PopupContext.Provider value={{

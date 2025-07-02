@@ -15,7 +15,6 @@ const VenueTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES}) => {
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const navigate = useNavigate();
 
-
   useEffect(() => {
     if (messages && Object.keys(messages).length > 0) {
       console.log('✅ Messages loaded:', messages);
@@ -27,7 +26,7 @@ const VenueTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES}) => {
 
 
    const handleEnterVenueInfo = () => {
-      navigate('/venueSetup');
+      navigate('/venueSetup', { state: { from: 'managerTuto' } });
   };
 
   const handleRemindLater = () => {
@@ -83,7 +82,7 @@ const VenueTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES}) => {
           </p>
         </div>
 
-        <ImagePlaceholder src={get('VENUE_SETTING_IMAGE') || '/cdn/venue_setting.png'}
+        <ImagePlaceholder src={get('VENUE_SETTING_IMAGE')}
         className="w-full h-auto object-contain"
           style={{ 
             height: '395px',

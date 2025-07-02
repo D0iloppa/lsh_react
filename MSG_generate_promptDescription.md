@@ -10,7 +10,7 @@
 ```sql
 INSERT INTO public.lsh_message_code
 (msg_code, "scope", msg_kr, msg_en, msg_vi, msg_ja)
-VALUES(${msg_code}, ${scope}, ${msg_kr}, ${msg_en}, ${msg_vi}, ${msg_ja});
+VALUES('BOOKING_RESERVED_AT_LABEL', 'ui', '예약 생성일시', 'Booking Created At', 'Thời gian tạo đặt chỗ', '予約作成日時');
 ```
 
 ## 사용법

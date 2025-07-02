@@ -8,11 +8,21 @@ import { useAuth } from '@contexts/AuthContext';
 import axios from 'axios';
 import { Calendar, Users, ClipboardList, Tag, Star, Headphones, Bell, Settings, MessagesSquare } from 'lucide-react';
 
-const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
+const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
+
   const [staffs, setStaffs] = useState([]);
   const { user } = useAuth();
   const intervalRef = useRef(null);
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  const [roomType, setRoomType] = useState('manager');
+
+    useEffect(() => {
+      const { chatRoomType = 'manager' } = otherProps;
+
+      console.log('chatRoomType', chatRoomType);
+      setRoomType(chatRoomType);
+    }, [otherProps]); // 의존성 배열로 제어
+
 
   useEffect(() => {
       if (messages && Object.keys(messages).length > 0) {
@@ -25,7 +35,7 @@ const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    if (user?.venue_id) {
+    if (user?.venue_id && roomType) {
       fetchAndUpdate(user.venue_id); // 최초 데이터
       startInterval(user.venue_id);  // 주기적 갱신
     }
@@ -33,7 +43,7 @@ const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current); // 언마운트 시 정리
     };
-  }, [user]);
+  }, [user, roomType]); // roomType 의존성 추가
 
   const startInterval = (venue_id) => {
     intervalRef.current = setInterval(() => {
@@ -43,9 +53,23 @@ const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
 
   const fetchAndUpdate = async (venue_id) => {
     const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+
+    let params = { account_type : roomType };
+
+    console.log('chatRoomType', params);
+
+    switch(roomType){
+      case 'manager':
+        params.venue_id = venue_id;
+        break;
+      case 'staff':
+        params.staff_id = user.staff_id;
+        break;
+    }
+
     try {
       const response = await axios.get(`${API_HOST}/api/getChattingList`, {
-        params: { venue_id },
+        params: params
       });
       const data = response.data || [];
 
@@ -218,4 +242,4 @@ const StaffManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
   );
 };
 
-export default StaffManagement;
+export default ChattingList;

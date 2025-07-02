@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SketchHeader from '@components/SketchHeader';
+import GoogleMapComponent from '@components/GoogleMapComponent';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import SketchInput from '@components/SketchInput';
@@ -8,9 +9,11 @@ import '@components/SketchComponents.css';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import Swal from 'sweetalert2';
+import ImageUploader from '@components/ImageUploader';
+import PhotoGallery from '@components/PhotoGallery';
 
 const defaultForm = {
   name: '',
@@ -48,12 +51,23 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState([]);
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [galleryImagesContentId, setGalleryImagesContentId] = useState([]);
+  const [galleryImagesMap, setGalleryImagesMap] = useState([]); // {url, contentId} 형태로 관리
+
   const navigate = useNavigate();
+
+  const location = useLocation();
+  const fromManagerTuto = location.state?.from === 'managerTuto';
 
     useEffect(() => {
         if (messages && Object.keys(messages).length > 0) {
           console.log('✅ Messages loaded:', messages);
-           setLanguage('vi'); // 기본 언어 설정
+           //setLanguage('vi'); // 기본 언어 설정
           console.log('Current language set to:', currentLang);
           window.scrollTo(0, 0);
         }
@@ -87,6 +101,22 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     // messages, currentLang 등은 별도 처리
   }, [mode, venueId]);
 
+
+
+
+  useEffect(() => {
+    console.log('uploadedImages Changed', uploadedImages);
+
+    const contentId = uploadedImages[0]?.contentId;
+
+    if(contentId){
+      setForm(prev => ({ ...prev, newProfile: contentId }));
+    }
+
+  }, [uploadedImages]);
+
+
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
@@ -96,6 +126,15 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
+
+
+  const handleBack = () => {
+  if (fromManagerTuto) {
+    navigate('/managerTuto');
+  } else {
+    goBack();
+  }
+};
 
   // 검증 함수들
   const validateName = (name) => {
@@ -274,6 +313,11 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       close_time: formatTimeToSeconds(form.close_time.trim()),  // HH:MM:SS 형식으로 변환
       description: form.description.trim()
     };
+
+    // newProfile이 있을 때만 추가
+    if (form.newProfile) {
+      venueData.newProfile = form.newProfile;
+    }
     
     console.log('Saving venue data:', venueData);
     
@@ -284,6 +328,25 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     
     // 성공 응답 체크 (API 응답 구조에 따라 조정)
     if (response && (response.success || response.data || response.venue_id)) {
+      // 성공 후 갤러리 이미지들 DB에 저장
+      const venueId = response.venue_id || response.data?.venue_id;
+      if (venueId && galleryImagesContentId.length > 0) {
+        for (const contentId of galleryImagesContentId) {
+          try {
+            await ApiClient.postForm('/api/uploadVenueGallery', {
+              venue_id: venueId,
+              content_id: contentId
+            });
+          } catch (error) {
+            console.error('Gallery image upload failed:', error);
+          }
+        }
+      }
+      
+      // galleryImages 초기화
+      setGalleryImages([]);
+      setGalleryImagesContentId([]);
+      
       // SweetAlert로 성공 메시지 표시
       await Swal.fire({
         title: get('SWAL_SUCCESS_TITLE'),
@@ -299,27 +362,72 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   };
 
   const updateVenue = async () => {
-    // TODO: venue 수정 API 호출 구현
-    // alert('수정 기능은 아직 구현되지 않았습니다.');
+  try {
+    // 먼저 주소 → 위도/경도 변환 수행
+    const response = await ApiClient.get('/api/getPoi', {
+      params: { keyword: form.address }
+    });
 
+    const result = response;
+
+    if (!result || !result.includes(',')) {
+      throw new Error('좌표 형식이 올바르지 않습니다.');
+    }
+
+    const [lat, lng] = result.split(',').map(s => s.trim());
+
+    // 위도/경도 갱신
+    const updatedForm = {
+      ...form,
+      latitude: lat,
+      longitude: lng
+    };
+
+    setForm(updatedForm); // 폼 상태도 업데이트 (필요 시)
+    
+    // venue 수정 데이터 준비
     const venueData = {
       cat_id: 1,
       venue_id: user?.venue_id,
-      name: form.name.trim(),
-      address: form.address.trim(),
-      phone: form.phone.trim(),
-      open_time: formatTimeToSeconds(form.open_time.trim()),    // HH:MM:SS 형식으로 변환
-      close_time: formatTimeToSeconds(form.close_time.trim()),  // HH:MM:SS 형식으로 변환
-      description: form.description.trim()
+      name: updatedForm.name.trim(),
+      address: updatedForm.address.trim(),
+      phone: updatedForm.phone.trim(),
+      latitude: updatedForm.latitude.trim(),
+      longitude: updatedForm.longitude.trim(),
+      open_time: formatTimeToSeconds(updatedForm.open_time.trim()),
+      close_time: formatTimeToSeconds(updatedForm.close_time.trim()),
+      description: updatedForm.description.trim()
     };
-    
-    // API 호출
-    const response = await ApiClient.postForm('/api/venueEdit', venueData);
-    
-    console.log('API response:', response);
 
-    // 수정 성공 시 SweetAlert 표시
-    if (response && (response.success || response.data)) {
+    if(updatedForm.newProfile){
+      venueData.profile_content_id = updatedForm.newProfile;
+    }
+
+    console.log('venueData', venueData, galleryImages);
+
+    const updateResponse = await ApiClient.postForm('/api/venueEdit', venueData);
+    
+    console.log('API response:', updateResponse);
+
+    if (updateResponse && (updateResponse.success || updateResponse.data)) {
+      // 성공 후 갤러리 이미지들 DB에 저장
+      if (galleryImagesContentId.length > 0) {
+        for (const contentId of galleryImagesContentId) {
+          try {
+            await ApiClient.postForm('/api/uploadVenueGallery', {
+              venue_id: user?.venue_id,
+              content_id: contentId
+            });
+          } catch (error) {
+            console.error('Gallery image upload failed:', error);
+          }
+        }
+      }
+      
+      // galleryImages 초기화
+      setGalleryImages([]);
+      setGalleryImagesContentId([]);
+      
       await Swal.fire({
         title: get('SWAL_SUCCESS_TITLE'),
         text: get('SETTINGS_SAVE_SUCCESS'),
@@ -329,7 +437,16 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     } else {
       throw new Error('Invalid response from server');
     }
-  };
+  } catch (error) {
+    console.error('Venue update failed:', error);
+    Swal.fire({
+      title: get('SWAL_ERROR_TITLE'),
+      text: get('VENUE_ERROR_SAVE_FAILED'),
+      icon: 'error',
+      confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+    });
+  }
+};
 
   const handleSave = async () => {
     if (!validateForm()) {
@@ -384,6 +501,31 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       setIsSubmitting(false);
     }
   };
+
+  const handleClickSearchPoi = async () => {
+  try {
+    const response = await ApiClient.get('/api/getPoi', {
+      params: { keyword: form.address }
+    });
+
+    const result = response;
+
+    if (!result || !result.includes(',')) {
+      throw new Error('좌표 형식이 올바르지 않습니다.');
+    }
+
+    const [lat, lng] = result.split(',').map(s => s.trim());
+
+    setForm(prev => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng
+    }));
+
+  } catch (err) {
+    alert('위치 검색 실패');
+  }
+};
 
   return (
     <>
@@ -485,6 +627,14 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           opacity: 0.6;
           cursor: not-allowed;
         }
+
+        .map-section {
+          width: 100%;
+          height: 250px;
+          margin-top: 1rem;
+          margin-bottom:1rem;
+          border: 1px solid #666;
+        }   
         
         .close_time{margin-bottom: 1px}
       `}</style>
@@ -492,11 +642,14 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         <SketchHeader
           title={get('VENUE_SETUP_TITLE')}
           showBack={true}
-          onBack={goBack}
+          onBack={handleBack}
         />
         
+        {/* 이미지 업로드 */}
         <div className="section-title">{get('VENUE_UPLOAD_IMAGES')}</div>
         <div className="img-row">
+          {/* 
+          // 예전 이미지 업로드
          <div
             className="img-upload"
             style={
@@ -530,13 +683,77 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
             +
             <div className="img-label">{get('VENUE_COVER_PHOTO')}</div>
 
-            {/* 빨간 동그라미 뱃지 */}
+            {// 빨간 동그라미 뱃지}
             {form.imgList && form.imgList.length > 0 && (
               <div className="img-badge">
                 {form.imgList.length}
               </div>
             )}
+
+            
           </div>
+          */}
+          <ImageUploader
+              apiClient={ApiClient}
+              containerAsUploader={true}
+              uploadedImages={uploadedImages}
+              onImagesChange={setUploadedImages}
+              maxImages={1}
+              imageHolderStyle={{ width: '125px', height: '125px' }}
+              showRemoveButton={true}
+              showPreview={false}
+              initialImageUrl={form.image_url}
+            />
+
+            <div style={{}}>
+            <PhotoGallery
+              photoGalleryMode={{
+                fetchList: async () => {
+                  const response = await ApiClient.postForm('/api/getVenueGallery', {
+                    venue_id: user?.venue_id || -1
+                  });
+
+                  const { data = [] } = response;
+
+                  console.log('data', data);
+
+                  // 기존 DB 이미지 + 새로 추가된 이미지들 합치기
+                  const dbImages = (data || []).map(item => item.url);
+                  return [...galleryImages, ...dbImages];
+                },
+                onUpload: async (file) => {
+                  const response = await ApiClient.uploadImage(file);
+                  const { content_id = false, accessUrl } = response;
+
+                  if (content_id) {
+                    // 임시로 galleryImages에 추가 (DB 저장 전까지)
+                    setGalleryImages(prev => [...prev, accessUrl]);
+                    setGalleryImagesContentId(prev => [...prev, content_id]);
+                    setGalleryImagesMap(prev => [...prev, { url: accessUrl, contentId: content_id }]);
+                  }
+                }
+              }}
+              appendedImages={galleryImages}
+              onAppendedImagesChange={setGalleryImages}
+              onDeleted={(deletedImageUrl) => {
+
+                console.log('deletedImageUrl', deletedImageUrl, galleryImages);
+                // galleryImages에서 삭제된 이미지 제거
+                setGalleryImages(prev => prev.filter(img => img !== deletedImageUrl));
+                
+                // galleryImagesMap에서 해당 항목 제거하고 contentId 배열 업데이트
+                setGalleryImagesMap(prev => {
+                  const filtered = prev.filter(item => item.url !== deletedImageUrl);
+                  setGalleryImagesContentId(filtered.map(item => item.contentId));
+                  return filtered;
+                });
+              }}
+            />  
+            </div>
+
+
+
+
 
 
         </div>
@@ -554,7 +771,8 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           />
         </div>
         
-        <div className="input-row">
+        <div className="input-row" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom:'-15px' }}>
+        <div style={{ flex: 8 }}>
           <SketchInput
             name="address"
             value={form.address}
@@ -564,7 +782,34 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
             error={errors.address}
           />
         </div>
-        
+        <div style={{ flex: 2 }}>
+          <button
+            onClick={handleClickSearchPoi}
+            style={{
+             padding: '4px 10px',
+                fontSize: '0.75rem',
+                backgroundColor: '#e5e7eb',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                height: '39px',
+                marginTop: '-15px'
+            }}
+          >
+            {get('VENUE_EDIT_POI_BTN')}
+          </button>
+        </div>
+      </div>
+
+      
+
+          <div className="map-section">
+            <GoogleMapComponent
+              places={form ? [form] : []}
+              disableInteraction={true}
+            />
+          </div>
+
         <div className="input-row">
           <SketchInput
             name="phone"

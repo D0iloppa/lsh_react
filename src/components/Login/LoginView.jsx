@@ -169,11 +169,7 @@ export default function LoginView() {
 
         {/* Footer */}
           
-          <InitFooter 
-            className="custom-footer"
-            privacyHref="/privacy"
-            termsHref="/terms"
-          />
+       
 
 
       </div>

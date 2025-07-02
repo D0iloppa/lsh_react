@@ -265,7 +265,12 @@ const handleReservationManage = async (reservation_id, mngCode) => {
     initializeReservations();
   }, [venue_id]); // venue_id가 변경될 때만 실행
 
-  const filtered = reservations.filter(r => r.status === selectedStatus);
+  const filtered = reservations.filter(r => {
+    if (selectedStatus === 'pending') {
+      return r.status === 'pending' || r.status === 'accepted';
+    }
+    return r.status === selectedStatus;
+  });
   
   console.log("Current reservations:", reservations); // 전체 예약 데이터
   console.log("Selected status:", selectedStatus); // 현재 선택된 상태
