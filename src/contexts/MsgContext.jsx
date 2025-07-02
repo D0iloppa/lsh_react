@@ -11,7 +11,6 @@ export const MsgProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentLang, setCurrentLang] = useState('kr'); // 기본 언어
-   const [fontFamily, setFontFamily] = useState('default-font');
 
   // API에서 메시지 데이터 가져오기
   const fetchMessages = async () => {
@@ -89,15 +88,6 @@ export const MsgProvider = ({ children }) => {
   // 언어 변경 함수
   const setLanguage = useCallback((lang) => {
     setCurrentLang(lang);
-
-    if (lang === 'ja') {
-      setFontFamily("'Noto Sans JP', Meiryo, 'Hiragino Kaku Gothic ProN', sans-serif");
-    } else if (lang === 'kr') {
-      setFontFamily("'BM Hanna', 'Comic Sans MS', cursive, sans-serif");
-    } else {
-      setFontFamily('default-font');
-    }
-
   }, [messages]);
 
   // 사용 가능한 언어 목록
@@ -113,7 +103,6 @@ export const MsgProvider = ({ children }) => {
     isLoading,
     error,
     currentLang,
-    fontFamily,
     get,
     setLanguage,
     availableLanguages,
@@ -122,9 +111,7 @@ export const MsgProvider = ({ children }) => {
 
   return (
     <MsgContext.Provider value={value}>
-      <div style={{ fontFamily }}>
-        {children}
-      </div>
+      {children}
     </MsgContext.Provider>
   );
 };

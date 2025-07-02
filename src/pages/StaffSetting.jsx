@@ -30,13 +30,6 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
   const [tempLang, setTempLang] = useState(currentLang);
   const [emailNoti, setEmailNoti] = useState(true);
   const [smsNoti, setSmsNoti] = useState(false);
-  
-    useEffect(() => {
-      if (currentLang) {
-        document.body.classList.remove('lang-ko', 'lang-en', 'lang-ja', 'lang-vi');
-        document.body.classList.add(`lang-${currentLang}`);
-      }
-    }, [currentLang]);
 
   useEffect(() => {
       if (messages && Object.keys(messages).length > 0) {
