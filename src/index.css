@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
-  font-family: 'BMHanna-JP', 'BMHanna', sans-serif;
+ :root {
+  --font-primary: 'YourDefaultFont', sans-serif;
+  --font-japanese: 'NotoSansJP', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif;
+}
+
+body[data-lang="ja"] * {
+  font-family: var(--font-japanese) !important;
+}
+
+/* 더 구체적으로 */
+body[data-lang="ja"] .settings-container,
+body[data-lang="ja"] .sketch-btn,
+body[data-lang="ja"] .page-title,
+body[data-lang="ja"] .center-section {
+  font-family: var(--font-japanese) !important;
 }

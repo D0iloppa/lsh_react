@@ -33,7 +33,16 @@ import HatchPattern from '@components/HatchPattern';
 
 const AppRoutes = () => {
   const { isLoggedIn } = useAuth();
-  const { messages } = useMsg();
+  const { currentLang, messages } = useMsg();
+
+    useEffect(() => {
+    // body에 현재 언어 속성 추가
+    document.body.setAttribute('data-lang', currentLang);
+    
+    // 또는 클래스 방식
+    document.body.classList.remove('lang-en', 'lang-ko', 'lang-ja', 'lang-zh');
+    document.body.classList.add(`lang-${currentLang}`);
+  }, [currentLang]);
 
   const navigate = useNavigate();
 

@@ -41,7 +41,7 @@ const SettingsPage = ({
     ja: '日本語',
     vi: 'Tiếng Việt',
   };
-const { messages, isLoading, error, get, currentLang, availableLanguages, refresh } = useMsg();
+const { messages, isLoading, error, get, currentLang, setLanguage: setGlobalLang, availableLanguages, refresh } = useMsg();
   useEffect(() => {
     window.scrollTo(0, 0);
 
@@ -68,6 +68,8 @@ const { messages, isLoading, error, get, currentLang, availableLanguages, refres
 
         const data = response.data || {};
 
+        console.log("data.language", data.language)
+
         console.log(data.update_alert);
         setLanguage(data.language || 'ko');
         setReceiveUpdates(data.update_alert ?? true); // boolean은 null check
@@ -88,42 +90,61 @@ const { messages, isLoading, error, get, currentLang, availableLanguages, refres
 
   }, [user, messages, currentLang]);
 
+  // 언어 변경 핸들러 수정
+  const handleLanguageChange = (newLang) => {
+    setLanguage(newLang); // 로컬 state
+    setGlobalLang(newLang); // 전역 state (body data-lang 변경)
+  };
+
   const handleBack = () => {
     console.log('Back 클릭');
     navigateToPageWithData && navigateToPageWithData(PAGES.HOME);
   };
 
   const handleSave = async () => {
-    try {
-      const payload = {
-        user_id: user?.user_id || 1,
-        language: language || '',
-        update_alert: receiveUpdates,
-        event_alert: eventAlerts,
-        email: email || '',
-        phone: phone || '',
-        location_sharing: shareLocation,
-        online_status: showOnlineStatus
-      };
+  try {
+    const payload = {
+      user_id: user?.user_id || 1,
+      language: language || '',
+      update_alert: receiveUpdates,
+      event_alert: eventAlerts,
+      email: email || '',
+      phone: phone || '',
+      location_sharing: shareLocation,
+      online_status: showOnlineStatus
+    };
 
-      console.log('저장할 정보:', payload);
+    console.log('저장할 정보:', payload);
 
-      await axios.post(
-        `${API_HOST}/api/updateSetting`,
-        qs.stringify(payload),
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          }
+    await axios.post(
+      `${API_HOST}/api/updateSetting`,
+      qs.stringify(payload),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
         }
-      );
+      }
+    );
 
-        alert(get('SETTINGS_SAVE_SUCCESS'));
-        } catch (error) {
-          console.error(get('SETTINGS_SAVE_ERROR_LOG'), error);
-          alert(get('SETTINGS_SAVE_ERROR'));
-        }
-  };
+    if (setGlobalLang && language !== currentLang) {
+      setGlobalLang(language);
+      console.log('언어 변경됨:', language);
+      
+      // CSS 변수도 함께 업데이트 (폰트 즉시 적용)
+      if (language === 'ja') {
+        document.documentElement.style.setProperty('--font-primary', "'NotoSansJP', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif");
+      } else {
+        document.documentElement.style.setProperty('--font-primary', "'BMHanna', 'Comic Sans MS', cursive, sans-serif");
+      }
+    }
+
+    alert(get('SETTINGS_SAVE_SUCCESS'));
+  } catch (error) {
+    console.error(get('SETTINGS_SAVE_ERROR_LOG'), error);
+    alert(get('SETTINGS_SAVE_ERROR'));
+  }
+};
+
 
 
   const ToggleSwitch = ({ checked, onChange, label }) => (
@@ -314,12 +335,13 @@ const { messages, isLoading, error, get, currentLang, availableLanguages, refres
               <h2 className="section-title">{get('Setting1.1')}</h2>
               <select 
                 className="language-select"
-                value={language}
+                value={currentLang}
                 onChange={(e) => setLanguage(e.target.value)}
               >
                 <option value="vi">Tiếng Việt</option>
                 <option value="kr">한국어</option>
                 <option value="en">English</option>
+                <option value="ja">일본어</option>  
               </select>
             </div>
           </SketchDiv>

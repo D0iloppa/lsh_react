@@ -134,7 +134,7 @@ const ShareExpPage = ({
         .review-header {
           display: flex;
           gap: 1rem;
-          margin-bottom: 1.5rem;
+          margin-bottom: 0.5rem;
         }
 
         .venue-image {
@@ -148,6 +148,7 @@ const ShareExpPage = ({
           display: flex;
           flex-direction: column;
           justify-content: center;
+          margin-top: 3rem;
         }
 
         .venue-name {
@@ -283,7 +284,7 @@ const ShareExpPage = ({
               <div className="venue-image">
                 <ImagePlaceholder 
                   src={image} 
-                  className="venue-image"
+                  className="" style={{objectPosition: 'top', height: '161px', objectFit: 'cover'}}
                 />
               </div>
               
