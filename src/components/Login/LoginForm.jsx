@@ -60,7 +60,9 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
     setTimeout(() => {
       if (accountType === 'manager') {
       
-        const venueId = result.user.venue_id;
+        //const venueId = result.user.venue_id;
+
+        const venueId = 0;
         
         if (!venueId || venueId == 0 || venueId == null) {
           // venue_id가 null, 0, 또는 없으면 튜토리얼로 이동
@@ -152,14 +154,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
 
       
       <form onSubmit={onSubmit}>
-        {/* General Error/Success Message */}
-        {errors.general && (
-          <div className="sketch-error-message">{errors.general}</div>
-        )}
-        {message && (
-          <div className="sketch-success-message">{message}</div>
-        )}
-
+        
         {/* Email Input */}
         <SketchInput
           type="text"
@@ -181,6 +176,14 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
           error={errors.password}
           variant="password"
         />
+
+        {/* General Error/Success Message */}
+        {errors.general && (
+          <div className="sketch-error-message" style={{marginTop: '-0.5rem', marginBottom: '0.5rem'}}>{errors.general}</div>
+        )}
+        {message && (
+          <div className="sketch-success-message" style={{marginTop: '-0.5rem', marginBottom: '0.5rem'}}>{message}</div>
+        )}
 
       
 

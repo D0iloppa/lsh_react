@@ -83,7 +83,7 @@ const VenueTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES}) => {
           </p>
         </div>
 
-        <ImagePlaceholder src="/cdn/venue_setting.png"
+        <ImagePlaceholder src={get('VENUE_SETTING_IMAGE') || '/cdn/venue_setting.png'}
         className="w-full h-auto object-contain"
           style={{ 
             height: '395px',
@@ -95,29 +95,6 @@ const VenueTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES}) => {
             marginBottom: '1rem'
           }}
         />
-
-      {/* Required Fields 박스 */}
-      {/* <div className="relative" style={{ marginBottom: '1rem', marginTop:'2rem' }}>
-        <SketchDiv style={{ 
-          padding: '1rem',
-          backgroundColor: '#f9f9f9',
-          minHeight: '150px'
-        }}>
-          <HatchPattern opacity={0.2} />
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <h3 style={{ fontSize: '0.91rem', fontWeight: '600', marginBottom: '0.75rem', color: '#333' }}>
-              {get('TUTORIAL_REQUIRED_FIELDS')}
-            </h3>
-            <div style={{ fontSize: '0.75rem', color: '#666', lineHeight: '1.6' }}>
-              <div>{get('TUTORIAL_VENUE_NAME')}</div>
-              <div>{get('TUTORIAL_ADDRESS')}</div>
-              <div>{get('TUTORIAL_PHONE')}</div>
-              <div>{get('TUTORIAL_BUSINESS_HOURS')}</div>
-              <div>{get('TUTORIAL_INTRODUCTION')}</div>
-            </div>
-          </div>
-        </SketchDiv>
-      </div> */}
 
       {/* Enter venue information 버튼 */}
       <div className="relative" style={{ marginBottom: '0.75rem' }}>

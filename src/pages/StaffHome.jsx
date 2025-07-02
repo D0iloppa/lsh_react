@@ -27,13 +27,7 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
   });
   const [isLoadingData, setIsLoadingData] = useState(true);
   console.log('메시지 내용:', messages['Staff.home.btn1']); 
-    useEffect(() => {
-      if (currentLang) {
-        document.body.classList.remove('lang-ko', 'lang-en', 'lang-ja', 'lang-vi');
-        document.body.classList.add(`lang-${currentLang}`);
-      }
-    }, [currentLang]);
-  
+
   useEffect(() => {
     window.scrollTo(0, 0);
     if (messages && Object.keys(messages).length > 0) {

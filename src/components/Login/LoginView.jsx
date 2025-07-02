@@ -10,6 +10,8 @@ import HatchPattern from '@components/HatchPattern';
 import LoadingScreen from '@components/LoadingScreen';
 import RotationDiv from '@components/RotationDiv';
 import PopularVenue from '@components/PopularVenue';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import MessageFlag from '@components/MessageFlag';
 
 // 칵테일 아이콘 컴포넌트
 const CocktailIcon = () => (
@@ -49,7 +51,6 @@ const CocktailIcon = () => (
   </svg>
 );
 
-import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 
 export default function LoginView() {
@@ -176,6 +177,7 @@ export default function LoginView() {
 
 
       </div>
+      <MessageFlag />
     </div>
   );
 }

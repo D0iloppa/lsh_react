@@ -30,9 +30,6 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
     if (!autoRotate || rotationItems.length <= 1 || isPaused) return;
 
      if (messages && Object.keys(messages).length > 0) {
-        console.log('✅ Messages loaded:', messages);
-        // setLanguage('en'); // 기본 언어 설정
-        console.log('Current language set to:', currentLang);
         window.scrollTo(0, 0);
       }
 

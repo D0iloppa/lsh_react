@@ -50,6 +50,15 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
+    useEffect(() => {
+        if (messages && Object.keys(messages).length > 0) {
+          console.log('✅ Messages loaded:', messages);
+           setLanguage('vi'); // 기본 언어 설정
+          console.log('Current language set to:', currentLang);
+          window.scrollTo(0, 0);
+        }
+      }, [messages, currentLang]);
+
   useEffect(() => {
     if (mode === 'edit' && venueId) {
       // edit 모드일 때만 데이터 fetch
@@ -58,6 +67,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           const venueData = await ApiClient.get('/api/getVenue', {
             params: { venue_id: venueId }
           });
+          
           setForm(prev => ({
             ...prev,
             ...venueData,
@@ -73,6 +83,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       // create 모드일 때는 form을 비움
       setForm(defaultForm);
     }
+
     // messages, currentLang 등은 별도 처리
   }, [mode, venueId]);
 
@@ -394,8 +405,25 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           gap: 1.2rem;
           margin-bottom: 1.2rem;
         }
+          .img-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background-color: #dc2626; /* Tailwind red-600 */
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            width: 20px;
+            height: 20px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 2px white; /* 배경 대비용 */
+          }
         .img-upload {
           flex: 1;
+          position: relative;
           background: #f3f4f6;
           border-radius: 6px;
           height: 120px;
@@ -469,14 +497,48 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         
         <div className="section-title">{get('VENUE_UPLOAD_IMAGES')}</div>
         <div className="img-row">
-          <div className="img-upload">
+         <div
+            className="img-upload"
+            style={
+              form.image_url
+                ? {
+                    backgroundImage: `url(${form.image_url})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    color: 'transparent' // + 기호 숨기기용
+                  }
+                : {}
+            }
+          >
             +
             <div className="img-label">{get('VENUE_LOGO')}</div>
           </div>
-          <div className="img-upload">
+
+          <div
+            className="img-upload"
+            style={
+              form.imgList && form.imgList.length > 0
+                ? {
+                    backgroundImage: `url(${form.imgList[0]})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    color: 'transparent'
+                  }
+                : {}
+            }
+          >
             +
             <div className="img-label">{get('VENUE_COVER_PHOTO')}</div>
+
+            {/* 빨간 동그라미 뱃지 */}
+            {form.imgList && form.imgList.length > 0 && (
+              <div className="img-badge">
+                {form.imgList.length}
+              </div>
+            )}
           </div>
+
+
         </div>
         
         <div className="section-title required-field">{get('VENUE_INFORMATION')}</div>

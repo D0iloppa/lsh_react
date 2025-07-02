@@ -243,26 +243,23 @@ if (isLoadingData) {
       <div className="editprofile-container">
         <div className="image-upload-section">
           <div className="image-upload-title">{get('PROFILE_IMAGE_TITLE')}</div>
-          <div style={{display: 'flex', alignItems: 'center'}}>
+          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-around'}}>
             <ImageUploader
               apiClient={ApiClient}
               containerAsUploader={true}
               uploadedImages={uploadedImages}
               onImagesChange={setUploadedImages}
               maxImages={1}
-              imageHolderStyle={{ width: '120px', height: '120px' }}
+              imageHolderStyle={{ width: '125px', height: '125px' }}
               showRemoveButton={true}
               showPreview={false}
               initialImageUrl={staffInfo?.image_url || staffInfo?.profile_image}
             />
 
-          <div style={{marginLeft: '2rem'}}>
+          <div style={{}}>
             <PhotoGallery
               photoGalleryMode={{
                 fetchList: async () => {
-
-
-                  
                   const response = await ApiClient.postForm('/api/getStaffGallery', {
                     staff_id: user?.staff_id || user?.id
                   });

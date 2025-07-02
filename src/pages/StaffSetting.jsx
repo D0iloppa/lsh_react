@@ -95,19 +95,15 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
           timer: 1500,
           showConfirmButton: false
         });
+        
+          await logout();
+          navigate('/login');
 
       } catch (e) {
         console.error('계정 탈퇴 중 오류:', e);
-        Swal.fire({
-          title: '오류 발생',
-          text: '계정 탈퇴 중 문제가 발생했습니다.',
-          icon: 'error'
-        });
       }
     }
 
-    await logout();
-    navigate('/login');
 };
 
 
