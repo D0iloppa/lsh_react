@@ -132,7 +132,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
                   if (typeof setStatus === 'function') setStatus({ accountType: 'manager' });
                 }}
               />
-              MANAGER
+              {get('BOOKING_MANAGER_CHAT')}
             </label>
             <label style={{ marginLeft: '1rem' }}>
               <input
@@ -146,7 +146,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
                   if (typeof setStatus === 'function') setStatus({ accountType: 'staff' });
                 }}
               />
-              STAFF
+              {get('title.text.16')}
             </label>
           </div>
 

@@ -32,15 +32,6 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
   const [smsNoti, setSmsNoti] = useState(false);
 
   useEffect(() => {
-      if (messages && Object.keys(messages).length > 0) {
-        console.log('✅ Messages loaded:', messages);
-        // setLanguage('en'); // 기본 언어 설정
-        console.log('Current language set to:', currentLang);
-        window.scrollTo(0, 0);
-      }
-    }, [messages, currentLang]);
-
-  useEffect(() => {
     window.scrollTo(0, 0);
 
     const fetchStaffData = async () => {
@@ -78,6 +69,47 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
     await logout();
     navigate('/login'); 
   };
+
+  const handleDelete = async () => {
+    const result = await Swal.fire({
+      title: '정말 계정 탈퇴를 하시겠습니까?',
+      text: '이 작업은 되돌릴 수 없습니다.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: '네, 탈퇴하겠습니다',
+      cancelButtonText: '취소'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await ApiClient.get('/api/staffDelete', {
+          params: { staff_id: user?.staff_id }
+        });
+
+        await Swal.fire({
+          title: '탈퇴 완료',
+          text: '계정이 성공적으로 삭제되었습니다.',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        });
+
+      } catch (e) {
+        console.error('계정 탈퇴 중 오류:', e);
+        Swal.fire({
+          title: '오류 발생',
+          text: '계정 탈퇴 중 문제가 발생했습니다.',
+          icon: 'error'
+        });
+      }
+    }
+
+    await logout();
+    navigate('/login');
+};
+
 
   // 현재 비밀번호 인증
 const handleVerifyCurrentPassword = async () => {
@@ -253,6 +285,12 @@ const handleSaveLanguage = () => {
           display: flex;
           align-items: center;
           gap: 1rem;
+        }
+        .staff-delete {
+          text-align: center;
+          color: red;
+          margin-top: 0.8rem;
+          text-decoration: underline;
         }
       `}</style>
       
@@ -448,6 +486,7 @@ const handleSaveLanguage = () => {
             {get('Staff.setting.logout') || get('STAFF_SETTINGS_LOGOUT_BUTTON')}
           </SketchBtn>
         </div>
+          <div className='staff-delete' onClick={handleDelete}>계정 탈퇴</div>
       </div>
     </>
   );

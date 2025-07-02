@@ -5,6 +5,8 @@ import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 import { Calendar, Clock, MapPin, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, CheckCircle, XCircle } from 'lucide-react';
 import HatchPattern from '@components/HatchPattern';
+import WeekSection from '@components/WeekSection';
+import MonthSection from '@components/MonthSection';
 
 import { useAuth } from '@contexts/AuthContext';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
@@ -51,7 +53,7 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
 
   useEffect(() => {
     fetchSchedules();
-  }, [triggerRefresh]);
+  }, [currentMonth, currentYear, currentWeek, view, mondayStart, user, currentLang, messages]);
 
 
   // 주차 계산 함수
@@ -124,49 +126,77 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
     return `${String(h).padStart(2, '0')}:${minute} ${ampm}`;
   }
 
+  // 월의 모든 주차 시작일 계산 함수 (월의 첫날~마지막날을 완전히 커버)
+  const getAllWeekStartsOfMonth = (year, month, mondayStart) => {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    // 첫 주의 시작일(월요일/일요일)
+    let firstWeekStart = new Date(firstDay);
+    const day = firstWeekStart.getDay();
+    const diff = mondayStart ? (day === 0 ? -6 : 1 - day) : -day;
+    firstWeekStart.setDate(firstWeekStart.getDate() + diff);
+    firstWeekStart.setHours(0,0,0,0);
+
+    // 마지막 주의 시작일(월요일/일요일)
+    let lastWeekStart = new Date(lastDay);
+    const lastDayOfWeek = lastWeekStart.getDay();
+    const lastDiff = mondayStart ? (lastDayOfWeek === 0 ? -6 : 1 - lastDayOfWeek) : -lastDayOfWeek;
+    lastWeekStart.setDate(lastWeekStart.getDate() + lastDiff);
+    lastWeekStart.setHours(0,0,0,0);
+
+    // 모든 주차 시작일 리스트업
+    const weekStarts = [];
+    let current = new Date(firstWeekStart);
+    while (current <= lastDay) {
+      weekStarts.push(new Date(current));
+      current.setDate(current.getDate() + 7);
+    }
+    return weekStarts;
+  };
+
   // API 연계를 위한 함수
   const fetchSchedules = async () => {
     try {
       setIsLoadingData(true);
-      
-      const weekDates = getWeekDates(currentWeek, mondayStart);
-      const startDate = weekDates[0].toISOString().split('T')[0];
-      
-      // 디버깅용 로그
-      console.log('fetchSchedules debug:', {
-        currentWeek,
-        mondayStart,
-        startDate,
-        weekDates: weekDates.map(d => d.toDateString())
-      });
-      
-      // 실제 API 호출
-      const response = await ApiClient.postForm('/api/getStaffSchedules', {
+      if (view === 'week') {
+        // 기존 주간 방식
+        const weekDates = getWeekDates(currentWeek, mondayStart);
+        const startDate = weekDates[0].toISOString().split('T')[0];
+        const response = await ApiClient.postForm('/api/getStaffSchedules', {
           staff_id: user?.staff_id || user?.id,
           start_date: startDate
-      });
-      
-      // API 응답 데이터를 그대로 저장
-      const apiResponse = response.data || [];
-      console.log('API response:', apiResponse);
-      setSchedules(apiResponse);
-      
-      // 지난 날짜들을 folded 상태로 설정 (Today 제외)
-      const today = new Date();
-      const pastDates = new Set();
-      apiResponse.forEach(schedule => {
-        const scheduleDate = new Date(schedule.work_date);
-        const dateInfo = formatDate(scheduleDate);
-        // Today가 아닌 과거 날짜만 folded로 설정
-        if (scheduleDate < today && !dateInfo.isToday) {
-          pastDates.add(schedule.work_date);
-        }
-      });
-      setFoldedDays(pastDates);
-      
+        });
+        const apiResponse = response.data || [];
+        setSchedules(apiResponse);
+        // 지난 날짜들을 folded 상태로 설정 (Today 제외)
+        const today = new Date();
+        const pastDates = new Set();
+        apiResponse.forEach(schedule => {
+          const scheduleDate = new Date(schedule.work_date);
+          const dateInfo = formatDate(scheduleDate);
+          if (scheduleDate < today && !dateInfo.isToday) {
+            pastDates.add(schedule.work_date);
+          }
+        });
+        setFoldedDays(pastDates);
+      } else if (view === 'month') {
+        // 월간: 해당 월의 모든 주차 시작일을 계산해서 각 주차별로 API 호출
+        const weekStarts = getAllWeekStartsOfMonth(currentYear, currentMonth, mondayStart);
+        const promises = weekStarts.map(weekStart => {
+          const startDate = weekStart.toISOString().split('T')[0];
+          return ApiClient.postForm('/api/getStaffSchedules', {
+            staff_id: user?.staff_id || user?.id,
+            start_date: startDate
+          }).then(res => res.data || []);
+        });
+        const allWeeks = await Promise.all(promises);
+        // 모든 주차 데이터를 합쳐서 월간 데이터로 구성
+        const merged = [].concat(...allWeeks);
+        setSchedules(merged);
+      }
     } catch (error) {
       console.error('Failed to fetch schedules:', error);
-      // 에러 시 빈 배열로 설정
       setSchedules([]);
     } finally {
       setIsLoadingData(false);
@@ -451,20 +481,32 @@ const getStatusText = (status) => {
 
 // month 이동 함수
 const handlePrevMonth = () => {
-  if (currentMonth === 0) {
-    setCurrentMonth(11);
-    setCurrentYear(y => y - 1);
+  let newMonth = currentMonth - 1;
+  let newYear = currentYear;
+  if (newMonth < 0) {
+    newMonth = 11;
+    newYear = currentYear - 1;
+  }
+  if (newMonth === currentMonth && newYear === currentYear) {
+    setTriggerRefresh(prev => !prev);
   } else {
-    setCurrentMonth(m => m - 1);
+    setCurrentMonth(newMonth);
+    setCurrentYear(newYear);
   }
 };
 
 const handleNextMonth = () => {
-  if (currentMonth === 11) {
-    setCurrentMonth(0);
-    setCurrentYear(y => y + 1);
+  let newMonth = currentMonth + 1;
+  let newYear = currentYear;
+  if (newMonth > 11) {
+    newMonth = 0;
+    newYear = currentYear + 1;
+  }
+  if (newMonth === currentMonth && newYear === currentYear) {
+    setTriggerRefresh(prev => !prev);
   } else {
-    setCurrentMonth(m => m + 1);
+    setCurrentMonth(newMonth);
+    setCurrentYear(newYear);
   }
 };
 
@@ -1056,119 +1098,35 @@ if (isLoadingData) {
         
         <div className="schedule-list">
           {view === 'week' ? (
-            schedules.map((schedule, index) => {
-              const dateInfo = formatDate(new Date(schedule.work_date));
-              const isPast = new Date(schedule.work_date) < new Date();
-              const status = schedule.status || 'no-schedule';
-              
-              // 액션 버튼 결정
-              let actions = [];
-              switch (status) {
-                case 'pending':
-                  actions = [
-                    {
-                      label: get('WORK_SCHEDULE_REQUEST_CHANGE'),
-                      handler: () => handleEditSchedule(schedule)
-                    }
-                  ];
-                  break;
-                case 'available':
-                // 출근/퇴근 상태에 따라 버튼 결정
-                const isCheckedIn = schedule.check_in && !schedule.check_out;
-                const isCheckedOut = (schedule.check_out) ? true : false;
-                actions = [
-                  {
-                    label: isCheckedOut ? get('WORK_SCHEDULE_END') :
-                          isCheckedIn ? get('WORK_SCHEDULE_CHECK_OUT') : get('WORK_SCHEDULE_CHECK_IN'),
-                    handler: () => handleCheckInOut(schedule, isCheckedIn, isCheckedOut),
-                    ...(isCheckedOut && { variant: 'violet' }) // isCheckedOut이 true일 때만 variant 추가
-                  }
-                ];
-                break;
-                case 'rejected':
-                  actions = [
-                    {
-                      label: get('WORK_SCHEDULE_REQUEST_CHANGE'),
-                      handler: () => handleEditSchedule(schedule)
-                    }
-                  ];
-                  break;
-                case 'dayoff':
-                  actions = [
-                    {
-                      label: get('WORK_SCHEDULE_REQUEST_CHANGE'),
-                      handler: () => handleEditSchedule(schedule)
-                    }
-                  ];
-                  break;
-                case 'no-schedule':
-                  actions = [
-                    {
-                      label: get('WORK_SCHEDULE_APPLY_SCHEDULE'),
-                      handler: () => handleCreateSchedule()
-                    }
-                  ];
-                  break;
-                default:
-                  actions = [
-                    {
-                      label: get('WORK_SCHEDULE_APPLY_SCHEDULE'),
-                      handler: () => handleCreateSchedule(),
-                    }
-                  ];
-              }
-              
-              return (
-                <div key={`schedule-${schedule.schedule_id || schedule.work_date || index}`} 
-                     className={`schedule-row${schedule.check_out ? ' check-outed' : ''}`}>
-                  <div className="schedule-day">
-                    {dateInfo.day}
-                    {status === 'available' && (
-                      <CheckCircle size={13} color="#2bb4bb" style={{marginLeft: '0.3em', verticalAlign: 'middle'}} />
-                    )}
-                    {status === 'rejected' && (
-                      <XCircle size={13} color="#e11d48" style={{marginLeft: '0.3em', verticalAlign: 'middle'}} />
-                    )}
-                  </div>
-                  <div className="schedule-time">
-                    {status === 'no-schedule' || status === 'dayoff' || !schedule.start_time ? 
-                      <span className={`${status === 'dayoff' ? 'schedule-time-dayoff' : status === 'no-schedule' ? 'schedule-time-no-schedule' : ''}`}>
-                        {getStatusText(status)}
-                      </span> : 
-                      <>
-                        <span className="schedule-time-text">
-                          {`${formatTimeToAMPM(schedule.start_time)} - ${formatTimeToAMPM(schedule.end_time)}`}
-                        </span>
-                        {schedule.check_out && (
-                          <>
-                            <CheckCircle size={14} color="#7c3aed" style={{marginLeft: '0.5em', verticalAlign: 'middle'}} />
-                            <span className="checked-out-badge">{get('WORK_SCHEDULE_CHECKED_OUT')}</span>
-                          </>
-                        )}
-                      </>
-                    }
-                  </div>
-                  <div className="schedule-actions">
-                    {actions.map((action, actionIndex) => (
-                      <SketchBtn 
-                        key={`${schedule.schedule_id || schedule.work_date || index}-${action.label}-${actionIndex}`} 
-                        size="small" 
-                        className="schedule-action-btn"
-                        variant={action.variant}
-                        onClick={action.handler}
-                      >
-                        <HatchPattern opacity={0.6} />
-                        {action.label}
-                      </SketchBtn>
-                    ))}
-                  </div>
-                </div>
-              );
-            })
+            <WeekSection
+              weekTitle={getWeekTitle(currentWeek)}
+              schedules={schedules}
+              usingFolding={false}
+              folded={false}
+              onToggleFold={()=>{}}
+              isPastWeek={currentWeek < 0}
+              get={get}
+              handleEditSchedule={handleEditSchedule}
+              handleCheckInOut={handleCheckInOut}
+              handleCreateSchedule={handleCreateSchedule}
+              formatDate={formatDate}
+              formatTimeToAMPM={formatTimeToAMPM}
+              getStatusText={getStatusText}
+            />
           ) : (
-            <div style={{textAlign:'center',color:'#888',marginTop:'2rem'}}>
-              {get('WORK_SCHEDULE_MONTH_VIEW_COMING')}
-            </div>
+            <MonthSection
+              year={currentYear}
+              month={currentMonth}
+              schedules={schedules}
+              get={get}
+              handleEditSchedule={handleEditSchedule}
+              handleCheckInOut={handleCheckInOut}
+              handleCreateSchedule={handleCreateSchedule}
+              formatDate={formatDate}
+              formatTimeToAMPM={formatTimeToAMPM}
+              getStatusText={getStatusText}
+              mondayStart={mondayStart}
+            />
           )}
         </div>
         <div className="create-btn-row">
