@@ -125,6 +125,7 @@ export const ImageUploader = ({
             left: '20px',
             right: '20px',
             display: 'flex',
+            height: '50px',
             justifyContent: 'space-between',
             alignItems: 'center',
             color: 'white',
