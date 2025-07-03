@@ -13,6 +13,9 @@ import { Star, Edit3, User } from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '../contexts/AuthContext';
 import LoadingScreen from '@components/LoadingScreen';
+import ApiClient from '@utils/ApiClient';
+
+//import Swal from 'sweetalert2';
 
 const Profile = ({
   navigateToPageWithData,
@@ -39,7 +42,7 @@ const Profile = ({
     const fetchUserInfo = async () => {
       try {
         const response = await axios.get(`${API_HOST}/api/getUserInfo`, {
-          params: { user_id: user?.user_id || 1 }
+          params: { user_id: user?.user_id}
         });
         setUserInfo(response.data || {});
       } catch (error) {
@@ -50,7 +53,7 @@ const Profile = ({
     const fetchUserReviews = async () => {
     try {
         const response = await axios.get(`${API_HOST}/api/getMyReviewList`, {
-          params: { user_id: user?.user_id || 1 }
+          params: { user_id: user?.user_id}
         });
         setUserReviews(response.data || []);
       } catch (error) {
@@ -62,6 +65,7 @@ const Profile = ({
     fetchUserReviews();
 
   }, [user, messages, currentLang]);
+
 
   const handleBack = () => {
     navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
@@ -77,27 +81,28 @@ const deleteReview = async (reviewId) => {
       return; // 사용자가 취소한 경우
     }
 
-     const response = await axios.post(`${API_HOST}/api/deleteReview`, {
-      user_id: user?.user_id || 1, 
+    const response = await ApiClient.postForm('/api/deleteReview', {
+      user_id: user.user_id,
       review_id: reviewId
     });
-    
 
-    if (response.status == '200') {
-      alert(get('REVIEW_DELETE_SUCCESS') || '리뷰가 성공적으로 삭제되었습니다.');
-      
-      // 리뷰 목록 새로고침
-      const updatedReviews = userReviews.filter(review => review.review_id !== reviewId);
-      setUserReviews(updatedReviews);
-      
+    console.log("response", response)
+
+    if (response == 1) {
+      alert('리뷰가 성공적으로 삭제되었습니다.');
+
+        const updatedReviews = userReviews.filter(review => review.review_id !== reviewId);
+        setUserReviews(updatedReviews);
+
     } else {
-      throw new Error(response.data.message || 'Delete failed');
+      throw new Error(`서버 오류: ${response.status}`);
     }
   } catch (error) {
     console.error('리뷰 삭제 실패:', error);
     alert(get('REVIEW_DELETE_ERROR') || '리뷰 삭제 중 오류가 발생했습니다.');
   }
 };
+
 
   return (
     <>
@@ -384,7 +389,7 @@ const deleteReview = async (reviewId) => {
           }
 
         .delete-btn {    
-          padding: 3px 10px; /* 좌우 패딩 추가 */
+          padding: 1px 7px; 
           background: #fb7272;
           border-radius: 12px;
           color: white;
@@ -392,11 +397,11 @@ const deleteReview = async (reviewId) => {
           cursor: pointer;
           transition: background-color 0.2s;
           border: none;
-          white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+          white-space: nowrap; 
         }
 
        .modify-btn {
-          padding: 3px 10px; /* 좌우 패딩 추가 */
+          padding: 3px 10px;
           background: #ebebeb;
           border-radius: 12px;
           color: #666;
