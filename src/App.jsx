@@ -189,6 +189,7 @@ function App() {
   return (
     <OverlayProvider>
       {/* 기존 Provider들 */}
+       <FcmProvider>
       <AuthProvider>
         <MsgProvider>
           <PopupProvider>
@@ -196,6 +197,7 @@ function App() {
           </PopupProvider>
         </MsgProvider>
       </AuthProvider>
+      </FcmProvider>
     </OverlayProvider>
   );
 }
