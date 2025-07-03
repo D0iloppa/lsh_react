@@ -271,7 +271,7 @@ if (isLoadingData) {
           <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-around'}}>
             <ImageUploader
               apiClient={ApiClient}
-              usingCameraModule={true}
+              usingCameraModule={false}
               containerAsUploader={true}
               uploadedImages={uploadedImages}
               onImagesChange={setUploadedImages}

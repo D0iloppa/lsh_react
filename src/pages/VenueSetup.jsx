@@ -523,7 +523,13 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     }));
 
   } catch (err) {
-    alert('위치 검색 실패');
+    //alert('위치 검색 실패'); 
+
+    Swal.fire({
+      title: get('VENUE_EDIT_MAP_ERROR'),
+      icon: 'error',
+      confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+    });
   }
 };
 

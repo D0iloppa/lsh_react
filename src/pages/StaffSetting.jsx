@@ -458,6 +458,7 @@ const handleSaveLanguage = () => {
               <option value="kr">{get('STAFF_SETTINGS_KOREAN')}</option>
               <option value="vi">{get('STAFF_SETTINGS_VIETNAMESE')}</option>
               <option value="ja">{get('STAFF_SETTINGS_JAPANESE')}</option>
+              <option value="cn">{get('LANGUAGE_CHINESE')}</option>  
             </select>
             <SketchBtn 
               variant="accent" 
@@ -482,7 +483,7 @@ const handleSaveLanguage = () => {
             {get('Staff.setting.logout') || get('STAFF_SETTINGS_LOGOUT_BUTTON')}
           </SketchBtn>
         </div>
-          <div className='staff-delete' onClick={handleDelete}>계정 탈퇴</div>
+          <div className='staff-delete' onClick={handleDelete}>{get('DELETE_ACCOUNT')}</div>
       </div>
     </>
   );

@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from '@contexts/AuthContext';
 import { PopupProvider } from '@contexts/PopupContext';
 import GlobalPopupManager from '@components/GlobalPopupManager';
 
+import { FcmProvider, useFcm } from '@contexts/FcmContext';
 
 import { OverlayProvider } from 'overlay-kit';
 
@@ -41,7 +42,7 @@ const AppRoutes = () => {
   document.body.setAttribute('data-lang', currentLang);
   
   // 또는 클래스 방식
-  document.body.classList.remove('lang-en', 'lang-ko', 'lang-ja', 'lang-zh');
+  document.body.classList.remove('lang-en', 'lang-ko', 'lang-ja', 'lang-zh', 'lang-cn');
   document.body.classList.add(`lang-${currentLang}`);
 }, [currentLang]);
 
@@ -158,6 +159,32 @@ const AppRoutes = () => {
   );
 };
 
+const AppContent = () => {
+  const { setFcmToken } = useFcm();
+
+  useEffect(() => {
+    window.receiveFcmToken = (token) => {
+      setFcmToken(token); // 정상 작동
+    };
+
+    if (window.AndroidInterface?.readyToReceiveToken) {
+      window.AndroidInterface.readyToReceiveToken();
+    }
+
+    return () => {
+      delete window.receiveFcmToken;
+    };
+  }, [setFcmToken]);
+
+  return (
+    <Router basename={import.meta.env.BASE_URL}>
+      <AppRoutes />
+      <GlobalPopupManager />
+    </Router>
+  );
+};
+
+
 function App() {
   return (
     <OverlayProvider>
@@ -165,10 +192,7 @@ function App() {
       <AuthProvider>
         <MsgProvider>
           <PopupProvider>
-            <Router basename={import.meta.env.BASE_URL}>
-              <AppRoutes />
-              <GlobalPopupManager />
-            </Router>
+            <AppContent />
           </PopupProvider>
         </MsgProvider>
       </AuthProvider>

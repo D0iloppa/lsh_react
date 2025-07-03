@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import '@components/SketchComponents.css';
 import ApiClient from '@utils/ApiClient';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 // 예약 요약 카드 컴포넌트
 const ReservationCard = ({ data, onSend, onClose }) => (
@@ -584,7 +585,14 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
   const handleUploadError = useCallback((error) => {
     console.error('이미지 업로드 실패:', error);
-    alert('이미지 업로드에 실패했습니다.');
+    //alert('이미지 업로드에 실패했습니다.');
+
+    Swal.fire({
+              title: get('IMAGE_UPLOAD_ERROR'),
+              icon: 'error',
+              confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+            });
+
   }, []);
 
   // ⭐ ReservationCard onSend 함수 - 정리된 버전
