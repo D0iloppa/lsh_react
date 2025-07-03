@@ -10,7 +10,7 @@
 ```sql
 INSERT INTO public.lsh_message_code
 (msg_code, "scope", msg_kr, msg_en, msg_vi, msg_ja)
-VALUES(${msg_code}, ${scope}, ${msg_kr}, ${msg_en}, ${msg_vi}, ${msg_ja});
+VALUES(${msg_code}, ${scope}, ${msg_kr}, ${msg_en}, ${msg_vi}, ${msg_ja}, ${msg_cn});
 ```
 
 ## 사용법
@@ -22,6 +22,7 @@ VALUES(${msg_code}, ${scope}, ${msg_kr}, ${msg_en}, ${msg_vi}, ${msg_ja});
 - msg_en: 영어 메시지  
 - msg_vi: 베트남어 메시지
 - msg_ja: 일본어 메시지
+- msg_cn: 중국어 메세지
 
 ## 동기화
 https://doil.chickenkiller.com/lsh_api/api/msgCodeReload

@@ -71,7 +71,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
           ...otherProps,
           ...basicInfo, // 기본 정보
           images: images, // 모든 이미지들
-          image_url: images[0] || basicInfo.image_url, // 대표 이미지
+          image_url: images || basicInfo.image_url, // 대표 이미지
         };
         
         setGirl(staffData);
@@ -292,13 +292,15 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
 
               let slidesToShow;
 
-              if (!hasValidImages || validImages.length === 1) {
+              if (!hasValidImages) {
                 // 유효한 이미지가 없으면 1개의 placeholder만
                 slidesToShow = [null];
               } else {
                 // 여러 유효한 이미지가 있으면 그대로 사용
                 slidesToShow = validImages;
               }
+
+              console.log("slidesToShow", slidesToShow)
               
               return slidesToShow.map((imageUrl, index) => (
                 <div key={index} className="profile-slide">

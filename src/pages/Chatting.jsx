@@ -7,6 +7,8 @@ import '@components/SketchComponents.css';
 import ApiClient from '@utils/ApiClient';
 import axios from 'axios';
 
+import Swal from 'sweetalert2';
+
 const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const venue_id = otherProps?.id || null;
   const venue_name = otherProps?.name || null;
@@ -232,7 +234,12 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
   const handleUploadError = (error) => {
     console.error('이미지 업로드 실패:', error);
-    alert('이미지 업로드에 실패했습니다.');
+    //alert('이미지 업로드에 실패했습니다.'); 
+        Swal.fire({
+          title: get('IMAGE_UPLOAD_ERROR'),
+          icon: 'error',
+          confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+        });
   };
 
   function formatTime(date) {

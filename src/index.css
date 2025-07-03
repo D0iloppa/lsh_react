@@ -2,9 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
+
+ div:where(.swal2-container).swal2-center>.swal2-popup{
+    font-size: 9px;
+    max-width: 85%;
+  }
+
+  .swal-compact-popup {
+    padding: 1.2rem 1.2rem !important;
+    min-width: 260px !important;
+    max-width: 320px !important;
+  }
+
+  .swal-compact-confirm {    
+    background: #3680b4;
+    border: 1px solid white;
+    color: white;
+  }
+  .swal-compact-cancel{ 
+    background: #df4242;
+    border: 1px solid white;
+    color: white;
+  }
+  .swal-compact-title {
+    font-size: 1.1rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .swal-compact-html {
+    font-size: 0.95rem !important;
+    margin-bottom: 0.7rem !important;
+  }
+  
+  .swal-compact-icon {
+    width: 48px !important;
+    height: 48px !important;
+    margin: 0 auto 0.5rem auto !important;
+  }
+
+  .swal-compact-icon .swal2-icon-content {
+    font-size: 1.5rem !important;
+  }
+  
+  
+  .swal-compact-confirm,
+  .swal-compact-cancel {
+    font-size: 0.95rem !important;
+    padding: 0.3rem 1.1rem !important;
+    min-width: 60px !important;
+    min-height: 32px !important;
+    border-radius: 6px !important;
+    margin: 0 0.3rem !important;
+  }
+
  :root {
   --font-primary: 'YourDefaultFont', sans-serif;
   --font-japanese: 'NotoSansJP', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif;
+  --font-chinese: 'NotoSansJP', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif;
 }
 
 body[data-lang="ja"] * {
@@ -17,4 +71,16 @@ body[data-lang="ja"] .sketch-btn,
 body[data-lang="ja"] .page-title,
 body[data-lang="ja"] .center-section {
   font-family: var(--font-japanese) !important;
+}
+
+body[data-lang="cn"] * {
+  font-family: var(--font-chinese) !important;
+}
+
+/* 더 구체적으로 */
+body[data-lang="cn"] .settings-container,
+body[data-lang="cn"] .sketch-btn,
+body[data-lang="cn"] .page-title,
+body[data-lang="cn"] .center-section {
+  font-family: var(--font-chinese) !important;
 }

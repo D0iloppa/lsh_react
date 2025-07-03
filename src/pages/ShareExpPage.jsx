@@ -7,7 +7,7 @@ import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 import LoadingScreen from '@components/LoadingScreen';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
-
+import Swal from 'sweetalert2';
 import ApiClient from '@utils/ApiClient';
 
 const ShareExpPage = ({ 
@@ -51,12 +51,27 @@ const ShareExpPage = ({
 
   const handleSubmitReview = () => {
     if (venueRating === 0) {
-      alert(get('Review3.1')); // '평점을 선택해주세요.'
+      //alert(get('Review3.1')); // '평점을 선택해주세요.'
+      
+      Swal.fire({
+        title: get('Review3.1'),
+        icon: 'warning',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+      });
+
       return;
     }
     
     if (!reviewText.trim()) {
-      alert(get('Review3.2')); // '리뷰를 작성해주세요.'
+      //alert(get('Review3.2')); // '리뷰를 작성해주세요.'
+
+      Swal.fire({
+        title: get('Review3.2'),
+        icon: 'warning',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+      });
+
+
       return;
     }
   
@@ -72,13 +87,27 @@ const ShareExpPage = ({
     ApiClient.postForm('/api/insertReview', reviewData)
       .then(response => {
         console.log('✅ Review submitted:', response);
-        alert(get('Review3.3')); // '리뷰가 등록되었습니다.'
+        //alert(get('Review3.3')); // '리뷰가 등록되었습니다.'
+
+        Swal.fire({
+          title: get('Review3.3'),
+          icon: 'success',
+          confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+        });
+
         // 성공 후 페이지 이동이나 추가 로직
         goBack && goBack();
       })
       .catch(error => {
         console.error('❌ Failed to submit Review:', error);
-        alert(get('Review3.4')); // '리뷰 등록 중 오류가 발생했습니다. 다시 시도해주세요.'
+        //alert(get('Review3.4')); // '리뷰 등록 중 오류가 발생했습니다. 다시 시도해주세요.'
+
+        Swal.fire({
+          title: get('Review3.4'),
+          icon: 'error',
+          confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+        });
+
       });
   };
 

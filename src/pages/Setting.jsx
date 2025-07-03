@@ -11,7 +11,7 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '../contexts/AuthContext';
 import qs from 'qs';
 import LoadingScreen from '@components/LoadingScreen';
-
+import Swal from 'sweetalert2';
 
 const SettingsPage = ({ 
   navigateToPageWithData, 
@@ -35,12 +35,6 @@ const SettingsPage = ({
   const [shareLocation, setShareLocation] = useState(false);
   const [showOnlineStatus, setShowOnlineStatus] = useState(true);
 
-  const languageMap = {
-    kr: '한국어',
-    en: 'English',
-    ja: '日本語',
-    vi: 'Tiếng Việt',
-  };
 const { messages, isLoading, error, get, currentLang, setLanguage: setGlobalLang, availableLanguages, refresh } = useMsg();
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -137,13 +131,21 @@ const { messages, isLoading, error, get, currentLang, setLanguage: setGlobalLang
         document.documentElement.style.setProperty('--font-primary', "'BMHanna', 'Comic Sans MS', cursive, sans-serif");
       }
     }
+      await Swal.fire({
+        title: get('SETTINGS_SAVE_SUCCESS'),
+        icon: 'success',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+      });
 
-    alert(get('SETTINGS_SAVE_SUCCESS'));
   } catch (error) {
-    console.error(get('SETTINGS_SAVE_ERROR_LOG'), error);
-    alert(get('SETTINGS_SAVE_ERROR'));
-  }
-};
+    
+    await Swal.fire({
+          title: get('SETTINGS_SAVE_ERROR'),
+          icon: 'error',
+          confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+        });
+      }
+    };
 
 
 
@@ -343,6 +345,7 @@ const { messages, isLoading, error, get, currentLang, setLanguage: setGlobalLang
                 <option value="kr">{get('language.name.korean')}</option>
                 <option value="en">{get('language.name.english')}</option>
                 <option value="ja">{get('language.name.japanese')}</option>  
+                <option value="cn">{get('LANGUAGE_CHINESE')}</option>  
               </select>
             </div>
           </SketchDiv>

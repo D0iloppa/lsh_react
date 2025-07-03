@@ -10,6 +10,7 @@ import SketchBtn from '@components/SketchBtn';
 import { useAuth } from '../contexts/AuthContext';
 import { useMsg } from '@contexts/MsgContext';
 import { useNavigate } from 'react-router-dom';
+import { useFcm } from '@contexts/FcmContext';
 
 const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAGES }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,6 +26,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   const { messages, get, currentLang, isLoading } = useMsg();
   const { user } = useAuth();
   const [favorites, setFavorits] = useState([]);
+  const { fcmToken } = useFcm();
 
   useEffect(() => {
     // PopupProvider가 마운트된 후에 testPopup이 생성됨
@@ -39,6 +41,32 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   }, []); // 컴포넌트 마운트 후 실행
 
 
+useEffect(() => {
+  const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+
+  const upateAppId = async () => {
+
+    
+    try {
+      const res = await axios.get(`${API_HOST}/api/upateAppId`, {
+        params: {
+          user_id: user?.user_id || 1,
+          app_id: fcmToken,
+        },
+      });
+      return res.data || [];
+    } catch (err) {
+      console.error('즐겨찾기 실패:', err);
+      return [];
+    }
+  };
+
+  if (fcmToken) {
+    upateAppId();
+    // optional logging
+    console.log('📲 HomePage에서 받은 FCM 토큰:', fcmToken, 'user_id:', user?.user_id || 1);
+  }
+}, [fcmToken, user]);
 
   useEffect(() => {
 

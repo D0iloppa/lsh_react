@@ -15,7 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 import LoadingScreen from '@components/LoadingScreen';
 import ApiClient from '@utils/ApiClient';
 
-//import Swal from 'sweetalert2';
+import Swal from 'sweetalert2';
 
 const Profile = ({
   navigateToPageWithData,
@@ -52,7 +52,7 @@ const Profile = ({
 
     const fetchUserReviews = async () => {
     try {
-        const response = await axios.get(`${API_HOST}/api/getMyReviewList`, {
+          const response = await axios.get(`${API_HOST}/api/getMyReviewList`, {
           params: { user_id: user?.user_id}
         });
         setUserReviews(response.data || []);
@@ -75,9 +75,17 @@ const Profile = ({
 const deleteReview = async (reviewId) => {
   try {
     // 삭제 확인 다이얼로그
-    const confirmDelete = window.confirm('정말로 이 리뷰를 삭제하시겠습니까?');
+    const result = await Swal.fire({
+      title: get('REVIEW_DELETE_CONFIRM'),
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: get('PROMOTION_DELETE_BUTTON'),
+      cancelButtonText: get('Reservation.CancelButton')
+    });
     
-    if (!confirmDelete) {
+    if (!result.isConfirmed) {
       return; // 사용자가 취소한 경우
     }
 
@@ -85,21 +93,26 @@ const deleteReview = async (reviewId) => {
       user_id: user.user_id,
       review_id: reviewId
     });
-
-    console.log("response", response)
-
+    
     if (response == 1) {
-      alert('리뷰가 성공적으로 삭제되었습니다.');
-
-        const updatedReviews = userReviews.filter(review => review.review_id !== reviewId);
-        setUserReviews(updatedReviews);
-
+      await Swal.fire({
+        title: get('REVIEW_DELETE_SUCCESS'),
+        icon: 'success',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+      });
+      
+      const updatedReviews = userReviews.filter(review => review.review_id !== reviewId);
+      setUserReviews(updatedReviews);
     } else {
       throw new Error(`서버 오류: ${response.status}`);
     }
   } catch (error) {
     console.error('리뷰 삭제 실패:', error);
-    alert(get('REVIEW_DELETE_ERROR') || '리뷰 삭제 중 오류가 발생했습니다.');
+    await Swal.fire({
+      title: get('REVIEW_DELETE_ERROR'),
+      icon: 'error',
+      confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+    });
   }
 };
 
@@ -412,6 +425,24 @@ const deleteReview = async (reviewId) => {
           white-space: nowrap; /* 텍스트 줄바꿈 방지 */
         }
 
+        .empty-reviews {
+          text-align: center;
+          padding: 1rem 1rem;
+          color: #9ca3af;
+        }
+
+        .empty-icon {
+          font-size: 3rem;
+          margin-bottom: 1rem;
+          opacity: 0.6;
+        }
+
+        .empty-text {
+          font-size: 1rem;
+          color: #6b7280;
+          margin: 0;
+          font-style: italic;
+        }
       `}</style>
 
       <div className="account-container">
@@ -464,82 +495,84 @@ const deleteReview = async (reviewId) => {
             </div>
 
             <div className="reviews-list">
-              {userReviews.map((review) => (
-                <div key={review.id} className="review-item">
-                  <div className="review-content">
-                   
-                    <div className="review-venue">
-                      <div className="venue-info">
-                        {review.target_type === 'venue' && (
-                          <svg className="icon-tiny" viewBox="0 0 24 24">
-                            <path d="M3 9L12 2L21 9V20A1 1 0 0 1 20 21H4A1 1 0 0 1 3 20V9Z" stroke="black" strokeWidth="1.5" fill="none"/>
-                            <path d="M9 21V12H15V21" stroke="black" strokeWidth="1.5" fill="none"/>
-                          </svg>
-                        )}
-                        {review.target_type === 'staff' && (
-                          <svg className="icon-tiny" viewBox="0 0 24 24">
-                            <circle cx="12" cy="7" r="4" stroke="black" strokeWidth="1.5" fill="none"/>
-                            <path d="M5.5 21a6.5 6.5 0 0 1 13 0" stroke="black" strokeWidth="1.5" fill="none"/>
-                          </svg>
-                        )}
-                        <span>{review.venue_name}</span>
+              {userReviews.length > 0 ? (
+                userReviews.map((review) => (
+                  <div key={review.id} className="review-item">
+                    <div className="review-content">
+                      <div className="review-venue">
+                        <div className="venue-info">
+                          {review.target_type === 'venue' && (
+                            <svg className="icon-tiny" viewBox="0 0 24 24">
+                              <path d="M3 9L12 2L21 9V20A1 1 0 0 1 20 21H4A1 1 0 0 1 3 20V9Z" stroke="black" strokeWidth="1.5" fill="none"/>
+                              <path d="M9 21V12H15V21" stroke="black" strokeWidth="1.5" fill="none"/>
+                            </svg>
+                          )}
+                          {review.target_type === 'staff' && (
+                            <svg className="icon-tiny" viewBox="0 0 24 24">
+                              <circle cx="12" cy="7" r="4" stroke="black" strokeWidth="1.5" fill="none"/>
+                              <path d="M5.5 21a6.5 6.5 0 0 1 13 0" stroke="black" strokeWidth="1.5" fill="none"/>
+                            </svg>
+                          )}
+                          <span>{review.venue_name}</span>
+                        </div>
+                        <div className='btn-set'>
+                          <button className='delete-btn' onClick={() => deleteReview(review.review_id)}>
+                            {get('PROMOTION_DELETE_BUTTON')}
+                          </button>
+                        </div>
                       </div>
-                      <div className='btn-set'>
-                        {/* <button className='modify-btn'>수정</button> */}
-                        <button className='delete-btn' onClick={() => deleteReview(review.review_id)}>삭제</button>
-                      </div>
-                    </div>
 
-                 
-
-                    <div className="review-rating">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          size={12}
-                          fill={i < review.rating ? '#fbbf24' : 'none'}
-                          color={i < review.rating ? '#fbbf24' : '#d1d5db'}
-                        />
-                      ))}
-                      <span style={{ fontSize: '0.75rem', color: '#6b7280', marginLeft: '0.25rem' }}>
-                        {review.rating}/5
-                      </span>
-                    </div>
-                    <div className="review-text">{review.content}</div>
-                    <div className="review-date">
-                      {review.created_at
-                        ? new Date(review.created_at).toLocaleString('ko-KR', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit',
-                            hour12: false
-                          }).replace(/\./g, '-').replace(' ', ' ').replace(/- /g, '-')
-                        : ''}
-                    </div>
-                          {review.reply_content && (
-                    <div className={`manager-response ${review.target_type === 'staff' ? 'staff-response' : ''}`}>
-                      <div className="response-header">
-                        <span className="response-label">
-                          {review.target_type === 'venue' 
-                            ? get('REVIEW_MANAGER_RESPONSE') 
-                            : get('REVIEW_STAFF_RESPONSE')
-                          }
+                      <div className="review-rating">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            size={12}
+                            fill={i < review.rating ? '#fbbf24' : 'none'}
+                            color={i < review.rating ? '#fbbf24' : '#d1d5db'}
+                          />
+                        ))}
+                        <span style={{ fontSize: '0.75rem', color: '#6b7280', marginLeft: '0.25rem' }}>
+                          {review.rating}/5
                         </span>
-                        <span className="response-badge"><User size={14} /></span>
                       </div>
-                      <div className="response-text">
-                        "{review.reply_content}"
+                      <div className="review-text">{review.content}</div>
+                      <div className="review-date">
+                        {review.created_at
+                          ? new Date(review.created_at).toLocaleString('ko-KR', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit',
+                              hour12: false
+                            }).replace(/\./g, '-').replace(' ', ' ').replace(/- /g, '-')
+                          : ''}
                       </div>
+                      {review.reply_content && (
+                        <div className={`manager-response ${review.target_type === 'staff' ? 'staff-response' : ''}`}>
+                          <div className="response-header">
+                            <span className="response-label">
+                              {review.target_type === 'venue' 
+                                ? get('REVIEW_MANAGER_RESPONSE') 
+                                : get('REVIEW_STAFF_RESPONSE')
+                              }
+                            </span>
+                            <span className="response-badge"><User size={14} /></span>
+                          </div>
+                          <div className="response-text">
+                            "{review.reply_content}"
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-
-
                   </div>
+                ))
+              ) : (
+                <div className="empty-reviews">
+                  <p className="empty-text">{get('Review3.5')}</p>
                 </div>
-              ))}
+              )}
             </div>
           </SketchDiv>
             <LoadingScreen 

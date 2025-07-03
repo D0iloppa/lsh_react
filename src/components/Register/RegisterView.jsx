@@ -15,6 +15,8 @@ import LoadingScreen from '@components/LoadingScreen';
 // Contexts
 import { useMsg } from '@contexts/MsgContext';
 
+import Swal from 'sweetalert2';
+
 // Constants
 const STORAGE_KEYS = {
   PRIVACY: 'privacy_agreed',
@@ -324,9 +326,12 @@ export default function RegisterView() {
       
       if (result.success) {
         // Show success alert
-         const successMessage = get('REGISTER_SUCCESS_ALERT') ||  '🎉 회원가입이 완료되었습니다!\n로그인 페이지로 이동합니다.';
-        
-        alert(successMessage);
+       
+        await Swal.fire({
+          title: get('REGISTER_SUCCESS_ALERT'),
+          icon: 'success',
+          confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+        });
         
         setMessage(result.message);
         clearStorage(); // Clear storage on success

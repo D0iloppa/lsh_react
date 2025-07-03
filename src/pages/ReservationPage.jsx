@@ -18,6 +18,8 @@ import {
 } from '@components/ReservationComponents';
 
 import { useAuth } from '../contexts/AuthContext';
+
+import Swal from 'sweetalert2';
   
 
 const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps }) => {
@@ -318,7 +320,15 @@ const isAllAgreed = () => {
           }, 2000);
         }, 300);
       }
-      alert(messages_validation.attendeeRequired || '참석자 수를 선택해주세요.');
+      //alert(messages_validation.attendeeRequired || '참석자 수를 선택해주세요.');
+
+             Swal.fire({
+              title: messages_validation.attendeeRequired,
+              icon: 'warning',
+              confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+            });
+
+
       return { isValid: false, field: 'attendee' };
     }
 
@@ -340,7 +350,14 @@ const isAllAgreed = () => {
           }, 2000);
         }, 300);
       }
-      alert(messages_validation.dateRequired || '날짜를 선택해주세요.');
+      //alert(messages_validation.dateRequired || '날짜를 선택해주세요.');
+
+            Swal.fire({
+              title: messages_validation.dateRequired,
+              icon: 'warning',
+              confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+            });
+
       return { isValid: false, field: 'date' };
     }
 
@@ -362,7 +379,14 @@ const isAllAgreed = () => {
           }, 2000);
         }, 300);
       }
-      alert(messages_validation.startTimeRequired || '시작 시간을 선택해주세요.');
+      //alert(messages_validation.startTimeRequired || '시작 시간을 선택해주세요.');
+
+            Swal.fire({
+              title: messages_validation.startTimeRequired,
+              icon: 'warning',
+              confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+            });
+
       return { isValid: false, field: 'startTime' };
     }
 
@@ -384,7 +408,14 @@ const isAllAgreed = () => {
           }, 2000);
         }, 300);
       }
-      alert(messages_validation.durationRequired || '이용 시간을 선택해주세요.');
+      //alert(messages_validation.durationRequired || '이용 시간을 선택해주세요.');
+
+            Swal.fire({
+              title: messages_validation.durationRequired,
+              icon: 'warning',
+              confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+            });
+
       return { isValid: false, field: 'duration' };
     }
 
@@ -400,7 +431,14 @@ const isAllAgreed = () => {
 
     // 동의사항 확인 추가
     if (!isAllAgreed()) {
-      alert('중요정보 사항에 모두 동의해주세요.');
+      //alert('중요정보 사항에 모두 동의해주세요.');
+
+            Swal.fire({
+              title: get('AGREE_CHECK'),
+              icon: 'warning',
+              confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+            });
+
       // Important-info 섹션으로 스크롤
       const importantInfoElement = document.querySelector('.Important-info');
       if (importantInfoElement) {

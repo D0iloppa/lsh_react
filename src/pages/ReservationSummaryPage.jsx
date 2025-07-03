@@ -8,7 +8,7 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
 import LoadingScreen from '@components/LoadingScreen';
 import ApiClient from '@utils/ApiClient';
-
+import Swal from 'sweetalert2';
 import AgreementCheckbox2 from '@components/AgreementCheckbox2';
 
 const ReserveSummaryPage = ({ 
@@ -168,13 +168,28 @@ const ReserveSummaryPage = ({
 
     if (!reservationPayload.client_id || !reservationPayload.reserve_date || !reservationPayload.start_time) {
       console.error('❌ Invalid reservation data');
-      alert(invalidDataMessage);
+      //alert(invalidDataMessage);
+
+      Swal.fire({
+        title: invalidDataMessage,
+        icon: 'warning',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+      });
+
       return;
     }
 
     console.log(agreements.policyTerms);
     if (!agreements.policyTerms) {
-      alert(get('Agreement.Required') || '이용 정책에 동의해주세요.');
+      //alert(get('Agreement.Required') || '이용 정책에 동의해주세요.');
+
+      Swal.fire({
+        title: get('Agreement.Required'),
+        icon: 'warning',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+      });
+
+
       return;
     }
 
@@ -189,7 +204,13 @@ const ReserveSummaryPage = ({
       console.log('✅ Reservation confirmed:', response);
       
       // 성공 메시지 표시
-      alert(successMessage);
+      //alert(successMessage);
+
+      Swal.fire({
+        title: successMessage,
+        icon: 'success',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+      });
       
       // 홈으로 이동
       navigateToPageWithData && navigateToPageWithData(PAGES.HOME);
@@ -201,7 +222,14 @@ const ReserveSummaryPage = ({
       const serverErrorMessage = error?.response?.data?.message || error?.message;
       const finalErrorMessage = serverErrorMessage || errorMessage;
       
-      alert(finalErrorMessage);
+      //alert(finalErrorMessage);
+
+      Swal.fire({
+        title: finalErrorMessage,
+        icon: 'error',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+      });
+
     } finally {
       setIsConfirming(false);
     }
