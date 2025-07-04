@@ -23,7 +23,7 @@ const GlobalPopupManager = () => {
 
 const PopupModal = ({ popup, onClose }) => {
   const { get } = useMsg();
-  const [activeTab, setActiveTab] = useState('premium'); // 'premium' | 'today'
+  const [activeTab, setActiveTab] = useState('today'); // 'premium' | 'today'
 
   // 오늘 하루 열지 않음 체크박스 핸들러
   const handleTodayClose = (e) => {
@@ -67,14 +67,14 @@ const PopupModal = ({ popup, onClose }) => {
 
   // 오늘 하루 탭 콘텐츠
   const getTodayContent = () => ({
-    title: get('Popup.Today.Title') || '오늘 하루, 프리미엄 혜택을 모두 누려보세요!',
-    description: get('Popup.Today.Description') || '정회원 가입없이도 여러분 간편하게 프리미엄 서비스를 체험해 보실 수 있습니다.',
+    title: get('Popup.Today.Title') || '오늘 하루, 프리미엄 혜택을 모두 누려보세요! 단, 단 하루 $9.9로!',
+    description: get('Popup.Today.Description') || '정회원 가입 없이도 간편하게 프리미엄 일일권을 구매하고 모든 서비스를 체험해 보세요.',
     features: [
-      get('Popup.Today.Benefit1') || '매장 예약시 우선 예약권 제공으로 원하시는 시간에 예약 가능',
-      get('Popup.Today.Benefit2') || '모든 메뉴의 10%의 할인 혜택으로 더욱 저렴하게 즐기세요',
-      get('Popup.Today.Benefit3') || '신규 칵테일 출시시 우선 체험 기회 및 할인 혜택 추가 제공',
-      get('Popup.Today.Benefit4') || '빼먹기 5% 등등의 실시간 할인 제공 (지속적 가격 정책)',
-      get('Popup.Today.Benefit5') || '고객만의 신속 제작 클래스 참여 기회와 전문가 상담 서비스'
+      get('Popup.Today.Benefit1') || '채팅 서비스 이용 가능 – 실시간 상담 및 문의',
+      get('Popup.Today.Benefit2') || '픽업 서비스 이용 가능 – 더 편리한 방문 예약',
+      get('Popup.Today.Benefit3') || '무제한 예약 및 검색 가능 – 원하는 시간, 원하는 장소',
+      // get('Popup.Today.Benefit4') || '빼먹기 5% 등등의 실시간 할인 제공 (지속적 가격 정책)',
+      // get('Popup.Today.Benefit5') || '고객만의 신속 제작 클래스 참여 기회와 전문가 상담 서비스'
     ],
     buttons: [
       {
@@ -88,7 +88,7 @@ const PopupModal = ({ popup, onClose }) => {
         onClick: popup.onTodayTrial || onClose
       }
     ],
-    notice: get('Popup.Today.Notice') || '본 혜택은 오늘 하루에만 제공되는 한정적인 혜택이 될 예정입니다.'
+    notice: get('Popup.Today.Notice') || '본 혜택은 오늘 하루에만 제공되는 한정 혜택입니다. * 가격: $9.9 / 1일 이용권'
   });
 
   // 탭별 콘텐츠 가져오기
@@ -206,7 +206,7 @@ const PopupModal = ({ popup, onClose }) => {
 
         .popup-tab.active {
           color: #333;
-          background-color: white;
+          background-color: #eeeeee;
         }
 
         .popup-tab.active::after {
@@ -220,11 +220,11 @@ const PopupModal = ({ popup, onClose }) => {
         }
 
         .popup-tab:hover:not(.active) {
-          background-color: #f1f5f9;
+          background-color:rgb(255, 255, 255);
         }
 
         .popup-tab:first-child {
-          border-right: 1px solid #e5e7eb;
+          border-right: 1px solidrgb(255, 255, 255);
         }
 
         .popup-header {
@@ -442,15 +442,17 @@ const PopupModal = ({ popup, onClose }) => {
           {/* 탭 (premium-tabs 타입일 때만 표시) */}
           {showTabs && (
             <div className="popup-tabs">
-              <button 
+            
+              {/* <button 
                 className={`popup-tab ${activeTab === 'premium' ? 'active' : ''}`}
                 onClick={() => setActiveTab('premium')}
               >
                 {get('Popup.Tab.Premium') || '프리미엄 혜택'}
-              </button>
+              </button> */}
+              
               <button 
                 className={`popup-tab ${activeTab === 'today' ? 'active' : ''}`}
-                onClick={() => setActiveTab('today')}
+                //onClick={() => setActiveTab('today')}
               >
                 {get('Popup.Tab.Today') || '일일 혜택'}
               </button>

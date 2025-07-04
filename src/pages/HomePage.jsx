@@ -46,13 +46,12 @@ useEffect(() => {
 
   const upateAppId = async () => {
 
-    
     try {
       const res = await axios.get(`${API_HOST}/api/upateAppId`, {
         params: {
           user_id: user?.user_id || 1,
           app_id: fcmToken,
-          login_type
+          login_type:0
         },
       });
       return res.data || [];

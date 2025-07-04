@@ -59,6 +59,7 @@
   --font-primary: 'YourDefaultFont', sans-serif;
   --font-japanese: 'NotoSansJP', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif;
   --font-chinese: 'NotoSansJP', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif;
+  --font-vi: 'NotoSansJP', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif;
 }
 
 body[data-lang="ja"] * {
@@ -83,4 +84,16 @@ body[data-lang="cn"] .sketch-btn,
 body[data-lang="cn"] .page-title,
 body[data-lang="cn"] .center-section {
   font-family: var(--font-chinese) !important;
+}
+
+body[data-lang="vi"] * {
+  font-family: var(--font-vi) !important;
+}
+
+/* 더 구체적으로 */
+body[data-lang="vi"] .settings-container,
+body[data-lang="vi"] .sketch-btn,
+body[data-lang="vi"] .page-title,
+body[data-lang="vi"] .center-section {
+  font-family: var(--font-vi) !important;
 }

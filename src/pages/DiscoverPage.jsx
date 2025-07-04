@@ -126,7 +126,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
         // 2. staff 리스트가 있을 때만 availCnt 호출
         if (staffList.length > 0) {
           const top3WithAvailCnt = await Promise.all(
-            staffList.slice(0, 3).map(async (girl) => {
+            staffList.map(async (girl) => {
               const birthYear = parseInt(girl.birth_year, 10);
               const currentYear = new Date().getFullYear();
               const age = birthYear ? currentYear - birthYear : '?';

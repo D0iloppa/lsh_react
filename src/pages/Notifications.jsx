@@ -141,7 +141,7 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
     const fetchNotifications = async () => {
       try {
         const response = await axios.get(`${API_HOST}/api/getNotificationList`, {
-          params: { user_id: user?.user_id || 1 }
+          params: { user_id: user?.user_id, notification_type: 3 }
         });
         setNotifications(response.data || []);
       } catch (error) {
