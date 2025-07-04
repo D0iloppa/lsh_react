@@ -86,81 +86,113 @@ useEffect(() => {
   };
 
   const fetchStaffDashboardData = async () => {
-    try {
-      setIsLoadingData(true);
-      
-      // venue_id와 staff_id가 있는지 확인
-      if (!user?.venue_id || !user?.staff_id) {
-        console.error('venue_id 또는 staff_id가 없습니다:', user);
-        return;
-      }
+  try {
+    setIsLoadingData(true);
+    
+    // venue_id와 staff_id가 있는지 확인
+    if (!user?.venue_id || !user?.staff_id) {
+      console.error('venue_id 또는 staff_id가 없습니다:', user);
+      return;
+    }
 
-      // 스태프 대시보드 데이터 가져오기
-      const response = await ApiClient.get('/api/getStaffDashboardInfo', {
-        params: {
-          venue_id: user.venue_id,
-          target_id: user.staff_id
-        }
+    // 스태프 대시보드 데이터 가져오기
+    const response = await ApiClient.get('/api/getStaffDashboardInfo', {
+      params: {
+        venue_id: user.venue_id,
+        target_id: user.staff_id,
+        notification_type: 5
+      }
+    });
+
+    console.log('대시보드 API 응답:', response);
+    console.log('response.data:', response.data);
+
+    // API 응답에서 데이터 추출 - 응답 구조에 맞게 수정
+    let todaysReservations = [];
+    let notifications = { unread_count: 0, total_count: 0 };
+    
+    // response.data 구조인 경우
+    if (response.data) {
+      todaysReservations = response.data.todaysReservations || [];
+      notifications = response.data.notifications || { unread_count: 0, total_count: 0 };
+    } 
+    // response 직접 구조인 경우
+    else if (response) {
+      todaysReservations = response.todaysReservations || [];
+      notifications = response.notifications || { unread_count: 0, total_count: 0 };
+    }
+
+    console.log("todaysReservations:", todaysReservations);
+    console.log("notifications:", notifications);
+
+    // notifications에서 unread_count와 total_count 추출
+    const unread_count = notifications?.unread_count ?? 0;
+    const total_count = notifications?.total_count ?? 0;
+
+    if (todaysReservations && todaysReservations.length > 0) {
+      // 시간별 예약 데이터 처리
+      const hourlyData = todaysReservations.map(item => ({
+        hour: item.hour,
+        reservationCount: item.reservation_count || 0
+      }));
+
+      // 총 예약 수 계산
+      const totalReservations = hourlyData.reduce((sum, item) => sum + item.reservationCount, 0);
+
+      console.log('처리된 데이터:', {
+        totalReservations,
+        hourlyData,
+        unread_count,
+        total_count
       });
 
-      console.log('대시보드 API 응답:', response);
-
-      // API 응답 처리
-      let apiData = null;
-      
-      if (Array.isArray(response)) {
-        apiData = response;
-      } else if (response && response.data && Array.isArray(response.data)) {
-        apiData = response.data;
-      } else if (response && Array.isArray(response.data)) {
-        apiData = response.data;
-      }
-
-      if (apiData && apiData.length > 0) {
-        // 시간별 예약 데이터 처리
-        const hourlyData = apiData.map(item => ({
-          hour: item.hour,
-          reservationCount: item.reservation_count || 0
-        }));
-
-        // 총 예약 수 계산
-        const totalReservations = hourlyData.reduce((sum, item) => sum + item.reservationCount, 0);
-
-        setDashboardInfo(prev => ({
-          ...prev,
-          todaysReservations: totalReservations,
-          hourlyReservations: hourlyData,
-          // 시간별 데이터를 todaysBookings 형태로 변환
-          todaysBookings: hourlyData
-            .filter(item => item.reservationCount > 0)
-            .map(item => ({
-              time: `${item.hour}:00`,
-              location: 'Staff Service',
-              guestCount: item.reservationCount
-            }))
-        }));
-      } else {
-        console.log("대시보드 데이터가 없습니다");
-        setDashboardInfo(prev => ({
-          ...prev,
-          todaysReservations: 0,
-          hourlyReservations: [],
-          todaysBookings: []
-        }));
-      }
-
-    } catch (error) {
-      console.error('스태프 대시보드 데이터 로딩 실패:', error);
+      setDashboardInfo(prev => ({
+        ...prev,
+        todaysReservations: totalReservations,
+        hourlyReservations: hourlyData,
+        notifications: {
+          unread_count: unread_count,
+          total_count: total_count,
+        },  
+        // 시간별 데이터를 todaysBookings 형태로 변환
+        todaysBookings: hourlyData
+          .filter(item => item.reservationCount > 0)
+          .map(item => ({
+            time: `${item.hour}:00`,
+            location: 'Staff Service',
+            guestCount: item.reservationCount
+          }))
+      }));
+    } else {
+      console.log("오늘의 예약 데이터가 없습니다");
       setDashboardInfo(prev => ({
         ...prev,
         todaysReservations: 0,
         hourlyReservations: [],
-        todaysBookings: []
+        todaysBookings: [],
+        notifications: {
+          unread_count: unread_count,
+          total_count: total_count,
+        }
       }));
-    } finally {
-      setIsLoadingData(false);
     }
-  };
+
+  } catch (error) {
+    console.error('스태프 대시보드 데이터 로딩 실패:', error);
+    setDashboardInfo(prev => ({
+      ...prev,
+      todaysReservations: 0,
+      hourlyReservations: [],
+      todaysBookings: [],
+      notifications: {
+        unread_count: 0,
+        total_count: 0,
+      }
+    }));
+  } finally {
+    setIsLoadingData(false);
+  }
+};
 
   const handleEditProfile = () => {
     navigateToPageWithData(PAGES.STAFF_EDIT_PROFILE, { staffId: user?.id });
@@ -173,6 +205,12 @@ useEffect(() => {
   const handleNewReviews = () => {
     navigateToPageWithData(PAGES.STAFF_REVIEWS, { staffId: user?.id });
   };
+
+  const handleNotificationClick = () => {
+      navigateToPageWithData(PAGES.NOTIFICATION_CENTER_STAFF, { staffId: user?.id });
+   };
+
+
 
   if (isLoadingData) {
     return (
@@ -329,21 +367,25 @@ useEffect(() => {
             </div>
           </SketchDiv>
 
-          <SketchDiv className="section-card">
-            <HatchPattern opacity={0.6} />
-            <div className="section-title">
-              <Bell size={14} opacity={0.6}/> {get('STAFF_UNREAD_NOTIFICATIONS')} ({dashboardInfo.unreadNotifications.length})
-            </div>
-            <div className="section-content">
-              {dashboardInfo.unreadNotifications.length > 0 ? (
-                dashboardInfo.unreadNotifications.map((notification, index) => (
-                  <div key={index}>{notification.content}</div>
-                ))
-              ) : (
-                <div className="empty-state">{get('STAFF_NO_UNREAD_NOTIFICATIONS')}</div>
-              )}
-            </div>
-          </SketchDiv>
+          <SketchDiv 
+              className="section-card notification-clickable" 
+              onClick={handleNotificationClick}
+              style={{ cursor: 'pointer' }}
+            >
+              <HatchPattern opacity={0.6} />
+              <div className="section-title">
+                <Bell size={14} opacity={0.6} /> {get('STAFF_UNREAD_NOTIFICATIONS')} ({dashboardInfo?.notifications?.unread_count ?? 0})
+              </div>
+              <div className="section-content">
+                {(dashboardInfo?.notifications?.unread_count ?? 0) > 0 ? (
+                  <div>
+                    All notifications: {dashboardInfo?.notifications?.total_count ?? 0}
+                  </div>
+                ) : (
+                  <div className="empty-state">{get('STAFF_NO_UNREAD_NOTIFICATIONS')}</div>
+                )}
+              </div>
+            </SketchDiv>
 
           </div>
 

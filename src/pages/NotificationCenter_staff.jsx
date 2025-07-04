@@ -89,51 +89,79 @@ const formatTime = (timestamp) => {
   }
 };
 
-const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
+const NotificationCenter_staff = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
   const { user, accountType, login } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
-  const manager_id = user?.manager_id || 1;
+  const staff_id = user?.staff_id || 1;
 
-  // 알림 목록 로드
-  useEffect(() => {
-    const loadNotifications = async () => {
-      if (!manager_id) return;
+// 알림 목록을 가져오는 함수를 별도로 분리
+const fetchNotifications = async () => {
+  if (!staff_id) return;
 
-      try {
-        setLoading(true);
-        const response = await ApiClient.get('/api/getNotificationList', {
-          params: { user_id: user?.manager_id, notification_type: 4 }
-        });
+  try {
+    setLoading(true);
+    const response = await ApiClient.get('/api/getNotificationList', {
+      params: { user_id: user?.staff_id, notification_type: 5 }
+    });
 
-        // API 응답 처리 (배열 직접 반환 또는 data 프로퍼티)
-        let apiData = null;
-        
-        if (Array.isArray(response)) {
-          apiData = response;
-        } else if (response && response.data && Array.isArray(response.data)) {
-          apiData = response.data;
-        }
-        
-        if (apiData && apiData.length >= 0) {
-          setNotifications(apiData);
-        } else {
-          console.log('No notification data found');
-          setNotifications([]);
-        }
+    // API 응답 처리 (배열 직접 반환 또는 data 프로퍼티)
+    let apiData = null;
+    
+    if (Array.isArray(response)) {
+      apiData = response;
+    } else if (response && response.data && Array.isArray(response.data)) {
+      apiData = response.data;
+    }
+    
+    if (apiData && apiData.length >= 0) {
+      setNotifications(apiData);
+    } else {
+      console.log('No notification data found');
+      setNotifications([]);
+    }
 
-      } catch (error) {
-        console.error('Failed to load notifications:', error);
-        // 에러 시 빈 배열로 설정
-        setNotifications([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+  } catch (error) {
+    console.error('Failed to load notifications:', error);
+    // 에러 시 빈 배열로 설정
+    setNotifications([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
-    loadNotifications();
-  }, [manager_id]);
+// 컴포넌트 진입 시 알림 읽음 처리 및 목록 로드
+useEffect(() => {
+  const markNotificationsAsRead = async () => {
+    try {
+      // 스태프 알림 (notification_type: 5) 읽음 처리
+      await ApiClient.post('/api/updateNotifi', {
+        notification_type: 5, 
+        user_id: user?.staff_id
+      });
+      
+      console.log('알림 읽음 처리 완료');
+      
+    } catch (error) {
+      console.error('알림 읽음 처리 실패:', error);
+    }
+  };
+
+  const initializeNotifications = async () => {
+    if (!user?.staff_id) return;
+    
+    // 1. 먼저 알림을 읽음 처리
+    await markNotificationsAsRead();
+    
+    // 2. 그 다음 알림 목록 로드
+    await fetchNotifications();
+  };
+
+  initializeNotifications();
+}, [user?.staff_id]);
+
+
 
   return (
     <>
@@ -164,7 +192,7 @@ const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, .
         }
         .noti-info {
           flex: 1;
-          max-width: 180px;
+          max-width: 196px;
         }
         .noti-title {
           margin-top: 0.6rem;
@@ -283,15 +311,19 @@ const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, .
                     </div>
                     <div className="noti-time">{formatTime(noti.created_at)}</div>
                   </div>
-                  <SketchBtn 
-                    variant="primary" 
-                    size="small" 
-                    className="noti-mark-btn" 
-                    style={{width: '30%'}}
-                  >
-                    {get('NOTIFICATION_MARK_BUTTON')}
-                    <HatchPattern opacity={0.6} />
-                  </SketchBtn>
+                  <SketchDiv 
+                      variant={noti.is_read ? "primary" : "secondary"} 
+                      size="small" 
+                      className={`noti-mark-btn ${noti.is_read ? 'read' : 'unread'}`}
+                      style={{
+                        width: '18%',
+                        textAlign: 'center',
+                        backgroundColor: noti.is_read ? '#d5d5d5' : 'rgb(250 250 250)'
+                      }}
+                    >
+                      {noti.is_read ? 'Read' : 'Unread'}
+                      <HatchPattern opacity={0.6} />
+                    </SketchDiv>
                 </SketchDiv>
               ))
             )}
@@ -302,4 +334,4 @@ const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, .
   );
 };
 
-export default NotificationCenter;
+export default NotificationCenter_staff;

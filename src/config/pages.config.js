@@ -61,6 +61,7 @@ import StaffWorkScheduleCreate from '@pages/StaffWorkScheduleCreate';
 import StaffReviewHistory from '@pages/StaffReviewHistory';
 
 import StaffSetting from '@pages/StaffSetting';
+import NotificationCenter_staff from '@pages/NotificationCenter_staff';
 
 
 
@@ -115,7 +116,8 @@ export const PAGES = {
     StaffWorkScheduleCreate:'StaffWorkScheduleCreate',
     StaffReviewHistory:'StaffReviewHistory',
     STAFF_SETTING: 'STAFF_SETTING',
-    STAFF_EDIT_PROFILE: 'STAFF_EDIT_PROFILE'
+    STAFF_EDIT_PROFILE: 'STAFF_EDIT_PROFILE',
+    NOTIFICATION_CENTER_STAFF: 'NOTIFICATION_CENTER_STAFF'
 };
 
 // 페이지 컴포넌트 매핑
@@ -163,7 +165,8 @@ export const PAGE_COMPONENTS = {
     [PAGES.STAFF_REVIEWS]: StaffReviewHistory,
     [PAGES.STAFF_SETTING]: StaffSetting,
     [PAGES.CHATTING]: Chatting,
-    [PAGES.CHATTINGLIST]: ChattingList
+    [PAGES.CHATTINGLIST]: ChattingList,
+    [PAGES.NOTIFICATION_CENTER_STAFF]: NotificationCenter_staff
 };
 
 // 기본 페이지

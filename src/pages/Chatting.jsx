@@ -526,10 +526,13 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     } catch (error) {
       console.error('❌ 채팅 데이터 불러오기 실패:', error);
     }
-  }, [room_sn, user.type, formatTime, generateInitChatItem, scrollToBottom, isUserAtBottom]);
+  }, [room_sn, user.type,  formatTime, generateInitChatItem, scrollToBottom, isUserAtBottom]);
 
   // ⭐ 최적화된 메시지 전송 핸들러
   const handleMessageSend = useCallback(async (message) => {
+
+     const senderType = chat_messages.length > 0 ? chat_messages[0].sender_type : user.type;
+    
     const chatData = {
       room_sn,
       chat_msg: message,
@@ -595,11 +598,14 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
   }, []);
 
+  console.log("user.type", user)
+
   // ⭐ ReservationCard onSend 함수 - 정리된 버전
   const handleReservationSend = useCallback(async () => {
     const {type} = user;
     let login_id = (type=='staff') ? user.staff_id : user.manager_id;
 
+   
     const chatData = {
       room_sn: room_sn || 0,
       chat_msg: '',

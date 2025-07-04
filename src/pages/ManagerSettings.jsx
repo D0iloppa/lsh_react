@@ -450,7 +450,7 @@ const handleSaveNewPassword = async () => {
               <option value="ja">{get('language.name.japanese')}</option>
               <option value="cn">{get('LANGUAGE_CHINESE')}</option>
             </select>
-            <SketchBtn variant="accent" size="small" style={{width: '30%'}} onClick={handleSaveLanguage}><HatchPattern opacity={0.6} /> Save</SketchBtn>
+            <SketchBtn variant="accent" size="small" style={{width: '30%'}} onClick={handleSaveLanguage}><HatchPattern opacity={0.6} /> {get('STAFF_SAVE_BUTTON')}</SketchBtn>
           </div>
         </SketchDiv>
         <div className="section-title" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>

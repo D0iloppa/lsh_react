@@ -138,6 +138,8 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
       window.scrollTo(0, 0);
     }
 
+console.log("user", user)
+
     const fetchNotifications = async () => {
       try {
         const response = await axios.get(`${API_HOST}/api/getNotificationList`, {
