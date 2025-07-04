@@ -52,6 +52,7 @@ useEffect(() => {
         params: {
           user_id: user?.user_id || 1,
           app_id: fcmToken,
+          login_type
         },
       });
       return res.data || [];

@@ -11,6 +11,7 @@ const GoogleMapComponent = ({
   const markersRef = useRef([]);
   const myLocationMarker = useRef(null);
   const [mapReady, setMapReady] = useState(false);
+  const markerClickFlag = useRef(false); // ✅ 마커 클릭 여부 추적
 
   useEffect(() => {
     const loadGoogleMaps = () => {
@@ -35,8 +36,8 @@ const GoogleMapComponent = ({
     if (!window.google || !window.google.maps) return;
 
     const baseOptions = {
-      center: { lat: 10.782865, lng: 106.701439 }, // 레탄톤 초기 중심
-      zoom: 18,
+      center: { lat: 10.782865, lng: 106.701439 },
+      zoom: 20,
       disableDefaultUI: true,
       styles: [
         { featureType: "road", elementType: "geometry", stylers: [{ color: "#FFFFFF" }] },
@@ -55,57 +56,58 @@ const GoogleMapComponent = ({
     mapInstance.current = new window.google.maps.Map(mapRef.current, baseOptions);
     setMapReady(true);
 
+    // ✅ 지도 클릭 핸들러
     mapInstance.current.addListener('click', () => {
-      onMapClick();
+      // 만약 직전에 마커 클릭이 있었으면 무시
+      if (markerClickFlag.current) {
+        markerClickFlag.current = false; // 플래그 초기화
+        return;
+      }
+      onMapClick(); // 실제 지도 클릭 처리
     });
   };
 
   const createImageWithText = async (rating, isReservationAvailable = true) => {
-  const image = new Image();
-  image.src = isReservationAvailable ? '/cdn/map_icon.png' : '/cdn/map_icon_gray.png';
-  await image.decode();
+    const image = new Image();
+    image.src = isReservationAvailable ? '/cdn/map_icon.png' : '/cdn/map_icon_gray.png';
+    await image.decode();
 
-  const baseSize = 64;
-  const scale = 2;
-  const canvas = document.createElement('canvas');
-  canvas.width = baseSize * scale;
-  canvas.height = baseSize * scale;
-  const ctx = canvas.getContext('2d');
+    const baseSize = 64;
+    const scale = 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = baseSize * scale;
+    canvas.height = baseSize * scale;
+    const ctx = canvas.getContext('2d');
 
-  ctx.scale(scale, scale);
-  
-  // gray.png일 때 opacity 적용
-  if (!isReservationAvailable) {
-    ctx.globalAlpha = 0.6; // 60% 투명도 (0.0 = 완전 투명, 1.0 = 불투명)
-  }
-  
-  ctx.drawImage(image, 0, 0, baseSize, baseSize);
-  
-  // opacity 원래대로 복원
-  ctx.globalAlpha = 1.0;
+    ctx.scale(scale, scale);
 
-  const text = parseFloat(rating || 0).toFixed(1);
+    if (!isReservationAvailable) {
+      ctx.globalAlpha = 0.6;
+    }
 
-  ctx.font = 'bold 12px Arial';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = '#000';
-  ctx.strokeText(text, baseSize / 2, 18);
-  ctx.fillStyle = '#fff';
-  ctx.fillText(text, baseSize / 2, 18);
+    ctx.drawImage(image, 0, 0, baseSize, baseSize);
+    ctx.globalAlpha = 1.0;
 
-  return {
-    url: canvas.toDataURL(),
-    scaledSize: new window.google.maps.Size(baseSize, baseSize),
-    anchor: new window.google.maps.Point(baseSize / 2, baseSize),
+    const text = parseFloat(rating || 0).toFixed(1);
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#000';
+    ctx.strokeText(text, baseSize / 2, 18);
+    ctx.fillStyle = '#fff';
+    ctx.fillText(text, baseSize / 2, 18);
+
+    return {
+      url: canvas.toDataURL(),
+      scaledSize: new window.google.maps.Size(baseSize, baseSize),
+      anchor: new window.google.maps.Point(baseSize / 2, baseSize),
+    };
   };
-};
 
   useEffect(() => {
     if (!mapReady || !places) return;
 
-    // 기존 마커 제거
     markersRef.current.forEach(marker => marker.setMap(null));
     markersRef.current = [];
 
@@ -134,6 +136,7 @@ const GoogleMapComponent = ({
       });
 
       marker.addListener("click", () => {
+        markerClickFlag.current = true; // ✅ 마커 클릭으로 설정
         onMarkerClick(place);
       });
 
@@ -141,7 +144,6 @@ const GoogleMapComponent = ({
     });
   }, [places, mapReady]);
 
-  // ✅ 내 위치 마커 추가 (베트남 경계 체크 포함)
   useEffect(() => {
     if (!mapReady || !window.google || !mapInstance.current) return;
 
@@ -149,22 +151,18 @@ const GoogleMapComponent = ({
       navigator.geolocation.getCurrentPosition((position) => {
         const { latitude, longitude } = position.coords;
 
-        // ✅ 베트남 대략적 경계 판단
         const isInVietnam = latitude >= 8 && latitude <= 24 && longitude >= 102 && longitude <= 110;
 
         const center = isInVietnam
           ? { lat: latitude, lng: longitude }
-          : { lat: 10.7810752, lng: 106.7052086 }; // 레탄톤 거리 중심
+          : { lat: 10.7810752, lng: 106.7052086 };
 
-        // 지도 중심 이동
         mapInstance.current.setCenter(center);
 
-        // 기존 위치 마커 제거
         if (myLocationMarker.current) {
           myLocationMarker.current.setMap(null);
         }
 
-        // 사람 아이콘 마커 추가
         myLocationMarker.current = new window.google.maps.Marker({
           position: center,
           map: mapInstance.current,

@@ -11,6 +11,7 @@ import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
 import AgreementCheckbox2 from '@components/AgreementCheckbox2';
 
+
 const ReserveSummaryPage = ({ 
   navigateToPageWithData, 
   goBack,
@@ -37,6 +38,8 @@ const ReserveSummaryPage = ({
 
 
   const { user, isLoggedIn } = useAuth();
+console.log("user", user)
+
 
   const [agreements, setAgreements] = useState({
     policyTerms: false
@@ -194,7 +197,7 @@ const ReserveSummaryPage = ({
     }
 
     setIsConfirming(true);
-    
+
     try {
       console.log('🚀 Sending reservation request:', reservationPayload);
       

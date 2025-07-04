@@ -96,13 +96,15 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
     // availCnt 가져오기
   useEffect(() => {
     const fetchStaffAvailCnt = async () => {
-      if (!girl.staff_id) return;
+      if (!otherProps.staff_id) return;
       
       setIsLoadingAvailCnt(true);
+
+      console.log("otherProps.staff_id", otherProps.staff_id)
       
       try {
         const response = await ApiClient.get('/api/staffAvailCnt', {
-          params: { staff_id: girl.staff_id }
+          params: { staff_id: otherProps.staff_id }
         });
         
         //console.log(`Staff ${girl.staff_id} availCnt response:`, response);
@@ -123,7 +125,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
     };
 
     fetchStaffAvailCnt();
-  }, [girl.staff_id]);
+  }, [otherProps.staff_id]);
 
   useEffect(() => {
     window.scrollTo(0, 0);

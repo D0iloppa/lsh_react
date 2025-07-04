@@ -217,9 +217,9 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
                   setShowVenueList(true);
                 }}
                 onMapClick={() => {
-                  setSelectedVenue(null);
-                  setShowVenueList(false);
-                  setMarkerSelectedVenue(null);
+                 setShowVenueList(false);   // 오버레이 닫기
+                setMarkerSelectedVenue(null); // 💥 마커 선택도 제거 (이게 중요!)
+                setSelectedVenue(null);
                 }}
               />
             </div>
@@ -285,10 +285,10 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
               </SketchDiv>
             </div>
 
-            {showVenueList && (
-              <div className="venue-list-overlay">
-                <div className="venue-list-scroll">
-                  {(markerSelectedVenue ? [markerSelectedVenue] : places).map((venue, index, array) => (
+           {showVenueList && (
+            <div className="venue-list-overlay">
+              <div className="venue-list-scroll">
+                {(markerSelectedVenue ? [markerSelectedVenue] : places).map((venue, index, array) => (
                     <SketchDiv
                       key={venue.venue_id}
                       id={`venue-${venue.venue_id}`}
