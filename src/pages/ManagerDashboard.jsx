@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import axios from 'axios';
 import { Calendar, Users, ClipboardList, Tag, Star, Headphones, Bell, Settings, MessagesSquare } from 'lucide-react';
 
 import SketchHeader from '@components/SketchHeader';
@@ -7,6 +7,7 @@ import SketchMenuBtn from '@components/SketchMenuBtn';
 import HatchPattern from '@components/HatchPattern';
 import CocktailIcon from '@components/CocktailIcon';
 import SketchDiv from '@components/SketchDiv';
+import { useFcm } from '@contexts/FcmContext';
 
 import '@components/SketchComponents.css';
 
@@ -19,13 +20,47 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
   
 
   const { user, verifyPassword, logout } = useAuth();
-  
+   const { fcmToken } = useFcm();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [dashboardInfo, setDashboardInfo] = useState({
     recentReviews: 0,
     todaysReservations: 0,
     activePromotions: 0
   });
+
+
+  
+useEffect(() => {
+
+//alert(fcmToken)
+  const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+
+  const upateAppId = async () => {
+
+
+    try {
+
+      const res = await axios.get(`${API_HOST}/api/upateAppId`, {
+        params: {
+          user_id: user?.manager_id || 1,
+          app_id: fcmToken || '1234',
+          login_type:1,
+        },
+      });
+      return res.data || [];
+    } catch (err) {
+      //alert(err);
+      return [];
+    }
+  };
+
+  if (fcmToken) {
+    upateAppId();
+    // optional logging
+    console.log('📲 HomePage에서 받은 FCM 토큰:', fcmToken, 'manager_id:', user?.manager_id || 1);
+  }
+}, [fcmToken, user]);
+
 
   useEffect(() => {
     window.scrollTo(0, 0);

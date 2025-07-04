@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
@@ -8,12 +9,13 @@ import { useAuth } from '@contexts/AuthContext';
 import { Calendar, Clock, Bell, MapPin, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
+import { useFcm } from '@contexts/FcmContext';
 
 const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
 
   const { user, isLoggedIn } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
-
+ const { fcmToken } = useFcm();
   const [staffInfo, setStaffInfo] = useState({});
   const [dashboardInfo, setDashboardInfo] = useState({
     recentReviews: 0,
@@ -27,6 +29,39 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
   });
   const [isLoadingData, setIsLoadingData] = useState(true);
   console.log('메시지 내용:', messages['Staff.home.btn1']); 
+
+
+
+useEffect(() => {
+
+  //alert(fcmToken)
+  const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+
+  const upateAppId = async () => {
+
+    
+    try {
+      const res = await axios.get(`${API_HOST}/api/upateAppId`, {
+        params: {
+          user_id: user?.staff_id || 1,
+          app_id: fcmToken,
+          login_type:2,
+        },
+      });
+      return res.data || [];
+    } catch (err) {
+      console.error('즐겨찾기 실패:', err);
+      return [];
+    }
+  };
+
+  if (fcmToken) {
+    upateAppId();
+    // optional logging
+    console.log('📲 HomePage에서 받은 FCM 토큰:', fcmToken, 'user_id:', user?.user_id || 1);
+  }
+}, [fcmToken, user]);
+
 
   useEffect(() => {
     window.scrollTo(0, 0);

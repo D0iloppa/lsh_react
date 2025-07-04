@@ -110,6 +110,7 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
   const { user, isLoggedIn } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   
+
     useEffect(() => {
         if (messages && Object.keys(messages).length > 0) {
           console.log('✅ Messages loaded:', messages);
