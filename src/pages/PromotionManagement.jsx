@@ -142,12 +142,20 @@ const handleEndPromotion = async (promotionId) => {
       
       console.log('Ending promotion:', promotionId);
       
-      // 임시로 로컬 상태만 업데이트
+      // 상태를 'end'로 업데이트 (UI와 일치하도록)
       setPromotions(prev => 
-        prev.map(p => p.promotion_id === promotionId ? { ...p, status: 'inactive' } : p)
+        prev.map(p => 
+          p.promotion_id === promotionId 
+            ? { ...p, status: 'end' } 
+            : p
+        )
       );
       setOriginalPromotions(prev => 
-        prev.map(p => p.promotion_id === promotionId ? { ...p, status: 'inactive' } : p)
+        prev.map(p => 
+          p.promotion_id === promotionId 
+            ? { ...p, status: 'end' } 
+            : p
+        )
       );
       
       toast.success(get('PROMOTION_END_SUCCESS'));
@@ -397,6 +405,45 @@ const handleEndPromotion = async (promotionId) => {
             gap: 0.75rem;
             align-items: center;
           }
+
+          .promotion-image-container {
+              position: relative;
+              display: inline-block;
+            }
+
+            .promotion-overlay {
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background-color: rgba(0, 0, 0, 0.7);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border-radius: 8px;
+            }
+
+            .promotion-end-text {
+              color: #ffffff;
+              font-size: 1.2rem;
+              font-weight: bold;
+              text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+              letter-spacing: 1px;
+            }
+
+            /* 종료된 프로모션 카드 전체 스타일 (선택사항) */
+            .promotion-card.ended {
+              opacity: 0.8;
+            }
+
+            .promotion-card.ended .promotion-title {
+              color: #6b7280;
+            }
+
+            .promotion-card.ended .promotion-details {
+              opacity: 0.7;
+            }
         }
       `}</style>
         <div className="promotion-container">
@@ -434,16 +481,23 @@ const handleEndPromotion = async (promotionId) => {
               promotions.map((promotion, index) => (
                 <SketchDiv
                   key={promotion.promotion_id}
-                  className={`promotion-card ${index === -1 ? 'featured' : ''}`}
+                  className={`promotion-card ${index === -1 ? 'featured' : ''} ${promotion.status === 'end' ? 'ended' : ''}`}
                 >
                   <HatchPattern opacity={0.4} />
 
                   <div className="promotion-content">
-                    <ImagePlaceholder
-                      src={promotion.image_url}
-                      alt={promotion.title}
-                      className="promotion-image"
-                    />
+                    <div className="promotion-image-container">
+                      <ImagePlaceholder
+                        src={promotion.image_url}
+                        alt={promotion.title}
+                        className="promotion-image"
+                      />
+                      {promotion.status === 'end' && (
+                        <div className="promotion-overlay">
+                          <span className="promotion-end-text">{get('PROMOTION_END_BUTTON')}</span>
+                        </div>
+                      )}
+                    </div>
                     <div className="promotion-info">
                       <h3 className="promotion-title">{promotion.title}</h3>
                       
@@ -456,7 +510,7 @@ const handleEndPromotion = async (promotionId) => {
                           <span>
                             {promotion.discount_type === 'percent' 
                               ? `${promotion.discount_value}%` 
-                              : `${promotion.discount_value}원`
+                              : `${promotion.discount_value}won`
                             }
                           </span>
                         </div>
@@ -466,26 +520,26 @@ const handleEndPromotion = async (promotionId) => {
                         </div>
                       </div>
 
-                      <div className="promotion-actions">
-                        <SketchBtn 
-                          size="small" 
-                          className="action-btn" 
-                          onClick={() => handleEditPromotion(promotion)}
-                        >
-                          <Edit size={13}/> {get('PROMOTION_EDIT_BUTTON')}
-                        </SketchBtn>
-                        <SketchBtn 
-                          size="small" 
-                          className="action-btn" 
-                          variant="danger"
-                          onClick={() => handleEndPromotion(promotion.promotion_id)}
-                        >
-                          {get('PROMOTION_END_BUTTON_SHORT')}
-                        </SketchBtn>
-                        <SketchBtn size="small" className="action-btn">
-                          {get('PROMOTION_TRACK_BUTTON')}
-                        </SketchBtn>
-                      </div>
+                      {/* 종료된 프로모션이 아닐 때만 액션 버튼 표시 */}
+                      {promotion.status !== 'end' && (
+                        <div className="promotion-actions">
+                          <SketchBtn 
+                            size="small" 
+                            className="action-btn" 
+                            onClick={() => handleEditPromotion(promotion)}
+                          >
+                            <Edit size={13}/> {get('PROMOTION_EDIT_BUTTON')}
+                          </SketchBtn>
+                          <SketchBtn 
+                            size="small" 
+                            className="action-btn" 
+                            variant="danger"
+                            onClick={() => handleEndPromotion(promotion.promotion_id)}
+                          >
+                            {get('PROMOTION_END_BUTTON_SHORT')}
+                          </SketchBtn>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </SketchDiv>

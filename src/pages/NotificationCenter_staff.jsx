@@ -136,12 +136,24 @@ useEffect(() => {
   const markNotificationsAsRead = async () => {
     try {
       // 스태프 알림 (notification_type: 5) 읽음 처리
-      await ApiClient.post('/api/updateNotifi', {
+      await ApiClient.postForm('/api/updateNotifi', {
         notification_type: 5, 
         user_id: user?.staff_id
       });
       
       console.log('알림 읽음 처리 완료');
+
+      // 업데이트가 성공했으면 즉시 로컬 상태 반영
+      if (result > 0) {
+        // 현재 로드된 알림들의 is_read를 모두 true로 변경
+        setNotifications(prevNotifications => 
+          prevNotifications.map(noti => ({
+            ...noti,
+            is_read: true
+          }))
+        );
+        console.log('✅ 알림 상태 즉시 반영 완료');
+      }
       
     } catch (error) {
       console.error('알림 읽음 처리 실패:', error);

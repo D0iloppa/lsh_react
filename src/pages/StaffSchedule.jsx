@@ -5,7 +5,7 @@ import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
 import dayjs from 'dayjs';
-import { CheckCircle, XCircle, ClipboardList} from 'lucide-react';
+import { CheckCircle, XCircle, ClipboardList, MessageCircle} from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 import { useAuth } from '@contexts/AuthContext';
@@ -22,6 +22,8 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
   const [year, setYear] = useState(dayjs().year());
   const [selectedDate, setSelectedDate] = useState(null);
   const [staffList, setStaffList] = useState([]);
+  const [dayoffList, setDayoffList] = useState([]);
+  const [notRegisterList, setNotRegisterList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const { messages, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const { user } = useAuth();
@@ -70,6 +72,46 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
       isCurrentMonth: false
     });
   }
+
+
+  const chatWithStaff = async(staff) => {
+    console.log('chatWithStaff', staff);
+
+
+    // 1. room_sn 조회
+    const chatList = await ApiClient.get('/api/getChattingList', {
+      params: {
+        venue_id: user.venue_id,
+        target : 'staff',
+        staff_id : staff.staff_id,
+        account_type: user.type
+      }
+    })
+
+    let room_sn = null;
+    if(chatList.length > 0){
+      room_sn = chatList[0].room_sn;
+      console.log('room_sn', room_sn);
+    }
+
+
+    navigateToPageWithData(PAGES.CHATTING, { 
+      // initType: 'booking',
+      // reservation_id: r.id,
+      name : staff.staff_name,
+      room_sn: room_sn,
+      ...staff
+    });
+
+
+    /*
+    navigateToPageWithData(PAGES.CHATTING, { 
+      initType: 'booking',
+      reservation_id: bk.reservation_id,
+      ...bk
+    });
+    */
+  };
 
   const handlePrevMonth = () => {
     let newMonth = month - 1;
@@ -129,12 +171,13 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
         work_date: date.format('YYYY-MM-DD')
       });
 
-      const {data=[]} = response;
+      const {data=[], dayoff=[], not_register=[]} = response;
 
       console.log('✅ Staff shift data loaded:', data);
       
       // 데이터 구조 매핑
       const mappedStaffList = data.map(item => ({
+        staff_id:item.staff_id,
         schedule_id: item.schedule_id,
         staff_name: item.target_name || 'Unknown Staff',
         status: item.status, // 'pending', 'available', 'declined'
@@ -142,11 +185,30 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
         end_time: item.end_time,
         work_date: item.work_date
       }));
+
+      const dayoffList = dayoff.map(item => ({
+        staff_id:item.staff_id,
+        staff_name: item.target_name || 'Unknown Staff',
+        work_date: item.work_date
+      }));
+
+      const notRegisterList = not_register.map(item => ({
+        staff_id:item.staff_id,
+        staff_name: item.target_name || 'Unknown Staff',
+        work_date: item.work_date
+      }));
+
+
       
       setStaffList(mappedStaffList);
+      setDayoffList(dayoffList);
+      setNotRegisterList(notRegisterList);
+
     } catch (error) {
       console.error('Failed to fetch staff list:', error);
       setStaffList([]);
+      setDayoffList([]);
+      setNotRegisterList([]);
     } finally {
       setIsLoading(false);
     }
@@ -503,32 +565,106 @@ useEffect(() => {
           ))}
         </div>
         
-        <div className="assign-title">{get('SCHEDULE_APPROVAL_TITLE')}</div>
         {isLoading ? (
           <div style={{ textAlign: 'center', padding: '1rem', color: '#666' }}>
             {get('SCHEDULE_LOADING_STAFF')}
           </div>
         ) : (
-          staffList.map(staff => (
-            <div key={staff.schedule_id} className="staff-row">
-              <HatchPattern opacity={0.6} />
-              <div className="staff-info">
-                <div className="staff-name">{staff.staff_name}</div>
-                <div className="staff-time">
-                  {staff.start_time?.substring(0, 5)} - {staff.end_time?.substring(0, 5)}
-                </div>
-              </div>
-              <div 
-                className={`status-toggle ${staff.status}`}
-                onClick={() => handleStatusChange(
-                  staff.schedule_id, 
-                  staff.status === 'available' ? 'declined' : 'available'
-                )}
-              >
-                <div className={`toggle-slider ${staff.status}`}></div>
-              </div>
-            </div>
-          ))
+          <>
+            {/* 근무자 리스트 */}
+            {staffList.length > 0 && (
+              <>
+                <div className="assign-title">{get('SCHEDULE_APPROVAL_TITLE')}</div>
+                {staffList.map(staff => (
+                  <div key={staff.schedule_id} className="staff-row">
+                    <HatchPattern opacity={0.6} />
+                    <div className="staff-info">
+                      <div className="staff-name">{staff.staff_name}</div>
+                      <div className="staff-time">
+                        {staff.start_time?.substring(0, 5)} - {staff.end_time?.substring(0, 5)}
+                      </div>
+                    </div>
+                    <div>
+                      <SketchBtn
+                        size="small"
+                        className="staff-assign-btn"
+                        onClick={() => chatWithStaff(staff)}
+                      >
+                      <span className='chat-style' >
+                          <MessageCircle size={14}/> chat
+                      </span>
+                      </SketchBtn>
+                    </div>
+                    {/*
+                    <div 
+                      className={`status-toggle ${staff.status}`}
+                      onClick={() => handleStatusChange(
+                        staff.schedule_id, 
+                        staff.status === 'available' ? 'declined' : 'available'
+                      )}
+                    >
+                      <div className={`toggle-slider ${staff.status}`}></div>
+                    </div>
+                    */}
+                  </div>
+                ))}
+              </>
+            )}
+
+            {/* 휴무자 리스트 */}
+            {dayoffList.length > 0 && (
+              <>
+                <div className="assign-title">휴무자</div>
+                {dayoffList.map(staff => (
+                  <div key={`dayoff-${staff.staff_id}`} className="staff-row">
+                    <HatchPattern opacity={0.6} />
+                    <div className="staff-info">
+                      <div className="staff-name">{staff.staff_name}</div>
+                      <div className="staff-time">휴무</div>
+                    </div>
+                    <div>
+                      <SketchBtn
+                        size="small"
+                        className="staff-assign-btn"
+                        onClick={() => chatWithStaff(staff)}
+                      >
+                      <span className='chat-style' >
+                          <MessageCircle size={14}/> chat
+                      </span>
+                      </SketchBtn>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+
+            {/* 미입력자 리스트 */}
+            {notRegisterList.length > 0 && (
+              <>
+                <div className="assign-title">미입력자</div>
+                {notRegisterList.map(staff => (
+                  <div key={`not-register-${staff.staff_id}`} className="staff-row">
+                    <HatchPattern opacity={0.6} />
+                    <div className="staff-info">
+                      <div className="staff-name">{staff.staff_name}</div>
+                      <div className="staff-time">미입력</div>
+                    </div>
+                    <div>
+                      <SketchBtn
+                        size="small"
+                        className="staff-assign-btn"
+                        onClick={() => chatWithStaff(staff)}
+                      >
+                      <span className='chat-style' >
+                          <MessageCircle size={14}/> chat
+                      </span>
+                      </SketchBtn>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+          </>
         )}
       </div>
       <ToastContainer

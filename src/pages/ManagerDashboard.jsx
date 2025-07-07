@@ -102,7 +102,8 @@ useEffect(() => {
           <span>{get('DASHBOARD_TODAYS_RESERVATIONS')}</span>
         </div>
       ),
-      content: formatMessage('DASHBOARD_RESERVATIONS_COUNT', dashboardInfo.todaysReservations)
+      content: formatMessage('DASHBOARD_RESERVATIONS_COUNT', dashboardInfo.todaysReservations),
+      menuEvent: () => { navigateToPage(PAGES.RESERVATION_MANAGEMENT); }
     },
     {
       title: (
@@ -111,7 +112,8 @@ useEffect(() => {
           <span>{get('DASHBOARD_ACTIVE_PROMOTIONS')}</span>
         </div>
       ),
-      content: formatMessage('DASHBOARD_PROMOTIONS_COUNT', dashboardInfo.activePromotions)
+      content: formatMessage('DASHBOARD_PROMOTIONS_COUNT', dashboardInfo.activePromotions),
+      menuEvent: () => { navigateToPage(PAGES.PROMOTION_MANAGEMENT); }
     },
     {
       title: (
@@ -120,7 +122,8 @@ useEffect(() => {
           <span>{get('DASHBOARD_RECENT_REVIEWS')}</span>
         </div>
       ),
-      content: formatMessage('DASHBOARD_REVIEWS_COUNT', dashboardInfo.recentReviews)
+      content: formatMessage('DASHBOARD_REVIEWS_COUNT', dashboardInfo.recentReviews),
+      menuEvent: () => { navigateToPage(PAGES.REVIEW_MANAGEMENT); }
     }
   ];
 
@@ -272,7 +275,7 @@ const menus = [
             fontFamily: 'inherit',
             transform: 'rotate(-0.2deg)'
           }}>
-            <SketchDiv className="item-content">
+            <SketchDiv className="item-content" onClick={item.menuEvent}>
               <HatchPattern opacity={0.4} />
               <div className="big-card" style={{padding: '0.9rem'}}>
                 <div style={{ fontWeight: 600, fontSize: '0.98rem', marginBottom: 2 }}>{item.title}</div>

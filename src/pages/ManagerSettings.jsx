@@ -60,12 +60,68 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
 
   }, [ messages, currentLang ]);
 
+  
+
 
   const handleShopDetail = () => {
     navigateToPageWithData(PAGES.VENUE_SETUP, { 
       mode: 'edit', venue_id: user?.venue_id
     });
   }
+
+
+
+  // 매장 상태 업데이트 함수
+const handleVenueStatusUpdate = async () => {
+
+    console.log("현재 emailNoti:", emailNoti);
+  
+    // 강제로 상태 토글
+    setEmailNoti(prev => !prev);
+    //console.log("토글 후 예상 상태:", !emailNoti);
+
+  try {
+    // 현재 상태의 반대로 설정 (ON이면 OFF로, OFF면 ON으로)
+    const newStatus = emailNoti ? 'closed' : 'available';
+    
+    console.log('매장 상태 변경 요청:', {
+      venue_id: user.venue_id,
+      status: newStatus,
+      current_emailNoti: emailNoti
+    });
+
+    const response = await ApiClient.postForm('/api/venueStatusUpdate', {
+      venue_id: user.venue_id,
+      status: newStatus
+    });
+
+    console.log('매장 상태 변경 응답:', response);
+
+    // 성공 시 로컬 상태 업데이트
+    if (response && (response.success || response.result > 0 || response.status === 'success')) {
+      setEmailNoti(!emailNoti); // 상태 토글
+      
+      // 성공 메시지 표시 (선택사항)
+      const statusText = newStatus === 'available' ? '운영 중' : '운영 종료';
+      console.log(`✅ 매장 상태가 "${statusText}"로 변경되었습니다.`);
+      
+      // toast나 alert 사용하는 경우
+       toast.success(`매장 상태가 "${statusText}"로 변경되었습니다.`);
+      
+    } else {
+      throw new Error('API 응답이 성공을 나타내지 않습니다.');
+    }
+    
+  } catch (error) {
+    console.error('매장 상태 변경 실패:', error);
+    
+    // 에러 메시지 표시 (선택사항)
+     toast.error('매장 상태 변경에 실패했습니다.');
+    
+    // 필요시 사용자에게 에러 알림
+    //alert('매장 상태 변경에 실패했습니다. 다시 시도해주세요.');
+  }
+};
 
 // 컴포넌트 상단에 추가 (useTranslation import가 있다고 가정)
 const handleSaveBusinessInfo = () => {
@@ -274,6 +330,13 @@ const handleSaveNewPassword = async () => {
           align-items: center;
           gap: 1rem;
         }
+          .venue-onOff {     
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            margin-bottom: 0.3rem;
+         }
+          
       `}</style>
       
               <SketchHeader
@@ -288,6 +351,18 @@ const handleSaveNewPassword = async () => {
       />
       <div className="settings-container">
         <div className="section-title">{get('SETTINGS_MANAGE_SHOP_DETAIL')}</div>
+        
+        <div className='venue-onOff'>
+        <div style={{lineHeight: '1.8'}}>영업 상태 </div>
+        <SketchBtn 
+              variant={emailNoti ? "green" : "danger"} 
+              size="small"  
+              style={{width: '30%'}}
+              onClick={handleVenueStatusUpdate}
+            ><HatchPattern opacity={0.6} />
+              {emailNoti ?'ON' : 'OFF'}
+            </SketchBtn></div>
+             
         <SketchDiv className="section-box" style={{marginBottom:'1.2rem'}}>
           <SketchBtn 
             variant="primary" 
@@ -402,7 +477,7 @@ const handleSaveNewPassword = async () => {
           </SketchDiv> 
         </div>
 
-        <div className="section-title">{get('SETTINGS_NOTIFICATION_PREFERENCES')}</div>
+        {/* <div className="section-title">{get('SETTINGS_NOTIFICATION_PREFERENCES')}</div>
         <SketchDiv className="section-box">
           <div className="noti-row">
                <span><Mail size={14}/> {get('Staff.setting.notification.email') || 'Email Notifications'}</span>
@@ -424,7 +499,8 @@ const handleSaveNewPassword = async () => {
                {smsNoti ? get('SETTINGS_ON') : get('SETTINGS_OFF')}
             </SketchBtn>
           </div>
-        </SketchDiv>
+        </SketchDiv> */}
+
         <div className="section-title">{get('Staff.setting.language.title')}</div>
         <SketchDiv className="section-box">
           <div className="lang-row">

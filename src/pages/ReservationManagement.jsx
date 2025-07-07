@@ -340,17 +340,8 @@ const handleReservationManage = async (reservation_id, mngCode) => {
   // });
 
   const filtered = reservations.filter(r => {
-  // 먼저 날짜로 필터링
   const reservationDate = new Date(r.reservedAt).toISOString().split('T')[0];
-  const isDateMatch = reservationDate === selectedDate;
-  
-  if (!isDateMatch) return false;
-
-  // 그 다음 상태로 필터링
-  if (selectedStatus === 'pending') {
-    return r.status === 'pending' || r.status === 'accepted';
-  }
-  return r.status === selectedStatus;
+  return reservationDate === selectedDate;
 });
   
 const chatWithUser = async(r) => {
@@ -398,6 +389,7 @@ const chatWithUser = async(r) => {
         .reservation-container {
           max-width: 28rem;
           margin: 0 auto;
+          margin-bottom: 1rem;
           background: #fff;
           min-height: 101vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
@@ -437,7 +429,7 @@ const chatWithUser = async(r) => {
           margin-bottom: 1.5rem;
         }
         .reservation-time {
-          font-size: 0.8rem;
+          font-size: 0.9rem;
           color: #555;
           font-weight: 500;
         }
@@ -551,7 +543,6 @@ const chatWithUser = async(r) => {
               display: flex;
               align-items: center;
               justify-content: space-between;
-              margin-bottom: 0.5rem;
             }
 
             .date-nav-btn {
@@ -641,14 +632,14 @@ const chatWithUser = async(r) => {
             </button>
           </div>
           
-          <div className="date-info">
+          {/* <div className="date-info">
             <span>예약 {getReservationCountForDate()}건</span>
             {selectedDate !== getToday() && (
               <button className="today-btn" onClick={goToToday}>
                 오늘
               </button>
             )}
-          </div>
+          </div> */}
         </div>
       
         {loading ? (

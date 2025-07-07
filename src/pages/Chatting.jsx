@@ -119,7 +119,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
   // room_sn이 변경될 때마다 채팅 데이터 다시 불러오기
   useEffect(() => {
-    console.log('🔄 Room SN changed to:', room_sn, showReservationCard);
+    console.log('🔄 Room SN changed to:', room_sn);
     
     // 기존 폴링 정지
     stopPolling();
@@ -131,8 +131,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         setChatMessages([]); // 기존 메시지 초기화
       }
       
-      // 채팅 데이터 새로 불러오기
-      getChattingData(true).then(() => {
+      // 채팅 데이터 새로 불러오기 (init=false로 변경)
+      getChattingData(false).then(() => {
         // 데이터 로딩 완료 후 폴링 시작
         startPolling();
       });
@@ -142,7 +142,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     return () => {
       stopPolling();
     };
-  }, [room_sn, showReservationCard, stopPolling, startPolling]);
+  }, [room_sn, stopPolling, startPolling]);
 
   const generateInitChatItem = useCallback(() => {
     switch(initType){
@@ -198,14 +198,9 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   useEffect(() => {
     window.scrollTo(0, 0);
     
-    // 예약 카드 초기화
-    if (initType === 'booking') {
-      generateInitChatItem();
-    }
-    
     // room_sn이 있을 때만 초기 데이터 로드
     if (room_sn) {
-      getChattingData(true).then(() => {
+      getChattingData(false).then(() => {
         startPolling();
       });
     }
@@ -219,28 +214,51 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const isUserAtBottom = useCallback(() => {
     if (!chatBoxRef.current) return false;
     const { scrollTop, scrollHeight, clientHeight } = chatBoxRef.current;
-    return scrollHeight - scrollTop - clientHeight < 50;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    console.log('Distance from bottom:', distanceFromBottom);
+    return distanceFromBottom < 50;
   }, []);
 
   // 🎯 스크롤을 맨 밑으로 이동시키는 함수
   const scrollToBottom = useCallback((behavior = 'smooth') => {
-    if (chatBoxRef.current) {
-      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+    console.log('scrollToBottom', behavior);
+    
+    if (!chatBoxRef.current) return;
+    
+    // DOM 업데이트를 기다린 후 스크롤 실행
+    const scrollToBottomImmediate = () => {
+      if (!chatBoxRef.current) return;
       
-      setTimeout(() => {
-        messageEndRef.current?.scrollIntoView({ 
+      const { scrollHeight, clientHeight } = chatBoxRef.current;
+      const maxScrollTop = scrollHeight - clientHeight;
+      
+      console.log('Scroll info:', { scrollHeight, clientHeight, maxScrollTop });
+      
+      if (behavior === 'auto') {
+        // 즉시 스크롤
+        chatBoxRef.current.scrollTop = maxScrollTop;
+      } else {
+        // 부드러운 스크롤
+        chatBoxRef.current.scrollTo({
+          top: maxScrollTop,
+          behavior: 'smooth'
+        });
+      }
+    };
+    
+    // DOM 업데이트를 기다린 후 실행
+    setTimeout(scrollToBottomImmediate, 50);
+    
+    // 추가로 messageEndRef도 사용 (백업)
+    setTimeout(() => {
+      if (messageEndRef.current) {
+        messageEndRef.current.scrollIntoView({ 
           behavior, 
           block: 'end',
           inline: 'nearest'
         });
-      }, 10);
-      
-      setTimeout(() => {
-        if (chatBoxRef.current) {
-          chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
-        }
-      }, 100);
-    }
+      }
+    }, 100);
   }, []);
 
   useEffect(() => {
@@ -489,11 +507,6 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         link_target: item.link_target
       }));
 
-      if(init){
-        const initChatItem = generateInitChatItem();
-        console.log('initChatItem', initChatItem);
-      }
-
       // 초기 로드와 업데이트 구분
       if (lastChatSnRef.current === null) {
         console.log('First load - setting all messages:', newMessages);
@@ -504,9 +517,10 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           lastChatSnRef.current = lastMessage.chat_sn;
           console.log('Updated lastChatSnRef.current to:', lastChatSnRef.current);
           
+          // DOM 렌더링 완료 후 스크롤
           setTimeout(() => {
             scrollToBottom('auto');
-          }, 200);
+          }, 300);
         }
       } else {
         const newChatMessages = newMessages.filter(msg => msg.chat_sn > lastChatSnRef.current);
@@ -522,7 +536,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           if (shouldScroll) {
             setTimeout(() => {
               scrollToBottom(lastMessage.sender_type === 'manager' ? 'auto' : 'smooth');
-            }, 100);
+            }, 200);
           }
           
           lastChatSnRef.current = lastMessage.chat_sn;
@@ -531,7 +545,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     } catch (error) {
       console.error('❌ 채팅 데이터 불러오기 실패:', error);
     }
-  }, [room_sn, user.type,  formatTime, generateInitChatItem, scrollToBottom, isUserAtBottom]);
+  }, [room_sn, user.type, formatTime, scrollToBottom, isUserAtBottom]);
 
   // ⭐ 최적화된 메시지 전송 핸들러
   const handleMessageSend = useCallback(async (message) => {
@@ -655,8 +669,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         } else {
           // room_sn이 동일한 경우에도 새 메시지를 위해 갱신 후 폴링 재시작
           await getChattingData(false);
-          startPolling();
         }
+        startPolling();
       }
       
     } catch (error) {
@@ -674,6 +688,13 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     setReservationCardData(null);
   }, []);
 
+  // 초기 로드 시에만 예약 카드 생성하도록 별도 useEffect 추가
+  useEffect(() => {
+    if (initType === 'booking' && !showReservationCard && !reservationCardData) {
+      generateInitChatItem();
+    }
+  }, [initType]); // 한 번만 실행되도록 의존성 최소화
+
   return (
     <>
       <style jsx="true">{`
@@ -689,6 +710,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           overflow-y: auto;
           display: flex;
           flex-direction: column;
+          scroll-behavior: smooth;
         }
         .chat-message-wrapper {
           display: flex;
@@ -793,7 +815,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           {chat_messages.map((msg) => (
             <ChatMessage key={msg.chat_sn} msg={msg} setModalImage={setModalImage} />
           ))}
-          <div ref={messageEndRef} />
+          <div ref={messageEndRef} style={{ height: '1px', minHeight: '1px' }} />
         </div>
 
         {/* 예약 카드 표시 */}

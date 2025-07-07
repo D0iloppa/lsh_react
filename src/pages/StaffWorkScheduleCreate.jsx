@@ -170,7 +170,7 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
         }
         .week-onoff {
           width: 1.0rem;
-          padding-left: 1rem;
+          padding-left: 2rem;
         }
         .week-hours {
           display: contents;
@@ -260,7 +260,10 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
             
             return (
               <div key={`${dayData?.work_date || index}`} className="week-row">
-                <div className="week-day">{day}</div>
+                <div className="week-day">
+                  <span>{day}</span>
+                  <span>({parseInt(dayData.work_date.split('-')[2])})</span>
+                  </div>
                 <div className="week-onoff">
                   <select 
                     value={isOn ? 'on' : 'off'} 

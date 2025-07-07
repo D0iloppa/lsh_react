@@ -537,8 +537,8 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     <>
       <style jsx="true">{`
         .venue-container {
+          margin-bottom: 1rem;
           max-width: 28rem;
-          margin: 0 auto;
           background: #fff;
           min-height: 100vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
@@ -635,7 +635,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         }
 
         .map-section {
-          width: 100%;
+          width: 99%;
           height: 250px;
           margin-top: 1rem;
           margin-bottom:1rem;
@@ -767,6 +767,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         <div className="section-title required-field">{get('VENUE_INFORMATION')}</div>
         
         <div className="input-row">
+          <div className="time-label">{get('title.text.14')}</div>
           <SketchInput
             name="name"
             value={form.name}
@@ -779,6 +780,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         
         <div className="input-row" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom:'-15px' }}>
         <div style={{ flex: 8 }}>
+          <div className="time-label">{get('DiscoverPage1.6')}</div>
           <SketchInput
             name="address"
             value={form.address}
@@ -798,8 +800,9 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
                 border: '1px solid #ccc',
                 borderRadius: '4px',
                 cursor: 'pointer',
-                height: '39px',
-                marginTop: '-15px'
+                height: '35px',
+                width: '78px',
+                marginTop: '3px'
             }}
           >
             {get('VENUE_EDIT_POI_BTN')}
@@ -817,6 +820,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           </div>
 
         <div className="input-row">
+          <div className="time-label">{get('VENUE_PHONE_PLACEHOLDER')}</div>
           <SketchInput
             name="phone"
             value={form.phone}
@@ -855,6 +859,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         </div>
         
         <div className="input-row">
+            <div className="time-label">{get('VENUE_INTRO_PLACEHOLDER')}</div>
           <SketchInput
             name="description"
             value={form.description || ''}

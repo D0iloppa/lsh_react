@@ -96,6 +96,36 @@ const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, .
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const manager_id = user?.manager_id || 1;
 
+  // 컴포넌트 진입 시 알림 읽음 처리 및 목록 로드
+  useEffect(() => {
+    const markNotificationsAsRead = async () => {
+      try {
+        // 스태프 알림 (notification_type: 5) 읽음 처리
+        await ApiClient.postForm('/api/updateNotifi', {
+          notification_type: 4, 
+          user_id: user?.manager_id
+        });
+        
+        console.log('알림 읽음 처리 완료');
+        
+      if (result > 0) {
+        // 현재 로드된 알림들의 is_read를 모두 true로 변경
+        setNotifications(prevNotifications => 
+          prevNotifications.map(noti => ({
+            ...noti,
+            is_read: true
+          }))
+        );
+        console.log('✅ 알림 상태 즉시 반영 완료');
+      }
+
+      } catch (error) {
+        console.error('알림 읽음 처리 실패:', error);
+      }
+    };  
+      markNotificationsAsRead();
+  },[user.manager_id])
+
   // 알림 목록 로드
   useEffect(() => {
     const loadNotifications = async () => {
@@ -135,6 +165,8 @@ const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, .
     loadNotifications();
   }, [manager_id]);
 
+    
+
   return (
     <>
       <style jsx="true">{`
@@ -157,6 +189,7 @@ const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, .
           display: flex;
           align-items: flex-start;
           position: relative;
+          justify-content: space-around;
         }
         .noti-icon {
           margin-right: 0.8rem;
@@ -283,7 +316,7 @@ const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, .
                     </div>
                     <div className="noti-time">{formatTime(noti.created_at)}</div>
                   </div>
-                  <SketchBtn 
+                  {/* <SketchBtn 
                     variant="primary" 
                     size="small" 
                     className="noti-mark-btn" 
@@ -291,8 +324,23 @@ const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, .
                   >
                     {get('NOTIFICATION_MARK_BUTTON')}
                     <HatchPattern opacity={0.6} />
-                  </SketchBtn>
-                </SketchDiv>
+                  </SketchBtn> */}
+
+                   <SketchDiv 
+                        variant={noti.is_read ? "primary" : "secondary"} 
+                        size="small" 
+                        className={`noti-mark-btn ${noti.is_read ? 'read' : 'unread'}`}
+                        style={{
+                          width: '18%',
+                          textAlign: 'center',
+                          backgroundColor: noti.is_read ? '#d5d5d5' : 'rgb(250 250 250)'
+                        }}
+                      >
+                        {noti.is_read ? 'Read' : 'Unread'}
+                        <HatchPattern opacity={0.6} />
+                      </SketchDiv>
+                  </SketchDiv>
+                
               ))
             )}
           </div>

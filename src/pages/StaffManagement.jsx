@@ -238,7 +238,7 @@ const loadStaffList = async () => {
       <style jsx="true">{`
         .staff-container {
           max-width: 28rem;
-          margin: 0 auto;
+          margin-bottom: 1rem;
           background: #fff;
           min-height: 100vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
@@ -364,13 +364,14 @@ const loadStaffList = async () => {
                         {renderStars(staff.rating)}
                       </div>
                     </div>
-                    <div className="staff-actions">
-                      <ToggleRadio 
-                        checked={staff.status === 'active'}
-                        onChange={(newState) => handleStaffToggle(staff, newState)}
-                        disabled={loading}
-                      />
-                    </div>
+                    <div className="staff-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ToggleRadio 
+                      checked={staff.status === 'active'}
+                      onChange={(newState) => handleStaffToggle(staff, newState)}
+                      disabled={loading}
+                    />
+                    <span style={{ color: staff.status === 'active' ? 'green' : 'red' }}>{staff.status === 'active' ? '근무' : '휴직'}</span>
+                  </div>
                   </SketchDiv>
                 ))
               )}

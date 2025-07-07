@@ -3,7 +3,7 @@ import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
-import { Calendar, Clock, MapPin, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar, MessageCircle, Clock, MapPin, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, CheckCircle, XCircle } from 'lucide-react';
 import HatchPattern from '@components/HatchPattern';
 import WeekSection from '@components/WeekSection';
 import MonthSection from '@components/MonthSection';
@@ -30,6 +30,7 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [foldedDays, setFoldedDays] = useState(new Set()); // 접힌 날짜들
   const [triggerRefresh, setTriggerRefresh] = useState(false);
+
 
   useEffect(() => {
     // 예시: 서버/유저 설정/기본값 등으로 자동 결정
@@ -110,11 +111,22 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
 
   // 주차 제목 생성
   const getWeekTitle = (weekOffset) => {
-    if (weekOffset === 0) return 'This Week';
-    if (weekOffset === -1) return 'Last Week';
-    if (weekOffset === 1) return 'Next Week';
-    return `Week ${weekOffset > 0 ? '+' : ''}${weekOffset}`;
-  };
+  const today = new Date();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay() + (weekOffset * 7));
+  
+  const year = startOfWeek.getFullYear();
+  const month = startOfWeek.getMonth() + 1;
+  
+  // 해당 월의 첫 번째 날
+  const firstDayOfMonth = new Date(year, startOfWeek.getMonth(), 1);
+  
+  // 해당 주가 해당 월의 몇 번째 주인지 계산
+  const dayOfMonth = startOfWeek.getDate();
+  const weekOfMonth = Math.ceil((dayOfMonth + firstDayOfMonth.getDay()) / 7);
+  
+  return `${month}월 ${weekOfMonth}째주`;
+};
 
   // 시간 포맷 변환 함수 추가
   function formatTimeToAMPM(timeStr) {
@@ -522,6 +534,42 @@ if (isLoadingData) {
 
   const weekDates = getWeekDates(currentWeek, mondayStart);
 
+  const chatWithManager = async() => {
+    //console.log('chatWithManager', bk);
+
+
+    // 1. room_sn 조회
+    const chatList = await ApiClient.get('/api/getChattingList', {
+      params: {
+        venue_id: user.venue_id,
+        staff_id: user.staff_id,
+        account_type: user.type
+      }
+    })
+
+    let room_sn = null;
+    if(chatList.length > 0){
+      room_sn = chatList[0].room_sn;
+      console.log('room_sn', room_sn);
+    }
+
+    navigateToPageWithData(PAGES.CHATTING, { 
+      initType: 'booking',
+      //reservation_id: bk.reservation_id,
+      room_sn: room_sn,
+      //...bk
+    });
+
+
+    /*
+    navigateToPageWithData(PAGES.CHATTING, { 
+      initType: 'booking',
+      reservation_id: bk.reservation_id,
+      ...bk
+    });
+    */
+  };
+
    // 액션 라벨을 가져오는 함수
   const getActionLabel = (status, schedule) => {
     switch (status) {
@@ -560,7 +608,7 @@ if (isLoadingData) {
         .week-title, .month-title { font-size: 1.1rem; font-weight: 600; color: #1f2937; text-align: center; flex: 1; }
         .schedule-list { margin-top: 1.5rem; }
         .schedule-row { display: flex; align-items: center; gap: 0.7rem; padding: 3px; margin-bottom: 5px;}
-        .schedule-day { flex: 1; font-size: 1.05rem; justify-content: space-between;  max-width: 52px; min-height: 24px;}
+        .schedule-day { flex: 1; font-size: 0.9rem; justify-content: space-between;  max-width: 65px; min-height: 24px;}
         .schedule-time { flex: 2; font-size: 1.05rem; }
         .schedule-actions { flex: 1.2; display: flex;}
         .schedule-action-btn { min-width: 90px; font-size: 0.95rem; padding: 0.18rem 0.5rem; }
@@ -652,12 +700,12 @@ if (isLoadingData) {
           background: #f1f3f4;
         }
         .schedule-day {
-          font-size: 1.1rem;
+          font-size: 0.9rem;
           font-weight: 600;
           color: #1f2937;
           display: flex;
           align-items: center;
-          max-width: 52px;
+          max-width: 50px;
         }
         .schedule-card.folded .schedule-day {
           font-size: 1rem;
@@ -1130,6 +1178,9 @@ if (isLoadingData) {
           )}
         </div>
         <div className="create-btn-row">
+          <SketchBtn variant="primary" size="medium" style={{ width: '100%', marginBottom: '0.3rem' }} onClick={chatWithManager}><HatchPattern opacity={0.4} />
+            {get('BOOKING_MANAGER_CHAT')} Chat <MessageCircle size={14}/>
+          </SketchBtn>
           <SketchBtn variant="event" size="medium" style={{ width: '100%' }} onClick={handleCreateSchedule}><HatchPattern opacity={0.4} />
             {get('WORK_SCHEDULE_CREATE_SCHEDULE')}
           </SketchBtn>

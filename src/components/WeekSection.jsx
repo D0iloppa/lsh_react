@@ -62,7 +62,10 @@ const WeekSection = ({
             }
             return (
               <div key={`schedule-${schedule.schedule_id || schedule.work_date || index}`} className={`schedule-row${schedule.check_out ? ' check-outed' : ''}`} style={{marginBottom:'0.2rem'}}>
-                <div className="schedule-day">{dateInfo.day}</div>
+                <div className="schedule-day">
+                  <span>{dateInfo.day}</span>
+                  <span>({parseInt(schedule.work_date.split('-')[2])})</span>
+                </div>
                 <div className="schedule-time">
                   {status === 'no-schedule' || status === 'dayoff' || !schedule.start_time ?
                     <span className={status === 'dayoff' ? 'schedule-time-dayoff' : status === 'no-schedule' ? 'schedule-time-no-schedule' : ''}>
