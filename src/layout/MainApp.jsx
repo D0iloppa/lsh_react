@@ -1,7 +1,7 @@
 // src/layout/MainApp.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, Search, Calendar, User, Map, ChevronUp } from 'lucide-react';
+import { Home, Search, Calendar, User, Map, ChevronUp, MessagesSquare } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
@@ -74,6 +74,7 @@ const MainApp = () => {
     const navigationItems = [
         { id: PAGES.MANAGER_DASHBOARD, icon: Home, label: get('Footer1.3') || '대시보드' },
         { id: PAGES.RESERVATION_MANAGEMENT, icon: Calendar, label: get('Mng.menu.2') || '예약관리' },
+        { id: PAGES.CHATTINGLIST, icon: MessagesSquare, label: get('MENU_CHATTING'), data : { chatRoomType: 'manager' } },
         { id: PAGES.MANAGER_SETTINGS, icon: User, label: get('Mng.menu.3') || '계정' }
     ];
 
@@ -89,10 +90,16 @@ const MainApp = () => {
             <nav className="bottom-navigation">
                 <div className="nav-container">
                     {<HatchPattern opacity={0.3} />}
-                    {navigationItems.map(({ id, icon: Icon, label }) => (
+                    {navigationItems.map(({ id, icon: Icon, label, data = false }) => (
                         <button
                             key={id}
-                            onClick={() => navigateToPage(id)}
+                            onClick={() => {
+                                if(data) {
+                                    navigateToPageWithData(id, data)
+                                } else {
+                                    navigateToPage(id)
+                                }
+                            }}
                             className={`nav-item ${currentPage === id ? 'active' : ''}`}
                         >
                             <Icon className="nav-icon" />

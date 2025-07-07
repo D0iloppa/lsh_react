@@ -75,14 +75,19 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const [room_sn, setRoomSn] = useState(null);
   const [showReservationCard, setShowReservationCard] = useState(false);
   const [reservationCardData, setReservationCardData] = useState(null);
+  const [roomTitle, setRoomTitle] = useState('');
 
   // ⭐ 인터벌 관리를 위한 ref 추가
   const intervalRef = useRef(null);
 
   // room_sn 초기화
   useEffect(() => {
+
+    console.log('chatRoom init!', otherProps);
+
     const roomSn = otherProps?.room_sn || null;
     setRoomSn(roomSn);
+    setRoomTitle(otherProps?.name || '');
   }, [otherProps]);
 
   // ⭐ 인터벌을 시작하는 함수
@@ -782,7 +787,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       `}</style>
 
       <div className="chat-container">
-        <SketchHeader title={get('CHAT_ONE_ON_ONE_TITLE')} showBack={true} onBack={goBack} rightButtons={[]} />
+        {/*<SketchHeader title={get('CHAT_ONE_ON_ONE_TITLE')} showBack={true} onBack={goBack} rightButtons={[]} />*/}
+        <SketchHeader title={roomTitle} showBack={true} onBack={goBack} rightButtons={[]} />
         <div className="chat-messages" ref={chatBoxRef}>
           {chat_messages.map((msg) => (
             <ChatMessage key={msg.chat_sn} msg={msg} setModalImage={setModalImage} />

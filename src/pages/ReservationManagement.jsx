@@ -4,7 +4,7 @@ import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 import SketchHeader from '@components/SketchHeader';
 import HatchPattern from '@components/HatchPattern';
-import { MessageCircle, Calendar, Check, Edit } from 'lucide-react';
+import { MessageCircle, Calendar, Check, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import { useAuth } from '../contexts/AuthContext';
@@ -39,6 +39,7 @@ const statusList = [
   { key: 'confirmed', label: 'Confirmed' },
   { key: 'canceled', label: 'Canceled' },
 ];
+
 
 // 날짜 포맷팅 함수
 const formatDate = (timestamp) => {
@@ -76,6 +77,12 @@ const formatTime = (timeString) => {
   }
 };
 
+// 날짜 유틸리티 함수들 추가 (컴포넌트 위에)
+const getToday = () => {
+  const today = new Date();
+  return today.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+};
+
 // API 데이터를 UI용 데이터로 변환하는 함수
 const transformReservationData = (apiData) => {
   //console.log('Transforming API data:', apiData); // 디버깅용
@@ -95,7 +102,12 @@ const transformReservationData = (apiData) => {
       targetName: item.target_name,
       targetId: item.target_id,
       venueId: item.venue_id,
-      reservedAt: item.reserved_at
+      reservedAt: item.reserved_at,
+      client_name: item.client_name,
+      client_id: item.client_id,
+      use_escort: item.use_escort,
+      note: item.note,
+      attendee: item.attendee
     };
     
     console.log('Transformed item:', transformed); // 변환된 데이터 확인
@@ -109,7 +121,47 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
   const [loading, setLoading] = useState(false);
   const { user, isLoggedIn } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  const [selectedDate, setSelectedDate] = useState(getToday());
   
+
+
+const formatDateForDisplay = (dateString) => {
+  const date = new Date(dateString);
+  const options = { 
+    month: 'short', 
+    day: 'numeric',
+    weekday: 'short'
+  };
+  return date.toLocaleDateString('ko-KR', options);
+};
+
+const addDays = (dateString, days) => {
+  const date = new Date(dateString);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().split('T')[0];
+};
+
+
+// 날짜 변경 함수들 추가
+const goToPreviousDay = () => {
+  setSelectedDate(prevDate => addDays(prevDate, -1));
+};
+
+const goToNextDay = () => {
+  setSelectedDate(prevDate => addDays(prevDate, 1));
+};
+
+const goToToday = () => {
+  setSelectedDate(getToday());
+};
+
+// 선택된 날짜의 예약 개수 계산 함수 추가
+const getReservationCountForDate = () => {
+  return reservations.filter(r => {
+    const reservationDate = new Date(r.date).toISOString().split('T')[0];
+    return reservationDate === selectedDate;
+  }).length;
+};
 
     useEffect(() => {
         if (messages && Object.keys(messages).length > 0) {
@@ -266,16 +318,65 @@ const handleReservationManage = async (reservation_id, mngCode) => {
     initializeReservations();
   }, [venue_id]); // venue_id가 변경될 때만 실행
 
+  // const filtered = reservations.filter(r => {
+  //   if (selectedStatus === 'pending') {
+  //     return r.status === 'pending' || r.status === 'accepted';
+  //   }
+  //   return r.status === selectedStatus;
+  // });
+
   const filtered = reservations.filter(r => {
-    if (selectedStatus === 'pending') {
-      return r.status === 'pending' || r.status === 'accepted';
-    }
-    return r.status === selectedStatus;
-  });
+  // 먼저 날짜로 필터링
+  const reservationDate = new Date(r.reservedAt).toISOString().split('T')[0];
+  const isDateMatch = reservationDate === selectedDate;
   
-  console.log("Current reservations:", reservations); // 전체 예약 데이터
-  console.log("Selected status:", selectedStatus); // 현재 선택된 상태
-  console.log("Filtered reservations:", filtered); // 필터된 예약 데이터
+  if (!isDateMatch) return false;
+
+  // 그 다음 상태로 필터링
+  if (selectedStatus === 'pending') {
+    return r.status === 'pending' || r.status === 'accepted';
+  }
+  return r.status === selectedStatus;
+});
+  
+const chatWithUser = async(r) => {
+    console.log('chatWithManager', r);
+
+
+    // 1. room_sn 조회
+    const chatList = await ApiClient.get('/api/getChattingList', {
+      params: {
+        venue_id: user.venue_id,
+        target : 'user',
+        user_id : r.client_id,
+        account_type: user.type
+      }
+    })
+
+    let room_sn = null;
+    if(chatList.length > 0){
+      room_sn = chatList[0].room_sn;
+      console.log('room_sn', room_sn);
+    }
+
+
+    navigateToPageWithData(PAGES.CHATTING, { 
+      initType: 'booking',
+      reservation_id: r.id,
+      name : r.client_name,
+      room_sn: room_sn,
+      ...r
+    });
+
+
+    /*
+    navigateToPageWithData(PAGES.CHATTING, { 
+      initType: 'booking',
+      reservation_id: bk.reservation_id,
+      ...bk
+    });
+    */
+  };
 
   return (
     <>
@@ -319,7 +420,7 @@ const handleReservationManage = async (reservation_id, mngCode) => {
         .reservation-date {
           font-size: 1.02rem;
           font-weight: 600;
-          margin-bottom: 0.8rem;
+          margin-bottom: 1.5rem;
         }
         .reservation-time {
           font-size: 0.92rem;
@@ -331,6 +432,11 @@ const handleReservationManage = async (reservation_id, mngCode) => {
           color: #222;
           margin-bottom: 0.2rem;
         }
+
+         .reservation-venue div{
+          margin-bottom: 1rem;
+        }
+
         .reservation-status {
           font-size: 0.88rem;
           color: #888;
@@ -385,8 +491,7 @@ const handleReservationManage = async (reservation_id, mngCode) => {
           
         .reservation-contents {
           padding: 0.3rem;
-          margin-bottom: 0.5rem;
-          max-width: 200px;
+          max-width: 250px;
         }
 
         .loading-message {
@@ -394,6 +499,91 @@ const handleReservationManage = async (reservation_id, mngCode) => {
           padding: 2rem;
           color: #666;
         }
+
+        .use_escort.applied {
+            color: #ffffff;
+            background-color: #44cc63;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 0.3rem;
+          }
+
+          .use_escort.not_applied {
+            color: #6c757d;
+            background-color: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: normal;
+            margin-left: 0.3rem;
+          }
+            .chat-style {
+              padding: 0.3rem;
+              background: #e2fffe;
+              color: #126d6a;
+              border: 1px solid #11a29d;
+              border-radius: 15px;
+              margin-left: 0.3rem;
+            }
+
+            .date-filter-section {
+              margin: 0.7rem 0;
+              padding: 0.5rem;
+              background: #f8fafc;
+              border-radius: 8px;
+              border: 1px solid #e2e8f0;
+            }
+
+            .date-navigation {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-bottom: 0.5rem;
+            }
+
+            .date-nav-btn {
+              padding: 0.3rem;
+              background: #fff;
+              border: 1px solid #d1d5db;
+              border-radius: 6px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+
+            .date-nav-btn:hover {
+              background: #f3f4f6;
+            }
+
+            .current-date {
+              font-size: 1.1rem;
+              font-weight: 600;
+              text-align: center;
+              color: #1f2937;
+            }
+
+            .date-info {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              font-size: 0.9rem;
+              color: #6b7280;
+            }
+
+            .today-btn {
+              padding: 0.2rem 0.5rem;
+              background: #3b82f6;
+              color: white;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 0.8rem;
+            }
+
+            .today-btn:hover {
+              background: #2563eb;
+            }
+          
       `}</style>
       <div className="reservation-container">
         <SketchHeader
@@ -407,7 +597,7 @@ const handleReservationManage = async (reservation_id, mngCode) => {
           onBack={goBack}
         />
         
-        <div className="status-filter-row">
+        {/* <div className="status-filter-row">
           {statusList.map(s => (
             <SketchBtn
               key={s.key}
@@ -419,19 +609,48 @@ const handleReservationManage = async (reservation_id, mngCode) => {
               {s.label}
             </SketchBtn>
           ))}
+        </div> */}
+
+        {/* 날짜 필터 섹션 */}
+        <div className="date-filter-section">
+          <div className="date-navigation">
+            <button className="date-nav-btn" onClick={goToPreviousDay}>
+              <ChevronLeft size={18} />
+            </button>
+            
+            <div className="current-date">
+              {formatDateForDisplay(selectedDate)}
+            </div>
+            
+            <button className="date-nav-btn" onClick={goToNextDay}>
+              <ChevronRight size={18} />
+            </button>
+          </div>
+          
+          <div className="date-info">
+            <span>예약 {getReservationCountForDate()}건</span>
+            {selectedDate !== getToday() && (
+              <button className="today-btn" onClick={goToToday}>
+                오늘
+              </button>
+            )}
+          </div>
         </div>
-
-
+      
         {loading ? (
           <div className="loading-message">{get('LOADING_RESERVATIONS')}</div>
         ) : (
           <div className="reservation-list">
-            {filtered.length === 0 ? (
-              <div className="loading-message">
-                {formatNoReservationsMessage(selectedStatus)}
-              </div>
-            ) : (
+           {filtered.length === 0 ? (
+                <div className="loading-message">
+                    {selectedDate === getToday() 
+                      ? `오늘 ${getStatusText(selectedStatus).toLowerCase()} 예약이 없습니다.`
+                      : `${formatDateForDisplay(selectedDate)} ${getStatusText(selectedStatus).toLowerCase()} 예약이 없습니다.`
+                    }
+                  </div>
+                ) : (
               filtered.map(r => (
+
                 <SketchDiv key={r.id} className="reservation-card">
                   <div className="reservation-header">
                     <div className="reservation-contents">
@@ -440,7 +659,33 @@ const handleReservationManage = async (reservation_id, mngCode) => {
                         {r.date}
                       </div>
                       <div className="reservation-venue">
-                        {get('RESERVATION_STAFF_LABEL')} {r.venue}
+                        <div>
+                          {r.targetName === "venue" 
+                            ? '- ' + get('RESERVATION_VENUE_LABEL') 
+                            : '- ' + get('RESERVATION_STAFF_LABEL')
+                          } {r.venue}
+                        </div>
+                        <div>
+                          <Edit size={10}/> 예약자: <strong>{r.client_name}</strong> 
+                          <span 
+                            className='chat-style' 
+                            onClick={() => chatWithUser(r)}
+                          >
+                            <MessageCircle size={14}/> chat
+                          </span>
+                        </div>
+                        <div>
+                          <Edit size={10}/> 참석 인원: <strong>{r.attendee} 명</strong>
+                        </div>
+                        <div>
+                          <Edit size={10}/> 에스코트 여부: 
+                           <span className={`use_escort ${r.use_escort === 1 ? 'applied' : 'not_applied'}`}>
+                             {r.use_escort === 1 ? '신청' : '미신청'}
+                          </span>
+                        </div>
+                        <div>
+                         <Edit size={10}/> 예약자 메모: {r.note ? r.note : <span style={{color:'#9d9d9d'}}>메모 없음</span>}
+                        </div>
                       </div>
                     </div>
                     <div className="reservation-time">{r.time}</div>
@@ -473,10 +718,10 @@ const handleReservationManage = async (reservation_id, mngCode) => {
                       </SketchBtn>
                     )}
                     
-                    <SketchBtn variant="primary" size="small" className="action-btn">
+                    {/* <SketchBtn variant="primary" size="small" className="action-btn">
                       <MessageCircle size={14} style={{marginRight: '3px'}}/>
                       {get('RESERVATION_CHAT_BUTTON')}
-                    </SketchBtn>
+                    </SketchBtn> */}
                     
                     {/* Cancel 버튼 - cancelled 상태가 아닐 때만 표시 */}
                     {r.status !== 'canceled' && (
