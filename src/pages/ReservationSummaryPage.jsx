@@ -96,6 +96,7 @@ console.log("user", user)
         duration: duration,
         note: memo || '',
         mngCode:0,
+        use_escort: pickupService ? 1 : 0,
         venueToItem, pickupService
       };
 

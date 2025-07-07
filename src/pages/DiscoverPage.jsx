@@ -655,7 +655,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
           color: #6b7280; 
         }
         .top-girls-section { padding: 1rem; margin-top: 20px}
-        .girls-rotation { width: 100%; margin-bottom: 30px;}
+        .girls-rotation { width: 100%; margin-bottom: 3rem;}
         .girl-slide { text-align: center;  margin-top: 20px;}
         .girl-img {
           width: 220px;
