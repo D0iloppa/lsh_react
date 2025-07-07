@@ -83,6 +83,20 @@ const getToday = () => {
   return today.toISOString().split('T')[0]; // YYYY-MM-DD 형식
 };
 
+// 시간에 1시간을 더하는 함수 (기존 formatTime 함수 근처에 추가)
+const addOneHour = (timeString) => {
+  try {
+    if (!timeString) return 'N/A';
+    const [hours, minutes, seconds] = timeString.split(':');
+    let hour = parseInt(hours);
+    hour = (hour + 1) % 24; // 23시 + 1 = 0시로 처리
+    return `${hour.toString().padStart(2, '0')}:${minutes}${seconds ? ':' + seconds : ''}`;
+  } catch (error) {
+    console.error('Time adding error:', error, timeString);
+    return timeString;
+  }
+};
+
 // API 데이터를 UI용 데이터로 변환하는 함수
 const transformReservationData = (apiData) => {
   //console.log('Transforming API data:', apiData); // 디버깅용
@@ -93,9 +107,9 @@ const transformReservationData = (apiData) => {
     const transformed = {
       id: item.reservation_id,
       date: formatDate(item.res_date), // timestamp를 "Friday, 20th Oct" 형식으로
-      time: item.res_start_time === item.res_end_time 
-        ? formatTime(item.res_start_time) 
-        : `${formatTime(item.res_start_time)} - ${formatTime(item.res_end_time)}`, // 시작/종료 시간이 같으면 하나만 표시
+       time: item.res_start_time === item.res_end_time 
+        ? `${formatTime(item.res_start_time)} - ${formatTime(addOneHour(item.res_start_time))}` // 시작시간과 종료시간이 같으면 +1시간으로 표시
+        : `${formatTime(item.res_start_time)} - ${formatTime(item.res_end_time)}`, // 다르면 그대로 표시
       venue: item.name || 'Unknown Venue', // 스태프 이름을 venue 대신 사용
       status: item.status || 'unknown', // "confirmed", "pending", "cancelled"
       staffName: item.name,
@@ -423,7 +437,7 @@ const chatWithUser = async(r) => {
           margin-bottom: 1.5rem;
         }
         .reservation-time {
-          font-size: 0.92rem;
+          font-size: 0.8rem;
           color: #555;
           font-weight: 500;
         }
