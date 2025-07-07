@@ -330,7 +330,7 @@ const handleSaveLanguage = () => {
                   value={password.current}
                   onChange={e => setPassword(p => ({ ...p, current: e.target.value }))}
                   placeholder={get('Staff.setting.password.current') || get('STAFF_SETTINGS_CURRENT_PASSWORD_PLACEHOLDER')}
-                  type="password" style={{fontFamily: 'none'}}
+                  type="password" style={{fontFamily: 'none', padding:'0.4rem'}}
                   disabled={isPasswordVerified}
                 />
               </div>
@@ -340,7 +340,7 @@ const handleSaveLanguage = () => {
                   size="small" 
                   onClick={handleVerifyCurrentPassword}
                   disabled={isVerifyingPassword}
-                  style={{width: '80px', marginBottom : '0.7rem', padding:'0.3rem 0.5rem'}}
+                  style={{width: '30%', marginBottom : '0.9rem', padding:'0.5rem 0.75rem'}}
                 >
                   <HatchPattern opacity={0.6} />
                   {isVerifyingPassword 
