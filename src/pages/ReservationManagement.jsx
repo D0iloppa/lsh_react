@@ -102,7 +102,7 @@ const transformReservationData = (apiData) => {
   //console.log('Transforming API data:', apiData); // 디버깅용
   
   return apiData.map(item => {
-    //console.log('Processing item:', item); // 각 아이템 확인
+    console.log('Processing item:', item); // 각 아이템 확인
     
     const transformed = {
       id: item.reservation_id,
@@ -172,7 +172,7 @@ const goToToday = () => {
 // 선택된 날짜의 예약 개수 계산 함수 추가
 const getReservationCountForDate = () => {
   return reservations.filter(r => {
-    const reservationDate = new Date(r.date).toISOString().split('T')[0];
+    const reservationDate = new Date(r.res_date).toISOString().split('T')[0];
     return reservationDate === selectedDate;
   }).length;
 };
@@ -429,9 +429,10 @@ const chatWithUser = async(r) => {
           margin-bottom: 1.5rem;
         }
         .reservation-time {
-          font-size: 0.9rem;
+          font-size: 0.8rem;
           color: #555;
           font-weight: 500;
+          margin-top: 8px;
         }
         .reservation-venue {
           font-size: 0.92rem;

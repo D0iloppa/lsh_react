@@ -96,7 +96,10 @@ useEffect(() => {
   const summary = [
     {
       title: (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            onClick={() => navigateToPage(PAGES.RESERVATION_MANAGEMENT)}
+          >
           <Calendar size={16} opacity={0.5}/>
           <span>{get('DASHBOARD_TODAYS_RESERVATIONS')}</span>
         </div>
@@ -105,7 +108,10 @@ useEffect(() => {
     },
     {
       title: (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+         <div
+            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            onClick={() => navigateToPage(PAGES.PROMOTION_MANAGEMENT)}
+          >
           <Tag size={16} opacity={0.5}/>
           <span>{get('DASHBOARD_ACTIVE_PROMOTIONS')}</span>
         </div>
@@ -114,7 +120,10 @@ useEffect(() => {
     },
     {
       title: (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            onClick={() => navigateToPage(PAGES.REVIEW_MANAGEMENT)}
+          >
           <Star size={16} opacity={0.5}/>
           <span>{get('DASHBOARD_RECENT_REVIEWS')}</span>
         </div>

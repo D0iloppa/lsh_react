@@ -167,6 +167,7 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
           font-size: 1.02rem;
           font-weight: 600;
           margin-bottom: 0.2rem;
+          margin-right: -10px;
         }
         .staff-rating {
           font-size: 0.9rem;
@@ -239,9 +240,9 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
                   )}
                 </div>
                 <div className="staff-info">
-                  <div className="staff-name">{staff.name} <span className='roomType'>
-                    {staff.creator_type}
-                  </span></div>
+                  <div className="staff-name">{staff.name}  <span className='roomType'>
+                  {staff.creator_type}
+                </span></div>
                   <div className="staff-rating">{staff.lastMessage}</div>
                 </div>
                 <div className="staff-actions">

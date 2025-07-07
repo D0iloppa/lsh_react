@@ -469,29 +469,35 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       <div className={`chat-message-wrapper ${msg.sender}`}>
         {msg.sender === 'me' ? (
           <>
-            <div className="chat-time">{msg.time}</div>
-            <div className={`chat-message ${msg.sender}`}>
-              {msg.text && <div>{msg.text}</div>}
-              {msg.image && (
-                <img
-                  src={msg.image}
-                  className="chat-image"
-                  onClick={() => setModalImage(msg.image)}
-                />
-              )}
+            <div className="chat-content-wrapper">
+              <div className="chat-name">{msg.sender_name}</div>
+              <div className={`chat-message ${msg.sender}`}>
+                {msg.text && <div>{msg.text}</div>}
+                {msg.image && (
+                  <img
+                    src={msg.image}
+                    className="chat-image"
+                    onClick={() => setModalImage(msg.image)}
+                  />
+                )}
+              </div>
             </div>
+            <div className="chat-time">{msg.time}</div>
           </>
         ) : (
           <>
-            <div className={`chat-message ${msg.sender}`}>
-              {msg.text && <div>{msg.text}</div>}
-              {msg.image && (
-                <img
-                  src={msg.image}
-                  className="chat-image"
-                  onClick={() => setModalImage(msg.image)}
-                />
-              )}
+            <div className="chat-content-wrapper">
+              <div className="chat-name">{msg.sender_name}</div>
+              <div className={`chat-message ${msg.sender}`}>
+                {msg.text && <div>{msg.text}</div>}
+                {msg.image && (
+                  <img
+                    src={msg.image}
+                    className="chat-image"
+                    onClick={() => setModalImage(msg.image)}
+                  />
+                )}
+              </div>
             </div>
             <div className="chat-time">{msg.time}</div>
           </>
@@ -510,7 +516,10 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         },
       });
 
+
+
       const newMessages = response.data.map((item, index) => ({
+        
         id: index + 1,
         sender: item.sender_type === user.type ? 'me' : 'other',
         text: item.chat_msg || '',
@@ -519,7 +528,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         sender_type: item.sender_type,
         time: formatTime(new Date(item.send_dt)),
         link_type: item.link_type,
-        link_target: item.link_target
+        link_target: item.link_target,
+        sender_name: item.sender_name
       }));
 
       // 초기 로드와 업데이트 구분
@@ -567,16 +577,19 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
      const senderType = chat_messages.length > 0 ? chat_messages[0].sender_type : user.type;
     
+
+     const {type} = user;
+    let login_id = (type=='staff') ? user.staff_id : user.manager_id;
     
      const chatData = {
       room_sn,
       chat_msg: message,
-      sender: user_id,
+      sender: login_id,
       sender_type: user.type,
       content_id: 0,
       room_name: roomTitle ||nickname,
       room_description: '',
-      created_by: user_id,
+      created_by: login_id,
       creator_type: user.type,
       last_message_preview: message,
       venue_id,
@@ -739,33 +752,62 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           scroll-behavior: smooth;
         }
         .chat-message-wrapper {
-          display: flex;
-          align-items: flex-end;
-          margin-bottom: 1rem;
-        }
-        .chat-message-wrapper.me {
-          justify-content: flex-end;
-        }
-        .chat-message-wrapper.other {
-          justify-content: flex-start;
-        }
+            display: flex;
+            align-items: flex-end;
+            margin-bottom: 1rem;
+          }
+
+          .chat-message-wrapper.me {
+            justify-content: flex-end;
+          }
+
+          .chat-message-wrapper.other {
+            justify-content: flex-start;
+          }
+
+          .chat-content-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 70%;
+          }
+
+          .chat-name {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+            padding: 0 0.5rem;
+          }
+
+          .chat-message-wrapper.me .chat-name {
+              text-align: right;
+            }
+
+            .chat-message-wrapper.other .chat-name {
+              text-align: left;
+            }
+              
         .chat-time {
           font-size: 0.75rem;
           color: #6b7280;
           margin: 0 0.4rem;
           white-space: nowrap;
+          align-self: flex-end;
         }
+
         .chat-message {
-          max-width: 70%;
-          padding: 0.75rem 1rem;
+          padding: 0.75rem 0.5rem;
           border-radius: 1rem;
           word-break: break-word;
         }
+
+        .chat-message div, .chat-message.me {text-align: center}
+
         .chat-message.me {
           background-color: #10b981;
           color: white;
           border-bottom-right-radius: 0;
         }
+
         .chat-message.other {
           background-color: #e5e7eb;
           color: #111827;

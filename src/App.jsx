@@ -32,6 +32,7 @@ import Cocktail from '@components/CocktailIcon';
 import HatchPattern from '@components/HatchPattern';
 import VenueTuto1 from '@components/Welcome/VenueTuto1';
 import VenueSetup from '@pages/VenueSetup';
+import { AlignStartVertical } from 'lucide-react';
 
 const AppRoutes = () => {
   const { isLoggedIn, user, loginType } = useAuth();
@@ -171,6 +172,11 @@ const AppContent = () => {
 
     if (window.AndroidInterface?.readyToReceiveToken) {
       window.AndroidInterface.readyToReceiveToken();
+    }
+    
+     if (window.webkit?.messageHandlers?.native) {
+      window.webkit.messageHandlers.native.postMessage("readyToReceiveToken");
+      console.log("📤 readyToReceiveToken 메시지 전송");
     }
 
     return () => {
