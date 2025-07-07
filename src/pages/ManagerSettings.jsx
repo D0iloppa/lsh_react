@@ -7,6 +7,7 @@ import '@components/SketchComponents.css';
 import HatchPattern from '@components/HatchPattern';
 import { MessageCircle, Mail, User } from 'lucide-react';
 import Swal from 'sweetalert2';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
@@ -73,17 +74,32 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
 
   // 매장 상태 업데이트 함수
 const handleVenueStatusUpdate = async () => {
-
-    console.log("현재 emailNoti:", emailNoti);
+  console.log("현재 emailNoti:", emailNoti);
   
-    // 강제로 상태 토글
-    setEmailNoti(prev => !prev);
-    //console.log("토글 후 예상 상태:", !emailNoti);
+  // 변경될 상태 미리 계산
+  const newStatus = emailNoti ? 'closed' : 'available';
+  const statusText = newStatus === 'available' ? get('VENUE_STATUS_OPERATING') : get('VENUE_STATUS_CLOSED');
+  const currentStatusText = emailNoti ? get('VENUE_STATUS_OPERATING') : get('VENUE_STATUS_CLOSED');
+  
+  // 확인창 표시
+  const result = await Swal.fire({
+    title: get('WORK_SCHEDULE_REQUEST_CHANGE'), // 기존 유지
+    text: `"${currentStatusText}" ${get('VENUE_STATUS_CHANGE_CONFIRM')} "${statusText}"${get('VENUE_STATUS_CHANGE_QUESTION')}`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: get('SETTINGS_CHECK_BUTTON'),
+    cancelButtonText: get('Common.Cancel'),
+    confirmButtonColor: newStatus === 'available' ? '#10b981' : '#ef4444',
+    cancelButtonColor: '#6b7280'
+  });
+
+  // 취소 버튼을 눌렀다면 함수 종료
+  if (!result.isConfirmed) {
+    console.log('매장 상태 변경이 취소되었습니다.');
+    return;
+  }
 
   try {
-    // 현재 상태의 반대로 설정 (ON이면 OFF로, OFF면 ON으로)
-    const newStatus = emailNoti ? 'closed' : 'available';
-    
     console.log('매장 상태 변경 요청:', {
       venue_id: user.venue_id,
       status: newStatus,
@@ -98,15 +114,19 @@ const handleVenueStatusUpdate = async () => {
     console.log('매장 상태 변경 응답:', response);
 
     // 성공 시 로컬 상태 업데이트
-    if (response && (response.success || response.result > 0 || response.status === 'success')) {
+    if (response > 0) {
       setEmailNoti(!emailNoti); // 상태 토글
       
-      // 성공 메시지 표시 (선택사항)
-      const statusText = newStatus === 'available' ? '운영 중' : '운영 종료';
       console.log(`✅ 매장 상태가 "${statusText}"로 변경되었습니다.`);
       
-      // toast나 alert 사용하는 경우
-       toast.success(`매장 상태가 "${statusText}"로 변경되었습니다.`);
+      // 성공 알림
+      Swal.fire({
+        title: get('WORK_SCHEDULE_END'), // 기존 유지
+        text: `${get('VENUE_STATUS_CHANGE_SUCCESS')} "${statusText}"${get('VENUE_STATUS_CHANGE_SUCCESS_SUFFIX')}`,
+        icon: 'success', 
+        confirmButtonText: get('SETTINGS_CHECK_BUTTON'),
+        confirmButtonColor: '#10b981'
+      });
       
     } else {
       throw new Error('API 응답이 성공을 나타내지 않습니다.');
@@ -114,12 +134,6 @@ const handleVenueStatusUpdate = async () => {
     
   } catch (error) {
     console.error('매장 상태 변경 실패:', error);
-    
-    // 에러 메시지 표시 (선택사항)
-     toast.error('매장 상태 변경에 실패했습니다.');
-    
-    // 필요시 사용자에게 에러 알림
-    //alert('매장 상태 변경에 실패했습니다. 다시 시도해주세요.');
   }
 };
 

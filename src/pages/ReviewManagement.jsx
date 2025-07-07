@@ -5,11 +5,12 @@ import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 import HatchPattern from '@components/HatchPattern';
 import ImagePlaceholder from '@components/ImagePlaceholder';
-import { Filter, Star, Edit, Trash2, Eye, MessagesSquare, ChevronDown, ChevronUp, Send, Store, User } from 'lucide-react';
+import { Filter, Star, Edit, Trash2, Eye, MessagesSquare, ChevronDown, ChevronUp, Send, Store, User, AlertTriangle, Siren } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
+import { overlay } from 'overlay-kit';
 
 const mockReviews = [
   {
@@ -44,6 +45,10 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
     const [originalReviews, setOriginalReviews] = useState([]); // 원본 데이터 보관
     const { user } = useAuth();
     const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+    // 신고 모달 관련 상태
+        const [selectedReview, setSelectedReview] = useState(null);
+        const [reportReason, setReportReason] = useState('');
+        const [isSubmittingReport, setIsSubmittingReport] = useState(false);
     
       useEffect(() => {
           if (messages && Object.keys(messages).length > 0) {
@@ -229,6 +234,289 @@ const handleSubmitResponse = async (reviewId) => {
         </>
       );
     };
+
+    // 신고 모달 열기
+  const handleReport = (review) => {
+    setSelectedReview(review);
+    setReportReason('');
+    
+    overlay.open(({ isOpen, close, unmount }) => {
+      // 모달 내부에서 사용할 로컬 상태
+      let localReportReason = '';
+      let localIsSubmitting = false;
+      
+      const updateLocalReason = (value) => {
+        localReportReason = value;
+        setReportReason(value); // 외부 상태도 업데이트
+      };
+      
+      const handleLocalSubmit = async () => {
+        if (!localReportReason.trim()) {
+          Swal.fire({
+            title: '신고 사유를 입력해주세요',
+            text: '신고 사유는 필수 입력 항목입니다.',
+            icon: 'warning',
+            confirmButtonText: '확인',
+            confirmButtonColor: '#f59e0b'
+          });
+          return;
+        }
+
+        localIsSubmitting = true;
+        setIsSubmittingReport(true);
+
+        try {
+          // API 호출을 위한 payload 구성
+          const reportPayload = {
+            reporter_id: user.manager_id,
+            target_type: 'review',
+            target_id: review.review_id,
+            reason: localReportReason.trim(),
+            status: 'pending',
+            reporter_type: user.type || 'staff'
+          };
+
+          console.log('신고 제출 payload:', reportPayload);
+
+          // TODO: API 엔드포인트가 준비되면 아래 주석 해제
+          const response = await ApiClient.postForm('/api/insertReport', reportPayload);
+          console.log('신고 제출 응답:', response);
+
+          // 임시로 성공 메시지 표시
+          Swal.fire({
+            title: '신고가 접수되었습니다',
+            text: '검토 후 처리하겠습니다.',
+            icon: 'success',
+            confirmButtonText: '확인',
+            confirmButtonColor: '#10b981'
+          });
+
+          unmount();
+          setSelectedReview(null);
+          setReportReason('');
+          setIsSubmittingReport(false);
+
+        } catch (error) {
+          console.error('신고 제출 실패:', error);
+          Swal.fire({
+            title: '신고 제출 실패',
+            text: '잠시 후 다시 시도해주세요.',
+            icon: 'error',
+            confirmButtonText: '확인',
+            confirmButtonColor: '#ef4444'
+          });
+        } finally {
+          localIsSubmitting = false;
+          setIsSubmittingReport(false);
+        }
+      };
+
+      return (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              unmount();
+            }
+          }}
+        >
+          <div 
+            style={{
+              position: 'relative',
+              maxWidth: '500px',
+              width: '90%',
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
+            }}
+          >
+            {/* 닫기 버튼 */}
+            <button
+              onClick={() => unmount()}
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#666',
+                zIndex: 1
+              }}
+            >
+              ×
+            </button>
+
+            <div style={{ padding: '1rem' }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px', 
+                  marginBottom: '0.5rem',
+                  color: '#ef4444'
+                }}>
+                  <AlertTriangle size={16} />
+                  <span style={{ fontWeight: '600' }}>신고할 리뷰</span>
+                </div>
+                {review && (
+                  <div style={{
+                    background: '#f8fafc',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '6px',
+                    padding: '0.75rem',
+                    fontSize: '0.9rem',
+                    color: '#374151'
+                  }}>
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      <strong>작성자:</strong> {review.user_name || review.name}
+                    </div>
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      <strong>평점:</strong> {renderStars(review.rating)}
+                    </div>
+                    <div>
+                      <strong>내용:</strong> "{review.content || review.review_content}"
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '0.5rem',
+                  fontWeight: '600',
+                  color: '#374151'
+                }}>
+                  신고 사유 *
+                </label>
+                <textarea
+                  defaultValue=""
+                  onChange={(e) => updateLocalReason(e.target.value)}
+                  placeholder="신고 사유를 상세히 입력해주세요..."
+                  style={{
+                    width: '100%',
+                    minHeight: '120px',
+                    padding: '0.75rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '0.9rem',
+                    fontFamily: 'BMHanna, Comic Sans MS, cursive, sans-serif',
+                    resize: 'vertical',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div style={{ 
+                display: 'flex', 
+                gap: '0.5rem', 
+                justifyContent: 'flex-end',
+                marginTop: '1.5rem'
+              }}>
+                <SketchBtn
+                  variant="secondary"
+                  size="small"
+                  onClick={() => {
+                    unmount();
+                    setSelectedReview(null);
+                    setReportReason('');
+                    setIsSubmittingReport(false);
+                  }}
+                >
+                  {get('Common.Cancel')}
+                </SketchBtn>
+                <SketchBtn
+                  variant="danger"
+                  size="small"
+                  onClick={handleLocalSubmit}
+                >
+                  {localIsSubmitting ? '제출 중...' : '신고 제출'}
+                </SketchBtn>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    });
+  };
+
+  // 신고 제출
+  const handleSubmitReport = async (review) => {
+    if (!reportReason.trim()) {
+      Swal.fire({
+        title: '신고 사유를 입력해주세요',
+        text: '신고 사유는 필수 입력 항목입니다.',
+        icon: 'warning',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#f59e0b'
+      });
+      return;
+    }
+
+    setIsSubmittingReport(true);
+
+    try {
+      // API 호출을 위한 payload 구성
+      const reportPayload = {
+        review_id: review.review_id || review.id,
+        venue_id: venue_id,
+        target_id: target_id,
+        target_type: 'staff',
+        reporter_id: user.staff_id,
+        reporter_type: 'staff',
+        report_reason: reportReason.trim(),
+        report_date: new Date().toISOString(),
+        review_content: review.content || review.review_content,
+        review_rating: review.rating,
+        review_author: review.author_name || review.client_name
+      };
+
+      console.log('신고 제출 payload:', reportPayload);
+
+      // TODO: API 엔드포인트가 준비되면 아래 주석 해제
+      // const response = await ApiClient.postForm('/api/submitReviewReport', reportPayload);
+      // console.log('신고 제출 응답:', response);
+
+      // 임시로 성공 메시지 표시
+      Swal.fire({
+        title: '신고가 접수되었습니다',
+        text: '검토 후 처리하겠습니다.',
+        icon: 'success',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#10b981'
+      });
+
+      // 모달 닫기 (overlay.unmount()는 handleReport에서 처리됨)
+      setSelectedReview(null);
+      setReportReason('');
+      setIsSubmittingReport(false);
+
+    } catch (error) {
+      console.error('신고 제출 실패:', error);
+      Swal.fire({
+        title: '신고 제출 실패',
+        text: '잠시 후 다시 시도해주세요.',
+        icon: 'error',
+        confirmButtonText: '확인',
+        confirmButtonColor: '#ef4444'
+      });
+    } finally {
+      setIsSubmittingReport(false);
+    }
+  };
   
     return (
       <>
@@ -529,8 +817,8 @@ const handleSubmitResponse = async (reviewId) => {
                         </>
                       )}
                     </SketchBtn>
-                    <SketchBtn variant="danger" size="small" className="review-action-btn">
-                      {get('REVIEW_REPORT_BUTTON')}
+                    <SketchBtn variant="danger" size="small" className="review-action-btn" onClick={() => handleReport(review)}> 
+                      <Siren size={14} /> {get('REVIEW_REPORT_BUTTON')}
                     </SketchBtn>
                   </div>
 

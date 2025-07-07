@@ -194,6 +194,12 @@ useEffect(() => {
   }
 };
 
+console.log(PAGES)  
+
+ const handleStaffSchedule = () => {
+    navigateToPageWithData(PAGES.STAFF_WORK_SCHEDULE, { staffId: user?.id });
+  };
+
   const handleEditProfile = () => {
     navigateToPageWithData(PAGES.STAFF_EDIT_PROFILE, { staffId: user?.id });
   };
@@ -329,7 +335,7 @@ useEffect(() => {
           )}
 
         <div style={{padding: '0.2rem 0.9rem'}}>
-          <SketchDiv className="section-card">
+          <SketchDiv className="section-card" onClick={handleBookingList}>
             <HatchPattern opacity={0.6} />
             <div className="section-title">
               <Clock size={14} style={{marginRight: '5px'}}/> {get('STAFF_TODAYS_RESERVATIONS')} ({dashboardInfo.todaysReservations})
@@ -349,7 +355,7 @@ useEffect(() => {
             </div>
           </SketchDiv>
 
-          <SketchDiv className="section-card">
+          <SketchDiv className="section-card" onClick={handleStaffSchedule}>
             <HatchPattern opacity={0.6} />
             <div className="section-title">
               <Calendar size={14} opacity={0.6}/> {get('STAFF_UPCOMING_SHIFTS')} ({dashboardInfo.upcomingShifts.length})

@@ -6,7 +6,7 @@ import '@components/SketchComponents.css';
 import HatchPattern from '@components/HatchPattern';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
-import { Filter, Star, Edit, Trash2, Eye, MessagesSquare, ChevronDown, ChevronUp, Send, Store, User, AlertTriangle } from 'lucide-react';
+import { Filter, Star, Edit, Trash2, Eye, MessagesSquare, ChevronDown, ChevronUp, Send, Store, User, AlertTriangle, Siren } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
@@ -328,7 +328,6 @@ const handleSubmitResponse = async (reviewId) => {
               width: '90%',
               backgroundColor: 'white',
               borderRadius: '12px',
-              padding: '20px',
               boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
             }}
           >
@@ -427,7 +426,7 @@ const handleSubmitResponse = async (reviewId) => {
                     setIsSubmittingReport(false);
                   }}
                 >
-                  취소
+                  {get('Common.Cancel')}
                 </SketchBtn>
                 <SketchBtn
                   variant="danger"
@@ -805,7 +804,7 @@ const handleSubmitResponse = async (reviewId) => {
                   <SketchBtn 
                     onClick={() => handleReport(review)}
                     variant="danger" size="small" className="review-action-btn">
-                    {get('REVIEW_REPORT_BUTTON')}
+                    <Siren size={14} /> {get('REVIEW_REPORT_BUTTON')}
                   </SketchBtn>
                 </div>
 

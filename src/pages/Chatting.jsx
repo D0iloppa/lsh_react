@@ -32,7 +32,7 @@ const ReservationCard = ({ data, onSend, onClose }) => (
 );
 
 // 최적화된 입력 컴포넌트
-const ChatInput = React.memo(({ onSend, placeholder, onKeyDown }) => {
+const ChatInput = React.memo(({ onSend, placeholder, onKeyDown, onRef }) => {
   const inputRef = useRef(null);
   
   const handleSend = useCallback(() => {
@@ -50,6 +50,13 @@ const ChatInput = React.memo(({ onSend, placeholder, onKeyDown }) => {
     }
     onKeyDown?.(e);
   }, [handleSend, onKeyDown]);
+  
+  // ref를 부모 컴포넌트에 전달
+  useEffect(() => {
+    if (onRef) {
+      onRef({ handleSend, inputRef });
+    }
+  }, [onRef, handleSend]);
   
   return (
     <input
@@ -76,6 +83,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const [showReservationCard, setShowReservationCard] = useState(false);
   const [reservationCardData, setReservationCardData] = useState(null);
   const [roomTitle, setRoomTitle] = useState('');
+  const [sendTo, setSendTo] = useState(null);
+  const [receiverId, setReceiverId] = useState(null);
 
   // ⭐ 인터벌 관리를 위한 ref 추가
   const intervalRef = useRef(null);
@@ -88,6 +97,11 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     const roomSn = otherProps?.room_sn || null;
     setRoomSn(roomSn);
     setRoomTitle(otherProps?.name || '');
+    setSendTo(otherProps?.send_to || null);
+    setReceiverId(otherProps?.receiver_id || null);
+    setRoomTitle(otherProps?.name || '');
+
+    console.log('enter', sendTo, receiverId);
   }, [otherProps]);
 
   // ⭐ 인터벌을 시작하는 함수
@@ -186,6 +200,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const messageEndRef = useRef(null);
   const chatBoxRef = useRef(null);
   const firstLoadRef = useRef(true);
+  const chatInputRef = useRef(null);
 
   useEffect(() => {
       if (messages && Object.keys(messages).length > 0) {
@@ -552,18 +567,21 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
      const senderType = chat_messages.length > 0 ? chat_messages[0].sender_type : user.type;
     
-    const chatData = {
+    
+     const chatData = {
       room_sn,
       chat_msg: message,
       sender: user_id,
       sender_type: user.type,
       content_id: 0,
-      room_name: nickname,
+      room_name: roomTitle ||nickname,
       room_description: '',
       created_by: user_id,
       creator_type: user.type,
       last_message_preview: message,
       venue_id,
+      send_to: sendTo,
+      receiver_id: receiverId
     };
 
     setTimeout(() => {
@@ -571,13 +589,21 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     }, 150);
 
     await insertChattingData(chatData);
-  }, [room_sn, user_id, user.type, nickname, venue_id, scrollToBottom]);
+  }, [room_sn, user_id, user.type, nickname, venue_id, scrollToBottom, sendTo, receiverId, roomTitle]);
 
   const insertChattingData = useCallback(async (params) => {
     const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
     try {
       const response = await axios.post(`${API_HOST}/api/insertChattingData`, params);
       console.log('✅ 채팅 서버 응답:', response.data);
+
+      const {chat_sn, room_sn, room_mode} = response.data;
+      if(chat_sn && room_sn){
+        setRoomSn(room_sn);
+      }
+
+
+
     } catch (error) {
       console.error('❌ 채팅 전송 실패:', error);
     }
@@ -840,9 +866,14 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           <ChatInput 
             onSend={handleMessageSend}
             placeholder={get('CHAT_INPUT_PLACEHOLDER')}
+            onRef={(refData) => {
+              chatInputRef.current = refData;
+            }}
           />
           <button className="send-button" onClick={() => {
-            // 버튼 클릭 시 입력값 전송 (ChatInput에서 처리)
+            if (chatInputRef.current?.handleSend) {
+              chatInputRef.current.handleSend();
+            }
           }}>
             {get('CHAT_SEND_BUTTON')}
           </button>

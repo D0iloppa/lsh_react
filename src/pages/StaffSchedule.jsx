@@ -100,6 +100,8 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
       // reservation_id: r.id,
       name : staff.staff_name,
       room_sn: room_sn,
+      send_to: 'staff',
+      receiver_id: staff.staff_id,
       ...staff
     });
 

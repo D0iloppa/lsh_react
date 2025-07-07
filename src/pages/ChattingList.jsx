@@ -73,8 +73,11 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
       });
       const data = response.data || [];
 
+
       const mappedStaffs = data.map((item, index) => ({
+        
         id: item.user_id || index,
+        creator_type: item.creator_type,
         room_sn: item.room_sn,
         name: item.room_name || '이름 없음',
         lastMessage: item.last_message_preview || '메시지 없음',
@@ -105,6 +108,8 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
       name: staff.name,
     });
   };
+
+        
 
   return (
     <>
@@ -190,6 +195,14 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
           border-radius: 50%;
           text-align: center;
         }
+
+        .roomType {
+          font-size: 0.9rem;
+          font-weight: normal;
+          background: #dbf6f4;
+          padding: 1px 3px;
+          border-radius: 5px;
+        }
       `}</style>
 
       <div className="staff-container">
@@ -203,6 +216,8 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
           showBack={true} 
           onBack={goBack} 
         />
+
+
         <div className="staff-list">
           {staffs.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>
@@ -214,7 +229,7 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
                 key={staff.id}
                 className="staff-card"
                 onClick={() => handleClickStaff(staff)}
-              >
+              > 
                 <HatchPattern opacity={0.4} />
                 <div className="staff-img">
                   {staff.img ? (
@@ -224,7 +239,9 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
                   )}
                 </div>
                 <div className="staff-info">
-                  <div className="staff-name">{staff.name}</div>
+                  <div className="staff-name">{staff.name} <span className='roomType'>
+                    {staff.creator_type}
+                  </span></div>
                   <div className="staff-rating">{staff.lastMessage}</div>
                 </div>
                 <div className="staff-actions">
