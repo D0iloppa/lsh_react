@@ -554,8 +554,9 @@ if (isLoadingData) {
     }
 
     navigateToPageWithData(PAGES.CHATTING, { 
-      initType: 'booking',
+      //initType: 'booking',
       //reservation_id: bk.reservation_id,
+      name : get('CHAT_ONE_ON_ONE_TITLE'),
       room_sn: room_sn,
       //...bk
     });
