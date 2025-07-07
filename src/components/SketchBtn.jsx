@@ -80,10 +80,9 @@ const SketchBtn = ({
           color: #1f2937;
         }
 
-        .sketch-btn.danger {
-         background-color:rgba(243, 27, 27, 0.66);
-          color:rgb(255, 255, 255);
-          // box-shadow: 2px 2px 0px rgb(255, 73, 73);
+          .sketch-btn.danger {
+          background-color: rgb(255 71 71);
+          color: white;
         }
 
         .sketch-btn.danger:hover:not(:disabled) {
