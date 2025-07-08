@@ -33,10 +33,7 @@ export default function RegisterView() {
     email: '',
     password: '',
     rePassword: '',
-    nickname: '',
-    gender: '',
-    birth_date: '',
-    phone: ''
+    nickname: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -114,8 +111,9 @@ export default function RegisterView() {
       const response = await axios.post(
         `${API_HOST}/api/register`,
         qs.stringify({
-          account_type: "user",
-          login_type: "email",
+          account_type: userData?.account_type || "user",
+          login_type: userData?.login_type || "email",
+          login_id: userData?.login_id,
           email: userData.email,
           passwd: userData.password
         }),
@@ -165,7 +163,18 @@ export default function RegisterView() {
     const newErrors = validateForm();
     
     if (Object.keys(newErrors).length === 0) {
-      const result = await registerUser(formData);
+
+      const sendForm = {
+        ...formData,
+        account_type: "manager",
+        login_type: "email",
+        login_id: formData.email,
+        email: formData.email,
+        passwd: formData.password
+      }
+      const result = await registerUser(sendForm);
+
+      console.log('formData', sendForm);
       
       if (result.success) {
         setMessage(result.message);
@@ -196,198 +205,154 @@ export default function RegisterView() {
   return (
     <div className="register-container max-w-md mx-auto bg-white border-gray-800 p-6">
       <SketchHeader 
-        title={  get('Menu1.1') }
+        title={  'MANAGER ' + get('Menu1.1') }
         showBack={true}
         onBack={() => navigate(-1)}
         rightButtons={[]}
       />
       
-      <p style={{ 
-        fontSize: '0.875rem', 
-        color: '#6b7280', 
-        textAlign: 'start', 
-        marginBottom: '5px',
-        marginTop: '5px',
-        marginLeft: '5px',
-        lineHeight: '1.4',
-        fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"
-      }}>
-        {get('Register1.1')}
-        {get('Register1.2')}
-      </p>
-
-      <form onSubmit={onSubmit} style={{padding: '5px'}}>
-        {/* General Error/Success Message */}
-        {errors.general && (
-          <div className="sketch-error-message">{errors.general}</div>
-        )}
-        {message && (
-          <div className="sketch-success-message">{message}</div>
-        )}
-
-        {/* Email Input */}
-        <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.1')} *</p>
-        <SketchInput
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleInputChange}
-          disabled={isLoading}
-          error={errors.email}
-          variant="email" 
-          style={{ marginBottom: '-8px' }} 
-        />
-
-        {/* Password Input */}
-        <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.2')} *</p>
-        <SketchInput
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleInputChange}
-          disabled={isLoading}
-          error={errors.password}
-          variant="password"
-          style={{ marginBottom: '-8px' }} 
-        />
-
-        {/* Re-Password Input */}
-        <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.3')} *</p>
-        <SketchInput
-          type="password"
-          name="rePassword"
-          value={formData.rePassword}
-          onChange={handleInputChange}
-          disabled={isLoading}
-          error={errors.rePassword}
-          variant="password"
-          style={{ marginBottom: '-8px' }} 
-        />
-
-        {/* Nickname Input (Optional) */}
-        <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.4')}</p>
-        <SketchInput
-          type="text"
-          name="nickname"
-          value={formData.nickname}
-          onChange={handleInputChange}
-          disabled={isLoading}
-          error={errors.nickname}
-          variant="text"
-          style={{ marginBottom: '-8px' }} 
-        />
-
-        {/* Gender Select (Optional) */}
-        <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.5')}</p>
-        <select
-          name="gender"
-          value={formData.gender}
-          onChange={handleInputChange}
-          disabled={isLoading}
-          style={{
-            width: '100%',
-            padding: '0.5rem',
-            border: '1px solid #666',
-            borderRadius: '4px',
-            fontSize: '1rem',
-            marginBottom: '1rem',
-            backgroundColor: '#fff',
-            fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"
-          }}
-        >
-          <option value="">{get('title.text.6')}</option>
-          <option value="M">{get('title.text.7')}</option>
-          <option value="F">{get('title.text.8')}</option>
-        </select>
-
-        {/* Birth Date Input (Optional) */}
-        <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.9')}</p>
-        <SketchInput
-          type="date"
-          name="birth_date"
-          value={formData.birth_date}
-          onChange={handleInputChange}
-          disabled={isLoading}
-          error={errors.birth_date}
-          variant="text"
-          placeholder="1988-08-18"
-          style={{ marginBottom: '-8px' }} 
-        />
-
-        {/* Phone Input (Optional) */}
-        <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.10')}</p>
-        <SketchInput style={{ fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif" }}
-          type="tel"
-          name="phone"
-          value={formData.phone}
-          onChange={handleInputChange}
-          disabled={isLoading}
-          error={errors.phone}
-          variant="text"
-          placeholder="010-1234-5678"
-        />
-
-        {/* Sign Up Button */}
-        <SketchBtn
-          type="submit"
-          className="sketch-button" 
-          variant="event"
-          disabled={isLoading}
-        >
-          <HatchPattern opacity={0.8} />
-          {get('title.text.11')}
-        </SketchBtn>
-      </form>
-
-      {/* 소셜 로그인 */}
-      <div style={{ textAlign: 'center', marginTop: '10px' , fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>
-        <p style={{marginBottom: '0', fontSize: '0.875rem', color: '#6b7280' }}>
-          {get('title.text.12')}
-        </p>
+      <div className='registerContainer' style={{padding: '1.5rem'}}>
         
-        <div style={{ display: 'flex', justifyContent: 'center'}}>
-          <button 
-            className="sketch-button sketch-button--secondary"
-            onClick={() => handleSocialLogin('facebook')}
-            style={{ width: '3rem', height: '3rem', borderRadius: '50%', padding: '0' }}
-            aria-label="Sign up with Facebook"
-          >
-            f
-          </button>
-          
-          <button 
-            className="sketch-button sketch-button--secondary"
-            onClick={() => handleSocialLogin('google')}
-            style={{ width: '3rem', height: '3rem', borderRadius: '50%', padding: '0' }}
-            aria-label="Sign up with Google"
-          >
-            G
-          </button>
-          
-          <button 
-            className="sketch-button sketch-button--secondary"
-            onClick={() => handleSocialLogin('twitter')}
-            style={{ width: '3rem', height: '3rem', borderRadius: '50%', padding: '0' }}
-            aria-label="Sign up with Twitter"
-          >
-            🐦
-          </button>
-        </div>
-      </div>
+        <p style={{ 
+          fontSize: '0.875rem', 
+          color: '#6b7280', 
+          textAlign: 'start', 
+          marginBottom: '5px',
+          marginTop: '5px',
+          marginLeft: '5px',
+          lineHeight: '1.4',
+          fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"
+        }}>
+          {get('Register1.1')}
+          {get('Register1.2')}
+        </p>
 
-      {/* Login Link */}
-      <div style={{ textAlign: 'center', fontSize: '0.875rem', color: '#6b7280' }}>
-        Already have an account?{' '}
-        <a 
-          href="#" 
-          className="sketch-link sketch-link--primary"
-          onClick={(e) => {
-            e.preventDefault();
-            navigate('/login');
-          }}
-        >
-          Login
-        </a>
+        <form onSubmit={onSubmit} style={{padding: '5px'}}>
+          {/* General Error/Success Message */}
+          {errors.general && (
+            <div className="sketch-error-message">{errors.general}</div>
+          )}
+          {message && (
+            <div className="sketch-success-message">{message}</div>
+          )}
+
+          {/* Email Input */}
+          <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.1')} *</p>
+          <SketchInput
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            disabled={isLoading}
+            error={errors.email}
+            variant="email" 
+            style={{ marginBottom: '-8px' }} 
+          />
+
+          {/* Password Input */}
+          <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.2')} *</p>
+          <SketchInput
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleInputChange}
+            disabled={isLoading}
+            error={errors.password}
+            variant="password"
+            style={{ marginBottom: '-8px' }} 
+          />
+
+          {/* Re-Password Input */}
+          <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.3')} *</p>
+          <SketchInput
+            type="password"
+            name="rePassword"
+            value={formData.rePassword}
+            onChange={handleInputChange}
+            disabled={isLoading}
+            error={errors.rePassword}
+            variant="password"
+            style={{ marginBottom: '-8px' }} 
+          />
+
+          {/* Nickname Input () */}
+          <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.4')} *</p>
+          <SketchInput
+            type="text"
+            name="nickname"
+            value={formData.nickname}
+            onChange={handleInputChange}
+            disabled={isLoading}
+            error={errors.nickname}
+            variant="text"
+            style={{ marginBottom: '-8px' }} 
+          />
+        
+
+          {/* Sign Up Button */}
+          <SketchBtn
+            type="submit"
+            className="sketch-button" 
+            variant="event"
+            disabled={isLoading}
+            style={{marginTop: '1rem'}}
+          >
+            <HatchPattern opacity={0.8} />
+            {get('title.text.11')}
+          </SketchBtn>
+        </form>
+
+        {/* 소셜 로그인 */}
+        <div style={{ textAlign: 'center', marginTop: '10px' , fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif", display: 'none'}}>
+          <p style={{marginBottom: '0', fontSize: '0.875rem', color: '#6b7280' }}>
+            {get('title.text.12')}
+          </p>
+          
+          <div style={{ display: 'flex', justifyContent: 'center'}}>
+            <button 
+              className="sketch-button sketch-button--secondary"
+              onClick={() => handleSocialLogin('facebook')}
+              style={{ width: '3rem', height: '3rem', borderRadius: '50%', padding: '0' }}
+              aria-label="Sign up with Facebook"
+            >
+              f
+            </button>
+            
+            <button 
+              className="sketch-button sketch-button--secondary"
+              onClick={() => handleSocialLogin('google')}
+              style={{ width: '3rem', height: '3rem', borderRadius: '50%', padding: '0' }}
+              aria-label="Sign up with Google"
+            >
+              G
+            </button>
+            
+            <button 
+              className="sketch-button sketch-button--secondary"
+              onClick={() => handleSocialLogin('twitter')}
+              style={{ width: '3rem', height: '3rem', borderRadius: '50%', padding: '0' }}
+              aria-label="Sign up with Twitter"
+            >
+              🐦
+            </button>
+          </div>
+        </div>
+
+        {/* Login Link */}
+        <div style={{ textAlign: 'center', fontSize: '0.875rem', color: '#6b7280', display: 'none'}}>
+          Already have an account?{' '}
+          <a 
+            href="#" 
+            className="sketch-link sketch-link--primary"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/login');
+            }}
+          >
+            Login
+          </a>
+        </div>
+
       </div>
 
       {/* 푸터 */}

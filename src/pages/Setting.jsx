@@ -289,6 +289,7 @@ const { messages, isLoading, error, get, currentLang, availableLanguages, refres
             max-width: 100%;
             border-left: none;
             border-right: none;
+            
           }
         }
       `}</style>

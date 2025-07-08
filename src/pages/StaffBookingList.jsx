@@ -291,10 +291,10 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
       }).then(res=>{
         // 성공 시 예약 목록 갱신
         Swal.fire({
-          title: '예약 수락 완료',
-          text: '예약이 수락되었습니다.',
+          title: get('Reservation.ReservationTitle'),
+          text: get('RESERVATION_APPROVE_SUCCESS'),
           icon: 'success',
-          confirmButtonText: '확인'
+          confirmButtonText: get('Common.Confirm')
         }).then(()=>{
           loadBookings();
         });

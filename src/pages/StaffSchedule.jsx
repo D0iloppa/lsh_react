@@ -618,13 +618,13 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
             {/* 휴무자 리스트 */}
             {dayoffList.length > 0 && (
               <>
-                <div className="assign-title">휴무자</div>
+                <div className="assign-title">{get('STAFF_DAYOFF_TITLE')}</div>
                 {dayoffList.map(staff => (
                   <div key={`dayoff-${staff.staff_id}`} className="staff-row">
                     <HatchPattern opacity={0.6} />
                     <div className="staff-info">
                       <div className="staff-name">{staff.staff_name}</div>
-                      <div className="staff-time">휴무</div>
+                      <div className="staff-time">{get('STAFF_DAYOFF_STATUS')}</div>
                     </div>
                     <div>
                       <SketchBtn
@@ -632,9 +632,9 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
                         className="staff-assign-btn"
                         onClick={() => chatWithStaff(staff)}
                       >
-                      <span className='chat-style' >
-                          <MessageCircle size={14}/> chat
-                      </span>
+                        <span className='chat-style'>
+                          <MessageCircle size={14}/> {get('BUTTON_CHAT')}
+                        </span>
                       </SketchBtn>
                     </div>
                   </div>
@@ -645,32 +645,32 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
             {/* 미입력자 리스트 */}
             {notRegisterList.length > 0 && (
               <>
-                <div className="assign-title">미입력자</div>
+                <div className="assign-title">{get('STAFF_NOT_REGISTERED_TITLE')}</div>
                 {notRegisterList.map(staff => (
                   <div key={`not-register-${staff.staff_id}`} className="staff-row">
                     <HatchPattern opacity={0.6} />
                     <div className="staff-info">
                       <div className="staff-name">{staff.staff_name}</div>
-                      <div className="staff-time">미입력</div>
+                      <div className="staff-time">{get('STAFF_NOT_REGISTERED_STATUS')}</div>
                     </div>
-                    <div style={{display: 'flex' , gap: '5px', width: '175px'}}>
+                    <div style={{display: 'flex', gap: '5px', width: '175px'}}>
                       <SketchBtn
                         size="small"
                         className="staff-assign-btn"
                         onClick={() => sendAlert(staff.staff_id)}
                       >
-                      <span className='chat-style' >
-                          <Bell size={13}/> send
-                      </span>
+                        <span className='chat-style'>
+                          <Bell size={13}/> {get('BUTTON_SEND')}
+                        </span>
                       </SketchBtn>
                       <SketchBtn
                         size="small"
                         className="staff-assign-btn"
                         onClick={() => chatWithStaff(staff)}
                       >
-                      <span className='chat-style' >
-                          <MessageCircle size={14}/> chat
-                      </span>
+                        <span className='chat-style'>
+                          <MessageCircle size={14}/> {get('BUTTON_CHAT')}
+                        </span>
                       </SketchBtn>
                     </div>
                   </div>

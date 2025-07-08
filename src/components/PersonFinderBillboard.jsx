@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import Swal from 'sweetalert2';
 
 const PersonFinderBillboard = ({ onClose }) => {
   const [isDisplaying, setIsDisplaying] = useState(false);
@@ -19,7 +20,7 @@ const PersonFinderBillboard = ({ onClose }) => {
         
   const showDisplay = () => {
     if (!inputName.trim()) {
-      alert('이름을 입력해주세요');
+       
       return;
     }
     

@@ -389,6 +389,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     const venueData = {
       cat_id: 1,
       venue_id: user?.venue_id,
+      manager_id: user?.manager_id,
       name: updatedForm.name.trim(),
       address: updatedForm.address.trim(),
       phone: updatedForm.phone.trim(),
@@ -721,7 +722,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
                   const { data = [] } = response;
 
-                  console.log('data', data);
+                  // console.log('data', data);
 
                   // 기존 DB 이미지 + 새로 추가된 이미지들 합치기
                   const dbImages = (data || []).map(item => item.url);

@@ -208,7 +208,13 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
         {/* Register Button */}
         {accountType === 'manager' && (
           <div style={{display: 'flex', justifyContent: 'center', marginTop: '1rem'}}>
-            <a href="#" className="sketch-link sketch-link--primary">
+            <a href="#" 
+                className="sketch-link sketch-link--primary"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/register');
+                }}
+                >
               { get('Login1.3') }
             </a>
           </div>
@@ -218,21 +224,10 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
 
       </form>
 
-      {/* Sign Up Link */}
-      <div style={{ display: 'none', textAlign: 'center', fontSize: '0.875rem', color: '#6b7280', marginTop: '10px' }}>
-        {/* <a href="#" className="sketch-link sketch-link--primary">Sign Up</a> */}
-        <button
-          type="button"
-          className="sketch-link sketch-link--primary"
-          style={{ background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer' }}
-          onClick={() => {
-            console.log('register');
-            navigate('/register');
-          }}
-        >
-          {get('Login1.3')}
-        </button>
-      </div>
+
+
+
+
       <LoadingScreen  isVisible={isLoading}  
         // loadingText="Loading" 
       />

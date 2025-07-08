@@ -79,7 +79,7 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
       confirmButtonText: '네, 탈퇴하겠습니다',
-      cancelButtonText: '취소'
+      cancelButtonText: get('Reservation.CancelButton')
     });
 
     if (result.isConfirmed) {
@@ -248,6 +248,7 @@ const handleSaveLanguage = () => {
       <style jsx="true">{`
       
         .settings-container {
+        
           max-width: 28rem;
           margin: 0 auto;
           background: #fff;

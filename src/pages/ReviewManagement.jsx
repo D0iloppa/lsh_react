@@ -285,10 +285,10 @@ const handleSubmitResponse = async (reviewId) => {
       const handleLocalSubmit = async () => {
         if (!localReportReason.trim()) {
           Swal.fire({
-            title: '신고 사유를 입력해주세요',
-            text: '신고 사유는 필수 입력 항목입니다.',
+            title: get('MENU_NOTIFICATIONS'),
+            text: get('REPORT_REASON_REQUIRED_TEXT'),
             icon: 'warning',
-            confirmButtonText: '확인',
+            confirmButtonText: get('BUTTON_CONFIRM'),
             confirmButtonColor: '#f59e0b'
           });
           return;
@@ -316,10 +316,10 @@ const handleSubmitResponse = async (reviewId) => {
 
           // 임시로 성공 메시지 표시
           Swal.fire({
-            title: '신고가 접수되었습니다',
-            text: '검토 후 처리하겠습니다.',
+            title: get('REPORT_SUBMITTED_TITLE'),
+            text: get('REPORT_SUBMITTED_TEXT'),
             icon: 'success',
-            confirmButtonText: '확인',
+            confirmButtonText: get('BUTTON_CONFIRM'),
             confirmButtonColor: '#10b981'
           });
 
@@ -331,10 +331,10 @@ const handleSubmitResponse = async (reviewId) => {
         } catch (error) {
           console.error('신고 제출 실패:', error);
           Swal.fire({
-            title: '신고 제출 실패',
-            text: '잠시 후 다시 시도해주세요.',
+           title: get('REPORT_SUBMIT_FAILED_TITLE'),
+            text: get('REPORT_SUBMIT_FAILED_TEXT'),
             icon: 'error',
-            confirmButtonText: '확인',
+            confirmButtonText: get('BUTTON_CONFIRM'),
             confirmButtonColor: '#ef4444'
           });
         } finally {
@@ -401,7 +401,7 @@ const handleSubmitResponse = async (reviewId) => {
                   color: '#ef4444'
                 }}>
                   <AlertTriangle size={16} />
-                  <span style={{ fontWeight: '600' }}>신고할 리뷰</span>
+                  <span style={{ fontWeight: '600' }}>{get('REPORT_TARGET_REVIEW')}</span>
                 </div>
                 {review && (
                   <div style={{
@@ -413,13 +413,13 @@ const handleSubmitResponse = async (reviewId) => {
                     color: '#374151'
                   }}>
                     <div style={{ marginBottom: '0.5rem' }}>
-                      <strong>작성자:</strong> {review.user_name || review.name}
+                      <strong>{get('REVIEW_AUTHOR_LABEL')}</strong> {review.user_name || review.name}
                     </div>
                     <div style={{ marginBottom: '0.5rem' }}>
-                      <strong>평점:</strong> {renderStars(review.rating)}
+                      <strong>{get('REVIEW_RATING_LABEL')}</strong> {renderStars(review.rating)}
                     </div>
                     <div>
-                      <strong>내용:</strong> "{review.content || review.review_content}"
+                      <strong>{get('REVIEW_CONTENT_LABEL')}</strong> "{review.content || review.review_content}"
                     </div>
                   </div>
                 )}
@@ -432,12 +432,12 @@ const handleSubmitResponse = async (reviewId) => {
                   fontWeight: '600',
                   color: '#374151'
                 }}>
-                  신고 사유 *
+                  {get('REPORT_REASON_LABEL')}
                 </label>
                 <textarea
                   defaultValue=""
                   onChange={(e) => updateLocalReason(e.target.value)}
-                  placeholder="신고 사유를 상세히 입력해주세요..."
+                  placeholder={get('REPORT_REASON_PLACEHOLDER')}
                   style={{
                     width: '100%',
                     minHeight: '120px',
@@ -475,7 +475,7 @@ const handleSubmitResponse = async (reviewId) => {
                   size="small"
                   onClick={handleLocalSubmit}
                 >
-                  {localIsSubmitting ? '제출 중...' : '신고 제출'}
+                  {localIsSubmitting ? get('BUTTON_SUBMITTING') : get('BUTTON_SUBMIT_REPORT')}
                 </SketchBtn>
               </div>
             </div>
@@ -483,71 +483,6 @@ const handleSubmitResponse = async (reviewId) => {
         </div>
       );
     });
-  };
-
-  // 신고 제출
-  const handleSubmitReport = async (review) => {
-    if (!reportReason.trim()) {
-      Swal.fire({
-        title: '신고 사유를 입력해주세요',
-        text: '신고 사유는 필수 입력 항목입니다.',
-        icon: 'warning',
-        confirmButtonText: '확인',
-        confirmButtonColor: '#f59e0b'
-      });
-      return;
-    }
-
-    setIsSubmittingReport(true);
-
-    try {
-      // API 호출을 위한 payload 구성
-      const reportPayload = {
-        review_id: review.review_id || review.id,
-        venue_id: venue_id,
-        target_id: target_id,
-        target_type: 'staff',
-        reporter_id: user.staff_id,
-        reporter_type: 'staff',
-        report_reason: reportReason.trim(),
-        report_date: new Date().toISOString(),
-        review_content: review.content || review.review_content,
-        review_rating: review.rating,
-        review_author: review.author_name || review.client_name
-      };
-
-      console.log('신고 제출 payload:', reportPayload);
-
-      // TODO: API 엔드포인트가 준비되면 아래 주석 해제
-      // const response = await ApiClient.postForm('/api/submitReviewReport', reportPayload);
-      // console.log('신고 제출 응답:', response);
-
-      // 임시로 성공 메시지 표시
-      Swal.fire({
-        title: '신고가 접수되었습니다',
-        text: '검토 후 처리하겠습니다.',
-        icon: 'success',
-        confirmButtonText: '확인',
-        confirmButtonColor: '#10b981'
-      });
-
-      // 모달 닫기 (overlay.unmount()는 handleReport에서 처리됨)
-      setSelectedReview(null);
-      setReportReason('');
-      setIsSubmittingReport(false);
-
-    } catch (error) {
-      console.error('신고 제출 실패:', error);
-      Swal.fire({
-        title: '신고 제출 실패',
-        text: '잠시 후 다시 시도해주세요.',
-        icon: 'error',
-        confirmButtonText: '확인',
-        confirmButtonColor: '#ef4444'
-      });
-    } finally {
-      setIsSubmittingReport(false);
-    }
   };
   
     return (

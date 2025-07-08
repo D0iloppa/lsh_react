@@ -81,7 +81,7 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
 
     if (fcmToken) {
       upateAppId();
-      alert('📲 HomePage에서 받은 FCM 토큰:', fcmToken, 'manager_id:', user?.manager_id || 1);
+      //alert('📲 HomePage에서 받은 FCM 토큰:', fcmToken, 'manager_id:', user?.manager_id || 1);
     }
   }, [fcmToken, user]);
 

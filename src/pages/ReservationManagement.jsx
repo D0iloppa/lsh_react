@@ -547,7 +547,7 @@ const chatWithUser = async(r) => {
           
         .reservation-contents {
           padding: 0.3rem;
-          max-width: 250px;
+          
         }
 
         .loading-message {
@@ -703,21 +703,20 @@ const chatWithUser = async(r) => {
            {filtered.length === 0 ? (
                 <div className="loading-message">
                     {selectedDate === getToday() 
-                      ? `오늘 ${getStatusText(selectedStatus).toLowerCase()} 예약이 없습니다.`
-                      : `${formatDateForDisplay(selectedDate)} ${getStatusText(selectedStatus).toLowerCase()} 예약이 없습니다.`
+                      ? `${get('REVIEW_FILTER_TODAY')} ${getStatusText(selectedStatus).toLowerCase()} ${get('NO_BOOKINGS_MESSAGE')}`
+                      : `${formatDateForDisplay(selectedDate)} ${getStatusText(selectedStatus).toLowerCase()} ${get('NO_BOOKINGS_MESSAGE')}`
                     }
                   </div>
                 ) : (
-              filtered.map(r => (
-
+             filtered.map(r => (
                 <SketchDiv key={r.id} className="reservation-card">
-                   <div className='title-wrap'>
-                     <div className="reservation-date">
-                        <Calendar size={15} style={{marginRight: '3px'}}/>
-                        {r.date}
-                      </div>
-                   <div className="reservation-time">{r.time}</div>
-                      </div>
+                  <div className='title-wrap'>
+                    <div className="reservation-date">
+                      <Calendar size={15} style={{marginRight: '3px'}}/>
+                      {r.date}
+                    </div>
+                    <div className="reservation-time">{r.time}</div>
+                  </div>
                   <div className="reservation-header">
                     <div className="reservation-contents"> 
                       <div className="reservation-venue">
@@ -728,55 +727,52 @@ const chatWithUser = async(r) => {
                           } {r.venue}
                         </div>
                         <div>
-                          <Edit size={10}/> 예약자: <strong>{r.client_name}</strong> 
+                          <Edit size={10}/> {get('RESERVATION_CLIENT_LABEL')} <strong>{r.client_name}</strong> 
                           <span 
                             className='chat-style' 
                             onClick={() => chatWithUser(r)}
                           >
-                            <MessageCircle size={14}/> chat
+                            <MessageCircle size={14}/> {get('BUTTON_CHAT')}
                           </span>
                         </div>
                         <div>
-                          <Edit size={10}/> 참석 인원: <strong>{r.attendee} 명</strong>
+                          <Edit size={10}/> {get('RESERVATION_ATTENDEE_LABEL')} <strong>{r.attendee} {get('ATTENDEE_COUNT_UNIT')}</strong>
                         </div>
                         <div>
-                          <Edit size={10}/> 에스코트 여부: 
-                           <span className={`use_escort ${r.use_escort === 1 ? 'applied' : 'not_applied'}`}>
-                             {r.use_escort === 1 ? '신청' : '미신청'}
-                             
+                          <Edit size={10}/> {get('RESERVATION_ESCORT_LABEL')} 
+                          <span className={`use_escort ${r.use_escort === 1 ? 'applied' : 'not_applied'}`}>
+                            {r.use_escort === 1 ? get('ESCORT_APPLIED') : get('ESCORT_NOT_APPLIED')}
                           </span>
-                        
                         </div>
                         <div>
-                         <Edit size={10}/> 예약자 메모: {r.note ? r.note : <span style={{color:'#9d9d9d'}}>메모 없음</span>}
+                          <Edit size={10}/> {get('RESERVATION_NOTE_LABEL')} {r.note ? r.note : <span style={{color:'#9d9d9d'}}>{get('NO_NOTE_MESSAGE')}</span>}
                         </div>
                       </div>
                     </div>
-                    
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                     {/* 에스코트 신청했을 때만 전광판 버튼 표시 */}
-                      {r.use_escort === 1 ? (
-                        <SketchBtn 
-                          size="small"
-                          variant="primary" 
-                          style={{width: '30%', background: 'linear-gradient(135deg, rgb(255 111 241 / 0%), rgb(255 225 249))'}}
-                          onClick={() => setShowBillboard(true)} 
-                        >
-                          전광판 열기
-                        </SketchBtn>
-                      ) : (
-                        <div style={{width: '40%'}}></div> // 공간 유지를 위한 빈 div
-                      )}
-                  <div className="reservation-status">
-                    {get('RESERVATION_STATUS_LABEL')} <span className={`status-badge status-${r.status}`}>
-                      {getStatusText(r.status)}
-                    </span>
+                    {/* 에스코트 신청했을 때만 전광판 버튼 표시 */}
+                    {r.use_escort === 1 ? (
+                      <SketchBtn 
+                        size="small"
+                        variant="primary" 
+                        style={{width: '30%', background: 'linear-gradient(135deg, rgb(255 111 241 / 0%), rgb(255 225 249))'}}
+                        onClick={() => setShowBillboard(true)} 
+                      >
+                        {get('BILLBOARD_OPEN_BUTTON')}
+                      </SketchBtn>
+                    ) : (
+                      <div style={{width: '40%'}}></div> // 공간 유지를 위한 빈 div
+                    )}
+                    <div className="reservation-status">
+                      {get('RESERVATION_STATUS_LABEL')} <span className={`status-badge status-${r.status}`}>
+                        {getStatusText(r.status)}
+                      </span>
+                    </div>
+                    {showBillboard && (
+                      <PersonFinderBillboard onClose={() => setShowBillboard(false)} />
+                    )}
                   </div>
-                   {showBillboard && (
-                    <PersonFinderBillboard onClose={() => setShowBillboard(false)} />
-                  )}
-                   </div>
                   <div className="reservation-actions">
                     {/* Approve 버튼 - pending일 때만 활성화, confirmed면 "승인됨", cancelled이면 숨김 */}
                     {r.status === 'canceled' ? null : (
@@ -799,11 +795,6 @@ const chatWithUser = async(r) => {
                         ) : get('RESERVATION_APPROVE_BUTTON')}
                       </SketchBtn>
                     )}
-                    
-                    {/* <SketchBtn variant="primary" size="small" className="action-btn">
-                      <MessageCircle size={14} style={{marginRight: '3px'}}/>
-                      {get('RESERVATION_CHAT_BUTTON')}
-                    </SketchBtn> */}
                     
                     {/* Cancel 버튼 - cancelled 상태가 아닐 때만 표시 */}
                     {r.status !== 'canceled' && (

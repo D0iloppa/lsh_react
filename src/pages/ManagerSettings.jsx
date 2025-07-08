@@ -315,6 +315,7 @@ const handleSaveNewPassword = async () => {
           min-height: 100vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
           padding: 1rem;
+        
         }
         .section-title {
           font-size: 1.15rem;

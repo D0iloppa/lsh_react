@@ -108,3 +108,5 @@ body[data-lang="vi"] .page-title,
 body[data-lang="vi"] .center-section {
   font-family: var(--font-vi) !important;
 }
+
+body {margin: 0;}

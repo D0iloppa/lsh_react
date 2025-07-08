@@ -15,7 +15,6 @@ const SketchHeader = ({
   sticky = true  // 기본값을 true로 변경
 }) => {
 
-    console.log('sticky', sticky);
 
     
   return (

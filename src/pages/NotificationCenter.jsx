@@ -183,6 +183,7 @@ const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, .
           flex-direction: column;
           gap: 0.3rem;
           margin-bottom: 1rem;
+          padding: 1rem;
         }
         .noti-card {
           padding: 0.8rem 0.9rem 1.1rem 0.9rem;
@@ -336,7 +337,7 @@ const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, .
                           backgroundColor: noti.is_read ? '#d5d5d5' : 'rgb(250 250 250)'
                         }}
                       >
-                        {noti.is_read ? 'Read' : 'Unread'}
+                        {noti.is_read ? get('NOTIFICATION_READ_STATUS') : get('NOTIFICATION_UNREAD_STATUS')}
                         <HatchPattern opacity={0.6} />
                       </SketchDiv>
                   </SketchDiv>
