@@ -45,6 +45,31 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
     const [originalReviews, setOriginalReviews] = useState([]); // 원본 데이터 보관
     const { user } = useAuth();
     const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+
+    const registerReader = async (reviewId) => {
+      try {
+        if (!user?.manager_id || !reviewId) {
+          console.warn('Manager ID 또는 Review ID가 없어서 registerReader를 건너뜁니다.');
+          return;
+        }
+
+        const response = await ApiClient.postForm('/api/registerReader', {
+          target_table: 'ManagerReviews',
+          target_id: reviewId,           // 각 리뷰의 ID
+          reader_type: 'manager',
+          reader_id: user.manager_id
+        });
+
+        console.log('✅ registerReader 성공:', response);
+        
+      } catch (error) {
+        console.error('❌ registerReader 실패:', error);
+      }
+    };
+
+
+
     // 신고 모달 관련 상태
         const [selectedReview, setSelectedReview] = useState(null);
         const [reportReason, setReportReason] = useState('');
@@ -113,28 +138,35 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
     useEffect(() => {
       const loadVenueReview = async () => {
         if (!venue_id) return;
-  
+
         try {
           const response = await ApiClient.postForm('/api/getVenueReviewList', {
             venue_id: venue_id
           });
-  
+
           console.log('responseReview', response.data);
-  
+
           const staffReviews = response.data;
-  
+
           // 원본 데이터 저장
           setOriginalReviews(staffReviews);
-         
+
+          // 각 리뷰에 대해 registerReader 호출
+          if (staffReviews && staffReviews.length > 0) {
+            for (const review of staffReviews) {
+              await registerReader(review.review_id || review.id);
+            }
+          }
+          
         } catch (error) {
           setOriginalReviews([]);
           setReviews([]);
           console.error('리뷰 로딩 실패:', error);
         }
       };
-  
+
       loadVenueReview();
-    }, [venue_id]);
+    }, [venue_id, user?.manager_id]);
   
     // 답변 영역 토글
     const toggleResponse = (reviewId) => {

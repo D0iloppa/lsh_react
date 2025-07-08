@@ -11,28 +11,48 @@ const SketchHeader = ({
   onBack = () => {}, 
   rightButtons = [],
   variant = 'primary',
-  className = ''
+  className = '',
+  sticky = true  // 기본값을 true로 변경
 }) => {
+
+    console.log('sticky', sticky);
+
+    
   return (
     <>
       <style jsx="true">{`
         .page-header {
           width: 100%;
-          padding: 1rem 1.25rem;
+          padding: 0.3rem 0;
+          margin: 0 auto;
+          max-width: 28rem;
           background-color: #ffffff;
           border-bottom: 0.8px solid #666;
-          position: relative;
+          position: fixed;  /* sticky 대신 fixed 사용 */
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 1000;  /* 높은 z-index */
           overflow: hidden;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          min-height: 3.5rem;
+          min-height: 2rem;
           box-sizing: border-box;
           border-top-left-radius: 15px 8px;
           border-top-right-radius: 8px 12px;
           border-bottom-right-radius: 12px 6px;
           border-bottom-left-radius: 6px 14px;
           transform: rotate(0.1deg);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);  /* 기본 그림자 추가 */
+        }
+
+        /* 헤더 아래 여백을 위한 가상 요소 */
+        .page-header::after {
+          content: '';
+          display: block;
+          height: 3.5rem;  /* 헤더 높이만큼 여백 */
+          width: 100%;
         }
 
         /* Variants */
@@ -192,6 +212,10 @@ const SketchHeader = ({
             min-height: 3rem;
           }
 
+          .page-header::after {
+            height: 3rem;
+          }
+
           .page-title {
             font-size: 1.1rem;
           }
@@ -207,12 +231,14 @@ const SketchHeader = ({
           }
         }
 
-        /* Sticky header option */
-        .page-header.sticky {
-          position: sticky;
-          top: 0;
-          z-index: 50;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        /* Fixed header option - 이제 기본값이므로 조건부 적용 */
+        .page-header.not-sticky {
+          position: relative;
+          box-shadow: none;
+        }
+
+        .page-header.not-sticky::after {
+          display: none;
         }
 
         /* Shadow variants */
@@ -229,7 +255,7 @@ const SketchHeader = ({
         }
       `}</style>
       
-      <SketchDiv className={`page-header ${variant} ${className}`}>
+      <SketchDiv className={`page-header ${variant} ${className} ${!sticky ? 'not-sticky' : ''}`}>
         <HatchPattern opacity={0.3} />
 
         {/* 왼쪽: Back 버튼 (선택적) */}
@@ -280,6 +306,7 @@ const SketchHeader = ({
           </div>
         </div>
       </SketchDiv>
+      {sticky && <div style={{ height: '66px' }}></div>}
     </>
   );
 };

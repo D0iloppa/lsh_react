@@ -131,32 +131,56 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     }
   }, []);
 
-  // room_sn이 변경될 때마다 채팅 데이터 다시 불러오기
-  useEffect(() => {
-    console.log('🔄 Room SN changed to:', room_sn);
-    
-    // 기존 폴링 정지
-    stopPolling();
-
-    if (room_sn) {
-      // room_sn이 새로 생성된 경우 lastChatSnRef 초기화
-      if (lastChatSnRef.current === null) {
-        console.log('🆕 New room created, resetting chat state');
-        setChatMessages([]); // 기존 메시지 초기화
-      }
-      
-      // 채팅 데이터 새로 불러오기 (init=false로 변경)
-      getChattingData(false).then(() => {
-        // 데이터 로딩 완료 후 폴링 시작
-        startPolling();
-      });
+  const registerReader = async () => {
+  try {
+    if (!user?.manager_id) {
+      console.warn('Manager ID가 없어서 registerReader를 건너뜁니다.');
+      return;
     }
 
-    // cleanup 함수에서 인터벌 정리
-    return () => {
-      stopPolling();
-    };
-  }, [room_sn, stopPolling, startPolling]);
+    const response = await ApiClient.postForm('/api/registerReader', {
+      target_table: 'ManagerChat',  // 예약 테이블
+      target_id: user.room_sn,    // roomID
+      reader_type: 'manager',        // 리더 타입
+      reader_id: user.manager_id     // 리더 ID (매니저 ID와 동일)
+    });
+
+    console.log('✅ registerReader 성공:', response);
+    
+  } catch (error) {
+    console.error('❌ registerReader 실패:', error);
+    // 에러가 발생해도 페이지 로딩을 막지 않음
+  }
+};
+
+  // room_sn이 변경될 때마다 채팅 데이터 다시 불러오기
+ useEffect(() => {
+  console.log('🔄 Room SN changed to:', room_sn);
+  
+  // 기존 폴링 정지
+  stopPolling();
+
+  if (room_sn) {
+    // room_sn이 새로 생성된 경우 lastChatSnRef 초기화
+    if (lastChatSnRef.current === null) {
+      console.log('🆕 New room created, resetting chat state');
+      setChatMessages([]); // 기존 메시지 초기화
+    }
+
+     registerReader(room_sn);
+    
+    // 채팅 데이터 새로 불러오기 (init=false로 변경)
+    getChattingData(false).then(() => {
+      // 데이터 로딩 완료 후 폴링 시작
+      startPolling();
+    });
+  }
+
+  // cleanup 함수에서 인터벌 정리
+  return () => {
+    stopPolling();
+  };
+}, [room_sn, stopPolling, startPolling]);
 
   const generateInitChatItem = useCallback(() => {
     switch(initType){

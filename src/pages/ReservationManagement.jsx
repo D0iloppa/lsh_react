@@ -141,25 +141,24 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
   
   
 
-const registerReader = async () => {
+const registerReader = async (reservationId) => {
   try {
-    if (!user?.manager_id) {
-      console.warn('Manager ID가 없어서 registerReader를 건너뜁니다.');
+    if (!user?.manager_id || !reservationId) {
+      console.warn('Manager ID 또는 Reservation ID가 없어서 registerReader를 건너뜁니다.');
       return;
     }
 
     const response = await ApiClient.postForm('/api/registerReader', {
-      target_table: 'reservations',  // 예약 테이블
-      target_id: user.manager_id,    // 매니저 ID
-      reader_type: 'manager',        // 리더 타입
-      reader_id: user.manager_id     // 리더 ID (매니저 ID와 동일)
+      target_table: 'ManagerReservations',
+      target_id: reservationId,        // 각 예약의 ID
+      reader_type: 'manager',
+      reader_id: user.manager_id
     });
 
     console.log('✅ registerReader 성공:', response);
     
   } catch (error) {
     console.error('❌ registerReader 실패:', error);
-    // 에러가 발생해도 페이지 로딩을 막지 않음
   }
 };
 
@@ -346,17 +345,38 @@ const handleReservationManage = async (reservation_id, mngCode) => {
 
   // 초기 로딩을 위한 useEffect - venue_id가 변경될 때만 호출
   useEffect(() => {
-    if (!venue_id) return;
+  if (!venue_id) return;
 
-    const initializeReservations = async () => {
-      setLoading(true);
-      await registerReader();
-      await loadReservations();
-      setLoading(false);
-    };
+  const initializeReservations = async () => {
+    setLoading(true);
+    
+    // 먼저 예약 목록 로드
+    await loadReservations();
+    
+    setLoading(false);
+  };
 
-    initializeReservations();
-  }, [venue_id, user.manager_id]); // venue_id가 변경될 때만 실행
+  initializeReservations();
+}, [venue_id, user.manager_id]);
+ 
+useEffect(() => {
+  const registerAllReservations = async () => {
+    if (reservations.length > 0) {
+      // 날짜별로 필터링된 예약들에 대해서만 registerReader 호출
+      const todayReservations = reservations.filter(r => {
+        const reservationDate = new Date(r.reservedAt).toISOString().split('T')[0];
+        return reservationDate === selectedDate;
+      });
+
+      // 각 예약에 대해 registerReader 호출
+      for (const reservation of todayReservations) {
+        await registerReader(reservation.id);
+      }
+    }
+  };
+
+  registerAllReservations();
+}, [reservations, selectedDate]);
 
   // const filtered = reservations.filter(r => {
   //   if (selectedStatus === 'pending') {

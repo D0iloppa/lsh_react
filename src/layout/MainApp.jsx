@@ -8,6 +8,7 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { PAGE_COMPONENTS, DEFAULT_MANAGER_PAGE } from '../config/pages.config';
 import HatchPattern from '@components/HatchPattern';
 import LoadingScreen from '@components/LoadingScreen';
+import SketchHeader from '@components/SketchHeader'
 
 import './MainApp.css';
 
@@ -81,6 +82,7 @@ const MainApp = () => {
     return (
         
         <div className="main-app-container">
+
             {/* 메인 콘텐츠 영역 (스크롤 가능) */}
             <main className="content-area">
                 {renderCurrentPage()}

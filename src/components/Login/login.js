@@ -42,13 +42,16 @@ import qs from 'qs';
 
 const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
 
-export const loginPost = async ({login_id, passwd, login_type ='email'}) => {
+export const loginPost = async ({login_id, passwd, login_type ='email', ...args}) => {
+
+    console.log('args', args);
 
     const data =  qs.stringify({
         login_type: login_type,
         email: login_id,
         login_id: login_id,
-        passwd: passwd
+        passwd: passwd,
+        account_type: args.account_type || null
       });
 
     try {
