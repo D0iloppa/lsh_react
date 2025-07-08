@@ -131,7 +131,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     }
   }, []);
 
-  const registerReader = async () => {
+  const registerReader = async (roomSn) => {
   try {
     if (!user?.manager_id) {
       console.warn('Manager ID가 없어서 registerReader를 건너뜁니다.');
@@ -140,7 +140,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
     const response = await ApiClient.postForm('/api/registerReader', {
       target_table: 'ManagerChat',  // 예약 테이블
-      target_id: user.room_sn,    // roomID
+      target_id: roomSn,    // roomID
       reader_type: 'manager',        // 리더 타입
       reader_id: user.manager_id     // 리더 ID (매니저 ID와 동일)
     });
