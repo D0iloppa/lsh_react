@@ -1,7 +1,7 @@
 // src/layout/MainApp.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, Search, Calendar, User, Map, ChevronUp, Star } from 'lucide-react';
+import { Home, Search, Calendar, User, Map, ChevronUp, Star, MessagesSquare } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
@@ -73,7 +73,11 @@ const MainApp = () => {
     const navigationItems = [
         { id: PAGES.HOME, icon: Home, label: get('Footer1.3') },
         { id: PAGES.SEARCH, icon: Search, label: get('btn.searchMap.1.1') },
-        { id: PAGES.VIEWREVIEW, icon: Star, label: get('nav.review.1') },
+        { id: PAGES.CHATTINGLIST, icon: MessagesSquare, label: get('MENU_CHATTING'), 
+            data: { 
+                chatRoomType: 'user'
+            }   
+        },
         { id: PAGES.EVENTS, icon: Calendar, label: get('btn.promotion.1') },
         { id: PAGES.ACCOUNT, icon: User, label: get('Menu1.4') }
     ];
@@ -90,10 +94,16 @@ const MainApp = () => {
             <nav className="bottom-navigation">
                 <div className="nav-container">
                     {<HatchPattern opacity={0.3} />}
-                    {navigationItems.map(({ id, icon: Icon, label }) => (
+                    {navigationItems.map(({ id, icon: Icon, label, data = false }) => (
                         <button
                             key={id}
-                            onClick={() => navigateToPage(id)}
+                            onClick={() => {
+                                if (data) {
+                                    navigateToPageWithData(id, data);
+                                } else {
+                                    navigateToPage(id);
+                                }
+                            }}
                             className={`nav-item ${currentPage === id ? 'active' : ''}`}
                         >
                             <Icon className="nav-icon" />

@@ -33,6 +33,7 @@ import ViewReviewDetail from '@pages/ViewReviewDetail';
 
 
 import Chatting from '@pages/Chatting';
+import ChattingList from '@pages/ChattingList';
 
 // 페이지 상수
 export const PAGES = {
@@ -58,7 +59,8 @@ export const PAGES = {
     SETTING: 'SETTING',
     PROFILE: 'PROFILE',
     PAYMENT: 'PAYMENT',
-    CHATTING: 'CHATTING'
+    CHATTING: 'CHATTING',
+    CHATTINGLIST: 'CHATTINGLIST'
 };
 
 // 페이지 컴포넌트 매핑
@@ -85,7 +87,8 @@ export const PAGE_COMPONENTS = {
     [PAGES.SETTING]: Setting,
     [PAGES.PROFILE]: Profile,
     [PAGES.PAYMENT]: Payment,
-    [PAGES.CHATTING]: Chatting
+    [PAGES.CHATTING]: Chatting,
+    [PAGES.CHATTINGLIST]: ChattingList
 };
 
 // 기본 페이지
