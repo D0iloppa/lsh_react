@@ -1,7 +1,7 @@
 // src/layout/MainApp.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, Search, Calendar, User, Map, ChevronUp, Star, MessagesSquare } from 'lucide-react';
+import { Home, Search, Calendar, User, Map, ChevronUp, Star, History, MessagesSquare } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
@@ -78,7 +78,7 @@ const MainApp = () => {
                 chatRoomType: 'user'
             }   
         },
-        { id: PAGES.EVENTS, icon: Calendar, label: get('btn.promotion.1') },
+        { id: PAGES.EVENTS, icon: History, label: get('menu.reserve.history') },
         { id: PAGES.ACCOUNT, icon: User, label: get('Menu1.4') }
     ];
 
