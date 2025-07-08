@@ -41,14 +41,14 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       if (!venue_id) return;
 
       // API 호출 (실제 구현에 맞게 수정)
-      // const response = await ApiClient.get('/api/getNotificationCounts', {
-      //   params: { venue_id, manager_id: user?.manager_id }
-      // });
+       const response = await ApiClient.get('/api/getManagerUnreadCount', {
+         params: { venue_id, manager_id: user?.manager_id }
+       });
 
       setNotificationCounts({
-        reservations: response.pendingReservations || 0,
-        reviews: response.newReviews || 0,
-        chatting: response.unreadChats || 0,
+        reservations: response.getUnreadCountReservation_mng || 0,
+        reviews: response.getUnreadCountReview_mng || 0,
+        chatting: response.getUnreadCountChat_mng || 0,
       });
     } catch (error) {
       console.error('알림 개수 조회 실패:', error);
@@ -57,7 +57,6 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
         reservations: 3,
         reviews: 2,
         chatting: 5,
-        notifications: 1
       });
     }
   };
@@ -112,11 +111,11 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
 
   }, [messages, currentLang]);
 
-  // 주기적으로 알림 개수 업데이트 (30초마다)
+  // 주기적으로 알림 개수 업데이트 (10초마다)
   useEffect(() => {
     const interval = setInterval(() => {
       fetchNotificationCounts();
-    }, 30000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [user?.venue_id]);
@@ -183,7 +182,7 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       icon: <Calendar size={24} />,
       name: get('MENU_RESERVATIONS'),
       page: PAGES.RESERVATION_MANAGEMENT,
-      badgeCount: dashboardInfo.todaysReservations, // 예약관리 뱃지
+      badgeCount: notificationCounts.reservations,  // 예약관리 뱃지
       showBadge: true,
       menuEvent: () => { navigateToPage(PAGES.RESERVATION_MANAGEMENT); }
     },
@@ -311,15 +310,15 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
           background: #ef4444;
           color: white;
           border-radius: 50%;
-          min-width: 20px;
-          height: 20px;
+          min-width: 23px;
+          height: 23px;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 11px;
           font-weight: bold;
           z-index: 10;
-          border: 2px solid white;
+          border: 1px solid white;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 

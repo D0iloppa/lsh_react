@@ -204,29 +204,38 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
         >{<HatchPattern opacity={0.8} />}
           { get('Login1.1') }
         </SketchBtn>
+
+        {/* Register Button */}
+        {accountType === 'manager' && (
+          <div style={{display: 'flex', justifyContent: 'center', marginTop: '1rem'}}>
+            <a href="#" className="sketch-link sketch-link--primary">
+              { get('Login1.3') }
+            </a>
+          </div>
+        )}
+
+
+
       </form>
 
       {/* Sign Up Link */}
       <div style={{ display: 'none', textAlign: 'center', fontSize: '0.875rem', color: '#6b7280', marginTop: '10px' }}>
-        { get('Login1.3') }{' '}
         {/* <a href="#" className="sketch-link sketch-link--primary">Sign Up</a> */}
-         <a 
-          href="#" 
+        <button
+          type="button"
           className="sketch-link sketch-link--primary"
-          onClick={(e) => {
-            e.preventDefault();
+          style={{ background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer' }}
+          onClick={() => {
+            console.log('register');
             navigate('/register');
           }}
         >
-          { get('Menu1.1') }
-        </a>
+          {get('Login1.3')}
+        </button>
       </div>
-                          <LoadingScreen 
-        isVisible={isLoading} 
+      <LoadingScreen  isVisible={isLoading}  
         // loadingText="Loading" 
-/>
-
-     
+      />
     </>
   );
 }

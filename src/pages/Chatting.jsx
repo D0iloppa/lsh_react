@@ -643,6 +643,27 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
   // console.log("user.type", user)
 
+
+  //번역
+  const translateText = async (text, targetLang) => {
+  try {
+    const response = await axios.post(
+      `https://translation.googleapis.com/language/translate/v2?key=AIzaSyAnvkb7_-zX-aI8WVw6zLMRn63yQQrss9c`,
+      {
+        q: text,
+        target: targetLang,
+        format: 'text',
+      }
+    );
+    return response.data.data.translations[0].translatedText;
+  } catch (error) {
+    console.error('❌ 번역 실패:', error);
+    return null;
+  }
+};
+
+
+
   // ⭐ ReservationCard onSend 함수 - 정리된 버전
   const handleReservationSend = useCallback(async () => {
     const {type} = user;
