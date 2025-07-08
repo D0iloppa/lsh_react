@@ -391,7 +391,7 @@ const handleSaveLanguage = () => {
           </SketchDiv> 
         </div>
 
-        <div className="section-title">
+        {/* <div className="section-title">
           {get('Staff.setting.notification.title') || get('STAFF_SETTINGS_NOTIFICATION_TITLE')}
         </div>
         <SketchDiv className="section-box">
@@ -429,7 +429,7 @@ const handleSaveLanguage = () => {
               }
             </SketchBtn>
           </div>
-        </SketchDiv>
+        </SketchDiv> */}
 
         <div className="section-title">
           {get('Staff.setting.language.title') || get('STAFF_SETTINGS_LANGUAGE_TITLE')}
@@ -467,7 +467,7 @@ const handleSaveLanguage = () => {
               onClick={handleSaveLanguage}
             >
               <HatchPattern opacity={0.6} />
-              {get('STAFF_SETTINGS_SAVE_BUTTON')}
+              {get('VENUE_STATUS_CHANGE_BUTTON')}
             </SketchBtn>
           </div>
         </SketchDiv>
@@ -483,7 +483,7 @@ const handleSaveLanguage = () => {
             {get('Staff.setting.logout') || get('STAFF_SETTINGS_LOGOUT_BUTTON')}
           </SketchBtn>
         </div>
-          <div className='staff-delete' onClick={handleDelete}>{get('DELETE_ACCOUNT')}</div>
+          {/* <div className='staff-delete' onClick={handleDelete}>{get('DELETE_ACCOUNT')}</div> */}
       </div>
     </>
   );

@@ -54,8 +54,9 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
       }
       
       if (apiData && apiData.length > 0) {
+        const filtered = apiData.filter(item => item.target_name === 'staff');
         console.log("API 데이터:", apiData);
-        setBookings(apiData);
+        setBookings(filtered);
       } else {
         console.log("데이터가 없습니다");
         setBookings([]); // API 데이터가 없으면 목 데이터 사용
@@ -247,6 +248,8 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
       );
     });
   };
+
+  
   
   // 날짜 포맷팅 함수 추가
   const formatDate = (dateString) => {
@@ -304,6 +307,46 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
     }
     
   };
+
+  // 예약을 날짜별로 분류하는 함수
+const classifyBookingsByDate = (bookings) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // 시간을 00:00:00으로 설정하여 날짜만 비교
+
+  const todayBookings = [];
+  const pastBookings = [];
+
+  bookings.forEach(bk => {
+    // 예약 날짜 파싱
+    let bookingDate;
+    if (bk.date) {
+      bookingDate = new Date(bk.date);
+    } else if (bk.res_date) {
+      bookingDate = new Date(bk.res_date);
+    } else {
+      // 날짜 정보가 없는 경우 과거로 분류
+      pastBookings.push(bk);
+      return;
+    }
+
+    bookingDate.setHours(0, 0, 0, 0); // 시간을 00:00:00으로 설정
+
+    const timeDiff = bookingDate.getTime() - today.getTime();
+
+    if (timeDiff >= 0) {
+      // 오늘 또는 미래 (오늘 이후)
+      todayBookings.push(bk);
+    } else {
+      // 과거
+      pastBookings.push(bk);
+    }
+  });
+
+  return {
+    todayBookings,
+    pastBookings
+  };
+};
 
   return (
     <>
@@ -367,75 +410,193 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
           padding: 2rem;
           color: #666;
         }
+          .booking-section-title {
+            align-items: center;
+             justify-content: space-between;
+               background: #f2f2f2;
+              border-top: 1px solid #dedede;
+              font-size: 1.15rem;
+              font-weight: 600;
+              margin: 1rem 0 0.4rem 0;
+              padding: 1rem;
+              display: flex;
+          }
+          
+          
+          .section-title-text {
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+          }
+          
+          .section-count {
+            background: #6c757d;
+            color: white;
+            border-radius: 12px;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+          }
+          
+          .no-bookings-message {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+            font-size: 1.1rem;
+          }
       `}</style>
         <div className="bookinglist-container">
-        <SketchHeader
-          title={
-            <>
-              <Calendar size={20} style={{marginRight:'7px',marginBottom:'-3px'}}/>
-              {get('BOOKING_LIST_TITLE')}
-            </>
-          }
-          showBack={true}
-          onBack={goBack}
-        />
+  <SketchHeader
+    title={
+      <>
+        <Calendar size={20} style={{marginRight:'7px',marginBottom:'-3px'}}/>
+        {get('BOOKING_LIST_TITLE')}
+      </>
+    }
+    showBack={true}
+    onBack={goBack}
+  />
 
-        <div className='booking-list'> 
-          {loading ? (
-            <div className="loading-message">{get('BOOKING_LOADING')}</div>
-          ) : (
-            bookings.map(bk => (
-              <SketchDiv key={bk.id || bk.reservation_id} className="booking-card">
-                <HatchPattern opacity={0.6} />
-                <div className="booking-header">
-                  <div className="booking-venue">{bk.venue || bk.target_name}</div>
-                  <div className="booking-status" style={getStatusStyle(bk.status)}>{bk.status}</div>
-                </div>
-                <div className="booking-info">
-                  <div>{get('BOOKING_DATE_LABEL')} {bk.date || new Date(bk.res_date).toLocaleDateString()}</div>
-                  <div>{get('BOOKING_TIME_LABEL')} {bk.time || bk.res_start_time}</div>
-                  <div>{get('BOOKING_CUSTOMER_LABEL')} {bk.client_name || bk.user_name}</div>
-                  <div style={{
-                    fontSize: '0.8rem',
-                    color: '#666',
-                    marginTop: '0.2rem'
-                  }} className="booking-reservedAt">{get('BOOKING_RESERVED_AT_LABEL')} : {new Date(bk.reserved_at).toLocaleString()}</div>
-                </div>
-                <div className="booking-actions">
-                  {(['Detail', 'Accept', 'MANAGER']).map(action => {
-                    // Accept 버튼 활성화 조건: user.staff_id와 target_id가 같을 때만
-                    const isAcceptDisabled = action === 'Accept' && 
-                      (!user.staff_id || !bk.target_id || user.staff_id !== bk.target_id);
-                    
-                    return (
-                      <SketchBtn 
-                        key={action} 
-                        variant={getButtonVariant(action)} 
-                        size="small" 
-                        className="booking-action-btn"
-                        disabled={isAcceptDisabled}
-                        onClick={()=>{
-                          handleBtn(action, bk);
-                        }}
-                        style={isAcceptDisabled ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-                      >
-                        {action === 'MANAGER' || action === 'CUSTOMER' ? (
-                          <>
-                            <MessageCircle size={14} style={{ marginRight: '4px' }} />
-                            {getActionText(action)}
-                          </>
-                        ) : (
-                          getActionText(action)
-                        )}
-                      </SketchBtn>
-                    );
-                  })}
-                </div>
-              </SketchDiv>
-            ))
-          )}
-        </div>
-      </div>
+  <div className='booking-list'> 
+      {loading ? (
+        <div className="loading-message">{get('BOOKING_LOADING')}</div>
+      ) : (
+        <>
+          {(() => {
+            const { todayBookings, pastBookings } = classifyBookingsByDate(bookings);
+            
+            return (
+              <>
+                {/* 오늘의 예약 */}
+                {todayBookings.length > 0 && (
+                  <>
+                    <div className="booking-section-title">
+                      <div className="section-title-text">
+                        {get('TODAY_BOOKINGS_TITLE') || '오늘의 예약 내역'}
+                      </div>
+                      <div className="section-count">{todayBookings.length}</div>
+                    </div>
+                    {todayBookings.map(bk => (
+                      <SketchDiv key={bk.id || bk.reservation_id} className="booking-card">
+                        <HatchPattern opacity={0.6} />
+                        <div className="booking-header">
+                          <div className="booking-venue">{bk.venue || bk.target_name}</div>
+                          <div className="booking-status" style={getStatusStyle(bk.status)}>{bk.status}</div>
+                        </div>
+                        <div className="booking-info">
+                          <div>{get('BOOKING_DATE_LABEL')} {bk.date || new Date(bk.res_date).toLocaleDateString()}</div>
+                          <div>{get('BOOKING_TIME_LABEL')} {bk.time || bk.res_start_time}</div>
+                          <div>{get('BOOKING_CUSTOMER_LABEL')} {bk.client_name || bk.user_name}</div>
+                          <div style={{
+                            fontSize: '0.8rem',
+                            color: '#666',
+                            marginTop: '0.2rem'
+                          }} className="booking-reservedAt">{get('BOOKING_RESERVED_AT_LABEL')} : {new Date(bk.reserved_at).toLocaleString()}</div>
+                        </div>
+                        <div className="booking-actions">
+                          {(['Detail', 'Accept', 'MANAGER']).map(action => {
+                            const isAcceptDisabled = action === 'Accept' && 
+                              (!user.staff_id || !bk.target_id || user.staff_id !== bk.target_id);
+                            
+                            return (
+                              <SketchBtn 
+                                key={action} 
+                                variant={getButtonVariant(action)} 
+                                size="small" 
+                                className="booking-action-btn"
+                                disabled={isAcceptDisabled}
+                                onClick={() => handleBtn(action, bk)}
+                                style={isAcceptDisabled ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                              >
+                                {action === 'MANAGER' || action === 'CUSTOMER' ? (
+                                  <>
+                                    <MessageCircle size={14} style={{ marginRight: '4px' }} />
+                                    {getActionText(action)}
+                                  </>
+                                ) : (
+                                  getActionText(action)
+                                )}
+                              </SketchBtn>
+                            );
+                          })}
+                        </div>
+                      </SketchDiv>
+                    ))}
+                  </>
+                )}
+
+                {/* 지난 예약 */}
+                {pastBookings.length > 0 && (
+                  <>
+                    <div className="booking-section-title">
+                      <div className="section-title-text">
+                       {get('PAST_BOOKINGS_TITLE') || '지난 예약 내역'}
+                      </div>
+                      <div className="section-count">{pastBookings.length}</div>
+                    </div>
+                    {pastBookings.map(bk => (
+                      <SketchDiv key={bk.id || bk.reservation_id} className="booking-card">
+                        <HatchPattern opacity={0.6} />
+                        <div className="booking-header">
+                          <div className="booking-venue">{bk.venue || bk.target_name}</div>
+                          <div className="booking-status" style={getStatusStyle(bk.status)}>{bk.status}</div>
+                        </div>
+                        <div className="booking-info">
+                          <div>{get('BOOKING_DATE_LABEL')} {bk.date || new Date(bk.res_date).toLocaleDateString()}</div>
+                          <div>{get('BOOKING_TIME_LABEL')} {bk.time || bk.res_start_time}</div>
+                          <div>{get('BOOKING_CUSTOMER_LABEL')} {bk.client_name || bk.user_name}</div>
+                          <div style={{
+                            fontSize: '0.8rem',
+                            color: '#666',
+                            marginTop: '0.2rem'
+                          }} className="booking-reservedAt">{get('BOOKING_RESERVED_AT_LABEL')} : {new Date(bk.reserved_at).toLocaleString()}</div>
+                        </div>
+                        <div className="booking-actions">
+                          {(['Detail', 'Accept', 'MANAGER']).map(action => {
+                            const isAcceptDisabled = action === 'Accept' && 
+                              (!user.staff_id || !bk.target_id || user.staff_id !== bk.target_id);
+                            
+                            return (
+                              <SketchBtn 
+                                key={action} 
+                                variant={getButtonVariant(action)} 
+                                size="small" 
+                                className="booking-action-btn"
+                                disabled={isAcceptDisabled}
+                                onClick={() => handleBtn(action, bk)}
+                                style={isAcceptDisabled ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                              >
+                                {action === 'MANAGER' || action === 'CUSTOMER' ? (
+                                  <>
+                                    <MessageCircle size={14} style={{ marginRight: '4px' }} />
+                                    {getActionText(action)}
+                                  </>
+                                ) : (
+                                  getActionText(action)
+                                )}
+                              </SketchBtn>
+                            );
+                          })}
+                        </div>
+                      </SketchDiv>
+                    ))}
+                  </>
+                )}
+
+                {/* 예약이 없는 경우 */}
+                {bookings.length === 0 && (
+                  <div className="no-bookings-message">
+                    {get('NO_BOOKINGS_MESSAGE') || '예약 내역이 없습니다.'}
+                  </div>
+                )}
+              </>
+            );
+          })()}
+        </>
+      )}
+    </div>
+  </div>
     </>
   );
 };

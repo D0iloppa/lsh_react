@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
 import dayjs from 'dayjs';
-import { CheckCircle, XCircle, ClipboardList, MessageCircle} from 'lucide-react';
+import { CheckCircle, XCircle, ClipboardList, MessageCircle, Bell} from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 import { useAuth } from '@contexts/AuthContext';
@@ -29,54 +29,74 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
   const { user } = useAuth();
 
   const calendarScrollRef = useRef(null);
-
-  const firstDay = dayjs(`${year}-${month + 1}-01`);
-  const startDay = firstDay.day();
-  const daysInMonth = firstDay.daysInMonth();
   const today = dayjs();
 
-  const prevMonth = month === 0 ? 11 : month - 1;
-  const prevYear = month === 0 ? year - 1 : year;
-  const prevMonthLastDay = dayjs(`${prevYear}-${prevMonth + 1}-01`).daysInMonth();
-
-  const calendarCells = [];
-
-
-   useEffect(() => {
-            if (messages && Object.keys(messages).length > 0) {
-              console.log('✅ Messages loaded:', messages);
-              // setLanguage('en'); // 기본 언어 설정
-              console.log('Current language set to:', currentLang);
-              window.scrollTo(0, 0);
-            }
-          }, [messages, currentLang]);
+  // 현재 주를 맨 위에 배치하는 함수
+  const reorderCalendarCellsForCurrentWeek = (cells, today) => {
+    // 현재 날짜가 있는 인덱스 찾기
+    const todayIndex = cells.findIndex(cell => cell.date.isSame(today, 'date'));
     
+    if (todayIndex === -1) {
+      // 오늘 날짜가 현재 월에 없으면 기존 배열 그대로 반환
+      return cells;
+    }
+    
+    // 현재 주의 시작 인덱스 계산 (일요일 기준)
+    const currentWeekStartIndex = todayIndex - (todayIndex % 7);
+    
+    // 현재 주부터 시작하여 재배치
+    const reorderedCells = [];
+    
+    // 현재 주부터 끝까지
+    for (let i = currentWeekStartIndex; i < cells.length; i++) {
+      reorderedCells.push(cells[i]);
+    }
+    
+    // 현재 주 이전 주들을 뒤에 추가
+    for (let i = 0; i < currentWeekStartIndex; i++) {
+      reorderedCells.push(cells[i]);
+    }
+    
+    return reorderedCells;
+  };
 
-  for (let i = 0; i < startDay; i++) {
-    calendarCells.push({
-      date: dayjs(`${prevYear}-${prevMonth + 1}-${prevMonthLastDay - startDay + i + 1}`),
-      isCurrentMonth: false
-    });
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    calendarCells.push({
-      date: dayjs(`${year}-${month + 1}-${d}`),
-      isCurrentMonth: true
-    });
-  }
-  const nextMonth = month === 11 ? 0 : month + 1;
-  const nextYear = month === 11 ? year + 1 : year;
-  for (let i = calendarCells.length; i < 42; i++) {
-    calendarCells.push({
-      date: dayjs(`${nextYear}-${nextMonth + 1}-${i - daysInMonth - startDay + 1}`),
-      isCurrentMonth: false
-    });
-  }
+  // 더 유연한 캘린더 생성 (현재 주 기준으로 앞뒤로 확장)
+  const calendarCells = useMemo(() => {
+    // 현재 월의 오늘 날짜 기준으로 주 단위 생성
+    const currentDate = dayjs(`${year}-${month + 1}-01`);
+    const todayInCurrentMonth = currentDate.month() === today.month() && currentDate.year() === today.year() ? today : currentDate.date(15); // 현재 월이 아니면 15일을 기준으로
+    
+    // 기준 날짜가 포함된 주의 시작일 (일요일)
+    const startOfWeek = todayInCurrentMonth.startOf('week');
+    
+    // 총 8주 생성 (현재 주 기준으로 앞 2주, 뒤 5주)
+    const cells = [];
+    const totalWeeks = 8;
+    const startDate = startOfWeek.subtract(2, 'week'); // 현재 주 2주 전부터 시작
+    
+    for (let week = 0; week < totalWeeks; week++) {
+      for (let day = 0; day < 7; day++) {
+        const date = startDate.add(week * 7 + day, 'day');
+        cells.push({
+          date: date,
+          isCurrentMonth: date.month() === currentDate.month() && date.year() === currentDate.year()
+        });
+      }
+    }
 
+    return cells;
+  }, [month, year, today]);
+
+  useEffect(() => {
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
+  }, [messages, currentLang]);
 
   const chatWithStaff = async(staff) => {
     console.log('chatWithStaff', staff);
-
 
     // 1. room_sn 조회
     const chatList = await ApiClient.get('/api/getChattingList', {
@@ -94,25 +114,13 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
       console.log('room_sn', room_sn);
     }
 
-
     navigateToPageWithData(PAGES.CHATTING, { 
-      // initType: 'booking',
-      // reservation_id: r.id,
       name : staff.staff_name,
       room_sn: room_sn,
       send_to: 'staff',
       receiver_id: staff.staff_id,
       ...staff
     });
-
-
-    /*
-    navigateToPageWithData(PAGES.CHATTING, { 
-      initType: 'booking',
-      reservation_id: bk.reservation_id,
-      ...bk
-    });
-    */
   };
 
   const handlePrevMonth = () => {
@@ -128,6 +136,7 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
       if (calendarScrollRef.current) calendarScrollRef.current.scrollTop = 0;
     }, 0);
   };
+
   const handleNextMonth = () => {
     let newMonth = month + 1;
     let newYear = year;
@@ -166,7 +175,6 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
     try {
       console.log('Fetching staff list for date:', user, date.format('YYYY-MM-DD'));
 
-
       // 실제 API 호출
       const response = await ApiClient.postForm('/api/getStaffShift', {
         target_id: user.venue_id,
@@ -200,8 +208,6 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
         work_date: item.work_date
       }));
 
-
-      
       setStaffList(mappedStaffList);
       setDayoffList(dayoffList);
       setNotRegisterList(notRegisterList);
@@ -216,122 +222,126 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
     }
   };
 
+  // 메시지 포맷 헬퍼 함수
+  const formatScheduleMessage = (messageKey, staffName) => {
+    return get(messageKey).replace('{staffName}', staffName);
+  };
 
-// 메시지 포맷 헬퍼 함수
-const formatScheduleMessage = (messageKey, staffName) => {
-  return get(messageKey).replace('{staffName}', staffName);
-};
-
-// 스케줄 상태 변경 핸들러
-const handleStatusChange = async (scheduleId, newStatus) => {
-  try {
-    // 해당 스태프 정보 찾기
-    const staff = staffList.find(s => s.schedule_id === scheduleId);
-    const staffName = staff ? staff.staff_name : 'Unknown Staff';
-    
-    // 상태 변경 확인 메시지
-    const result = await customSwal.fire({
-      title: get('SCHEDULE_SETTING_TITLE'),
-      text: get('SCHEDULE_SETTING_CONFIRM'),
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: get('SWAL_CONFIRM_BUTTON'),
-      cancelButtonText: get('STAFF_CANCEL_BUTTON'),
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33'
-    });
-
-    // 사용자가 취소한 경우
-    if (!result.isConfirmed) {
-      return;
-    }
-
-    console.log('Updating schedule status:', scheduleId, 'to:', newStatus);
-
-    // 실제 스케줄 상태 변경 API 호출
-    const response = await ApiClient.postForm('/api/updateShift', {
-      schedule_id: scheduleId,
-      status: newStatus
-    });
-
-    console.log('✅ Schedule status update response:', response);
-    
-    // 성공 시 로컬 상태 업데이트
-    setStaffList(prev => 
-      prev.map(staff => 
-        staff.schedule_id === scheduleId 
-          ? { ...staff, status: newStatus }
-          : staff
-      )
-    );
-    
-    console.log('✅ Schedule status updated:', newStatus);
-
-    // 성공 시 결과 알림
-    if (newStatus === 'available') {
-      toast.info(
-        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <CheckCircle color="#4caf50" size={20} />
-          {formatScheduleMessage('SCHEDULE_APPROVED_MESSAGE', staffName)}
-        </span>,
-        {icon:false}
-      );
-    } else {
-      toast.info(
-        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <XCircle color="#f44336" size={20} />
-          {formatScheduleMessage('SCHEDULE_REJECTED_MESSAGE', staffName)}
-        </span>,
-        {icon:false}
-      );
-    }
-    
-  } catch (error) {
-    console.error('Failed to update schedule status:', error);
-
-    // 실패 시 결과 알림
-    toast.error(get('SCHEDULE_UPDATE_ERROR'));
-  }
-};
-
-// 날짜 선택 핸들러
-const handleDateSelect = (date) => {
-  setSelectedDate(date);
-  fetchStaffList(date);
-};
-
-// 페이지 진입 시 오늘 날짜로 스크롤 이동
-useEffect(() => {
-  const scrollToToday = () => {
-    if (calendarScrollRef.current) {
-      const todayIdx = calendarCells.findIndex(cell => cell.date.isSame(today, 'date'));
+  // 스케줄 상태 변경 핸들러
+  const handleStatusChange = async (scheduleId, newStatus) => {
+    try {
+      // 해당 스태프 정보 찾기
+      const staff = staffList.find(s => s.schedule_id === scheduleId);
+      const staffName = staff ? staff.staff_name : 'Unknown Staff';
       
-      if (todayIdx !== -1) {
-        // 오늘 날짜가 있는 주(2주 단위)를 찾기
-        const weekIndex = Math.floor(todayIdx / 14);
+      // 상태 변경 확인 메시지
+      const result = await customSwal.fire({
+        title: get('SCHEDULE_SETTING_TITLE'),
+        text: get('SCHEDULE_SETTING_CONFIRM'),
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON'),
+        cancelButtonText: get('STAFF_CANCEL_BUTTON'),
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33'
+      });
+
+      // 사용자가 취소한 경우
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      console.log('Updating schedule status:', scheduleId, 'to:', newStatus);
+
+      // 실제 스케줄 상태 변경 API 호출
+      const response = await ApiClient.postForm('/api/updateShift', {
+        schedule_id: scheduleId,
+        status: newStatus
+      });
+
+      console.log('✅ Schedule status update response:', response);
+      
+      // 성공 시 로컬 상태 업데이트
+      setStaffList(prev => 
+        prev.map(staff => 
+          staff.schedule_id === scheduleId 
+            ? { ...staff, status: newStatus }
+            : staff
+        )
+      );
+      
+      console.log('✅ Schedule status updated:', newStatus);
+
+      // 성공 시 결과 알림
+      if (newStatus === 'available') {
+        toast.info(
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <CheckCircle color="#4caf50" size={20} />
+            {formatScheduleMessage('SCHEDULE_APPROVED_MESSAGE', staffName)}
+          </span>,
+          {icon:false}
+        );
+      } else {
+        toast.info(
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <XCircle color="#f44336" size={20} />
+            {formatScheduleMessage('SCHEDULE_REJECTED_MESSAGE', staffName)}
+          </span>,
+          {icon:false}
+        );
+      }
+      
+    } catch (error) {
+      console.error('Failed to update schedule status:', error);
+
+      // 실패 시 결과 알림
+      toast.error(get('SCHEDULE_UPDATE_ERROR'));
+    }
+  };
+
+  // 날짜 선택 핸들러
+  const handleDateSelect = (date) => {
+    setSelectedDate(date);
+    fetchStaffList(date);
+  };
+
+  const sendAlert = async (staffId) => {
+    try {
+      const response = await ApiClient.postForm('/api/sendAlert', {
+        staff_id: staffId
+      });
+
+      console.log("response", response)
         
-        // 실제 DOM 요소의 높이를 계산
+    } catch (error) {
+      console.error('Failed to update schedule status:', error);
+    }
+  }
+
+  // 스크롤을 현재 주로 이동 (이제 현재 주가 세 번째 줄에 위치)
+  useEffect(() => {
+    const scrollToToday = () => {
+      if (calendarScrollRef.current) {
+        // 현재 주는 2주 후에 위치 (0번째: 2주전, 1번째: 1주전, 2번째: 현재주)
+        const targetScrollIndex = 1; // 두 번째 2주 블록 (현재 주가 포함된 블록)
+        
         const calendar2WeeksElements = calendarScrollRef.current.querySelectorAll('.calendar-2weeks');
         
-        if (calendar2WeeksElements[weekIndex]) {
-          const elementHeight = calendar2WeeksElements[weekIndex].offsetHeight;
+        if (calendar2WeeksElements[targetScrollIndex]) {
+          const elementHeight = calendar2WeeksElements[targetScrollIndex].offsetHeight;
+          const scrollPosition = targetScrollIndex * elementHeight;
           
-          // 간단한 방법: 각 2주 블록의 높이를 기준으로 계산
-          const scrollPosition = weekIndex * elementHeight;
-          
-          // 부드러운 스크롤 애니메이션
           calendarScrollRef.current.scrollTo({
             top: scrollPosition,
             behavior: 'smooth'
           });
         }
       }
-    }
-  };
+    };
 
-  // 즉시 실행
-  scrollToToday();
-}, [month, year]); // calendarCells 대신 month, year를 의존성으로 변경
+    // 즉시 실행
+    scrollToToday();
+  }, [month, year]);
 
   // 최초 로딩 시 오늘 날짜 선택 및 스태프 목록 가져오기
   useEffect(() => {
@@ -499,7 +509,7 @@ useEffect(() => {
           transform: translateX(0);
         }
       `}</style>
-        <div className="schedule-container">
+      <div className="schedule-container">
         <SketchHeader
           title={
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -547,20 +557,23 @@ useEffect(() => {
               <HatchPattern opacity={0.3} />
               {[0, 1].map(rowIdx => (
                 <div className="calendar-row" key={rowIdx}>
-                  {calendarCells.slice(twoWeekIdx * 14 + rowIdx * 7, twoWeekIdx * 14 + (rowIdx + 1) * 7).map((cell, idx) => (
-                    <div
-                      key={idx + rowIdx * 7 + twoWeekIdx * 14}
-                      className={
-                        'calendar-date' +
-                        (cell.date.isSame(today, 'date') ? ' today' : '') +
-                        (selectedDate && cell.date.isSame(selectedDate, 'date') ? ' selected' : '') +
-                        (!cell.isCurrentMonth ? ' other-month' : '')
-                      }
-                      onClick={() => handleDateSelect(cell.date)}
-                    >
-                      {cell.date.date()}
-                    </div>
-                  ))}
+                  {calendarCells.slice(twoWeekIdx * 14 + rowIdx * 7, twoWeekIdx * 14 + (rowIdx + 1) * 7).map((cell, idx) => {
+                    if (!cell) return null; // 셀이 없는 경우 방어
+                    return (
+                      <div
+                        key={`${cell.date.format('YYYY-MM-DD')}-${idx}`}
+                        className={
+                          'calendar-date' +
+                          (cell.date.isSame(today, 'date') ? ' today' : '') +
+                          (selectedDate && cell.date.isSame(selectedDate, 'date') ? ' selected' : '') +
+                          (!cell.isCurrentMonth ? ' other-month' : '')
+                        }
+                        onClick={() => handleDateSelect(cell.date)}
+                      >
+                        {cell.date.date()}
+                      </div>
+                    );
+                  })}
                 </div>
               ))}
             </div>
@@ -597,17 +610,6 @@ useEffect(() => {
                       </span>
                       </SketchBtn>
                     </div>
-                    {/*
-                    <div 
-                      className={`status-toggle ${staff.status}`}
-                      onClick={() => handleStatusChange(
-                        staff.schedule_id, 
-                        staff.status === 'available' ? 'declined' : 'available'
-                      )}
-                    >
-                      <div className={`toggle-slider ${staff.status}`}></div>
-                    </div>
-                    */}
                   </div>
                 ))}
               </>
@@ -651,7 +653,16 @@ useEffect(() => {
                       <div className="staff-name">{staff.staff_name}</div>
                       <div className="staff-time">미입력</div>
                     </div>
-                    <div>
+                    <div style={{display: 'flex' , gap: '5px', width: '175px'}}>
+                      <SketchBtn
+                        size="small"
+                        className="staff-assign-btn"
+                        onClick={() => sendAlert(staff.staff_id)}
+                      >
+                      <span className='chat-style' >
+                          <Bell size={13}/> send
+                      </span>
+                      </SketchBtn>
                       <SketchBtn
                         size="small"
                         className="staff-assign-btn"
@@ -690,4 +701,4 @@ useEffect(() => {
   );
 };
 
-export default StaffSchedule; 
+export default StaffSchedule;

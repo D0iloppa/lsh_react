@@ -4,6 +4,7 @@ import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 import SketchHeader from '@components/SketchHeader';
 import HatchPattern from '@components/HatchPattern';
+import PersonFinderBillboard from '@components/PersonFinderBillboard';
 import { MessageCircle, Calendar, Check, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
@@ -136,7 +137,31 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
   const { user, isLoggedIn } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [selectedDate, setSelectedDate] = useState(getToday());
+  const [showBillboard, setShowBillboard] = useState(false);
   
+  
+
+const registerReader = async () => {
+  try {
+    if (!user?.manager_id) {
+      console.warn('Manager ID가 없어서 registerReader를 건너뜁니다.');
+      return;
+    }
+
+    const response = await ApiClient.postForm('/api/registerReader', {
+      target_table: 'reservations',  // 예약 테이블
+      target_id: user.manager_id,    // 매니저 ID
+      reader_type: 'manager',        // 리더 타입
+      reader_id: user.manager_id     // 리더 ID (매니저 ID와 동일)
+    });
+
+    console.log('✅ registerReader 성공:', response);
+    
+  } catch (error) {
+    console.error('❌ registerReader 실패:', error);
+    // 에러가 발생해도 페이지 로딩을 막지 않음
+  }
+};
 
 
 const formatDateForDisplay = (dateString) => {
@@ -325,12 +350,13 @@ const handleReservationManage = async (reservation_id, mngCode) => {
 
     const initializeReservations = async () => {
       setLoading(true);
+      await registerReader();
       await loadReservations();
       setLoading(false);
     };
 
     initializeReservations();
-  }, [venue_id]); // venue_id가 변경될 때만 실행
+  }, [venue_id, user.manager_id]); // venue_id가 변경될 때만 실행
 
   // const filtered = reservations.filter(r => {
   //   if (selectedStatus === 'pending') {
@@ -364,12 +390,16 @@ const chatWithUser = async(r) => {
       console.log('room_sn', room_sn);
     }
 
+    console.log('r', r);
+
 
     navigateToPageWithData(PAGES.CHATTING, { 
       initType: 'booking',
       reservation_id: r.id,
       name : r.client_name,
       room_sn: room_sn,
+      send_to: 'user',
+      receiver_id: r.client_id,
       ...r
     });
 
@@ -449,7 +479,6 @@ const chatWithUser = async(r) => {
           color: #888;
           margin-bottom: 0.2rem;
           text-align: end;
-          margin-bottom: 1rem;
         }
         
         .status-badge {
@@ -589,6 +618,10 @@ const chatWithUser = async(r) => {
             .today-btn:hover {
               background: #2563eb;
             }
+              .title-wrap {
+                display: flex;
+                justify-content: space-between;
+              }
           
       `}</style>
       <div className="reservation-container">
@@ -658,12 +691,15 @@ const chatWithUser = async(r) => {
               filtered.map(r => (
 
                 <SketchDiv key={r.id} className="reservation-card">
-                  <div className="reservation-header">
-                    <div className="reservation-contents">
-                      <div className="reservation-date">
+                   <div className='title-wrap'>
+                     <div className="reservation-date">
                         <Calendar size={15} style={{marginRight: '3px'}}/>
                         {r.date}
                       </div>
+                   <div className="reservation-time">{r.time}</div>
+                      </div>
+                  <div className="reservation-header">
+                    <div className="reservation-contents"> 
                       <div className="reservation-venue">
                         <div>
                           {r.targetName === "venue" 
@@ -687,20 +723,40 @@ const chatWithUser = async(r) => {
                           <Edit size={10}/> 에스코트 여부: 
                            <span className={`use_escort ${r.use_escort === 1 ? 'applied' : 'not_applied'}`}>
                              {r.use_escort === 1 ? '신청' : '미신청'}
+                             
                           </span>
+                        
                         </div>
                         <div>
                          <Edit size={10}/> 예약자 메모: {r.note ? r.note : <span style={{color:'#9d9d9d'}}>메모 없음</span>}
                         </div>
                       </div>
                     </div>
-                    <div className="reservation-time">{r.time}</div>
+                    
                   </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                     {/* 에스코트 신청했을 때만 전광판 버튼 표시 */}
+                      {r.use_escort === 1 ? (
+                        <SketchBtn 
+                          size="small"
+                          variant="primary" 
+                          style={{width: '30%', background: 'linear-gradient(135deg, rgb(255 111 241 / 0%), rgb(255 225 249))'}}
+                          onClick={() => setShowBillboard(true)} 
+                        >
+                          전광판 열기
+                        </SketchBtn>
+                      ) : (
+                        <div style={{width: '40%'}}></div> // 공간 유지를 위한 빈 div
+                      )}
                   <div className="reservation-status">
                     {get('RESERVATION_STATUS_LABEL')} <span className={`status-badge status-${r.status}`}>
                       {getStatusText(r.status)}
                     </span>
                   </div>
+                   {showBillboard && (
+                    <PersonFinderBillboard onClose={() => setShowBillboard(false)} />
+                  )}
+                   </div>
                   <div className="reservation-actions">
                     {/* Approve 버튼 - pending일 때만 활성화, confirmed면 "승인됨", cancelled이면 숨김 */}
                     {r.status === 'canceled' ? null : (

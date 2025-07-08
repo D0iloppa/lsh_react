@@ -18,8 +18,7 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
 
     useEffect(() => {
       const { chatRoomType = 'manager' } = otherProps;
-
-      console.log('chatRoomType', chatRoomType);
+      
       setRoomType(chatRoomType);
     }, [otherProps]); // 의존성 배열로 제어
 
@@ -56,11 +55,10 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
 
     let params = { account_type : roomType };
 
-    console.log('chatRoomType', params);
-
     switch(roomType){
       case 'manager':
         params.venue_id = venue_id;
+        params.manager_id = user.manager_id;
         break;
       case 'staff':
         params.staff_id = user.staff_id;
@@ -77,7 +75,7 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
       const mappedStaffs = data.map((item, index) => ({
         
         id: item.user_id || index,
-        creator_type: item.creator_type,
+        creator_type: item.participant_type || item.creator_type,
         room_sn: item.room_sn,
         name: item.room_name || '이름 없음',
         lastMessage: item.last_message_preview || '메시지 없음',

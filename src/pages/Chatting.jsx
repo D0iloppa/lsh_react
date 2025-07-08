@@ -294,75 +294,38 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     }).format(date);
   }, []);
 
-  // 예약 정보를 가져오는 함수
+  // 예약 정보 캐시
+  const reservationCache = {};
+
+  // 예약 정보를 가져오는 함수 (캐싱 적용)
   const getReservationInfo = useCallback(async (reservationId) => {
+    if (reservationCache[reservationId]) {
+      return reservationCache[reservationId];
+    }
     try {
       const res = await ApiClient.get('/api/getReservationList_mng', {
         params: { venue_id: venue_id }
       });
-
       if(res && res.length > 0){
         let reservation = res.find(item => item.reservation_id === parseInt(reservationId));
-
         if(reservation){
-          console.log('reservation', reservation);
           reservation.res_start_time = reservation.res_start_time.slice(0, 5);
-          
-          // res_end_time에 1시간 추가
           const endTime = new Date(`2000-01-01T${reservation.res_end_time}`);
           endTime.setHours(endTime.getHours() + 1);
           reservation.res_end_time = endTime.toTimeString().slice(0, 5);
-
           reservation.target_name = reservation.client_name;
+          reservationCache[reservationId] = reservation;
+          return reservation;
         }
-
-        return reservation;
       }
-
       return null;
     } catch (error) {
-      console.error('❌ 예약 정보 불러오기 실패:', error);
       return null;
     }
   }, [venue_id]);
 
-  // 예약 링크 템플릿 컴포넌트
-  const ReservationLinkTemplate = React.memo(({ reservationId }) => {
-    const [reservationData, setReservationData] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-      const loadReservationData = async () => {
-        if (reservationId) {
-          setIsLoading(true);
-          console.log('reservationId', reservationId);
-          const data = await getReservationInfo(reservationId);
-          setReservationData(data);
-          setIsLoading(false);
-        }
-      };
-      
-      loadReservationData();
-    }, [reservationId]);
-
-    if (isLoading) {
-      return (
-        <div style={{
-          background: '#f8fafc',
-          border: '1px solid #e5e7eb',
-          borderRadius: '8px',
-          padding: '12px',
-          margin: '8px 0',
-          maxWidth: '320px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          textAlign: 'center',
-          color: '#6b7280'
-        }}>
-          예약 정보 로딩 중...
-        </div>
-      );
-    }
-
+  // 예약 링크 템플릿 컴포넌트 (비동기 로딩 제거)
+  const ReservationLinkTemplate = React.memo(({ reservationData, reservationId }) => {
     if (!reservationData) {
       return (
         <div style={{
@@ -380,7 +343,6 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         </div>
       );
     }
-
     const formatDate = (dateString) => {
       if (!dateString) return '';
       const date = new Date(dateString);
@@ -389,12 +351,10 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       const day = date.getDate().toString().padStart(2, '0');
       return `${year}.${month}.${day}`;
     };
-
     const formatTime = (timeString) => {
       if (!timeString) return '';
       return timeString.slice(0, 5);
     };
-
     return (
       <div style={{
         background: '#f8fafc',
@@ -441,30 +401,26 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     );
   });
 
+  // getLinkTemplate 수정
   const getLinkTemplate = useCallback((msg) => {
     switch(msg.link_type){
       case 'reservation':{
-        return <ReservationLinkTemplate reservationId={msg.link_target} />;
+        return <ReservationLinkTemplate reservationData={msg.reservationData} reservationId={msg.link_target} />;
       } 
       default:
         return null;
     }
   }, []);
 
-  // 메시지 렌더링 컴포넌트 (메모이제이션)
+  // ChatMessage에서 예약 데이터 바로 전달
   const ChatMessage = React.memo(({ msg, setModalImage }) => {
-    if (msg.link_type && msg.link_target) {
+    if (msg.link_type && msg.link_target && msg.reservationData) {
       return (
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          marginBottom: '1rem'
-        }}>
-          {getLinkTemplate(msg)}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <ReservationLinkTemplate reservationData={msg.reservationData} reservationId={msg.link_target} />
         </div>
       );
     }
-
     return (
       <div className={`chat-message-wrapper ${msg.sender}`}>
         {msg.sender === 'me' ? (
@@ -506,6 +462,16 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     );
   });
 
+  // 중복 제거 유틸
+  function dedupeMessages(messages) {
+    const seen = new Set();
+    return messages.filter(msg => {
+      if (seen.has(msg.chat_sn)) return false;
+      seen.add(msg.chat_sn);
+      return true;
+    });
+  }
+
   const getChattingData = useCallback(async (init = false) => {
     const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
     try {
@@ -516,33 +482,34 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         },
       });
 
-
-
-      const newMessages = response.data.map((item, index) => ({
-        
-        id: index + 1,
-        sender: item.sender_type === user.type ? 'me' : 'other',
-        text: item.chat_msg || '',
-        image: item.image_url || null,
-        chat_sn: item.chat_sn,
-        sender_type: item.sender_type,
-        time: formatTime(new Date(item.send_dt)),
-        link_type: item.link_type,
-        link_target: item.link_target,
-        sender_name: item.sender_name
+      // 예약 정보 미리 포함
+      const newMessages = await Promise.all(response.data.map(async (item, index) => {
+        let reservationData = null;
+        if (item.link_type === 'reservation' && item.link_target) {
+          reservationData = await getReservationInfo(item.link_target);
+        }
+        return {
+          id: index + 1,
+          sender: item.sender_type === user.type ? 'me' : 'other',
+          text: item.chat_msg || '',
+          image: item.image_url || null,
+          chat_sn: item.chat_sn,
+          sender_type: item.sender_type,
+          time: formatTime(new Date(item.send_dt)),
+          link_type: item.link_type,
+          link_target: item.link_target,
+          sender_name: item.sender_name,
+          reservationData, // 추가
+        };
       }));
 
-      // 초기 로드와 업데이트 구분
       if (lastChatSnRef.current === null) {
-        console.log('First load - setting all messages:', newMessages);
-        setChatMessages(newMessages);
-        
-        if (newMessages.length > 0) {
-          const lastMessage = newMessages[newMessages.length - 1];
+        // 오래된 메시지가 먼저 오도록 정렬
+        const sortedMessages = [...newMessages].sort((a, b) => a.chat_sn - b.chat_sn);
+        setChatMessages(dedupeMessages(sortedMessages));
+        if (sortedMessages.length > 0) {
+          const lastMessage = sortedMessages[sortedMessages.length - 1];
           lastChatSnRef.current = lastMessage.chat_sn;
-          console.log('Updated lastChatSnRef.current to:', lastChatSnRef.current);
-          
-          // DOM 렌더링 완료 후 스크롤
           setTimeout(() => {
             scrollToBottom('auto');
           }, 300);
@@ -550,27 +517,21 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       } else {
         const newChatMessages = newMessages.filter(msg => msg.chat_sn > lastChatSnRef.current);
         if (newChatMessages.length > 0) {
-          setChatMessages(prev => {
-            const updated = [...prev, ...newChatMessages];
-            return updated;
-          });
-          
+          setChatMessages(prev => dedupeMessages([...prev, ...newChatMessages]));
           const lastMessage = newChatMessages[newChatMessages.length - 1];
           const shouldScroll = lastMessage.sender_type === 'manager' || isUserAtBottom();
-          
           if (shouldScroll) {
             setTimeout(() => {
               scrollToBottom(lastMessage.sender_type === 'manager' ? 'auto' : 'smooth');
             }, 200);
           }
-          
           lastChatSnRef.current = lastMessage.chat_sn;
         }
       }
     } catch (error) {
       console.error('❌ 채팅 데이터 불러오기 실패:', error);
     }
-  }, [room_sn, user.type, formatTime, scrollToBottom, isUserAtBottom]);
+  }, [room_sn, user.type, formatTime, scrollToBottom, isUserAtBottom, getReservationInfo]);
 
   // ⭐ 최적화된 메시지 전송 핸들러
   const handleMessageSend = useCallback(async (message) => {
@@ -656,7 +617,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
   }, []);
 
-  console.log("user.type", user)
+  // console.log("user.type", user)
 
   // ⭐ ReservationCard onSend 함수 - 정리된 버전
   const handleReservationSend = useCallback(async () => {
@@ -677,7 +638,9 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       last_message_preview: '예약 정보',
       venue_id,
       link_type: 'reservation',
-      link_target: reservationCardData.reservation_id
+      link_target: reservationCardData.reservation_id,
+      send_to: sendTo,
+      receiver_id: receiverId
     };
 
     console.log('Sending chatData:', chatData);
@@ -690,7 +653,9 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       setShowReservationCard(false);
       setReservationCardData(null);
 
-      const res = await ApiClient.postForm('/api/sendChat', chatData);
+      //const res = await ApiClient.postForm('/api/sendChat', chatData);
+      const res = await ApiClient.post('/api/insertChattingData', chatData);
+      
       console.log('sendChat response:', res);
       
       const {chat_sn, room_sn: newRoomSn} = res;
@@ -900,7 +865,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
             apiClient={ApiClient}
             onUploadComplete={handleUploadComplete}
             onUploadError={handleUploadError}
-            showContextMenu={true}
+            showContextMenu={false}
             showPreview={false}
             className="chat-image-uploader"
           />

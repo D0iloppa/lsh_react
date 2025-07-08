@@ -367,14 +367,14 @@ const handleSaveNewPassword = async () => {
         <div className="section-title">{get('SETTINGS_MANAGE_SHOP_DETAIL')}</div>
         
         <div className='venue-onOff'>
-        <div style={{lineHeight: '1.8'}}>영업 상태 </div>
+        <div style={{lineHeight: '1.8'}}>{get('MANAGER_VENUE_SETTING')} </div>
         <SketchBtn 
               variant={emailNoti ? "green" : "danger"} 
               size="small"  
               style={{width: '30%'}}
               onClick={handleVenueStatusUpdate}
             ><HatchPattern opacity={0.6} />
-              {emailNoti ?'ON' : 'OFF'}
+              {emailNoti ? get('VENUE_STATUS_OPERATING') : get('SCHEDULE_STATUS_DAYOFF')}
             </SketchBtn></div>
              
         <SketchDiv className="section-box" style={{marginBottom:'1.2rem'}}>
@@ -540,7 +540,7 @@ const handleSaveNewPassword = async () => {
               <option value="ja">{get('language.name.japanese')}</option>
               <option value="cn">{get('LANGUAGE_CHINESE')}</option>
             </select>
-            <SketchBtn variant="accent" size="small" style={{width: '30%'}} onClick={handleSaveLanguage}><HatchPattern opacity={0.6} /> {get('STAFF_SAVE_BUTTON')}</SketchBtn>
+            <SketchBtn variant="accent" size="small" style={{width: '30%'}} onClick={handleSaveLanguage}><HatchPattern opacity={0.6} /> {get('VENUE_STATUS_CHANGE_BUTTON')}</SketchBtn>
           </div>
         </SketchDiv>
         <div className="section-title" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
