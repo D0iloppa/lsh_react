@@ -132,6 +132,18 @@ const StaffReviewHistory = ({ navigateToPageWithData, PAGES, goBack, pageData, .
       ...prev,
       [reviewId]: !prev[reviewId]
     }));
+    
+    // 답변 창을 열 때 기존 답변이 있으면 responses에 설정
+    if (!openResponses[reviewId]) {
+      const currentReview = reviews.find(review => (review.review_id || review.id) === reviewId);
+      const existingResponse = currentReview?.reply_content || currentReview?.response;
+      if (existingResponse) {
+        setResponses(prev => ({
+          ...prev,
+          [reviewId]: existingResponse
+        }));
+      }
+    }
   };
 
   // 답변 텍스트 변경
@@ -751,7 +763,7 @@ const handleSubmitResponse = async (reviewId) => {
                     <textarea
                       className="response-textarea"
                       placeholder={get('REVIEW_RESPONSE_PLACEHOLDER')}
-                      value={responses[review.review_id || review.id] || review.reply_content || review.response || ''}
+                      value={responses[review.review_id || review.id] || ''}
                       onChange={(e) => handleResponseChange(review.review_id || review.id, e.target.value)}
                     />
                     <div className="response-form-actions">

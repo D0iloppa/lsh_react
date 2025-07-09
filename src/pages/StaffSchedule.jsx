@@ -355,6 +355,7 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
     <>
       <style jsx="true">{`
         .schedule-container {
+         min-height: 110vh;
           max-width: 28rem;
           margin: 0 auto;
           background: #fff;

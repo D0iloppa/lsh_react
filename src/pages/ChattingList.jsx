@@ -2,11 +2,16 @@ import React, { useEffect, useState, useRef } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
+import SwipeableCard from '@components/SwipeableCard';
 import '@components/SketchComponents.css';
+import '@components/SwipeableCard.css';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
 import axios from 'axios';
 import { Calendar, Users, ClipboardList, Tag, Star, Headphones, Bell, Settings, MessagesSquare } from 'lucide-react';
+import Swal from 'sweetalert2';
+
+import ApiClient from '@utils/ApiClient';
 
 const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
 
@@ -105,6 +110,65 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
       room_sn: staff.room_sn,
       name: staff.name,
     });
+  };
+
+  // 삭제 핸들러 추가
+  const handleDeleteStaff = async (chatRoom) => {
+    console.log('Delete staff:', chatRoom);
+    /*
+    Swal.fire({
+      title: '삭제할 채팅방 정보',
+      html: `
+        <div style="text-align: left;">
+          <p><strong>ID:</strong> ${chatRoom.id}</p>
+          <p><strong>이름:</strong> ${chatRoom.name}</p>
+          <p><strong>방 번호:</strong> ${chatRoom.room_sn}</p>
+          <p><strong>타입:</strong> ${chatRoom.creator_type}</p>
+          <p><strong>마지막 메시지:</strong> ${chatRoom.lastMessage}</p>
+          <p><strong>마지막 시간:</strong> ${chatRoom.lastTime}</p>
+          <p><strong>새 메시지 수:</strong> ${chatRoom.isNew}</p>
+        </div>
+      `,
+      icon: 'info',
+      confirmButtonText: '확인'
+    })
+      */
+    /*
+    Swal.fire({
+      title: '삭제할 채팅방 정보',
+      text: JSON.stringify({
+        room_sn: chatRoom.room_sn,
+        account_id: (user.type == 'manager') ? user.manager_id : user.staff_id,
+        account_type: user.type
+      })
+    })
+    */
+
+    ApiClient.postForm('/api/deleteChatRoom', {
+      room_sn: chatRoom.room_sn,
+      account_id: (user.type == 'manager') ? user.manager_id : user.staff_id,
+      account_type: user.type
+    });
+
+    /*
+    // API 호출로 채팅방 삭제
+    const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+    try {
+      await axios.delete(`${API_HOST}/api/deleteChatRoom`, {
+        data: { 
+          room_sn: staffId,
+          venue_id: user?.venue_id 
+        }
+      });
+      
+      // 성공 시 리스트에서 제거
+      setStaffs(prev => prev.filter(staff => staff.id !== staffId));
+      
+    } catch (error) {
+      console.error('❌ 채팅방 삭제 실패:', error);
+      // 에러 처리 (SweetAlert 등)
+    }
+      */
   };
 
         
@@ -224,32 +288,36 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
             </div>
           ) : (
             staffs.map((staff) => (
-              <SketchDiv
+              <SwipeableCard
                 key={staff.id}
-                className="staff-card"
-                onClick={() => handleClickStaff(staff)}
-              > 
-                <HatchPattern opacity={0.4} />
-                <div className="staff-img">
-                  {staff.img ? (
-                    <img src={staff.img} alt={staff.name} />
-                  ) : (
-                    <span>🖼️</span>
-                  )}
-                </div>
-                <div className="staff-info">
-                  <div className="staff-name">{staff.name}  <span className='roomType'>
-                  {staff.creator_type}
-                </span></div>
-                  <div className="staff-rating">{staff.lastMessage}</div>
-                </div>
-                <div className="staff-actions">
-                  <div className="last-time">{staff.lastTime}</div>
-                  {staff.isNew > 0 && (
-                    <div className="new-badge">{staff.isNew}</div>
-                  )}
-                </div>
-              </SketchDiv>
+                data={staff}
+                onDelete={(data) => handleDeleteStaff(data)}
+                onCardClick={() => handleClickStaff(staff)}
+                confirmDelete={true}
+              >
+                <SketchDiv className="staff-card">
+                  <HatchPattern opacity={0.4} />
+                  <div className="staff-img">
+                    {staff.img ? (
+                      <img src={staff.img} alt={staff.name} />
+                    ) : (
+                      <span>🖼️</span>
+                    )}
+                  </div>
+                  <div className="staff-info">
+                    <div className="staff-name">
+                      {staff.name} <span className='roomType'>{staff.creator_type}</span>
+                    </div>
+                    <div className="staff-rating">{staff.lastMessage}</div>
+                  </div>
+                  <div className="staff-actions">
+                    <div className="last-time">{staff.lastTime}</div>
+                    {staff.isNew > 0 && (
+                      <div className="new-badge">{staff.isNew}</div>
+                    )}
+                  </div>
+                </SketchDiv>
+              </SwipeableCard>
             ))
           )}
         </div>

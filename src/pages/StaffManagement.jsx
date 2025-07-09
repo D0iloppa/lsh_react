@@ -291,6 +291,14 @@ const loadStaffList = async () => {
         .staff-rating {
           font-size: 0.92rem;
           color: #222;
+          white-space: nowrap;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          line-height: 1.5em;
+          max-height: 3em;
         }
         .staff-actions {
           display: flex;

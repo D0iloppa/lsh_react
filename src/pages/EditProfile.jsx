@@ -191,6 +191,7 @@ if (isLoadingData) {
           max-width: 28rem;
           margin: 0 auto;
           background: #fff;
+          min-height: 100vh;
         }
         .profile-row {
           display: flex;

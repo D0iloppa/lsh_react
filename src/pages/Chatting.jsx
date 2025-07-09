@@ -490,7 +490,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     }
   }, []);
 
-  // ChatMessage에서 예약 데이터 바로 전달
+    // ChatMessage에서 예약 데이터 바로 전달
   const ChatMessage = React.memo(({ msg, setModalImage }) => {
   const isMine = msg.sender === 'me';
   const isTranslated = translationMap[msg.chat_sn];
@@ -517,43 +517,55 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      <div className="chat-content-wrapper">
-        <div className="chat-name">{msg.sender_name}</div>
-        <div className={`chat-message ${msg.sender}`}>
-          {msg.text && <div>{msg.text}</div>}
-          {msg.image && (
-            <img
-              src={msg.image}
-              className="chat-image"
-              onClick={() => setModalImage(msg.image)}
-            />
-          )}
-          {/* ✅ 번역 결과 표시 */}
-          {isTranslated && (
-            <div style={{ marginTop: 6, fontSize: 12, color: '#6b7280', fontStyle: 'italic' }}>
-              {isTranslated} <span style={{ fontSize: 10, marginLeft: 4 }}>번역됨</span>
-            </div>
-          )}
-          {/* ✅ 번역 아이콘 표시 */}
-          {showIcon && !isTranslated && msg.text && (
-            <div style={{ textAlign: 'right', marginTop: 4 }}>
-              <button
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: 11,
-                  color: '#3b82f6',
-                  cursor: 'pointer',
-                  padding: 0,
-                }}
-                onClick={() => handleTranslate(msg.chat_sn, msg.text)}
-              >
-                번역
-              </button>
-            </div>
-          )}
+      {/* 링크 타입이 있는 경우 가운데 정렬 */}
+      {msg.link_type && msg.link_target ? (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          width: '100%',
+          marginBottom: '1rem'
+        }}>
+          {getLinkTemplate(msg)}
         </div>
-      </div>
+      ) : (
+        <div className="chat-content-wrapper">
+          <div className="chat-name">{msg.sender_name}</div>
+          <div className={`chat-message ${msg.sender}`}>
+            {msg.text && <div>{msg.text}</div>}
+            {msg.image && (
+              <img
+                src={msg.image}
+                className="chat-image"
+                onClick={() => setModalImage(msg.image)}
+              />
+            )}
+            {/* ✅ 번역 결과 표시 */}
+            {isTranslated && (
+              <div style={{ marginTop: 6, fontSize: 12, color: '#6b7280', fontStyle: 'italic' }}>
+                {isTranslated} <span style={{ fontSize: 10, marginLeft: 4 }}>번역됨</span>
+              </div>
+            )}
+            {/* ✅ 번역 아이콘 표시 */}
+            {showIcon && !isTranslated && msg.text && (
+              <div style={{ textAlign: 'right', marginTop: 4 }}>
+                <button
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: 11,
+                    color: '#3b82f6',
+                    cursor: 'pointer',
+                    padding: 0,
+                  }}
+                  onClick={() => handleTranslate(msg.chat_sn, msg.text)}
+                >
+                  번역
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <div className="chat-time">{msg.time}</div>
     </div>
   );

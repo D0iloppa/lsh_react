@@ -220,7 +220,6 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 3000,
-            padding: '1rem'
           }}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
@@ -355,7 +354,7 @@ const classifyBookingsByDate = (bookings) => {
           max-width: 28rem;
           margin: 0 auto;
           background: #fff;
-          min-height: 75vh;
+          min-height: 100vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
         .booking-card {
@@ -404,6 +403,7 @@ const classifyBookingsByDate = (bookings) => {
         }
         .booking-list {
           padding: 0.5rem;
+          
         }
         .loading-message {
           text-align: center;

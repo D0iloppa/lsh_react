@@ -881,7 +881,7 @@ const handleSubmitResponse = async (reviewId) => {
                       <textarea
                         className="response-textarea"
                         placeholder={get('REVIEW_RESPONSE_PLACEHOLDER')}
-                        value={responses[review.review_id || review.id] || ''}
+                        value={responses[review.review_id || review.id] || review.reply_content || review.response || ''}
                         onChange={(e) => handleResponseChange(review.review_id || review.id, e.target.value)}
                       />
                       <div className="response-form-actions">

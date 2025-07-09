@@ -32,6 +32,7 @@ const BookingSummary = ({ displayData, messages }) => {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
         .summary-item:last-child {

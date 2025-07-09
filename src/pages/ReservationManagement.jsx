@@ -539,7 +539,7 @@ const chatWithUser = async(r) => {
          .reservation-container {
           max-width: 28rem;
           margin: 0 auto;
-          margin-bottom: 1rem;
+          margin-bottom: 6rem;
           background: #fff;
           min-height: 101vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
@@ -794,11 +794,13 @@ const chatWithUser = async(r) => {
             }
 
             .calendar-content {
-              padding: 1rem 0.5rem;
+              padding-top: 1rem;
               background: #fff;
               border-top: 1px solid #e5e7eb;
               margin-top: 0.5rem;
+              
             }
+              .content-area{padding-bottom: 0px;}
 
             .calendar-month-nav {
               display: flex;
