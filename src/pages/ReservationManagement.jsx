@@ -125,7 +125,8 @@ const transformReservationData = (apiData) => {
       client_id: item.client_id,
       use_escort: item.use_escort,
       note: item.note,
-      attendee: item.attendee
+      attendee: item.attendee,
+      noShowCount: item.no_show_count
     };
     
     console.log('Transformed item:', transformed); // 변환된 데이터 확인
@@ -148,6 +149,25 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
   const [calendarYear, setCalendarYear] = useState(dayjs().year());
   const calendarScrollRef = useRef(null);
   const today = dayjs();
+
+  // actionMap과 mngCodeMap 상태 추가
+  const [actionMap, setActionMap] = useState({});
+  const [mngCodeMap, setMngCodeMap] = useState({});
+
+  // 페이지 마운트 시 최초로 버튼 action, mng_code 매핑 정보 조회
+  useEffect(() => {
+    const fetchButtonInfo = async () => {
+      const response = await ApiClient.get('/api/getReservationActionRule', {});
+      const {actionMap={}, mngCodeMap={}} = response;      
+      console.log('actionMap', actionMap);
+      console.log('mngCodeMap', mngCodeMap);
+      setActionMap(actionMap);
+      setMngCodeMap(mngCodeMap);
+    }
+
+    fetchButtonInfo();
+  }, []);
+
 
   // 달력 셀 생성 (첫 번째 파일에서 가져옴)
   const calendarCells = useMemo(() => {
@@ -295,9 +315,6 @@ const getReservationCountForDate = () => {
 
     useEffect(() => {
         if (messages && Object.keys(messages).length > 0) {
-          console.log('✅ Messages loaded:', messages);
-          // setLanguage('en'); // 기본 언어 설정
-          console.log('Current language set to:', currentLang);
           window.scrollTo(0, 0);
         }
       }, [messages, currentLang]);
@@ -307,11 +324,21 @@ const getReservationCountForDate = () => {
   
   // 상태별 텍스트를 가져오는 헬퍼 함수
   const getStatusText = (status) => {
+    /*
     const statusMap = {
       'pending': get('RESERVATION_STATUS_PENDING'),
       'confirmed': get('RESERVATION_STATUS_CONFIRMED'),
       'canceled': get('RESERVATION_STATUS_CANCELED')
     };
+    */
+    const statusMap = {
+      'canceled': get('RESERVATION_CANCELED_BUTTON'),
+      'completed': get('RESERVATION_COMPLETED_BUTTON'),
+      'confirmed': get('RESERVATION_CONFIRMED_BUTTON'),
+      'no_show': get('RESERVATION_NO_SHOW_BUTTON'),
+      'pending': get('RESERVATION_PENDING_BUTTON')
+    };
+
     return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
   };
 
@@ -1060,6 +1087,9 @@ const chatWithUser = async(r) => {
                             <MessageCircle size={14}/> {get('BUTTON_CHAT')}
                           </span>
                         </div>
+                         <div>
+                          <Edit size={10}/> no-show: <span>{r.noShowCount} {get('text.cnt.1')}</span>
+                        </div>
                         <div>
                           <Edit size={10}/> {get('RESERVATION_ATTENDEE_LABEL')} <strong>{r.attendee} {get('ATTENDEE_COUNT_UNIT')}</strong>
                         </div>
@@ -1096,41 +1126,41 @@ const chatWithUser = async(r) => {
                     </div>
                   </div>
                   <div className="reservation-actions">
-                    {/* Approve 버튼 - pending일 때만 활성화, confirmed면 "승인됨", cancelled이면 숨김 */}
-                    {r.status === 'canceled' ? null : (
-                      <SketchBtn 
-                        variant={r.status === 'confirmed' ? 'secondary' : 'event'} 
-                        size="small" 
-                        className="action-btn"
-                        disabled={r.status === 'confirmed' || loading}
-                        onClick={() => {
-                          if (r.status === 'pending') {
-                            handleReservationManage(r.id, 1); // 승인: mngCode = 1
-                          }
-                        }}
-                      >
-                        {r.status === 'confirmed' ? (
-                          <>
-                            <Check size={14} style={{marginRight: '3px'}}/>
-                            {get('RESERVATION_APPROVED_BUTTON')}
-                          </>
-                        ) : get('RESERVATION_APPROVE_BUTTON')}
-                      </SketchBtn>
-                    )}
-                    
-                    {/* Cancel 버튼 - cancelled 상태가 아닐 때만 표시 */}
-                    {r.status !== 'canceled' && (
-                      <SketchBtn 
-                        variant="danger" 
-                        size="small" 
-                        className="action-btn"
-                        disabled={loading}
-                        onClick={() => {
-                          handleReservationManage(r.id, -1); // 취소: mngCode = -1
-                        }}
-                      >
-                        {get('RESERVATION_CANCEL_BUTTON')}
-                      </SketchBtn>
+                    {/* actionMap을 기반으로 동적으로 버튼 생성 */}
+                    {actionMap[r.status] && actionMap[r.status].length > 0 ? (
+                      actionMap[r.status].map((action, index) => {
+                        // mngCodeMap에서 해당 action에 대한 mngCode 찾기
+                        const mngCode = Object.keys(mngCodeMap).find(key => mngCodeMap[key] === action);
+                        
+                        if (!mngCode) return null;
+                        
+                        // 버튼 variant 결정
+                        let variant = 'event';
+                        if (action === 'canceled') variant = 'danger';
+                        else if (action === 'confirmed') variant = 'event';
+                        else if (action === 'completed') variant = 'secondary';
+                        else if (action === 'no_show') variant = 'warning';
+                        
+                        return (
+                          <SketchBtn 
+                            key={`${r.id}-${action}-${index}`}
+                            variant={variant}
+                            size="small" 
+                            className="action-btn"
+                            disabled={loading}
+                            onClick={() => {
+                              handleReservationManage(r.id, parseInt(mngCode));
+                            }}
+                          >
+                            {get(`RESERVATION_${action.toUpperCase()}_BUTTON`)}
+                          </SketchBtn>
+                        );
+                      })
+                    ) : (
+                      // action이 없는 경우 (종결 상태 등)
+                      <div className="no-actions">
+                        {get('RESERVATION_NO_ACTIONS_AVAILABLE')}
+                      </div>
                     )}
                   </div>
                   <HatchPattern opacity={0.4} />
