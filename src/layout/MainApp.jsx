@@ -25,6 +25,11 @@ const MainApp = () => {
 
 
     useEffect(() => {
+
+        const {language} = user;
+        setLanguage(language);
+
+        
         window.scrollTo(0, 0);
         if (messages && Object.keys(messages).length > 0) {
                 window.scrollTo(0, 0);

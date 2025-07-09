@@ -32,6 +32,8 @@ export const AuthProvider = ({ children }) => {
     return localStorage.getItem('accountType') || null;
   });
 
+
+
   const [loading, setLoading] = useState(false);
 
   // 로그인 함수 (Login 컴포넌트 로직 재활용)
@@ -104,6 +106,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // 사용자 언어 업데이트 함수
+  const updateUserLang = (newLang) => {
+    const updatedUser = { ...user, language: newLang };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+
   // 로그아웃 함수
   const logout = async () => {
 
@@ -139,7 +148,8 @@ export const AuthProvider = ({ children }) => {
     loginType,
     setLoginType,
     accountType,
-    setAccountType
+    setAccountType,
+    updateUserLang
   };
 
   return (

@@ -19,7 +19,7 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
 
 
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
-  const { user, verifyPassword, logout } = useAuth();
+  const { user, verifyPassword, logout, updateUserLang } = useAuth();
   const [venueData, setVenueData] = useState({});
 
   // 비밀번호 변경 관련 state
@@ -351,6 +351,11 @@ const handleSaveNewPassword = async () => {
 
         if(response > 0) {
           setLanguage(tempLang);
+
+          updateUserLang(tempLang);
+
+
+
           
           await Swal.fire({
               title: get('SWAL_SUCCESS_TITLE'),
