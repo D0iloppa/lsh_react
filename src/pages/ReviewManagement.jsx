@@ -11,6 +11,7 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
 import { overlay } from 'overlay-kit';
+import axios from 'axios';
 
 const mockReviews = [
   {
@@ -46,6 +47,45 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
     const { user } = useAuth();
     const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
+
+    console.log("user", user)
+    //번역
+
+    const [translationMap, setTranslationMap] = useState({});
+    const [showTranslateIcon, setShowTranslateIcon] = useState({});
+
+    const handleLongPress = (reviewId) => {
+      setShowTranslateIcon(prev => ({
+        ...prev,
+        [reviewId]: true,
+      }));
+    };
+
+    const translateText = async (reviewId, text) => {
+      if (translationMap[reviewId]) return; // 이미 번역되었으면 스킵
+
+      try {
+        const response = await axios.post(
+          `https://translation.googleapis.com/language/translate/v2?key=AIzaSyAnvkb7_-zX-aI8WVw6zLMRn63yQQrss9c`,
+          {
+            q: text,
+            target: user.language ? user.language : 'vi',
+            format: 'text',
+          }
+        );
+
+        const translated = response.data.data.translations[0].translatedText;
+
+        setTranslationMap(prev => ({
+          ...prev,
+          [reviewId]: translated
+        }));
+
+      } catch (error) {
+        console.error('번역 실패:', error);
+        Swal.fire('번역 오류', 'Google Translate API 호출에 실패했습니다.', 'error');
+      }
+    };
 
     const registerReader = async (reviewId) => {
       try {
@@ -169,12 +209,24 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
     }, [venue_id, user?.manager_id]);
   
     // 답변 영역 토글
-    const toggleResponse = (reviewId) => {
-      setOpenResponses(prev => ({
-        ...prev,
-        [reviewId]: !prev[reviewId]
-      }));
-    };
+  const toggleResponse = (reviewId) => {
+    setOpenResponses(prev => ({
+      ...prev,
+      [reviewId]: !prev[reviewId]
+    }));
+    
+    // 답변 창을 열 때 기존 답변이 있으면 responses에 설정
+    if (!openResponses[reviewId]) {
+      const currentReview = reviews.find(review => (review.review_id || review.id) === reviewId);
+      const existingResponse = currentReview?.reply_content || currentReview?.response;
+      if (existingResponse) {
+        setResponses(prev => ({
+          ...prev,
+          [reviewId]: existingResponse
+        }));
+      }
+    }
+  };
   
     // 답변 텍스트 변경
     const handleResponseChange = (reviewId, text) => {
@@ -569,6 +621,8 @@ const handleSubmitResponse = async (reviewId) => {
             color: #374151;
             line-height: 1.4;
             margin: 0 0 1rem 0;
+            cursor: pointer;
+            user-select: none;
           }
           .review-target-name {
             font-size: 15px;
@@ -748,8 +802,40 @@ const handleSubmitResponse = async (reviewId) => {
                       </p>
                     </div>
                   </div>
-                  <p className="review-text">"{review.content}"</p>
+                  <p
+                    className="review-text"
+                    onPointerDown={() => {
+                      this.pressTimer = setTimeout(() => handleLongPress(review.review_id || review.id), 600);
+                    }}
+                    onPointerUp={() => clearTimeout(this.pressTimer)}
+                  >
+                    "{review.content}"
+                  </p>
                   
+                  {showTranslateIcon[review.review_id || review.id] && !translationMap[review.review_id || review.id] && (
+                    <button
+                      onClick={() => translateText(review.review_id || review.id, review.content)}
+                      style={{
+                        fontSize: '0.8rem',
+                        padding: '0.3rem 0.6rem',
+                        backgroundColor: '#f3f4f6',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        marginBottom: '0.5rem',
+                        display: 'inline-block'
+                      }}
+                    >
+                      번역
+                    </button>
+                  )}
+
+                  {translationMap[review.review_id || review.id] && (
+                    <p style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: '0.5rem' }}>
+                      {translationMap[review.review_id || review.id]} <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>({get('TRANSLATED_TEXT_LABEL') || '번역됨'})</span>
+                    </p>
+                  )}
+
                   {/* 기존 답변이 있는 경우 표시 */}
                   {(review.reply_content || review.response) && !openResponses[review.review_id || review.id] && (
                     <div className="existing-response">
@@ -795,7 +881,7 @@ const handleSubmitResponse = async (reviewId) => {
                       <textarea
                         className="response-textarea"
                         placeholder={get('REVIEW_RESPONSE_PLACEHOLDER')}
-                        value={responses[review.review_id || review.id] || review.reply_content || review.response || ''}
+                        value={responses[review.review_id || review.id] || ''}
                         onChange={(e) => handleResponseChange(review.review_id || review.id, e.target.value)}
                       />
                       <div className="response-form-actions">

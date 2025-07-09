@@ -13,7 +13,7 @@ const ReservationCard = ({ data, onSend, onClose }) => (
   <div style={{
     background: '#f8fafc',
     border: '1px solid #e5e7eb',
-    borderRadius: '8px',
+    borderRadius: '8px', 
     padding: '12px',
     margin: '8px 0',
     maxWidth: '320px',
@@ -85,6 +85,46 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const [roomTitle, setRoomTitle] = useState('');
   const [sendTo, setSendTo] = useState(null);
   const [receiverId, setReceiverId] = useState(null);
+
+
+  //번역
+  const [translationMap, setTranslationMap] = useState({});
+  const [showTranslateIcon, setShowTranslateIcon] = useState({});
+
+  const handleLongPress = useCallback((chatSn) => {
+    setShowTranslateIcon(prev => ({
+      ...prev,
+      [chatSn]: true,
+    }));
+  }, []);
+
+  const handleTranslate = useCallback(async (chatSn, text) => {
+    if (translationMap[chatSn]) return;
+
+    try {
+      const response = await axios.post(
+        `https://translation.googleapis.com/language/translate/v2?key=AIzaSyAnvkb7_-zX-aI8WVw6zLMRn63yQQrss9c`,
+        {
+          q: text,
+          target: user.language || 'vi',
+          format: 'text',
+        }
+      );
+
+      const translated = response.data.data.translations[0].translatedText;
+
+      setTranslationMap(prev => ({
+        ...prev,
+        [chatSn]: translated,
+      }));
+    } catch (error) {
+      console.error('번역 실패:', error);
+      Swal.fire('번역 오류', 'Google Translate API 호출에 실패했습니다.', 'error');
+    }
+  }, [translationMap, user.language]);
+
+
+
 
   // ⭐ 인터벌 관리를 위한 ref 추가
   const intervalRef = useRef(null);
@@ -452,53 +492,72 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
   // ChatMessage에서 예약 데이터 바로 전달
   const ChatMessage = React.memo(({ msg, setModalImage }) => {
-    if (msg.link_type && msg.link_target && msg.reservationData) {
-      return (
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-          <ReservationLinkTemplate reservationData={msg.reservationData} reservationId={msg.link_target} />
-        </div>
-      );
+  const isMine = msg.sender === 'me';
+  const isTranslated = translationMap[msg.chat_sn];
+  const showIcon = showTranslateIcon[msg.chat_sn];
+
+  const pressTimerRef = useRef(null);
+
+  const handleMouseDown = () => {
+    if (!isMine) {
+      pressTimerRef.current = setTimeout(() => {
+        handleLongPress(msg.chat_sn);
+      }, 600); // 600ms 이상 누르면 long press
     }
-    return (
-      <div className={`chat-message-wrapper ${msg.sender}`}>
-        {msg.sender === 'me' ? (
-          <>
-            <div className="chat-content-wrapper">
-              <div className="chat-name">{msg.sender_name}</div>
-              <div className={`chat-message ${msg.sender}`}>
-                {msg.text && <div>{msg.text}</div>}
-                {msg.image && (
-                  <img
-                    src={msg.image}
-                    className="chat-image"
-                    onClick={() => setModalImage(msg.image)}
-                  />
-                )}
-              </div>
+  };
+
+  const handleMouseUp = () => {
+    clearTimeout(pressTimerRef.current);
+  };
+
+  return (
+    <div
+      className={`chat-message-wrapper ${msg.sender}`}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
+      <div className="chat-content-wrapper">
+        <div className="chat-name">{msg.sender_name}</div>
+        <div className={`chat-message ${msg.sender}`}>
+          {msg.text && <div>{msg.text}</div>}
+          {msg.image && (
+            <img
+              src={msg.image}
+              className="chat-image"
+              onClick={() => setModalImage(msg.image)}
+            />
+          )}
+          {/* ✅ 번역 결과 표시 */}
+          {isTranslated && (
+            <div style={{ marginTop: 6, fontSize: 12, color: '#6b7280', fontStyle: 'italic' }}>
+              {isTranslated} <span style={{ fontSize: 10, marginLeft: 4 }}>번역됨</span>
             </div>
-            <div className="chat-time">{msg.time}</div>
-          </>
-        ) : (
-          <>
-            <div className="chat-content-wrapper">
-              <div className="chat-name">{msg.sender_name}</div>
-              <div className={`chat-message ${msg.sender}`}>
-                {msg.text && <div>{msg.text}</div>}
-                {msg.image && (
-                  <img
-                    src={msg.image}
-                    className="chat-image"
-                    onClick={() => setModalImage(msg.image)}
-                  />
-                )}
-              </div>
+          )}
+          {/* ✅ 번역 아이콘 표시 */}
+          {showIcon && !isTranslated && msg.text && (
+            <div style={{ textAlign: 'right', marginTop: 4 }}>
+              <button
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: 11,
+                  color: '#3b82f6',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+                onClick={() => handleTranslate(msg.chat_sn, msg.text)}
+              >
+                번역
+              </button>
             </div>
-            <div className="chat-time">{msg.time}</div>
-          </>
-        )}
+          )}
+        </div>
       </div>
-    );
-  });
+      <div className="chat-time">{msg.time}</div>
+    </div>
+  );
+});
 
   // 중복 제거 유틸
   function dedupeMessages(messages) {
@@ -622,26 +681,32 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   }, []);
 
   const handleUploadComplete = useCallback((content_id, file) => {
-    console.log('이미지 전송 ^_T', content_id);
+    console.log('이미지 전송 ^_T', room_sn, content_id, sendTo, receiverId);
 
+    const {type} = user;
+    let login_id = (type=='staff') ? user.staff_id : user.manager_id;
+
+    
     insertChattingData({
       room_sn,
       chat_msg: '',
-      sender: user_id,
-      sender_type: 'manager',
+      sender: login_id,
+      sender_type: user.type,
       content_id: content_id,
       room_name: nickname,
       room_description: '',
-      created_by: user_id,
-      creator_type: 'manager',
+      created_by: login_id,
+      creator_type: user.type,
       last_message_preview: '사진',
       venue_id,
+      send_to: sendTo,
+      receiver_id: receiverId
     });
 
     setTimeout(() => {
       scrollToBottom('auto');
     }, 300);
-  }, [room_sn, user_id, nickname, venue_id, insertChattingData, scrollToBottom]);
+  }, [room_sn, user_id, nickname, venue_id, insertChattingData, scrollToBottom, sendTo, receiverId]);
 
   const handleUploadError = useCallback((error) => {
     console.error('이미지 업로드 실패:', error);

@@ -328,6 +328,10 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
           border-radius: 10px;
           font-size: 10px;
         }
+
+        .bottom-navigation {
+          // max-height: 3vh;
+        }
       `}</style>
 
       <div className="account-container">

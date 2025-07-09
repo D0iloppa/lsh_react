@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 import SketchHeader from '@components/SketchHeader';
 import HatchPattern from '@components/HatchPattern';
 import PersonFinderBillboard from '@components/PersonFinderBillboard';
-import { MessageCircle, Calendar, Check, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MessageCircle, Calendar, Check, Edit, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import { useAuth } from '../contexts/AuthContext';
 import Swal from 'sweetalert2';
+import dayjs from 'dayjs';
 
 const mockReservations = [
   {
@@ -41,6 +43,7 @@ const statusList = [
   { key: 'canceled', label: 'Canceled' },
 ];
 
+const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 // 날짜 포맷팅 함수
 const formatDate = (timestamp) => {
@@ -138,8 +141,97 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [selectedDate, setSelectedDate] = useState(getToday());
   const [showBillboard, setShowBillboard] = useState(false);
-  
-  
+
+  // 달력 관련 상태 추가
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(dayjs().month());
+  const [calendarYear, setCalendarYear] = useState(dayjs().year());
+  const calendarScrollRef = useRef(null);
+  const today = dayjs();
+
+  // 달력 셀 생성 (첫 번째 파일에서 가져옴)
+  const calendarCells = useMemo(() => {
+    const currentDate = dayjs(`${calendarYear}-${calendarMonth + 1}-01`);
+    const todayInCurrentMonth = currentDate.month() === today.month() && currentDate.year() === today.year() ? today : currentDate.date(15);
+    
+    const startOfWeek = todayInCurrentMonth.startOf('week');
+    const cells = [];
+    const totalWeeks = 8;
+    const startDate = startOfWeek.subtract(2, 'week');
+    
+    for (let week = 0; week < totalWeeks; week++) {
+      for (let day = 0; day < 7; day++) {
+        const date = startDate.add(week * 7 + day, 'day');
+        cells.push({
+          date: date,
+          isCurrentMonth: date.month() === currentDate.month() && date.year() === currentDate.year()
+        });
+      }
+    }
+
+    return cells;
+  }, [calendarMonth, calendarYear, today]);
+
+  // 달력 관련 함수들
+    const handleCalendarPrevMonth = () => {
+      let newMonth = calendarMonth - 1;
+      let newYear = calendarYear;
+      if (newMonth < 0) {
+        newMonth = 11;
+        newYear -= 1;
+      }
+      setCalendarMonth(newMonth);
+      setCalendarYear(newYear);
+    };
+
+    const handleCalendarNextMonth = () => {
+      let newMonth = calendarMonth + 1;
+      let newYear = calendarYear;
+      if (newMonth > 11) {
+        newMonth = 0;
+        newYear += 1;
+      }
+      setCalendarMonth(newMonth);
+      setCalendarYear(newYear);
+    };
+
+    const handleCalendarDateSelect = (date) => {
+      setSelectedDate(date.format('YYYY-MM-DD'));
+      setShowCalendar(false); // 날짜 선택 후 달력 닫기
+    };
+
+      // 선택된 날짜를 찾아서 스크롤 위치 조정
+  useEffect(() => {
+    if (showCalendar && calendarScrollRef.current && calendarCells.length > 0) {
+      const selectedIndex = calendarCells.findIndex(cell => 
+        cell.date.format('YYYY-MM-DD') === selectedDate
+      );
+      
+      if (selectedIndex !== -1) {
+        // 선택된 날짜가 포함된 주의 시작 인덱스 계산
+        const selectedWeekStartIndex = selectedIndex - (selectedIndex % 7);
+        
+        // 2주 블록 인덱스 계산 (14개씩 묶음)
+        const twoWeekBlockIndex = Math.floor(selectedWeekStartIndex / 14);
+        
+        // 해당 2주 블록으로 스크롤
+        setTimeout(() => {
+          const calendar2WeeksElements = calendarScrollRef.current?.querySelectorAll('.calendar-2weeks');
+          
+          if (calendar2WeeksElements && calendar2WeeksElements[twoWeekBlockIndex]) {
+            const elementHeight = calendar2WeeksElements[twoWeekBlockIndex].offsetHeight;
+            const scrollPosition = twoWeekBlockIndex * elementHeight;
+            
+            calendarScrollRef.current.scrollTo({
+              top: scrollPosition,
+              behavior: 'smooth'
+            });
+          }
+        }, 100); // 달력이 열린 후 스크롤
+      }
+    }
+  }, [showCalendar, selectedDate, calendarCells]);
+
 
 const registerReader = async (reservationId) => {
   try {
@@ -389,6 +481,14 @@ useEffect(() => {
   const reservationDate = new Date(r.reservedAt).toISOString().split('T')[0];
   return reservationDate === selectedDate;
 });
+
+const getReservationCountByDate = (date) => {
+  const dateString = date.format('YYYY-MM-DD');
+  return reservations.filter(r => {
+    const reservationDate = new Date(r.reservedAt).toISOString().split('T')[0];
+    return reservationDate === dateString;
+  }).length;
+};
   
 const chatWithUser = async(r) => {
     console.log('chatWithManager', r);
@@ -436,7 +536,7 @@ const chatWithUser = async(r) => {
   return (
     <>
       <style jsx="true">{`
-        .reservation-container {
+         .reservation-container {
           max-width: 28rem;
           margin: 0 auto;
           margin-bottom: 1rem;
@@ -547,7 +647,6 @@ const chatWithUser = async(r) => {
           
         .reservation-contents {
           padding: 0.3rem;
-          
         }
 
         .loading-message {
@@ -615,6 +714,46 @@ const chatWithUser = async(r) => {
               font-weight: 600;
               text-align: center;
               color: #1f2937;
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+            }
+
+            .calendar-toggle-btn {
+              padding: 0.2rem;
+              background: none;
+              border: none;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border-radius: 4px;
+              transition: background-color 0.2s;
+            }
+
+            .calendar-toggle-btn:hover {
+              background: #e5e7eb;
+            }
+
+            .date-number {
+              font-size: 0.9rem;
+              line-height: 1;
+            }
+
+            .reservation-count {
+                z-index: 999;
+                top: -15px;
+                left: 15px;
+                position: relative;
+                background: #ef4444;
+                color: white;
+                border-radius: 50%;
+                font-size: 0.9rem;
+                width: 1rem;
+                height: 1rem;
+                justify-content: center;
+                margin-top: 1px;
+                font-weight: 600;
             }
 
             .date-info {
@@ -642,6 +781,134 @@ const chatWithUser = async(r) => {
                 display: flex;
                 justify-content: space-between;
               }
+
+            /* 달력 스타일 */
+            .calendar-accordion {
+              overflow: hidden;
+              transition: max-height 0.3s ease-in-out;
+              max-height: 0;
+            }
+
+            .calendar-accordion.open {
+              max-height: 205px;
+            }
+
+            .calendar-content {
+              padding: 1rem 0.5rem;
+              background: #fff;
+              border-top: 1px solid #e5e7eb;
+              margin-top: 0.5rem;
+            }
+
+            .calendar-month-nav {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-bottom: 1rem;
+              gap: 0.7rem;
+            }
+
+            .calendar-month-btn {
+              background: #f1f4f8;
+              color: #222 !important;
+              box-shadow: none !important;
+              padding: 0.08rem 0.5rem !important;
+              min-width: 0;
+              font-size: 0.92rem !important;
+              height: 1.7rem;
+              line-height: 1.1;
+              border: 1px solid #d1d5db;
+              border-radius: 4px;
+              cursor: pointer;
+            }
+
+            .calendar-month-label {
+              font-size: 1rem;
+              font-weight: 600;
+              margin: 0 0.7rem;
+              letter-spacing: 0.01em;
+              flex-shrink: 0;
+            }
+
+            .calendar-grid {
+              display: grid;
+              grid-template-columns: repeat(7, 1fr);
+              margin-bottom: 1rem;
+            }
+
+            .calendar-day-header {
+              text-align: center;
+              font-size: 0.9rem;
+              font-weight: 500;
+              color: #444;
+              padding: 0.3rem 0;
+            }
+
+            .calendar-scroll {
+              max-height: 12rem;
+              overflow-y: auto;
+              scroll-snap-type: y mandatory;
+            }
+
+            .calendar-2weeks {
+              position: relative;
+              display: grid;
+              grid-template-rows: repeat(2, 1fr);
+              height: 6rem;
+              scroll-snap-align: start;
+              gap: 3px;
+            }
+
+            .calendar-row {
+              display: grid;
+              grid-template-columns: repeat(7, 1fr);
+              gap: 0.3rem;
+            }
+
+            .calendar-date {
+              background: #fff;
+              border: 1.5px solid #e5e7eb;
+              border-radius: 6px;
+              text-align: center;
+              font-size: 0.9rem;
+              padding: 0.4rem 0;
+              min-width: 1.8rem;
+              min-height: 1.8rem;
+              cursor: pointer;
+              transition: border 0.2s, color 0.2s, opacity 0.2s, background 0.2s;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+
+            .calendar-date.today {
+              border: 2px solid #3bb0ff;
+            }
+
+            .calendar-date.selected {
+              border: 2px solid #1f2937;
+              background: #e6f7ff;
+            }
+
+            .calendar-date.other-month {
+              color: #b0b0b0;
+              opacity: 0.55;
+              background: #f7f7f7;
+            }
+
+            .calendar-date:hover:not(.other-month) {
+              background: #f0f9ff;
+              border-color: #0ea5e9;
+            }
+
+            .assign-title {
+                  background: #f2f2f2;
+                  border-top: 1px solid #dedede;
+                  font-size: 1.15rem;
+                  font-weight: 600;
+                  margin: 1rem 0 0.4rem 0;
+                  padding: 1rem;
+            }
           
       `}</style>
       <div className="reservation-container">
@@ -670,7 +937,7 @@ const chatWithUser = async(r) => {
           ))}
         </div> */}
 
-        {/* 날짜 필터 섹션 */}
+              {/* 날짜 필터 섹션 */}
         <div className="date-filter-section">
           <div className="date-navigation">
             <button className="date-nav-btn" onClick={goToPreviousDay}>
@@ -679,23 +946,79 @@ const chatWithUser = async(r) => {
             
             <div className="current-date">
               {formatDateForDisplay(selectedDate)}
+              <button 
+                className="calendar-toggle-btn" 
+                onClick={() => setShowCalendar(!showCalendar)}
+              >
+                {showCalendar ? <Calendar size={16}  stroke='#ff7a00'/> : <Calendar size={16} />}
+              </button>
             </div>
             
             <button className="date-nav-btn" onClick={goToNextDay}>
               <ChevronRight size={18} />
             </button>
           </div>
-          
-          {/* <div className="date-info">
-            <span>예약 {getReservationCountForDate()}건</span>
-            {selectedDate !== getToday() && (
-              <button className="today-btn" onClick={goToToday}>
-                오늘
-              </button>
-            )}
-          </div> */}
+
+          {/* 달력 아코디언 */}
+          <div className={`calendar-accordion ${showCalendar ? 'open' : ''}`}>
+            <div className="calendar-content">
+              <div className="calendar-month-nav">
+                <button className="calendar-month-btn" onClick={handleCalendarPrevMonth}>
+                  {get('SCHEDULE_PREVIOUS_BUTTON')}
+                </button>
+                <div className="calendar-month-label">
+                  {dayjs().month(calendarMonth).format('MMMM')} {calendarYear}
+                </div>
+                <button className="calendar-month-btn" onClick={handleCalendarNextMonth}>
+                  {get('SCHEDULE_NEXT_BUTTON')}
+                </button>
+              </div>
+              
+              <div className="calendar-grid">
+                {days.map(day => (
+                  <div key={day} className="calendar-day-header">{day}</div>
+                ))}
+              </div>
+              
+              <div className="calendar-scroll" ref={calendarScrollRef}>
+                {Array.from({ length: Math.ceil(calendarCells.length / 14) }).map((_, twoWeekIdx) => (
+                  <div className="calendar-2weeks" key={twoWeekIdx}>
+                    <HatchPattern opacity={0.1} />
+                    {[0, 1].map(rowIdx => (
+                      <div className="calendar-row" key={rowIdx}>
+                        {calendarCells.slice(twoWeekIdx * 14 + rowIdx * 7, twoWeekIdx * 14 + (rowIdx + 1) * 7).map((cell, idx) => {
+                          if (!cell) return null;
+                          return (
+                            <div
+                              key={`${cell.date.format('YYYY-MM-DD')}-${idx}`}
+                              className={
+                                'calendar-date' +
+                                (cell.date.isSame(today, 'date') ? ' today' : '') +
+                                (cell.date.format('YYYY-MM-DD') === selectedDate ? ' selected' : '') +
+                                (!cell.isCurrentMonth ? ' other-month' : '')
+                              }
+                              onClick={() => handleCalendarDateSelect(cell.date)}
+                            >
+                               <div className="date-number">{cell.date.date()}</div>
+                              {getReservationCountByDate(cell.date) > 0 && (
+                                <div className="reservation-count">
+                                  {getReservationCountByDate(cell.date)}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
-      
+         <div className="assign-title">
+          {get('Mng.menu.2.1')} ({filtered.length}건)
+        </div>
         {loading ? (
           <div className="loading-message">{get('LOADING_RESERVATIONS')}</div>
         ) : (
@@ -815,9 +1138,9 @@ const chatWithUser = async(r) => {
           </div>
         )}
       </div>
-       {showBillboard && (
-                      <PersonFinderBillboard />
-                    )}
+      {showBillboard && (
+        <PersonFinderBillboard onClose={() => setShowBillboard(false)} />
+      )}
     </>
   );
 };

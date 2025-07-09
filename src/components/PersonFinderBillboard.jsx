@@ -112,8 +112,7 @@ const PersonFinderBillboard = ({ onClose }) => {
 
         .marquee-container {
           width: 100%;
-          overflow: hidden;
-          height: 150px;
+          height: 200px;
           position: absolute;
           top: 50%;
           transform: translateY(-50%);

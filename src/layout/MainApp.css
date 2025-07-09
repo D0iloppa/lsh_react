@@ -13,11 +13,11 @@
     flex: 1;
     overflow-y: auto;
     /* 하단 네비게이션 높이만큼 padding-bottom */
-    padding-bottom: 80px;
+    /* padding-bottom: 80px; */
   }
   
   .bottom-navigation {
-     z-index:1000;
+    z-index:1000;
     position: fixed;
     bottom: 0;
     left: 50%;
@@ -26,7 +26,7 @@
     max-width: 28rem;
     background-color: white;
     border-top: 1px solid #1f2937;
-    padding: 1rem 1.5rem;
+    padding: 1rem 1rem;
     box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
   }
   
