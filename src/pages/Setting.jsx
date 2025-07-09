@@ -105,7 +105,8 @@ const { messages, isLoading, error, get, currentLang, setLanguage: setGlobalLang
       email: email || '',
       phone: phone || '',
       location_sharing: shareLocation,
-      online_status: showOnlineStatus
+      online_status: showOnlineStatus,
+      user_type: 'user'
     };
 
     console.log('저장할 정보:', payload);
