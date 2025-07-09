@@ -128,6 +128,7 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
           flex-direction: column;
           gap: 0.7rem;
           padding: 1rem;
+          height: 12vh;
         }
         .staff-card {
           position: relative;
