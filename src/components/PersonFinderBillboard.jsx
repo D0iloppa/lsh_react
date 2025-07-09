@@ -161,7 +161,7 @@ const PersonFinderBillboard = ({ onClose }) => {
 
         @media (max-width: 768px) {
           .marquee-text {
-            font-size: 60px;
+            font-size: 13rem;
           }
           
           .name-input {

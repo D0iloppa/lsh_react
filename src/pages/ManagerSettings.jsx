@@ -28,7 +28,38 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
   const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
   const [showNewPasswordFields, setShowNewPasswordFields] = useState(false);
 
+  const [scheduleStatus, setScheduleStatus] = useState('before_open');
+
   const [tempLang, setTempLang] = useState(currentLang);
+
+  const statusMap = {
+    before_open: {
+      text: get('VENUE_STATUS_BEFORE_OPEN'),
+      variant: 'secondary'
+    },
+    available: {
+      text: get('VENUE_STATUS_OPERATING'),
+      variant: 'green'
+    },
+    closed: {
+      text: get('VENUE_STATUS_CLOSED'),
+      variant: 'danger'
+    }
+  };
+
+  const VenueStatusButton = () => (
+    <SketchBtn
+      variant={statusMap[scheduleStatus]?.variant || 'secondary'}
+      size="small"
+      style={{ width: '30%' }}
+      onClick={handleVenueStatusUpdate}
+    >
+      <HatchPattern opacity={0.6} />
+      {statusMap[scheduleStatus]?.text ?? get('VENUE_STATUS_UNKNOWN')}
+    </SketchBtn>
+  );
+
+
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -74,22 +105,28 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
 
   // 매장 상태 업데이트 함수
 const handleVenueStatusUpdate = async () => {
-  console.log("현재 emailNoti:", emailNoti);
+  console.log("현재 scheduleStatus:", scheduleStatus);
   
-  // 변경될 상태 미리 계산
-  const newStatus = emailNoti ? 'closed' : 'available';
-  const statusText = newStatus === 'available' ? get('VENUE_STATUS_OPERATING') : get('VENUE_STATUS_CLOSED');
-  const currentStatusText = emailNoti ? get('VENUE_STATUS_OPERATING') : get('VENUE_STATUS_CLOSED');
+  // 상태 변경 로직: before_open -> available -> closed -> available
+  const statusFlow = {
+    before_open: 'available',
+    available: 'closed', 
+    closed: 'available'
+  };
+  
+  const newStatus = statusFlow[scheduleStatus];
+  const currentStatusText = statusMap[scheduleStatus]?.text;
+  const newStatusText = statusMap[newStatus]?.text;
   
   // 확인창 표시
   const result = await Swal.fire({
-    title: get('WORK_SCHEDULE_REQUEST_CHANGE'), // 기존 유지
-    text: `"${currentStatusText}" ${get('VENUE_STATUS_CHANGE_CONFIRM')} "${statusText}"${get('VENUE_STATUS_CHANGE_QUESTION')}`,
+    title: get('WORK_SCHEDULE_REQUEST_CHANGE'),
+    text: `"${currentStatusText}" ${get('VENUE_STATUS_CHANGE_CONFIRM')} "${newStatusText}"${get('VENUE_STATUS_CHANGE_QUESTION')}`,
     icon: 'question',
     showCancelButton: true,
     confirmButtonText: get('SETTINGS_CHECK_BUTTON'),
     cancelButtonText: get('Common.Cancel'),
-    confirmButtonColor: newStatus === 'available' ? '#10b981' : '#ef4444',
+    confirmButtonColor: newStatus === 'available' ? '#10b981' : newStatus === 'closed' ? '#ef4444' : '#6b7280',
     cancelButtonColor: '#6b7280'
   });
 
@@ -103,26 +140,28 @@ const handleVenueStatusUpdate = async () => {
     console.log('매장 상태 변경 요청:', {
       venue_id: user.venue_id,
       status: newStatus,
-      current_emailNoti: emailNoti
+      current_scheduleStatus: scheduleStatus
     });
 
     const response = await ApiClient.postForm('/api/venueStatusUpdate', {
       venue_id: user.venue_id,
-      status: newStatus
+      status: newStatus,
+      open_time: venueData.open_time,
+      close_time: venueData.close_time
     });
 
     console.log('매장 상태 변경 응답:', response);
 
     // 성공 시 로컬 상태 업데이트
     if (response > 0) {
-      setEmailNoti(!emailNoti); // 상태 토글
+      setScheduleStatus(newStatus); // scheduleStatus 업데이트
       
-      console.log(`✅ 매장 상태가 "${statusText}"로 변경되었습니다.`);
+      console.log(`✅ 매장 상태가 "${newStatusText}"로 변경되었습니다.`);
       
       // 성공 알림
       Swal.fire({
-        title: get('WORK_SCHEDULE_END'), // 기존 유지
-        text: `${get('VENUE_STATUS_CHANGE_SUCCESS')} "${statusText}"${get('VENUE_STATUS_CHANGE_SUCCESS_SUFFIX')}`,
+        title: get('WORK_SCHEDULE_END'),
+        text: `${get('VENUE_STATUS_CHANGE_SUCCESS')} "${newStatusText}"${get('VENUE_STATUS_CHANGE_SUCCESS_SUFFIX')}`,
         icon: 'success', 
         confirmButtonText: get('SETTINGS_CHECK_BUTTON'),
         confirmButtonColor: '#10b981'
@@ -301,8 +340,37 @@ const handleSaveNewPassword = async () => {
   }, [venueData]);
 
   // 언어 저장 버튼 클릭 시 호출
-  const handleSaveLanguage = () => {
-    setLanguage(tempLang);
+  const handleSaveLanguage = async () => {
+
+    try {
+   
+       const response = await ApiClient.postForm('/api/updateLanguageSetting', {
+           user_id: user?.manager_id, 
+           language: tempLang
+        });
+
+        if(response > 0) {
+          setLanguage(tempLang);
+          
+          await Swal.fire({
+              title: get('SWAL_SUCCESS_TITLE'),
+              text: get('LANGUAGE_UPDATE_SUCCESS'),
+              icon: 'success',
+              timer: 1500
+            });
+          
+        }
+
+    }catch (error) {
+
+     await Swal.fire({
+          title: get('SETTINGS_SAVE_ERROR'),
+          icon: 'error',
+          confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+        });
+
+    }
+
   };
 
   return (
@@ -368,15 +436,9 @@ const handleSaveNewPassword = async () => {
         <div className="section-title">{get('SETTINGS_MANAGE_SHOP_DETAIL')}</div>
         
         <div className='venue-onOff'>
-        <div style={{lineHeight: '1.8'}}>{get('MANAGER_VENUE_SETTING')} </div>
-        <SketchBtn 
-              variant={emailNoti ? "green" : "danger"} 
-              size="small"  
-              style={{width: '30%'}}
-              onClick={handleVenueStatusUpdate}
-            ><HatchPattern opacity={0.6} />
-              {emailNoti ? get('VENUE_STATUS_OPERATING') : get('SCHEDULE_STATUS_DAYOFF')}
-            </SketchBtn></div>
+          <div style={{lineHeight: '1.8'}}>{get('MANAGER_VENUE_SETTING')} </div>
+          <VenueStatusButton />
+          </div>
              
         <SketchDiv className="section-box" style={{marginBottom:'1.2rem'}}>
           <SketchBtn 

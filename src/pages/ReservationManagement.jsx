@@ -769,9 +769,6 @@ const chatWithUser = async(r) => {
                         {getStatusText(r.status)}
                       </span>
                     </div>
-                    {showBillboard && (
-                      <PersonFinderBillboard onClose={() => setShowBillboard(false)} />
-                    )}
                   </div>
                   <div className="reservation-actions">
                     {/* Approve 버튼 - pending일 때만 활성화, confirmed면 "승인됨", cancelled이면 숨김 */}
@@ -818,6 +815,9 @@ const chatWithUser = async(r) => {
           </div>
         )}
       </div>
+       {showBillboard && (
+                      <PersonFinderBillboard />
+                    )}
     </>
   );
 };

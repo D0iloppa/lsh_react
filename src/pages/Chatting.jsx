@@ -211,11 +211,25 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           res_end_time: adjustedEndTime,
           note: note || ''
         });
-        setShowReservationCard(true);
+
+        // 바로 send
+        // handleReservationSend();
+
+
+
+        // setShowReservationCard(true);
         return null;
       }
     }
   }, [initType, otherProps]);
+
+  useEffect(() => {
+    if (reservationCardData && sendTo && receiverId) {
+      // 모든 필요한 데이터가 준비되었을 때만 전송
+      handleReservationSend();
+    }
+  }, [reservationCardData, sendTo, receiverId]);
+
 
   const [chat_messages, setChatMessages] = useState([]);
   const [modalImage, setModalImage] = useState(null);
@@ -665,7 +679,10 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
 
   // ⭐ ReservationCard onSend 함수 - 정리된 버전
-  const handleReservationSend = useCallback(async () => {
+  const handleReservationSend = useCallback(async (params) => {
+
+    console.log('reservationCardData send!', reservationCardData, params);
+
     const {type} = user;
     let login_id = (type=='staff') ? user.staff_id : user.manager_id;
 
@@ -683,7 +700,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       last_message_preview: '예약 정보',
       venue_id,
       link_type: 'reservation',
-      link_target: reservationCardData.reservation_id,
+      link_target: reservationCardData?.reservation_id || params.reservation_id,
       send_to: sendTo,
       receiver_id: receiverId
     };

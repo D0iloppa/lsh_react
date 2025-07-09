@@ -233,15 +233,38 @@ const handleSaveNewPassword = async () => {
 };
 
 // 언어 저장 버튼 클릭 시 호출
-const handleSaveLanguage = () => {
-  setLanguage(tempLang);
-  Swal.fire({
-    title: get('SWAL_SUCCESS_TITLE'),
-    text: get('LANGUAGE_UPDATE_SUCCESS'), // 이 메시지 코드를 DB에 추가해야 함
-    icon: 'success',
-    timer: 1500
-  });
-};
+  const handleSaveLanguage = async () => {
+
+    try {
+   
+       const response = await ApiClient.postForm('/api/updateLanguageSetting', {
+           user_id: user?.staff_id, 
+           language: tempLang
+        });
+
+        if(response > 0) {
+          setLanguage(tempLang);
+          
+          await Swal.fire({
+              title: get('SWAL_SUCCESS_TITLE'),
+              text: get('LANGUAGE_UPDATE_SUCCESS'),
+              icon: 'success',
+              timer: 1500
+            });
+          
+        }
+
+    }catch (error) {
+
+     await Swal.fire({
+          title: get('SETTINGS_SAVE_ERROR'),
+          icon: 'error',
+          confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+        });
+
+    }
+
+  };
 
   return (
     <>
