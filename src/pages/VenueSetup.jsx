@@ -822,7 +822,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           <div className="time-label">{get('title.text.14')}</div>
           <SketchInput
             name="name"
-            value={form.name}
+            value={form.name} style={{width: '50%'}}
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder={get('VENUE_NAME_PLACEHOLDER')}
@@ -834,8 +834,8 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         <div style={{ flex: 8 }}>
           <div className="time-label">{get('DiscoverPage1.6')}</div>
           <SketchInput
-            name="address"
-            value={form.address}
+            name="address" 
+            value={form.address} 
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder={get('VENUE_ADDRESS_PLACEHOLDER')}
@@ -887,7 +887,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           <div className="time-input-col">
             <div className="time-label">{get('VENUE_START_TIME')}</div>
             <SketchInput
-              name="open_time"
+              name="open_time" style={{width: '80%'}}
               type="time"
               value={form.open_time}
               onChange={handleChange}
@@ -899,7 +899,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           <div className="time-input-col">
             <div className="time-label">{get('VENUE_END_TIME')}</div>
             <SketchInput
-              name="close_time" style={{width: '99%'}}
+              name="close_time" style={{width: '80%'}}
               type="time"
               value={form.close_time}
               onChange={handleChange}
@@ -913,7 +913,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         <div className="input-row">
             <div className="time-label">{get('VENUE_INTRO_PLACEHOLDER')}</div>
           <SketchInput
-            name="description"
+            name="description" 
             value={form.description || ''}
             onChange={handleChange}
             onBlur={handleBlur}
