@@ -421,7 +421,6 @@ const handleEndPromotion = async (promotionId) => {
               display: flex;
               align-items: center;
               justify-content: center;
-              border-radius: 8px;
             }
 
             .promotion-end-text {

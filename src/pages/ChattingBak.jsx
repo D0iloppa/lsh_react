@@ -31,48 +31,6 @@ const ReservationCard = ({ data, onSend, onClose }) => (
   </div>
 );
 
-// Float Bottom Button 컴포넌트
-const FloatBottomButton = React.memo(({ isVisible, onClick }) => {
-  if (!isVisible) return null;
-  
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        position: 'fixed',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        bottom: '180px', // 입력창 위에 오도록 조정
-        width: '30px',
-        height: '30px',
-        borderRadius: '50%',
-        backgroundColor: '#222',
-        color: 'white',
-        border: 'none',
-        cursor: 'pointer',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.18)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '16px',
-        zIndex: 1000,
-        transition: 'all 0.3s cubic-bezier(.4,0,.2,1)',
-      }}
-      onMouseEnter={e => {
-        e.target.style.transform = 'translateX(-50%) scale(1.08)';
-        e.target.style.backgroundColor = '#111';
-      }}
-      onMouseLeave={e => {
-        e.target.style.transform = 'translateX(-50%) scale(1)';
-        e.target.style.backgroundColor = '#222';
-      }}
-      aria-label="맨 아래로 이동"
-    >
-      ↓
-    </button>
-  );
-});
-
 // 최적화된 입력 컴포넌트
 const ChatInput = React.memo(({ onSend, placeholder, onKeyDown, onRef }) => {
   const inputRef = useRef(null);
@@ -133,7 +91,6 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const [isLoadingOlder, setIsLoadingOlder] = useState(false);
   const [hasMoreOlder, setHasMoreOlder] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [showFloatButton, setShowFloatButton] = useState(false);
 
   //번역
   const [translationMap, setTranslationMap] = useState({});
@@ -316,18 +273,22 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     }, 100);
   }, []);
 
+  // 스크롤 이벤트 핸들러 - 이전 메시지 로딩
+  const handleScroll = useCallback(() => {
+    if (!chatBoxRef.current || isLoadingOlder || !hasMoreOlder) return;
+    
+    const { scrollTop } = chatBoxRef.current;
+    
+    // 스크롤이 맨 위에 가까우면 이전 메시지 로딩
+    if (scrollTop < 100) {
+      loadOlderMessages();
+    }
+  }, [isLoadingOlder, hasMoreOlder]);
+
   // 이전 메시지 로딩 함수
   const loadOlderMessages = useCallback(async () => {
-    if (isLoadingOlder || !hasMoreOlder || chat_messages.length === 0) {
-      console.log('🚫 이전 메시지 로딩 차단:', { 
-        isLoadingOlder, 
-        hasMoreOlder, 
-        messageCount: chat_messages.length 
-      });
-      return;
-    }
+    if (isLoadingOlder || !hasMoreOlder || chat_messages.length === 0) return;
     
-    console.log('📚 이전 메시지 로딩 시작');
     setIsLoadingOlder(true);
     
     try {
@@ -383,40 +344,12 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     }
   }, [room_sn, chat_messages, isLoadingOlder, hasMoreOlder, user.type]);
 
-  // 스크롤 이벤트 핸들러 - 이전 메시지 로딩 + Float Button 제어
-  const handleScroll = useCallback(() => {
-    if (!chatBoxRef.current) return;
-    
-    const { scrollTop, scrollHeight, clientHeight } = chatBoxRef.current;
-    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-    
-    // Float Button 표시/숨김 제어
-    if (distanceFromBottom > 300) {
-      setShowFloatButton(true);
-    } else {
-      setShowFloatButton(false);
-    }
-    
-    // 이전 메시지 로딩 (기존 로직)
-    if (isLoadingOlder || !hasMoreOlder) return;
-    
-    // 스크롤이 맨 위에 가까우면 이전 메시지 로딩
-    if (scrollTop < 100) {
-      console.log('🔄 이전 메시지 로딩 시작');
-      loadOlderMessages();
-    }
-  }, [isLoadingOlder, hasMoreOlder, loadOlderMessages]);
-
   // 스크롤 이벤트 리스너 등록
   useEffect(() => {
     const chatBox = chatBoxRef.current;
     if (chatBox) {
-      // console.log('📜 스크롤 이벤트 리스너 등록');
       chatBox.addEventListener('scroll', handleScroll);
-      return () => {
-        // console.log('📜 스크롤 이벤트 리스너 제거');
-        chatBox.removeEventListener('scroll', handleScroll);
-      };
+      return () => chatBox.removeEventListener('scroll', handleScroll);
     }
   }, [handleScroll]);
 
@@ -668,11 +601,13 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         }
       }
 
+      console.log('🔍 API 호출 파라미터:', params);
 
       const response = await axios.get(`${API_HOST}/api/getChattingData_v2`, {
         params
       });
 
+      console.log('📨 API 응답 데이터:', response.data);
 
       // 예약 정보 미리 포함
       const newMessages = await Promise.all(response.data.map(async (item, index) => {
@@ -715,10 +650,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       } else {
         // 새 메시지 로딩: 뒤에 추가
         const newChatMessages = newMessages.filter(msg => msg.chat_sn > lastChatSnRef.current);
-
+        console.log('🆕 새 메시지 로딩:', newChatMessages.map(m => ({ chat_sn: m.chat_sn, text: m.text })));
         if (newChatMessages.length > 0) {
-
-          console.log('🆕 새 메시지 로딩:', newChatMessages.map(m => ({ chat_sn: m.chat_sn, text: m.text })));
           setChatMessages(prev => dedupeMessages([...prev, ...newChatMessages]));
           const lastMessage = newChatMessages[newChatMessages.length - 1];
           const shouldScroll = lastMessage.sender_type === 'manager' || isUserAtBottom();
@@ -1084,12 +1017,6 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
             <ChatMessage key={msg.chat_sn} msg={msg} setModalImage={setModalImage} />
           ))}
           <div ref={messageEndRef} style={{ height: '1px', minHeight: '1px' }} />
-          
-          {/* Float Bottom Button */}
-          <FloatBottomButton 
-            isVisible={showFloatButton}
-            onClick={() => scrollToBottom('smooth')}
-          />
         </div>
 
         {/* 예약 카드 표시 */}

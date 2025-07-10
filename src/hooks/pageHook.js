@@ -42,6 +42,30 @@ const usePageNavigation = () => {
         setPageDataStack(prev => [...prev, { page, data }]);
         setPageHistory(prev => [...prev, page]);
     };
+    
+    const navigateToPageFromNotificationData = (page_id, data) => {
+        // 1. page_id로 PAGES에서 해당 page 객체 찾기
+        const page = PAGES[page_id];
+        if (!page) {
+            console.error('해당 page_id를 찾을 수 없습니다:', page_id);
+            return;
+        }
+
+
+        const pageHistory = [];
+
+        switch (page_id) {
+            case 'chatting':
+            // 예: 채팅 알림 → 홈 → 채팅방
+            pageHistory.push('home');
+            pageHistory.push('chatting');
+            break;
+        }
+
+        setPageHistory([...pageHistory]);
+        setCurrentPage(page);
+        setPageDataStack([{ page, data }]);
+    };
 
     // 현재 페이지 데이터 가져오기
     const getCurrentPageData = () => {
@@ -106,10 +130,12 @@ const usePageNavigation = () => {
         }
     };
 
+
     return {
         currentPage,
         navigateToPage,
         navigateToPageWithData,
+        navigateToPageFromNotificationData,
         getCurrentPageData,
         navigateToMap,
         navigateToSearch,

@@ -645,7 +645,12 @@ const handleSubmitResponse = async (reviewId) => {
       `}</style>
         <div className="review-container">
         <SketchHeader
-          title={get('STAFF_REVIEW_MANAGEMENT_TITLE')}
+           title={
+          <>
+            <Star size={18} style={{marginRight:'7px',marginBottom:'-3px'}}/>
+            {get('STAFF_REVIEW_MANAGEMENT_TITLE')}
+          </>
+        }
           showBack={true}
           onBack={goBack}
         />

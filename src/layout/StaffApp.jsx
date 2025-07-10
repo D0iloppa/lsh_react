@@ -1,7 +1,7 @@
 // src/layout/StaffApp.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, Search, Calendar, MessageCircle, User, Map, ChevronUp } from 'lucide-react';
+import { Home, Search, Calendar, MessageCircle, User, Map, Settings, MessagesSquare } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
@@ -73,9 +73,9 @@ const StaffApp = () => {
     // 네비게이션 메뉴들
     const navigationItems = [
         { id: PAGES.STAFF_HOME, icon: Home, label: get('Footer1.3') || '대시보드' },
-        { id: PAGES.STAFF_WORK_SCHEDULE, icon: Calendar, label: get('Staff.menu.1') || '예약관리' },
-        { id: PAGES.CHATTINGLIST, data: { chatRoomType: 'staff' }, icon: MessageCircle, label: get('Staff.menu.2') || '채팅' },
-        { id: PAGES.STAFF_SETTING, icon: User, label: get('Mng.menu.3') || '계정' }
+        { id: PAGES.STAFF_BOOKING_LIST, icon: Calendar, label: get('MENU_RESERVATIONS') || '예약관리' },
+        { id: PAGES.CHATTINGLIST, data: { chatRoomType: 'staff' }, icon: MessagesSquare, label: get('Staff.menu.2') || '채팅' },
+        { id: PAGES.STAFF_SETTING, icon: Settings, label: get('MENU_SETTINGS') || '계정' }
     ];
 
     console.log('navigationItems', navigationItems);

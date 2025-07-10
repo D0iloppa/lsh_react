@@ -6,7 +6,7 @@ import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
 import HatchPattern from '@components/HatchPattern';
 
-import { MessageCircle, Mail, Calendar,Settings, Clock, MapPin, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { MessageCircle, Mail, Calendar, Settings, Clock, MapPin, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 
 import Swal from 'sweetalert2';
 
@@ -317,8 +317,8 @@ const handleSaveNewPassword = async () => {
       <SketchHeader
         title={
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <User size={18} />
-            {get('Mng.menu.3') || get('SETTINGS_PAGE_TITLE')}
+            <Settings size={18} />
+            {get('Staff.setting.title')}
           </span>
         }
         showBack={true}
@@ -327,7 +327,7 @@ const handleSaveNewPassword = async () => {
 
       <div className="settings-container">
         <div className="section-title">
-          {get('Staff.setting.profile.title') || get('STAFF_SETTINGS_EDIT_PROFILE_TITLE')}
+          {get('Staff.setting.profile.title')}
         </div>
         <SketchDiv className="section-box" style={{marginBottom:'1.2rem'}}>
           <SketchBtn 
@@ -338,7 +338,7 @@ const handleSaveNewPassword = async () => {
           >
             <HatchPattern opacity={0.6} />
             <Edit size={14}/> 
-            {get('Staff.setting.profile.edit') || get('STAFF_SETTINGS_EDIT_PERSONAL_INFO')}
+            {get('Staff.setting.profile.title')}
           </SketchBtn>
         </SketchDiv>
 
@@ -478,10 +478,10 @@ const handleSaveNewPassword = async () => {
                     width: '212px'
                   }}
             >
-              <option value="en">{get('STAFF_SETTINGS_ENGLISH')}</option>
-              <option value="kr">{get('STAFF_SETTINGS_KOREAN')}</option>
-              <option value="vi">{get('STAFF_SETTINGS_VIETNAMESE')}</option>
-              <option value="ja">{get('STAFF_SETTINGS_JAPANESE')}</option>
+              <option value="en">{get('language.name.english')}</option>
+              <option value="kr">{get('language.name.korean')}</option>
+              <option value="vi">{get('language.name.vietnamese')}</option>
+              <option value="ja">{get('language.name.japanese')}</option>
               <option value="cn">{get('LANGUAGE_CHINESE')}</option>  
             </select>
             <SketchBtn 

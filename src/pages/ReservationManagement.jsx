@@ -394,14 +394,28 @@ const getReservationCountForDate = () => {
 
 // 예약 관리 API 호출 함수 (승인/취소) - SweetAlert2로 변경
 const handleReservationManage = async (reservation_id, mngCode) => {
-  const actionText = mngCode === 1 
-    ? get('RESERVATION_ACTION_APPROVE') 
-    : get('RESERVATION_ACTION_CANCEL');
+
+ console.log("mngCode", mngCode);
+
+  let actionText;
+  let confirmText;
+
+  if (mngCode === 1) {
+    actionText = get('RESERVATION_ACTION_APPROVE');
+    confirmText = get('RESERVATION_CONFIRM_APPROVE');
+  } else if (mngCode === 2) {
+    actionText = get('Common.Confirm');
+    confirmText = get('RESERVATION_CONFIRMED_VISIT');
+  } else if (mngCode === 3) {
+    actionText = get('Common.Confirm');
+    confirmText = get('RESERVATION_CONFIRMED_NOSHOW');
+  } else {
+    actionText = get('Common.Confirm');
+    confirmText = get('RESERVATION_CONFIRM_CANCEL');
+  }
+
   
-  const confirmText = mngCode === 1 
-    ? get('RESERVATION_CONFIRM_APPROVE') 
-    : get('RESERVATION_CONFIRM_CANCEL');
-  
+
   // 확인창 표시 - SweetAlert2로 변경
   const result = await Swal.fire({
     title: get('RESERVATION_MANAGE_TITLE'),
@@ -430,15 +444,11 @@ const handleReservationManage = async (reservation_id, mngCode) => {
     await loadReservations();
     
     // 성공 알림 - SweetAlert2로 변경
-    const successMessage = mngCode === 1 
-      ? get('RESERVATION_APPROVE_SUCCESS') 
-      : get('RESERVATION_CANCEL_SUCCESS');
-    
     Swal.fire({
       title: get('SWAL_SUCCESS_TITLE'),
-      text: successMessage,
+      text: get('RESERVATION_CONFIRMED_GOOD'),
       icon: 'success',
-      confirmButtonText: get('SWAL_CONFIRM_BUTTON'),
+      confirmButtonText: get('Common.Confirm'),
       confirmButtonColor: '#10b981'
     });
     
@@ -601,6 +611,7 @@ const chatWithUser = async(r) => {
           margin-bottom: 0.2rem;
         }
         .reservation-date {
+          margin-top: 0.2rem;
           font-size: 1.02rem;
           font-weight: 600;
           margin-bottom: 1.5rem;
@@ -1055,8 +1066,8 @@ const chatWithUser = async(r) => {
            {filtered.length === 0 ? (
                 <div className="loading-message">
                     {selectedDate === getToday() 
-                      ? `${get('REVIEW_FILTER_TODAY')} ${getStatusText(selectedStatus).toLowerCase()} ${get('NO_BOOKINGS_MESSAGE')}`
-                      : `${formatDateForDisplay(selectedDate)} ${getStatusText(selectedStatus).toLowerCase()} ${get('NO_BOOKINGS_MESSAGE')}`
+                      ? `${get('REVIEW_FILTER_TODAY')} ${get('NO_BOOKINGS_MESSAGE')}`
+                      : `${formatDateForDisplay(selectedDate)} ${get('NO_BOOKINGS_MESSAGE')}`
                     }
                   </div>
                 ) : (
@@ -1064,20 +1075,20 @@ const chatWithUser = async(r) => {
                 <SketchDiv key={r.id} className="reservation-card">
                   <div className='title-wrap'>
                     <div className="reservation-date">
+                          {r.targetName === "venue" 
+                            ? get('RESERVATION_VENUE_LABEL') 
+                            : get('RESERVATION_STAFF_LABEL')
+                          } {r.venue}
+                        </div>
+                    {/* <div className="reservation-date">
                       <Calendar size={15} style={{marginRight: '3px'}}/>
                       {r.date}
-                    </div>
+                    </div> */}
                     <div className="reservation-time">{r.time}</div>
                   </div>
                   <div className="reservation-header">
                     <div className="reservation-contents"> 
                       <div className="reservation-venue">
-                        <div>
-                          {r.targetName === "venue" 
-                            ? '- ' + get('RESERVATION_VENUE_LABEL') 
-                            : '- ' + get('RESERVATION_STAFF_LABEL')
-                          } {r.venue}
-                        </div>
                         <div>
                           <Edit size={10}/> {get('RESERVATION_CLIENT_LABEL')} <strong>{r.client_name}</strong> 
                           <span 
@@ -1136,7 +1147,7 @@ const chatWithUser = async(r) => {
                         
                         // 버튼 variant 결정
                         let variant = 'event';
-                        if (action === 'canceled') variant = 'danger';
+                        if (action === 'canceled') variant = 'secondary';
                         else if (action === 'confirmed') variant = 'event';
                         else if (action === 'completed') variant = 'secondary';
                         else if (action === 'no_show') variant = 'warning';
@@ -1159,7 +1170,7 @@ const chatWithUser = async(r) => {
                     ) : (
                       // action이 없는 경우 (종결 상태 등)
                       <div className="no-actions">
-                        {get('RESERVATION_NO_ACTIONS_AVAILABLE')}
+                        {/* {get('RESERVATION_NO_ACTIONS_AVAILABLE')} */}
                       </div>
                     )}
                   </div>

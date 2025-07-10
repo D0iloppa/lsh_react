@@ -166,6 +166,14 @@ const AppContent = () => {
   const { setFcmToken } = useFcm();
 
   useEffect(() => {
+    window.ReactReady = true;
+
+    window.onNotificationClick = (navigateTo, data) => {
+      alert(`✅ 푸시 알림 클릭됨\n\n이동할 페이지: ${navigateTo}\n\n전체 데이터:\n${JSON.stringify(data, null, 2)}`);
+    };
+  }, []);
+
+  useEffect(() => {
     window.receiveFcmToken = (token) => {
       setFcmToken(token); // 정상 작동
     };

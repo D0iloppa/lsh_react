@@ -6,7 +6,7 @@ import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 import HatchPattern from '@components/HatchPattern';
 import { useAuth } from '@contexts/AuthContext';
-import { Calendar, Clock, Bell, MapPin, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, Clock, Bell, Star, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, ClipboardList } from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import { useFcm } from '@contexts/FcmContext';
@@ -82,7 +82,7 @@ useEffect(() => {
 
   // 예약 수량에 따른 단수/복수 처리
   const getReservationText = (count) => {
-    return count > 1 ? get('STAFF_RESERVATION_PLURAL') : get('STAFF_RESERVATION_SINGLE');
+    return count > 1 ? get('text.cnt.1')+ get('STAFF_RESERVATION_PLURAL') : get('text.cnt.1') +  get('STAFF_RESERVATION_SINGLE');
   };
 
   const fetchStaffDashboardData = async () => {
@@ -235,6 +235,7 @@ console.log(PAGES)
 
         body.lang-ja .staffhome-container {
           font-family: 'NotoSansJP', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif !important;
+          color: #1f2937;
         }
 
         .staffhome-container {
@@ -261,47 +262,62 @@ console.log(PAGES)
           font-size: 1.25rem;
           font-weight: 600;
           margin-bottom: 0.5rem;
+          color: #1f2937;
         }
         .welcome-desc {
           font-size: 1.05rem;
-          color: #222;
+          color: #1f2937;
         }
         .section-card {
           position: relative;
           background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #e8f9ff 100%);
           padding: 0.8rem 0.9rem 1.1rem 0.9rem;
           margin-bottom: 0.4rem;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.05)
           border: 1px solid #999999;
         }
         .section-title {
           font-size: 1.08rem;
           font-weight: 600;
           margin-bottom: 0.5rem;
+          color: #1f2937;
         }
         .section-content {
           font-size: 0.97rem;
           color: #222;
         }
+       .action-grid {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 0.4rem 0.9rem;
+        }
+
         .action-row {
-          position: fixed;
-          bottom: 94px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 91%;
-          max-width: 28rem;
           display: flex;
           gap: 0.3rem;
           margin: 0;
-          padding: 0.8rem;
-          z-index: 1000;
+          padding: 0.1rem;
         }
+
+        .action-row-top, .action-row-bottom {
+            height: 61px;
+            display: flex;
+            justify-content: space-between;
+        }
+
         .action-btn {
           flex: 1;
           font-size: 1.05rem;
           min-width: 0;
           background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
           border: 1px solid #d1d5db;
+          display: flex;
+          align-items: center;
+          justify-content: start;
+          gap: 0.5rem; /* 아이콘과 텍스트 사이 간격 */
         }
         .empty-state {
           color: #6b7280;
@@ -338,7 +354,7 @@ console.log(PAGES)
           <SketchDiv className="section-card" onClick={handleBookingList}>
             <HatchPattern opacity={0.6} />
             <div className="section-title">
-              <Clock size={14} style={{marginRight: '5px'}}/> {get('STAFF_TODAYS_RESERVATIONS')} ({dashboardInfo.todaysReservations})
+              <Clock size={14} style={{marginRight: '5px', opacity: '0.5'}}/> {get('STAFF_TODAYS_RESERVATIONS')} ({dashboardInfo.todaysReservations})
             </div>
             <div className="section-content">
               {dashboardInfo.hourlyReservations.length > 0 ? (
@@ -358,7 +374,7 @@ console.log(PAGES)
           <SketchDiv className="section-card" onClick={handleStaffSchedule}>
             <HatchPattern opacity={0.6} />
             <div className="section-title">
-              <Calendar size={14} opacity={0.6}/> {get('STAFF_UPCOMING_SHIFTS')} ({dashboardInfo.upcomingShifts.length})
+              <Calendar size={14} opacity={0.5}/> {get('STAFF_UPCOMING_SHIFTS')} ({dashboardInfo.upcomingShifts.length})
             </div>
             <div className="section-content">
               {dashboardInfo.upcomingShifts.length > 0 ? (
@@ -380,7 +396,7 @@ console.log(PAGES)
             >
               <HatchPattern opacity={0.6} />
               <div className="section-title">
-                <Bell size={14} opacity={0.6} /> {get('STAFF_UNREAD_NOTIFICATIONS')} ({dashboardInfo?.notifications?.unread_count ?? 0})
+                <Bell size={14} opacity={0.5} /> {get('STAFF_UNREAD_NOTIFICATIONS')} ({dashboardInfo?.notifications?.unread_count ?? 0})
               </div>
               <div className="section-content">
                 {(dashboardInfo?.notifications?.unread_count ?? 0) > 0 ? (
@@ -395,34 +411,51 @@ console.log(PAGES)
 
           </div>
 
-          <div className="action-row">
-            <SketchBtn 
-              size="medium" 
-              variant="secondary" 
-              className="action-btn" style={{border: '1px solid #999999'}}
-              onClick={handleEditProfile}
-            >
-              <HatchPattern opacity={0.6} />
-               {get('Staff.home.btn1')}
-            </SketchBtn>
-            <SketchBtn 
-              size="medium" 
-              variant="secondary" 
-              className="action-btn" style={{border: '1px solid #999999'}}
-              onClick={handleBookingList}
-            >
-              <HatchPattern opacity={0.6} />
-              {get('Staff.home.btn2')}
-            </SketchBtn>
-            <SketchBtn 
-              size="medium" 
-              variant="secondary" 
-              className="action-btn" style={{border: '1px solid #999999'}}
-              onClick={handleNewReviews}
-            >
-              <HatchPattern opacity={0.6} />
-              {get('Staff.home.btn3')}
-            </SketchBtn>
+          <div className="action-grid">
+            <div className="action-row action-row-top">
+              <SketchBtn 
+                size="medium" 
+                variant="secondary" 
+                className="action-btn" 
+                style={{border: '1px solid #d1d5db'}}
+                onClick={handleEditProfile}
+              >
+                <HatchPattern opacity={0.6} />
+                <User size={24}/> {get('Staff.setting.profile.title')}
+              </SketchBtn>
+              <SketchBtn 
+                size="medium" 
+                variant="secondary" 
+                className="action-btn" 
+                style={{border: '1px solid #d1d5db'}}
+                onClick={handleBookingList}
+              >
+                <HatchPattern opacity={0.6} />
+                <Calendar size={24}/> {get('MENU_RESERVATIONS')}
+              </SketchBtn>
+            </div>
+            <div className="action-row action-row-bottom">
+              <SketchBtn 
+                size="medium" 
+                variant="secondary" 
+                className="action-btn" 
+                style={{border: '1px solid #d1d5db'}}
+                onClick={handleNewReviews}
+              >
+                <HatchPattern opacity={0.6} />
+                <Star size={24}/> {get('Staff.home.btn3')}
+              </SketchBtn>
+              <SketchBtn 
+                size="medium" 
+                variant="secondary" 
+                className="action-btn" 
+                style={{border: '1px solid #d1d5db'}}
+                onClick={handleStaffSchedule}
+              >
+                <HatchPattern opacity={0.6} />
+                <ClipboardList size={24}/>{get('Staff.menu.1')}
+              </SketchBtn>
+            </div>
           </div>
         </div>
     </>

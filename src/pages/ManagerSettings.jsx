@@ -5,7 +5,7 @@ import SketchDiv from '@components/SketchDiv';
 import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
 import HatchPattern from '@components/HatchPattern';
-import { MessageCircle, Mail, User } from 'lucide-react';
+import { MessageCircle, Mail, User, Settings } from 'lucide-react';
 import Swal from 'sweetalert2';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -430,7 +430,7 @@ const handleSaveNewPassword = async () => {
               <SketchHeader
         title={
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <User size={18} />
+            <Settings size={18} />
             {get('SETTINGS_PAGE_TITLE')}
           </span>
         }
