@@ -1,6 +1,6 @@
 // src/layout/MainApp.jsx
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState, useEffect, useRef } from 'react';
+import { useAuth } from '@contexts/AuthContext';
 import { Home, Search, Settings, Calendar, User, Map, ChevronUp, MessagesSquare } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
@@ -10,12 +10,16 @@ import HatchPattern from '@components/HatchPattern';
 import LoadingScreen from '@components/LoadingScreen';
 import SketchHeader from '@components/SketchHeader'
 
+import { useLocation, useNavigate } from 'react-router-dom';
+
 import './MainApp.css';
 
 const MainApp = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const scrollToTop = () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const { user, isLoggedIn } = useAuth();
@@ -23,24 +27,21 @@ const MainApp = () => {
     
     console.log('Welcome manager!', user);
 
-
     useEffect(() => {
-
         const {language} = user;
         setLanguage(language);
-
         
         window.scrollTo(0, 0);
         if (messages && Object.keys(messages).length > 0) {
-                window.scrollTo(0, 0);
-              }
-    
-      }, [messages, currentLang]);
+            window.scrollTo(0, 0);
+        }
+    }, [messages, currentLang]);
 
     const {
         currentPage,
         navigateToPage,
         navigateToPageWithData,
+        navigateToPageFromNotificationData,
         getCurrentPageData,
         navigateToMap,        
         navigateToSearch,     
@@ -61,15 +62,58 @@ const MainApp = () => {
         PAGES
     };
 
+    const processedQueryRef = useRef(false);
+    const lastProcessedQuery = useRef('');
+
+    useEffect(() => {
+        const currentQuery = location.search;
+        
+        // 쿼리스트링이 있고, 이전에 처리한 것과 다른 경우에만 처리
+        if (currentQuery && currentQuery !== lastProcessedQuery.current) {
+            const params = new URLSearchParams(currentQuery);
+            const data = {};
+            params.forEach((value, key) => { 
+                data[key] = value; 
+            });
+
+            const { navigateTo, ...paramsData } = data;
+            console.log('쿼리스트링 파싱 결과:', paramsData);
+
+            
+
+            if (navigateTo) {
+
+                //alert(`navigateTo->${navigateTo} | data : ${JSON.stringify(paramsData)}`);
+
+                // 페이지 네비게이션 먼저 실행
+                navigateToPageFromNotificationData(navigateTo, paramsData);
+
+                // 처리된 쿼리 기록
+                lastProcessedQuery.current = currentQuery;
+                processedQueryRef.current = true;
+
+                // 약간의 지연 후 쿼리스트링 제거
+                setTimeout(() => {
+                    navigate(location.pathname, { replace: false });
+                }, 100);
+            }
+        }
+        
+        // 쿼리스트링이 없어진 경우 플래그 리셋
+        if (!currentQuery && processedQueryRef.current) {
+            processedQueryRef.current = false;
+            lastProcessedQuery.current = '';
+        }
+    }, [location.search, location.pathname, navigate]); // navigateToPageFromNotificationData 제거
 
     // 현재 페이지 렌더링 (데이터와 함께)
-    // 페이지 이동시 MainApp.jsx에 정의 필요
     const renderCurrentPage = () => {
         const pageData = getCurrentPageData();
         const PageComponent = PAGE_COMPONENTS[currentPage] || PAGE_COMPONENTS[DEFAULT_MANAGER_PAGE];
         
         return <PageComponent {...pageData} {...navigationProps} />;
     };
+
     const handleMapClick = () => {
         navigateToMap({
             searchFrom: 'home',
@@ -85,9 +129,7 @@ const MainApp = () => {
     ];
 
     return (
-        
         <div className="main-app-container">
-
             {/* 메인 콘텐츠 영역 (스크롤 가능) */}
             <main className="content-area">
                 {renderCurrentPage()}
@@ -119,25 +161,17 @@ const MainApp = () => {
             {currentPage == 'HOME' && (
                 <section className="bottom-map-section">
                     <div className="map-icon-container" onClick={handleMapClick}>
-                    <Map size={20} /> <span style={{marginLeft: '5px'}}>{get('Main1.1')}</span>
+                        <Map size={20} /> <span style={{marginLeft: '5px'}}>{get('Main1.1')}</span>
                     </div>
                 </section>
-                
-                )}
-                    {/* 스크롤 업 버튼 */}
-                    {/* <button className="scroll-up-btn" onClick={scrollToTop}>
-                    <ChevronUp size={24} />
-                    </button> */}
-                
+            )}
 
-                                <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+            <LoadingScreen 
+                isVisible={isLoading} 
+                // loadingText="Loading" 
+            />
         </div>
     );
 };
 
 export default MainApp;
-
-

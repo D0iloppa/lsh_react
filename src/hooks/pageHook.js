@@ -43,28 +43,52 @@ const usePageNavigation = () => {
         setPageHistory(prev => [...prev, page]);
     };
     
-    const navigateToPageFromNotificationData = (page_id, data) => {
-        // 1. page_id로 PAGES에서 해당 page 객체 찾기
+
+    const navigateToPageFromNotificationData = async (page_id, data) => {
+        console.log('navigateToPageFromNotificationData', page_id, data);
+        
         const page = PAGES[page_id];
         if (!page) {
             console.error('해당 page_id를 찾을 수 없습니다:', page_id);
             return;
         }
+    
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-
-        const pageHistory = [];
-
-        switch (page_id) {
-            case 'chatting':
-            // 예: 채팅 알림 → 홈 → 채팅방
-            pageHistory.push('home');
-            pageHistory.push('chatting');
-            break;
+        const NOTIFICATION_NAVIGATION_PATHS = {
+            'CHATTING': [
+                'CHATTINGLIST',
+                'CHATTING'
+            ]
+        };
+        
+        const navigationPath = NOTIFICATION_NAVIGATION_PATHS[page_id];
+    
+        if (navigationPath && navigationPath.length > 1) {
+            for (let i = 0; i < navigationPath.length; i++) {
+                const pageId = navigationPath[i];
+                const isLastPage = i === navigationPath.length - 1;
+                const pageData = isLastPage ? data : null;
+                
+                if (pageData) {
+                    navigateToPageWithData(pageId, pageData);
+                } else {
+                    navigateToPage(pageId);
+                }
+                
+                // 마지막 페이지가 아니면 잠시 대기
+                if (!isLastPage) {
+                    await delay(10);
+                }
+            }
+        } else {
+            // 단순 이동
+            if (data) {
+                navigateToPageWithData(page_id, data);
+            } else {
+                navigateToPage(page_id);
+            }
         }
-
-        setPageHistory([...pageHistory]);
-        setCurrentPage(page);
-        setPageDataStack([{ page, data }]);
     };
 
     // 현재 페이지 데이터 가져오기

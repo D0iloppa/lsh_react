@@ -1,5 +1,5 @@
 // src/layout/StaffApp.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Home, Search, Calendar, MessageCircle, User, Map, Settings, MessagesSquare } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
@@ -9,9 +9,16 @@ import { PAGE_COMPONENTS, DEFAULT_STAFF_PAGE } from '../config/pages.config';
 import HatchPattern from '@components/HatchPattern';
 import LoadingScreen from '@components/LoadingScreen';
 
+
+import { useLocation, useNavigate } from 'react-router-dom';
+
+
 import './MainApp.css';
 
 const StaffApp = () => {
+
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const scrollToTop = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -35,6 +42,7 @@ const StaffApp = () => {
         currentPage,
         navigateToPage,
         navigateToPageWithData,
+        navigateToPageFromNotificationData,
         getCurrentPageData,
         navigateToMap,        
         navigateToSearch,     
@@ -54,6 +62,55 @@ const StaffApp = () => {
         goBack,
         PAGES
     };
+
+    const processedQueryRef = useRef(false);
+    const lastProcessedQuery = useRef('');
+
+    useEffect(() => {
+        const currentQuery = location.search;
+        
+        // 쿼리스트링이 있고, 이전에 처리한 것과 다른 경우에만 처리
+        if (currentQuery && currentQuery !== lastProcessedQuery.current) {
+            const params = new URLSearchParams(currentQuery);
+            const data = {};
+            params.forEach((value, key) => { 
+                data[key] = value; 
+            });
+
+            const { navigateTo, ...paramsData } = data;
+            console.log('쿼리스트링 파싱 결과:', paramsData);
+
+            
+
+            if (navigateTo) {
+
+                //alert(`navigateTo->${navigateTo} | data : ${JSON.stringify(paramsData)}`);
+
+                // 페이지 네비게이션 먼저 실행
+                navigateToPageFromNotificationData(navigateTo, paramsData);
+
+                // 처리된 쿼리 기록
+                lastProcessedQuery.current = currentQuery;
+                processedQueryRef.current = true;
+
+                // 약간의 지연 후 쿼리스트링 제거
+                setTimeout(() => {
+                    navigate(location.pathname, { replace: false });
+                }, 100);
+            }
+        }
+        
+        // 쿼리스트링이 없어진 경우 플래그 리셋
+        if (!currentQuery && processedQueryRef.current) {
+            processedQueryRef.current = false;
+            lastProcessedQuery.current = '';
+        }
+    }, [location.search, location.pathname, navigate]); // navigateToPageFromNotificationData 제거
+
+
+
+
+
 
 
     // 현재 페이지 렌더링 (데이터와 함께)

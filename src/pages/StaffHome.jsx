@@ -6,10 +6,11 @@ import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 import HatchPattern from '@components/HatchPattern';
 import { useAuth } from '@contexts/AuthContext';
-import { Calendar, Clock, Bell, Star, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, ClipboardList } from 'lucide-react';
+import { Calendar, Clock, Bell, Star, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, ClipboardList, LogIn, LogOut } from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import { useFcm } from '@contexts/FcmContext';
+import Swal from 'sweetalert2';
 
 const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
 
@@ -27,8 +28,11 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
     unreadNotifications: [],
     hourlyReservations: [] // 시간별 예약 데이터 추가
   });
+  const [todaySchedule, setTodaySchedule] = useState(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   console.log('메시지 내용:', messages['Staff.home.btn1']); 
+
+  console.log("todaySchedule", todaySchedule)
 
 
 
@@ -82,7 +86,7 @@ useEffect(() => {
 
   // 예약 수량에 따른 단수/복수 처리
   const getReservationText = (count) => {
-    return count > 1 ? get('text.cnt.1')+ get('STAFF_RESERVATION_PLURAL') : get('text.cnt.1') +  get('STAFF_RESERVATION_SINGLE');
+    return count > 1 ? get('text.cnt.1') : get('text.cnt.1');
   };
 
   const fetchStaffDashboardData = async () => {
@@ -130,13 +134,14 @@ useEffect(() => {
     const total_count = notifications?.total_count ?? 0;
 
     if (todaysReservations && todaysReservations.length > 0) {
-      // 시간별 예약 데이터 처리
+      // 시간별 예약 데이터 처리 - 예약 수와 취소 수 모두 포함
       const hourlyData = todaysReservations.map(item => ({
         hour: item.hour,
-        reservationCount: item.reservation_count || 0
+        reservationCount: item.reservation_count || 0,
+        canceledCount: item.canceled_count || 0  // 취소 수 추가
       }));
 
-      // 총 예약 수 계산
+      // 총 예약 수 계산 (취소 제외)
       const totalReservations = hourlyData.reduce((sum, item) => sum + item.reservationCount, 0);
 
       console.log('처리된 데이터:', {
@@ -149,7 +154,7 @@ useEffect(() => {
       setDashboardInfo(prev => ({
         ...prev,
         todaysReservations: totalReservations,
-        hourlyReservations: hourlyData,
+        hourlyReservations: hourlyData, // 예약 수와 취소 수 모두 포함
         notifications: {
           unread_count: unread_count,
           total_count: total_count,
@@ -175,6 +180,18 @@ useEffect(() => {
           total_count: total_count,
         }
       }));
+    }
+
+    // 오늘의 스케줄 정보 가져오기 (try 블록 안으로 이동)
+    const scheduleResponse = await ApiClient.postForm('/api/getStaffSchedules', {
+      staff_id: user.staff_id,
+      start_date: new Date().toISOString().split('T')[0]
+    });
+
+    if (scheduleResponse.data && scheduleResponse.data.length > 0) {
+      const today = new Date().toISOString().split('T')[0];
+      const todayScheduleData = scheduleResponse.data.find(s => s.work_date === today);
+      setTodaySchedule(todayScheduleData);
     }
 
   } catch (error) {
@@ -215,6 +232,79 @@ console.log(PAGES)
   const handleNotificationClick = () => {
       navigateToPageWithData(PAGES.NOTIFICATION_CENTER_STAFF, { staffId: user?.id });
    };
+
+   const handleCheckInOut = async () => {
+  if (!todaySchedule?.schedule_id) return;
+
+  const isCheckOut = todaySchedule.check_in && !todaySchedule.check_out;
+  const status = isCheckOut ? 'check_out' : 'check_in';
+  
+  // 확인 메시지
+  const confirmTitle = isCheckOut ? get('CHECKIN_CHECKOUT_CONFIRM_TITLE') : get('CHECKIN_CHECKIN_CONFIRM_TITLE');
+  const confirmText = isCheckOut ? get('CHECKIN_CHECKOUT_CONFIRM_TEXT') : get('CHECKIN_CHECKIN_CONFIRM_TEXT');
+  const actionText = isCheckOut ? get('WORK_SCHEDULE_CHECK_OUT') : get('WORK_SCHEDULE_CHECK_IN');
+  
+  const result = await Swal.fire({
+    title: confirmTitle,
+    text: confirmText,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: actionText,
+    cancelButtonText: get('SCHEDULE_MODAL_CANCEL'),
+    confirmButtonColor: isCheckOut ? '#f59e0b' : '#10b981',
+    cancelButtonColor: '#6b7280'
+  });
+
+  if (!result.isConfirmed) return;
+  
+  try {
+    const response = await ApiClient.postForm('/api/checkInOut', {
+      status,
+      schedule_id: todaySchedule.schedule_id
+    });
+    
+    if (response.success) {
+      setTodaySchedule(prev => ({
+        ...prev,
+        [status]: response.updated_time
+      }));
+      
+      // 성공 메시지
+      const successTitle = isCheckOut ? get('CHECKIN_CHECKOUT_SUCCESS_TITLE') : get('CHECKIN_CHECKIN_SUCCESS_TITLE');
+      const successText = isCheckOut ? get('CHECKIN_CHECKOUT_SUCCESS_TEXT') : get('CHECKIN_CHECKIN_SUCCESS_TEXT');
+      
+      Swal.fire({
+        title: successTitle,
+        text: successText,
+        icon: 'success',
+        confirmButtonText: get('SCHEDULE_MODAL_OK')
+      });
+    }
+  } catch (error) {
+    console.error('Check in/out failed:', error);
+    Swal.fire({
+      title: get('CHECKIN_ERROR_TITLE'),
+      text: get('CHECKIN_ERROR_TEXT'),
+      icon: 'error',
+      confirmButtonText: get('SCHEDULE_MODAL_OK')
+    });
+  }
+};
+
+    const getCheckInOutButtonText = () => {
+      if (!todaySchedule) return get('WORK_SCHEDULE_NO_SCHEDULE');
+      if (todaySchedule.status !== 'available') return get('WORK_SCHEDULE_NOT_AVAILABLE');
+      if (todaySchedule.check_out) return get('WORK_SCHEDULE_COMPLETED');
+      if (todaySchedule.check_in) return get('WORK_SCHEDULE_CHECK_OUT');
+      return get('WORK_SCHEDULE_CHECK_IN');
+    };
+
+    const getCheckInOutButtonVariant = () => {
+      if (!todaySchedule || todaySchedule.status !== 'available') return 'secondary';
+      if (todaySchedule.check_out) return 'secondary';
+      if (todaySchedule.check_in) return 'warning';
+      return 'primary';
+    };
 
 
 
@@ -271,7 +361,7 @@ console.log(PAGES)
         .section-card {
           position: relative;
           background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #e8f9ff 100%);
-          padding: 0.8rem 0.9rem 1.1rem 0.9rem;
+          padding: 0.8rem 0.9rem 0.8rem 0.9rem;
           margin-bottom: 0.4rem;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1),
             inset 0 1px 0 rgba(255, 255, 255, 0.8),
@@ -286,7 +376,7 @@ console.log(PAGES)
         }
         .section-content {
           font-size: 0.97rem;
-          color: #222;
+          color: #1f2937;
         }
        .action-grid {
           display: flex;
@@ -352,24 +442,27 @@ console.log(PAGES)
 
         <div style={{padding: '0.2rem 0.9rem'}}>
           <SketchDiv className="section-card" onClick={handleBookingList}>
-            <HatchPattern opacity={0.6} />
-            <div className="section-title">
-              <Clock size={14} style={{marginRight: '5px', opacity: '0.5'}}/> {get('STAFF_TODAYS_RESERVATIONS')} ({dashboardInfo.todaysReservations})
-            </div>
-            <div className="section-content">
-              {dashboardInfo.hourlyReservations.length > 0 ? (
-                dashboardInfo.hourlyReservations
-                  .filter(item => item.reservationCount > 0)
-                  .map((item, index) => (
+              <HatchPattern opacity={0.6} />
+              <div className="section-title">
+                <Clock size={14} style={{marginRight: '5px', opacity: '0.5'}}/> 
+                {get('STAFF_TODAYS_RESERVATIONS')} ({dashboardInfo.todaysReservations || 0})
+              </div>
+              <div className="section-content">
+                {dashboardInfo.hourlyReservations?.length > 0 ? (
+                  dashboardInfo.hourlyReservations.map((reservation, index) => (
                     <div key={index} className="hourly-reservation">
-                      {item.hour}:00 - {item.reservationCount} {getReservationText(item.reservationCount)}
+                      {reservation.hour}시: 예약 {reservation.reservationCount}건
+                      {reservation.canceledCount > 0 && `, 취소 ${reservation.canceledCount}건`}
                     </div>
                   ))
-              ) : (
-                <div className="empty-state">{get('STAFF_NO_RESERVATIONS_TODAY')}</div>
-              )}
-            </div>
-          </SketchDiv>
+                ) : (
+                  <div style={{ color: '#6b7280', fontStyle: 'italic'}}>
+                    {get('NO_BOOKINGS_MESSAGE')}
+                  </div>
+                )}
+              </div>
+            </SketchDiv>
+          
 
           <SketchDiv className="section-card" onClick={handleStaffSchedule}>
             <HatchPattern opacity={0.6} />
@@ -384,7 +477,7 @@ console.log(PAGES)
                   </div>
                 ))
               ) : (
-                <div className="empty-state">{get('STAFF_NO_UPCOMING_SHIFTS')}</div>
+                <div className="empty-state" >{get('STAFF_NO_UPCOMING_SHIFTS')}</div>
               )}
             </div>
           </SketchDiv>
@@ -409,6 +502,48 @@ console.log(PAGES)
               </div>
             </SketchDiv>
 
+             {/* 체크인/체크아웃 섹션 */}
+            <SketchDiv className="section-card">
+              <HatchPattern opacity={0.6} />
+              <div className="section-content">
+                {todaySchedule ? (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.8rem' }}>
+                      <span>{get('WORK_SCHEDULE_TODAY_TIME')} {todaySchedule.start_time?.slice(0,5)} - {todaySchedule.end_time?.slice(0,5)}</span>
+                      <SketchBtn 
+                        variant={getCheckInOutButtonVariant()}
+                        style={{ minWidth: '100px', marginLeft: '0.5rem', background: '#5e656f', color: 'white' }}
+                        size="small"
+                        onClick={handleCheckInOut}
+                        disabled={!todaySchedule || todaySchedule.status !== 'available' || !!todaySchedule.check_out}
+                      >
+                        <HatchPattern opacity={0.6} />
+                        {todaySchedule?.check_in ? <LogOut size={14}/> : <LogIn size={14}/>} 
+                        {getCheckInOutButtonText()}
+                      </SketchBtn>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#6b7280' }}>
+                      <span>
+                        {get('WORK_SCHEDULE_CHECKIN_TIME')} {
+                          todaySchedule?.check_in
+                            ? todaySchedule.check_in.split(':').slice(0, 2).join(':') // "17:48"
+                            : '-'
+                        }
+                      </span>
+                      <span>
+                        {get('WORK_SCHEDULE_CHECKOUT_TIME')} {
+                          todaySchedule?.check_out
+                            ? todaySchedule.check_out.split(':').slice(0, 2).join(':') // "18:30"
+                            : '-'
+                        }
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="empty-state">{get('NO_SCHEDULE_TODAY')}</div>
+                )}
+              </div>
+            </SketchDiv>
           </div>
 
           <div className="action-grid">

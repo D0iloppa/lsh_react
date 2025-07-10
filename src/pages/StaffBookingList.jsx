@@ -189,8 +189,10 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
       }
       
       if (apiData && apiData.length > 0) {
-        const filtered = apiData.filter(item => item.target_name === 'staff');
-        console.log("API 데이터:", apiData);
+        const filtered = apiData.filter(item => 
+          item.target_id == user.staff_id && item.target_name == 'staff'
+        );
+        console.log("API 데이터:", filtered);
         setBookings(filtered);
       } else {
         console.log("데이터가 없습니다");
@@ -218,7 +220,7 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
   const getButtonVariant = (action) => {
     switch(action) {
       case 'Detail':
-        return 'secondary';
+        return 'event';
       case 'Decline':
         return 'danger';
       case 'Review':
@@ -227,17 +229,41 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
   };
 
   const getStatusStyle = (status) => {
-    switch(status) {
-      case 'Confirmed':
-        return { color: '#059669'};
-      case 'Cancelled':
-        return { color: '#dc2626'};
-      case 'Completed':
-        return { color: '#3b82f6'};
-      default:
-        return { color: '#6b7280'};
-    }
-  };
+  console.log("status", status)
+
+  switch(status) {
+    case 'confirmed':
+      return { 
+        color: '#059669',
+        backgroundColor: '#d1fae5',
+        border: '1px solid #10b981'
+      };
+    case 'pending':
+      return { 
+        color: '#d97706',
+        backgroundColor: '#fef3c7',
+        border: '1px solid #f59e0b'
+      };
+    case 'cancelled':
+      return { 
+        color: '#dc2626',
+        backgroundColor: '#fee2e2',
+        border: '1px solid #ef4444'
+      };
+    case 'completed':
+      return { 
+        color: '#3b82f6',
+        backgroundColor: '#dbeafe',
+        border: '1px solid #3b82f6'
+      };
+    default:
+      return { 
+        color: '#6b7280',
+        backgroundColor: '#f3f4f6',
+        border: '1px solid #d1d5db'
+      };
+  }
+};
 
   const getActionText = (action) => {
     const actionMap = {
@@ -464,6 +490,25 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
     };
   };
 
+    const getStatusText = (status) => {
+    /*
+    const statusMap = {
+      'pending': get('RESERVATION_STATUS_PENDING'),
+      'confirmed': get('RESERVATION_STATUS_CONFIRMED'),
+      'canceled': get('RESERVATION_STATUS_CANCELED')
+    };
+    */
+    const statusMap = {
+      'canceled': get('RESERVATION_CANCELED_BUTTON'),
+      'completed': get('RESERVATION_COMPLETED_BUTTON'),
+      'confirmed': get('RESERVATION_CONFIRMED_BUTTON'),
+      'no_show': get('RESERVATION_NO_SHOW_BUTTON'),
+      'pending': get('RESERVATION_PENDING_BUTTON')
+    };
+
+    return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
   const filteredBookings = getFilteredBookings();
 
   return (
@@ -494,7 +539,7 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
         }
         .booking-status {
           font-size: 1.05rem;
-          color: #222;
+          
         }
         .booking-info {
           margin-top: 0.5rem;
@@ -504,7 +549,7 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
         }
 
         .booking-info div{
-          padding: 0.1rem;
+          padding: 0.2rem;
         }
 
         .booking-actions {
@@ -780,6 +825,20 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
           background: #f0f9ff;
           border-color: #0ea5e9;
         }
+          .booking-status {
+          display: inline-block;
+          padding: 0.15rem 0.5rem;
+          border-radius: 12px;
+          font-size: 0.8rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+           .reservation-status {
+          font-size: 0.88rem;
+          color: #888;
+          margin-bottom: 0.2rem;
+          text-align: end;
+        }
       `}</style>
       <div className="bookinglist-container">
         <SketchHeader
@@ -900,11 +959,13 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
                             <HatchPattern opacity={0.6} />
                             <div className="booking-header">
                               <div className="booking-venue">{bk.venue || bk.target_name}</div>
-                              <div className="booking-status" style={getStatusStyle(bk.status)}>{bk.status}</div>
+                              <div className="reservation-status">
+                             {get('RESERVATION_STATUS_LABEL')} <span className="booking-status" style={getStatusStyle(bk.status)}>{getStatusText(bk.status)}</span>
+                             </div>
                             </div>
                             <div className="booking-info">
                               <div>{get('BOOKING_DATE_LABEL')} {bk.date || new Date(bk.res_date).toLocaleDateString()}</div>
-                              <div>{get('BOOKING_TIME_LABEL')} {bk.time || bk.res_start_time} - {bk.res_end_time}</div>
+                              <div>{get('BOOKING_TIME_LABEL')} {bk.res_start_time}</div>
                               <div>{get('BOOKING_CUSTOMER_LABEL')} {bk.client_name || bk.user_name}</div>
                               <div style={{
                                 fontSize: '0.8rem',
@@ -953,7 +1014,9 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
                             <HatchPattern opacity={0.6} />
                             <div className="booking-header">
                               <div className="booking-venue">{bk.venue || bk.target_name}</div>
-                              <div className="booking-status" style={getStatusStyle(bk.status)}>{bk.status}</div>
+                              <div className="reservation-status">
+                                {get('RESERVATION_STATUS_LABEL')} <span className="booking-status" style={getStatusStyle(bk.status)}>{getStatusText(bk.status)}</span>
+                             </div>
                             </div>
                             <div className="booking-info">
                               <div>{get('BOOKING_DATE_LABEL')} {bk.date || new Date(bk.res_date).toLocaleDateString()}</div>

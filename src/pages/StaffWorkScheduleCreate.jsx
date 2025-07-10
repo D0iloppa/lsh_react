@@ -160,7 +160,7 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
           gap: 0.13rem;
           width: 100%;
           flex-wrap: nowrap;
-          
+          margin-left: 25px;
         }
         .week-day {
           font-size: 1.1rem;

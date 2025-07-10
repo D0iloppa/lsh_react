@@ -110,3 +110,12 @@ body[data-lang="vi"] .center-section {
 }
 
 body {margin: 0;}
+
+
+.swal-zindex-10000 {
+  z-index: 10000 !important;
+}
+
+div:where(.swal2-container){
+  z-index: 10000 !important;
+}

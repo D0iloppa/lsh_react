@@ -53,37 +53,54 @@ export const MsgProvider = ({ children }) => {
       }
   }, []);
 
+  let messageFetchErrorCount = 0; 
+
   // 메시지 가져오기 함수
-  const get = useCallback((code, lang = currentLang) => {
-    // messages가 없으면 코드 반환
-    if (!messages || typeof messages !== 'object') {
-      return code;
-    }
-  
-    // 해당 코드가 없으면 코드 반환  
-    if (!messages[code] || typeof messages[code] !== 'object') {
-      console.warn(`Message code '${code}' not found`);
-      return code;
-    }
-  
-    const messageKey = `msg_${lang}`;
-    const fallbackKey = `msg_ko`; // 기본 언어로 fallback
-    
-    // 요청한 언어 메시지가 있으면 반환
-    if (messages[code][messageKey]) {
-      return messages[code][messageKey];
-    }
-    
-    // 요청한 언어가 없으면 기본 언어로 fallback
-    if (lang !== 'ko' && messages[code][fallbackKey]) {
-      console.warn(`Message '${code}' not found for '${lang}', using Korean fallback`);
-      return messages[code][fallbackKey];
-    }
-    
-    // 모든 경우에 실패하면 코드 반환
-    console.warn(`Message '${code}' not found for any language`);
+ const get = useCallback((code, lang = currentLang) => {
+  // messages가 없으면 코드 반환
+  if (!messages || typeof messages !== 'object') {
     return code;
-  }, [messages, currentLang]);
+  }
+
+  // 해당 코드가 없으면 sync 후 코드 반환  
+  if (!messages[code] || typeof messages[code] !== 'object') {
+    console.warn(`Message code '${code}' not found`);
+
+    messageFetchErrorCount += 1;
+
+    // 100번마다 한 번만 fetchMessages 호출
+    if (messageFetchErrorCount % 100 === 0) {
+      console.log('[get] Triggering fetchMessages due to error count:', messageFetchErrorCount);
+      fetchMessages();
+    }
+    
+    return code;
+  }
+
+  const messageKey = `msg_${lang}`;
+  const fallbackKey = `msg_ko`; // 기본 언어로 fallback
+
+  // 요청한 언어 메시지가 있으면 반환
+  if (messages[code][messageKey]) {
+    return messages[code][messageKey];
+  }
+
+  // 요청한 언어가 없으면 기본 언어로 fallback
+  if (lang !== 'ko' && messages[code][fallbackKey]) {
+    console.warn(`Message '${code}' not found for '${lang}', using Korean fallback`);
+    return messages[code][fallbackKey];
+  }
+
+  // 모든 경우에 실패하면 코드 반환
+  console.warn(`Message '${code}' not found for any language`);
+
+  // 메시지 동기화 요청
+  ApiClient.get('/api/msgCodeReload', {}).then((res) => {
+    console.log('[syncMsg] Triggered due to fallback fail:', code, res);
+  });
+
+  return code;
+}, [messages, currentLang]);
 
   // 언어 변경 함수
   const setLanguage = useCallback((lang) => {

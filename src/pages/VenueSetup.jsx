@@ -102,6 +102,10 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   }, [mode, venueId]);
 
 
+  useEffect(() => {
+    console.log('galleryImages', galleryImages);
+  }, [galleryImages]);
+
 
 
   useEffect(() => {
@@ -410,8 +414,10 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     
     console.log('API response:', updateResponse);
 
+      
     if (updateResponse && (updateResponse.success || updateResponse.data)) {
       // 성공 후 갤러리 이미지들 DB에 저장
+      /*
       if (galleryImagesContentId.length > 0) {
         for (const contentId of galleryImagesContentId) {
           try {
@@ -424,6 +430,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           }
         }
       }
+        */
       
       // galleryImages 초기화
       setGalleryImages([]);
@@ -722,11 +729,15 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
                   const { data = [] } = response;
 
-                  // console.log('data', data);
+                  console.log('data fetch', data);
 
                   // 기존 DB 이미지 + 새로 추가된 이미지들 합치기
                   const dbImages = (data || []).map(item => item.url);
-                  return [...galleryImages, ...dbImages];
+                  const dbContentId = (data || []).map(item => item.content_id);
+
+                  const imgList = [...dbImages];
+                  
+                  return {images: imgList, contentId: dbContentId};
                 },
                 onUpload: async (file) => {
                   const response = await ApiClient.uploadImage(file);
@@ -737,14 +748,54 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
                     setGalleryImages(prev => [...prev, accessUrl]);
                     setGalleryImagesContentId(prev => [...prev, content_id]);
                     setGalleryImagesMap(prev => [...prev, { url: accessUrl, contentId: content_id }]);
+
+
+                     // venue 수정 데이터 준비
+                     await ApiClient.postForm('/api/uploadVenueGallery', {
+                      venue_id: user?.venue_id,
+                      content_id: content_id
+                    });
+
                   }
+
+
+                },
+                onDeleted:async ({img_url, content_id}) => {
+
+                  console.log('deletedImageUrl', img_url, content_id);
+
+
+                  const response = await ApiClient.postForm('/api/contentDelete', {
+                    target:'venue',
+                    content_id: content_id
+                  });
+
+
+                  const { success = false } = response;
+
+                  console.log('response', response);
+
+
+
+
+
+                  // galleryImages에서 삭제된 이미지 제거
+                  setGalleryImages(prev => prev.filter(img => img !== img_url));
+                  
+                  // galleryImagesMap에서 해당 항목 제거하고 contentId 배열 업데이트
+                  setGalleryImagesMap(prev => {
+                    const filtered = prev.filter(item => item.url !== img_url);
+                    setGalleryImagesContentId(filtered.map(item => item.content_id));
+                    return filtered;
+                  });
+
                 }
               }}
               appendedImages={galleryImages}
               onAppendedImagesChange={setGalleryImages}
-              onDeleted={(deletedImageUrl) => {
+              onDeleted={({img_url, content_id}) => {
 
-                console.log('deletedImageUrl', deletedImageUrl, galleryImages);
+                console.log('deletedImageUrl', img_url, content_id, galleryImages);
                 // galleryImages에서 삭제된 이미지 제거
                 setGalleryImages(prev => prev.filter(img => img !== deletedImageUrl));
                 

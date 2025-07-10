@@ -1,44 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { overlay } from 'overlay-kit';
-import { ImageIcon, Upload, X } from 'lucide-react';
+import { ImageIcon, Upload, ChevronLeft, ChevronRight } from 'lucide-react';
+import Swal from 'sweetalert2';
 
-/**
- * photoGalleryMode: {
- *   fetchList: () => Promise<array> | array (반드시 이미지 url 리스트 반환)
- * }
- * appendedImages: 새로 추가된 이미지들의 content_id 배열
- * onAppendedImagesChange: appendedImages 변경 시 호출되는 함수
- * onDeleted: 이미지 삭제 시 호출되는 함수 (deletedImageUrl) => void
- */
-const PhotoGallery = ({ 
+const PhotoGallery = ({
   photoGalleryMode = false,
-  appendedImages = [], 
+  appendedImages = [],
   onAppendedImagesChange,
-  onDeleted
+  onDeleted,
 }) => {
-  // validation
-  if (!photoGalleryMode || typeof photoGalleryMode !== 'object' || typeof photoGalleryMode.fetchList !== 'function') {
-    return <div style={{ color: 'red', fontSize: 13 }}>photoGalleryMode.fetchList 함수가 필요합니다.</div>;
+  if (
+    !photoGalleryMode ||
+    typeof photoGalleryMode !== 'object' ||
+    typeof photoGalleryMode.fetchList !== 'function'
+  ) {
+    return (
+      <div style={{ color: 'red', fontSize: 13 }}>
+        photoGalleryMode.fetchList 함수가 필요합니다.
+      </div>
+    );
   }
 
   const [images, setImages] = useState([]);
+  const [contentId, setContentId] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(null);
 
-  // fetch images 함수
   const fetchImages = async () => {
     setLoading(true);
     try {
-      const list = await photoGalleryMode.fetchList();
-      setImages(Array.isArray(list) ? list : []);
+      const {images, contentId} = await photoGalleryMode.fetchList();
+
+      console.log('images', images);
+      console.log('contentId', contentId);
+
+      setImages(Array.isArray(images) ? images : []);
+      setContentId(contentId);
     } catch (e) {
       setImages([]);
+      setContentId([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // fetch images
   useEffect(() => {
     let mounted = true;
     const fetch = async () => {
@@ -47,229 +51,338 @@ const PhotoGallery = ({
       }
     };
     fetch();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [photoGalleryMode, appendedImages]);
 
-  // 썸네일 최대 4개 (2x2)
   const thumbnails = images.slice(0, 4);
   const emptyCount = 4 - thumbnails.length;
 
-  // overlay 갤러리 오픈
   const openGalleryOverlay = () => {
     overlay.open(({ isOpen, close, unmount }) => {
+
+
+      console.log('overlayimages', contentId);
+
+
       const [overlayImages, setOverlayImages] = useState(images);
-      const [overlayLoading, setOverlayLoading] = useState(false);
+      const [overlayContentId, setOverlayContentId] = useState(contentId);
+      const [fullscreenIndex, setFullscreenIndex] = useState(null);
+      const touchStartX = useRef(null);
+      const mouseStartX = useRef(null);
 
-      // 오버레이 내부에서 이미지 리로드 함수
-      const reloadOverlayImages = async () => {
+      const openFullscreen = (index) => {
+        setFullscreenIndex(index);
+      };
 
-        setOverlayLoading(true);
-        try {
-          const list = await photoGalleryMode.fetchList();
-          console.log('reloadOverlayImages', list, photoGalleryMode);
-          setOverlayImages(Array.isArray(list) ? list : []);
-        } catch (e) {
-          setOverlayImages([]);
-        } finally {
-          setOverlayLoading(false);
+      const closeFullscreen = () => {
+        setFullscreenIndex(null);
+      };
+
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          if (fullscreenIndex === null) return;
+
+          if (e.key === 'ArrowLeft') {
+            setFullscreenIndex((prev) => Math.max(0, prev - 1));
+          } else if (e.key === 'ArrowRight') {
+            setFullscreenIndex((prev) => Math.min(overlayImages.length - 1, prev + 1));
+          } else if (e.key === 'Escape') {
+            closeFullscreen();
+          }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, [fullscreenIndex, overlayImages]);
+
+      const handleLongPressDelete = (img) => {
+        const confirmed = window.confirm('이미지를 삭제하시겠습니까?');
+        if (confirmed) {
+          alert('삭제!',JSON.stringify(img));
+          // 실제 삭제 로직이 있다면 여기에 구현
         }
       };
 
       return (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          background: 'rgba(0,0,0,0.85)',
-          zIndex: 3000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }} onClick={e => { if (e.target === e.currentTarget) unmount(); }}>
-          {/* 갤러리 컨테이너 */}
-          <div style={{
-            width: '300px',
-            height: '400px',
-            background: 'white',
-            borderRadius: '12px',
-            overflow: 'hidden',
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0,0,0,0.85)',
+            zIndex: 3000,
             display: 'flex',
-            flexDirection: 'column'
-          }}>
-            {/* 헤더 */}
-            <div style={{
+            alignItems: 'center',
+            justifyContent: 'center',
+            touchAction: 'pan-y',
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) unmount();
+          }}
+        >
+          <div
+            style={{
+              width: '300px',
+              height: '400px',
+              background: 'white',
+              borderRadius: '12px',
+              overflow: 'hidden',
               display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '16px 20px',
-              borderBottom: '1px solid #eee',
-              background: '#f8f9fa'
-            }}>
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#333' }}>
-                갤러리
-              </h3>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button 
-                  style={{ 
-                    background: '#10b981', 
-                    color: 'white', 
-                    border: 'none', 
-                    borderRadius: '6px', 
-                    padding: '8px 16px', 
-                    fontSize: '14px', 
-                    cursor: 'pointer', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '6px' 
-                  }} 
-                  onClick={() => { document.getElementById('photo-gallery-upload-input')?.click(); }}
-                >
-                  <Upload size={16} /> 업로드
-                </button>
-              </div>
-            </div>
-
-            {/* 파일 업로드 input */}
-            <input 
-              id="photo-gallery-upload-input" 
-              type="file" 
-              accept="image/*" 
-              style={{ display: 'none' }}
-              onChange={async e => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                if (typeof photoGalleryMode.onUpload === 'function') {
-                  await photoGalleryMode.onUpload(file);
-                  // 업로드 후 오버레이 내부 이미지 리스트 갱신
-                  // await reloadOverlayImages();
-                  unmount();
-                  
-                }
-                e.target.value = '';
+              flexDirection: 'column',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '16px 20px',
+                borderBottom: '1px solid #eee',
+                background: '#f8f9fa',
               }}
-            />
-
-            {/* 갤러리 그리드 (3x4 구조) */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gridTemplateRows: 'repeat(4, 1fr)',
-              gap: '2px',
-              padding: '20px',
-              height: 'calc(400px - 80px)',
-              overflowY: 'auto',
-              background: '#f8f9fa'
-            }}>
-              {/* 실제 이미지들 */}
-              {overlayImages.map((img, idx) => (
-                <div key={idx} style={{ 
-                  cursor: 'pointer', 
-                  borderRadius: '8px', 
-                  overflow: 'hidden', 
-                  border: '1px solid #e9ecef', 
-                  background: 'white', 
-                  position: 'relative', 
-                  aspectRatio: '1/1',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-                }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.02)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
-                  onClick={e => {
-                    e.stopPropagation();
-                    overlay.open(({ isOpen, close, unmount }) => (
-                      <div style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100vw',
-                        height: '100vh',
-                        background: 'rgba(0,0,0,0.95)',
-                        zIndex: 4000,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }} onClick={ev => { if (ev.target === ev.currentTarget) unmount(); }}>
-                        <img src={img} alt="확대 이미지" style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: 6, boxShadow: '0 2px 12px rgba(0,0,0,0.25)' }} />
-                      </div>
-                    ));
-                  }}
-                >
-                  <img src={img} alt={`gallery-${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                  
-                  {/* 삭제 버튼 */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (onDeleted) {
-                        onDeleted(img);
-                      }
-                    }}
-                    style={{
-                      position: 'absolute',
-                      top: '4px',
-                      left: '4px',
-                      background: '#ef4444',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '50%',
-                      width: '20px',
-                      height: '20px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      fontSize: '10px',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                      zIndex: 10
-                    }}
-                  >
-                    <X size={12} />
-                  </button>
-                  
-                  {/* 새로 추가된 이미지 표시 (임시 상태) */}
-                  {appendedImages.includes(img) && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '6px',
-                      right: '6px',
-                      background: '#10b981',
-                      color: 'white',
-                      padding: '3px 8px',
-                      borderRadius: '12px',
-                      fontSize: '11px',
-                      fontWeight: 'bold',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                    }}>
-                      NEW
-                    </div>
-                  )}
-                </div>
-              ))}
-              
-              {/* 빈 placeholder들 */}
-              {Array.from({ length: Math.max(0, 12 - overlayImages.length) }).map((_, idx) => (
-                <div key={`placeholder-${idx}`} style={{
-                  background: '#e9ecef',
-                  border: '2px dashed #dee2e6',
-                  borderRadius: '8px',
+            >
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#333' }}>갤러리</h3>
+              <button
+                style={{
+                  background: '#10b981',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '8px 16px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#adb5bd'
-                }}>
-                  <ImageIcon size={24} />
+                  gap: '6px',
+                }}
+                onClick={() => {
+                  document.getElementById('photo-gallery-upload-input')?.click();
+                }}
+              >
+                <Upload size={16} /> 업로드
+              </button>
+              <input
+                id="photo-gallery-upload-input"
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (typeof photoGalleryMode.onUpload === 'function') {
+                    await photoGalleryMode.onUpload(file);
+                    unmount();
+                  }
+                  e.target.value = '';
+                }}
+              />
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gridTemplateRows: 'repeat(4, 1fr)',
+                gap: '2px',
+                padding: '20px',
+                height: 'calc(400px - 80px)',
+                overflowY: 'auto',
+                background: '#f8f9fa',
+              }}
+            >
+              {overlayImages.map((img, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    cursor: 'pointer',
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    border: '1px solid #e9ecef',
+                    background: 'white',
+                    position: 'relative',
+                    aspectRatio: '1/1',
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openFullscreen(idx);
+                  }}
+                >
+                  <img
+                    src={img}
+                    alt={`gallery-${idx}`}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
                 </div>
               ))}
             </div>
           </div>
+
+          {fullscreenIndex !== null && (
+  <div
+    style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      background: 'rgba(0,0,0,0.95)',
+      zIndex: 4000,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}
+    onClick={(e) => {
+      if (e.target === e.currentTarget) closeFullscreen();
+    }}
+    onTouchStart={(e) => {
+      if (e.touches.length === 1) {
+        touchStartX.current = e.touches[0].clientX;
+      }
+    }}
+    onTouchEnd={(e) => {
+      if (touchStartX.current === null) return;
+      const touchEndX = e.changedTouches[0].clientX;
+      const deltaX = touchEndX - touchStartX.current;
+
+      if (deltaX > 50) {
+        setFullscreenIndex((prev) => Math.max(0, prev - 1));
+      } else if (deltaX < -50) {
+        setFullscreenIndex((prev) => Math.min(overlayImages.length - 1, prev + 1));
+      }
+      touchStartX.current = null;
+    }}
+    onMouseDown={(e) => {
+      mouseStartX.current = e.clientX;
+    }}
+    onMouseUp={(e) => {
+      if (mouseStartX.current === null) return;
+      const deltaX = e.clientX - mouseStartX.current;
+      if (deltaX > 50) {
+        setFullscreenIndex((prev) => Math.max(0, prev - 1));
+      } else if (deltaX < -50) {
+        setFullscreenIndex((prev) => Math.min(overlayImages.length - 1, prev + 1));
+      }
+      mouseStartX.current = null;
+    }}
+  >
+    {/* 삭제 버튼 (오른쪽 상단) */}
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+
+        
+        const contentId = overlayContentId[fullscreenIndex];
+
+
+        if(contentId){
+          // z-index 5000 추가
+          Swal.fire({
+            title: '삭제하시겠습니까?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            customClass: {
+              popup: 'swal-zindex-10000'
+            }
+          }).then((result) => {
+            if (result.isConfirmed) {
+              photoGalleryMode.onDeleted({
+                img_url: overlayImages[fullscreenIndex],
+                content_id: contentId
+              }).then((response) => {
+                setOverlayImages(prev => prev.filter((_, idx) => idx !== fullscreenIndex));
+                setOverlayContentId(prev => prev.filter((_, idx) => idx !== fullscreenIndex));
+              });
+            }
+          });
+        }
+        
+      }}
+      style={{
+        position: 'absolute',
+        top: 20,
+        right: 20,
+        background: 'rgba(255, 0, 0, 0.7)',
+        border: 'none',
+        borderRadius: 4,
+        padding: '6px 10px',
+        color: 'white',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        zIndex: 5000,
+      }}
+    >
+      삭제
+    </button>
+
+    {/* 좌우 이동 버튼 */}
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setFullscreenIndex((prev) => Math.max(0, prev - 1));
+      }}
+      style={{
+        position: 'absolute',
+        left: '20px',
+        background: 'transparent',
+        border: 'none',
+        color: 'white',
+        cursor: 'pointer',
+      }}
+    >
+      <ChevronLeft size={48} />
+    </button>
+
+    <img
+      src={overlayImages[fullscreenIndex]}
+      alt="fullscreen"
+      style={{
+        maxWidth: '90vw',
+        maxHeight: '80vh',
+        borderRadius: 6,
+        boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
+        userSelect: 'none',
+      }}
+    />
+
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setFullscreenIndex((prev) => Math.min(overlayImages.length - 1, prev + 1));
+      }}
+      style={{
+        position: 'absolute',
+        right: '20px',
+        background: 'transparent',
+        border: 'none',
+        color: 'white',
+        cursor: 'pointer',
+      }}
+    >
+      <ChevronRight size={48} />
+    </button>
+
+    {/* 페이지 인디케이터 */}
+    <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+      {overlayImages.map((_, i) => (
+        <div
+          key={i}
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            backgroundColor: i === fullscreenIndex ? '#10b981' : '#888',
+          }}
+        ></div>
+      ))}
+    </div>
+  </div>
+)}
         </div>
       );
     });
@@ -277,45 +390,69 @@ const PhotoGallery = ({
 
   if (loading) return <div style={{ color: '#888', fontSize: 13 }}>이미지 불러오는 중...</div>;
 
-  // 2x2 네모 박스 썸네일 그리드
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(2, 1fr)',
-      gridTemplateRows: 'repeat(2, 1fr)',
-      gap: 3,
-      width: 125,
-      height: 125,
-      cursor: 'pointer',
-      borderRadius: 5,
-      overflow: 'hidden',
-      background: '#f3f4f6',
-      boxShadow: '0 1px 4px rgba(0,0,0,0.07)'
-    }} onClick={openGalleryOverlay}>
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gridTemplateRows: 'repeat(2, 1fr)',
+        gap: 3,
+        width: 125,
+        height: 125,
+        cursor: 'pointer',
+        borderRadius: 5,
+        overflow: 'hidden',
+        background: '#f3f4f6',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+      }}
+      onClick={openGalleryOverlay}
+    >
       {thumbnails.map((img, idx) => (
         <div key={idx} style={{ position: 'relative' }}>
-          <img src={img} alt={`thumb-${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 3, border: '1px solid #eee', aspectRatio: '1/1' }} />
-          {/* 새로 추가된 이미지 표시 (임시 상태) */}
+          <img
+            src={img}
+            alt={`thumb-${idx}`}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              borderRadius: 3,
+              border: '1px solid #eee',
+              aspectRatio: '1/1',
+            }}
+          />
           {appendedImages.includes(img) && (
-            <div style={{
-              position: 'absolute',
-              top: '2px',
-              right: '2px',
-              background: '#10b981',
-              color: 'white',
-              padding: '1px 4px',
-              borderRadius: '3px',
-              fontSize: '8px',
-              fontWeight: 'bold'
-            }}>
+            <div
+              style={{
+                position: 'absolute',
+                top: '2px',
+                right: '2px',
+                background: '#10b981',
+                color: 'white',
+                padding: '1px 4px',
+                borderRadius: '3px',
+                fontSize: '8px',
+                fontWeight: 'bold',
+              }}
+            >
               NEW
             </div>
           )}
         </div>
       ))}
-      {/* 빈 박스 채우기 */}
       {Array.from({ length: emptyCount }).map((_, idx) => (
-        <div key={idx} style={{ width: '100%', height: '100%', background: '#e5e7eb', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div
+          key={idx}
+          style={{
+            width: '100%',
+            height: '100%',
+            background: '#e5e7eb',
+            borderRadius: 3,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           <ImageIcon size={28} color="#bbb" />
         </div>
       ))}
@@ -323,4 +460,4 @@ const PhotoGallery = ({
   );
 };
 
-export default PhotoGallery; 
+export default PhotoGallery;

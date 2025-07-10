@@ -179,7 +179,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const firstLoadRef = useRef(true);
   const chatInputRef = useRef(null);
   const [modalImage, setModalImage] = useState(null);
-
+  
   // room_sn 초기화
   useEffect(() => {
     console.log('chatRoom init!', otherProps);
@@ -315,6 +315,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       }
     }, 100);
   }, []);
+
+  setTimeout(scrollToBottom, 100)
 
   // 이전 메시지 로딩 함수
   const loadOlderMessages = useCallback(async () => {
@@ -927,7 +929,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         .chat-container {
           display: flex;
           flex-direction: column;
-          height: 85vh;
+          height: 87vh;
           background-color: #f2f2f2;
         }
         .chat-messages {
@@ -1011,7 +1013,6 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
            align-items: center;
            padding: 0.75rem;
            background-color: white;
-           padding-bottom: 1.2rem;
         }
         .chat-input {
           flex: 1;
