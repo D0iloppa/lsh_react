@@ -1,0 +1,78 @@
+.swipeable-container {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 8px;
+  border-radius: 10px;
+}
+
+.delete-button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 80px;
+  background: #ef4444;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 1;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+  border-radius: 0 10px 10px 0;
+}
+
+.delete-button:hover {
+  background: #dc2626;
+}
+
+.delete-button:active {
+  background: #b91c1c;
+}
+
+.delete-icon {
+  margin-right: 4px;
+  font-size: 16px;
+}
+
+.swipeable-card {
+  background: white;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  /* 기존 staff-card 스타일을 상속받도록 설정 */
+}
+
+.swipeable-card.swiped {
+  /* 스와이프된 상태의 추가 스타일 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 터치 디바이스에서 스크롤 방지 */
+.swipeable-container {
+  touch-action: pan-y;
+}
+
+.swipeable-card {
+  touch-action: pan-x;
+  /* PC에서 드래그 시 텍스트 선택 방지 */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* 드래그 중일 때 커서 변경 */
+.swipeable-card:active {
+  cursor: grabbing;
+}
+
+/* 드래그 중일 때 텍스트 선택 방지 */
+.swipeable-container {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+} 

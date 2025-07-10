@@ -2,16 +2,11 @@ import React, { useEffect, useState, useRef } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
-import SwipeableCard from '@components/SwipeableCard';
 import '@components/SketchComponents.css';
-import '@components/SwipeableCard.css';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
 import axios from 'axios';
 import { Calendar, Users, ClipboardList, Tag, Star, Headphones, Bell, Settings, MessagesSquare } from 'lucide-react';
-import Swal from 'sweetalert2';
-
-import ApiClient from '@utils/ApiClient';
 
 const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
 
@@ -23,7 +18,8 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
 
     useEffect(() => {
       const { chatRoomType = 'user' } = otherProps;
-      
+
+      console.log('chatRoomType', chatRoomType, user);
       setRoomType(chatRoomType);
     }, [otherProps]); // 의존성 배열로 제어
 
@@ -39,31 +35,34 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    if (user?.venue_id && roomType) {
-      fetchAndUpdate(user.venue_id); // 최초 데이터
-      startInterval(user.venue_id);  // 주기적 갱신
-    }
+
+    fetchAndUpdate(); // 최초 데이터
+    startInterval();  // 주기적 갱신
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current); // 언마운트 시 정리
     };
   }, [user, roomType]); // roomType 의존성 추가
 
-  const startInterval = (venue_id) => {
+  const startInterval = () => {
     intervalRef.current = setInterval(() => {
-      fetchAndUpdate(venue_id);
+      fetchAndUpdate();
     }, 500); // 0.5초마다 갱신
   };
 
-  const fetchAndUpdate = async (venue_id) => {
+  const fetchAndUpdate = async () => {
     const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
 
     let params = { account_type : roomType };
 
+    console.log('chatRoomType', params);
+
     switch(roomType){
+      case 'user':
+          params.user_id = user.user_id;
+          break;
       case 'manager':
         params.venue_id = venue_id;
-        params.manager_id = user.manager_id;
         break;
       case 'staff':
         params.staff_id = user.staff_id;
@@ -80,7 +79,7 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
       const mappedStaffs = data.map((item, index) => ({
         
         id: item.user_id || index,
-        creator_type: item.participant_type || item.creator_type,
+        creator_type: item.creator_type,
         room_sn: item.room_sn,
         name: item.room_name || '이름 없음',
         lastMessage: item.last_message_preview || '메시지 없음',
@@ -112,19 +111,6 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
     });
   };
 
-  // 삭제 핸들러 추가
-  const handleDeleteStaff = async (chatRoom) => {
-    console.log('Delete staff:', chatRoom);
-    
-
-    ApiClient.postForm('/api/deleteChatRoom', {
-      room_sn: chatRoom.room_sn,
-      account_id: (user.type == 'manager') ? user.manager_id : user.staff_id,
-      account_type: user.type
-    });
-
-  };
-
         
 
   return (
@@ -142,6 +128,7 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
           flex-direction: column;
           gap: 0.7rem;
           padding: 1rem;
+          height: 12vh;
         }
         .staff-card {
           position: relative;
@@ -242,36 +229,32 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
             </div>
           ) : (
             staffs.map((staff) => (
-              <SwipeableCard
+              <SketchDiv
                 key={staff.id}
-                data={staff}
-                onDelete={(data) => handleDeleteStaff(data)}
-                onCardClick={() => handleClickStaff(staff)}
-                confirmDelete={true}
-              >
-                <SketchDiv className="staff-card">
-                  <HatchPattern opacity={0.4} />
-                  <div className="staff-img">
-                    {staff.img ? (
-                      <img src={staff.img} alt={staff.name} />
-                    ) : (
-                      <span>🖼️</span>
-                    )}
-                  </div>
-                  <div className="staff-info">
-                    <div className="staff-name">
-                      {staff.name} <span className='roomType'>{staff.creator_type}</span>
-                    </div>
-                    <div className="staff-rating">{staff.lastMessage}</div>
-                  </div>
-                  <div className="staff-actions">
-                    <div className="last-time">{staff.lastTime}</div>
-                    {staff.isNew > 0 && (
-                      <div className="new-badge">{staff.isNew}</div>
-                    )}
-                  </div>
-                </SketchDiv>
-              </SwipeableCard>
+                className="staff-card"
+                onClick={() => handleClickStaff(staff)}
+              > 
+                <HatchPattern opacity={0.4} />
+                <div className="staff-img">
+                  {staff.img ? (
+                    <img src={staff.img} alt={staff.name} />
+                  ) : (
+                    <span>🖼️</span>
+                  )}
+                </div>
+                <div className="staff-info">
+                  <div className="staff-name">{staff.name}  <span className='roomType'>
+                  {staff.creator_type}
+                </span></div>
+                  <div className="staff-rating">{staff.lastMessage}</div>
+                </div>
+                <div className="staff-actions">
+                  <div className="last-time">{staff.lastTime}</div>
+                  {staff.isNew > 0 && (
+                    <div className="new-badge">{staff.isNew}</div>
+                  )}
+                </div>
+              </SketchDiv>
             ))
           )}
         </div>
