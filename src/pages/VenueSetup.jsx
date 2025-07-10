@@ -887,7 +887,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           <div className="time-input-col">
             <div className="time-label">{get('VENUE_START_TIME')}</div>
             <SketchInput
-              name="open_time" style={{width: '80%'}}
+              name="open_time" style={{width: '80%', height: '40px'}}
               type="time"
               value={form.open_time}
               onChange={handleChange}
@@ -899,7 +899,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           <div className="time-input-col">
             <div className="time-label">{get('VENUE_END_TIME')}</div>
             <SketchInput
-              name="close_time" style={{width: '80%'}}
+              name="close_time" style={{width: '80%', height: '40px'}}
               type="time"
               value={form.close_time}
               onChange={handleChange}

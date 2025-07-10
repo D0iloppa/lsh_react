@@ -185,35 +185,34 @@ const PhotoGallery = ({
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
-                gridTemplateRows: 'repeat(4, 1fr)',
-                gap: '2px',
+                gap: '8px',
                 padding: '20px',
-                height: 'calc(400px - 80px)',
-                overflowY: 'auto',
                 background: '#f8f9fa',
+                height: '260px', // 원하는 높이로 조정
+                overflowY: 'auto',
               }}
             >
               {overlayImages.map((img, idx) => (
                 <div
                   key={idx}
                   style={{
-                    cursor: 'pointer',
+                    position: 'relative',
+                    width: '100%',
+                    paddingBottom: '100%', // 정사각형
                     borderRadius: '8px',
                     overflow: 'hidden',
                     border: '1px solid #e9ecef',
                     background: 'white',
-                    position: 'relative',
-                    aspectRatio: '1/1',
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openFullscreen(idx);
                   }}
                 >
                   <img
                     src={img}
                     alt={`gallery-${idx}`}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    style={{
+                      position: 'absolute',
+                      top: 0, left: 0, width: '100%', height: '100%',
+                      objectFit: 'cover', display: 'block'
+                    }}
                   />
                 </div>
               ))}
