@@ -531,7 +531,7 @@ console.log(PAGES)
               <div className="section-content">
                 {(dashboardInfo?.notifications?.unread_count ?? 0) > 0 ? (
                   <div>
-                    All notifications: {dashboardInfo?.notifications?.total_count ?? 0}
+                    {get('btn.all.1')} {get('MENU_NOTIFICATIONS')}: {dashboardInfo?.notifications?.total_count ?? 0} {get('text.cnt.1')}
                   </div>
                 ) : (
                   <div className="empty-state">{get('STAFF_NO_UNREAD_NOTIFICATIONS')}</div>

@@ -14,6 +14,7 @@ import ApiClient from '@utils/ApiClient';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import customSwal from '@components/CustomSwal';
+import Swal from 'sweetalert2';
 
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -309,14 +310,40 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
 
   const sendAlert = async (staffId) => {
     try {
-      const response = await ApiClient.postForm('/api/sendAlert', {
-        staff_id: staffId
+      const result = await Swal.fire({
+        title: get('schedule_swal_alert_send_title'),
+        text: get('schedule_swal_alert_send_text'),
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: get('schedule_swal_alert_send_confirm'),
+        cancelButtonText: get('schedule_swal_alert_send_cancel'),
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33'
       });
 
-      console.log("response", response)
+      if (result.isConfirmed) {
+        const response = await ApiClient.postForm('/api/sendAlert', {
+          staff_id: staffId
+        });
+
+        console.log("response", response);
+        
+        Swal.fire({
+          title: get('schedule_swal_alert_success_title'),
+          text: get('schedule_swal_alert_success_text'),
+          icon: 'success',
+          confirmButtonText: get('schedule_swal_alert_success_confirm')
+        });
+      }
         
     } catch (error) {
       console.error('Failed to update schedule status:', error);
+      Swal.fire({
+        title: get('schedule_swal_alert_fail_title'),
+        text: get('schedule_swal_alert_fail_text'),
+        icon: 'error',
+        confirmButtonText: get('schedule_swal_alert_fail_confirm')
+      });
     }
   }
 
