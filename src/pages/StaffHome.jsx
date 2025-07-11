@@ -137,31 +137,30 @@ useEffect(() => {
     console.log("activePromotions:", activePromotions);
 
     // activePromotions 데이터 처리 (work_date 변환 및 포맷팅)
-    const upcomingShifts = activePromotions.map(promo => {
-      // work_date가 timestamp인 경우 변환
-      const workDate = new Date(promo.work_date);
-      const formattedDate = workDate.toLocaleDateString('ko-KR', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        weekday: 'short'
-      });
+   const upcomingShifts = activePromotions.map(promo => {
+  // work_date가 timestamp인 경우 변환
+  const workDate = new Date(promo.work_date);
+  
+  // 간단한 날짜 형식 (7/11)
+  const month = workDate.getMonth() + 1; // 0부터 시작하므로 +1
+  const day = workDate.getDate();
+  const formattedDate = `${month}/${day}`;
 
-      // 시간 포맷팅 (HH:MM 형태로)
-      const startTime = promo.start_time ? promo.start_time.slice(0, 5) : '00:00';
-      const endTime = promo.end_time ? promo.end_time.slice(0, 5) : '23:59';
+  // 시간 포맷팅 (HH:MM 형태로)
+  const startTime = promo.start_time ? promo.start_time.slice(0, 5) : '00:00';
+  const endTime = promo.end_time ? promo.end_time.slice(0, 5) : '23:59';
 
-      return {
-        date: formattedDate,
-        startTime: startTime,
-        endTime: endTime,
-        status: promo.status,
-        schedule_id: promo.schedule_id,
-        work_date: promo.work_date,
-        // 표시용 포맷
-        displayText: `${formattedDate} - ${startTime} to ${endTime}`
-      };
-    });
+  return {
+    date: formattedDate,
+    startTime: startTime,
+    endTime: endTime,
+    status: promo.status,
+    schedule_id: promo.schedule_id,
+    work_date: promo.work_date,
+    // 표시용 포맷
+    displayText: `${formattedDate} - ${startTime} to ${endTime}`
+  };
+});
 
     // notifications에서 unread_count와 total_count 추출
     const unread_count = notifications?.unread_count ?? 0;
@@ -489,7 +488,7 @@ console.log(PAGES)
                 {dashboardInfo.hourlyReservations?.length > 0 ? (
                   dashboardInfo.hourlyReservations.map((reservation, index) => (
                     <div key={index} className="hourly-reservation">
-                      {reservation.hour}시: 예약 {reservation.reservationCount}건
+                      {reservation.hour}hour: {get('Reservation.ReservationTitle')} {reservation.reservationCount}{get('text.cnt.1')}
                       {reservation.canceledCount > 0 && `, 취소 ${reservation.canceledCount}건`}
                     </div>
                   ))

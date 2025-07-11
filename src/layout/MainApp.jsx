@@ -81,9 +81,10 @@ const MainApp = () => {
        
                console.log("count", response)
    
-               if (response > 0) {
-                   setUnreadChatCount(response || 0);
-               }
+              // response가 직접 숫자로 온다면
+                const count = parseInt(response) || 0;
+                setUnreadChatCount(count);
+                
                } catch (error) {
                console.error('읽지 않은 채팅 개수 조회 실패:', error);
                setUnreadChatCount(0);

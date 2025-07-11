@@ -73,23 +73,27 @@ const StaffApp = () => {
             if (!user?.staff_id) return;
     
             try {
-            const response = await ApiClient.get('/api/getUnreadCountChat_mng', {
-                params: {
-                participant_type: 'staff',
-                participant_user_id: user.staff_id
-                }
-            });
+                const response = await ApiClient.get('/api/getUnreadCountChat_mng', {
+                    params: {
+                        participant_type: 'staff',
+                        participant_user_id: user.staff_id
+                    }
+                });
     
-            console.log("count", response)
+                console.log("채팅 개수 응답:", response);
 
-            if (response > 0) {
-                setUnreadChatCount(response || 0);
-            }
+                // response가 직접 숫자로 온다면
+                const count = parseInt(response) || 0;
+                setUnreadChatCount(count);
             } catch (error) {
-            console.error('읽지 않은 채팅 개수 조회 실패:', error);
-            setUnreadChatCount(0);
+                console.error('읽지 않은 채팅 개수 조회 실패:', error);
+                setUnreadChatCount(0);
             }
         };
+
+        useEffect(() =>{
+            console.log('chat_cnt', unreadChatCount);
+        },[unreadChatCount]);
     
         // 초기 로드 및 주기적 업데이트
         useEffect(() => {

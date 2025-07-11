@@ -148,6 +148,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const [showTranslateIcon, setShowTranslateIcon] = useState({});
 
   const handleLongPress = useCallback((chatSn) => {
+    console.log('🔤 Long Press 감지됨:', chatSn);
     setShowTranslateIcon(prev => ({
       ...prev,
       [chatSn]: true,
@@ -155,9 +156,15 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   }, []);
 
   const handleTranslate = useCallback(async (chatSn, text) => {
-    if (translationMap[chatSn]) return;
+    console.log('🔤 번역 요청:', { chatSn, text });
+    
+    if (translationMap[chatSn]) {
+      console.log('🔤 이미 번역된 메시지:', chatSn);
+      return;
+    }
 
     try {
+      console.log('🔤 Google Translate API 호출 시작');
       const response = await axios.post(
         `https://translation.googleapis.com/language/translate/v2?key=AIzaSyAnvkb7_-zX-aI8WVw6zLMRn63yQQrss9c`,
         {
@@ -168,13 +175,14 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       );
 
       const translated = response.data.data.translations[0].translatedText;
+      console.log('🔤 번역 완료:', translated);
 
       setTranslationMap(prev => ({
         ...prev,
         [chatSn]: translated,
       }));
     } catch (error) {
-      console.error('번역 실패:', error);
+      console.error('❌ 번역 실패:', error);
       Swal.fire('번역 오류', 'Google Translate API 호출에 실패했습니다.', 'error');
     }
   }, [translationMap, user.language]);
@@ -631,10 +639,19 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     const isTranslated = translationMap[msg.chat_sn];
     const showIcon = showTranslateIcon[msg.chat_sn];
 
+    console.log('🔤 ChatMessage 렌더링:', {
+      chat_sn: msg.chat_sn,
+      isMine,
+      isTranslated,
+      showIcon,
+      hasText: !!msg.text
+    });
+
     const pressTimerRef = useRef(null);
 
     const handleMouseDown = () => {
       if (!isMine) {
+        console.log('🔤 Mouse Down 감지:', msg.chat_sn);
         pressTimerRef.current = setTimeout(() => {
           handleLongPress(msg.chat_sn);
         }, 600);
@@ -642,7 +659,10 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     };
 
     const handleMouseUp = () => {
-      clearTimeout(pressTimerRef.current);
+      if (pressTimerRef.current) {
+        console.log('🔤 Mouse Up 감지 (타이머 취소):', msg.chat_sn);
+        clearTimeout(pressTimerRef.current);
+      }
     };
 
     return (
@@ -678,7 +698,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
                   {isTranslated} <span style={{ fontSize: 10, marginLeft: 4 }}>번역됨</span>
                 </div>
               )}
-              {showIcon && !isTranslated && msg.text && (
+              {!isMine && !isTranslated && msg.text && (
                 <div style={{ textAlign: 'right', marginTop: 4 }}>
                   <button
                     style={{
