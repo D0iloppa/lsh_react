@@ -352,7 +352,8 @@ export default function RegisterView() {
           margin: '0', 
           textAlign: 'start', 
           fontSize: '13px', 
-          fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"
+          fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
+          marginBottom: '1rem'
         }}>
           * {get('Intro.description1')}
         </div>
@@ -569,7 +570,7 @@ export default function RegisterView() {
             className="sketch-button" 
             variant="event"
             disabled={isLoading}
-            style={{ marginTop: '1rem', width: '100%' }}
+            style={{ width: '100%' }}
           >
             <HatchPattern opacity={0.8} />
             {isLoading ? (get('LOADING_REGISTER') || '회원가입 중...') : (get('title.text.11') || '회원가입')}
