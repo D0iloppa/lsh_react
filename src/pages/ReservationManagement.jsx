@@ -1099,7 +1099,7 @@ const chatWithUser = async(r) => {
                           </span>
                         </div>
                          <div>
-                          <Edit size={10}/> no-show: <span>{r.noShowCount} {get('text.cnt.1')}</span>
+                          <Edit size={10}/> {get('RESERVATION_NO_SHOW_BUTTON')}: <span>{r.noShowCount} {get('text.cnt.1')}</span>
                         </div>
                         <div>
                           <Edit size={10}/> {get('RESERVATION_ATTENDEE_LABEL')} <strong>{r.attendee} {get('ATTENDEE_COUNT_UNIT')}</strong>

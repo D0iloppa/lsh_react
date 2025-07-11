@@ -600,7 +600,8 @@ const handleSaveNewPassword = async () => {
                           borderBottomLeftRadius: '12px 6px',
                           transform: 'rotate(0.2deg)',
                           fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
-                          width: '224px'
+                          width: '100%',
+                          border: '0.8px solid #666'
                         }}>
               <option value="en">{get('language.name.english')}</option>
               <option value="kr">{get('language.name.korean')}</option>

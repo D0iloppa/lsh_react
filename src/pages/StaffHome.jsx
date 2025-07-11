@@ -6,7 +6,7 @@ import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 import HatchPattern from '@components/HatchPattern';
 import { useAuth } from '@contexts/AuthContext';
-import { Calendar, Clock, Bell, Star, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, ClipboardList, LogIn, LogOut } from 'lucide-react';
+import { Calendar, Clock, Bell, Star, User, Briefcase, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, ClipboardList, LogIn, LogOut } from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import { useFcm } from '@contexts/FcmContext';
@@ -509,7 +509,7 @@ console.log(PAGES)
                 {todaySchedule ? (
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.8rem' }}>
-                      <span>{get('WORK_SCHEDULE_TODAY_TIME')} {todaySchedule.start_time?.slice(0,5)} - {todaySchedule.end_time?.slice(0,5)}</span>
+                      <span><Briefcase size={10}/> {get('WORK_SCHEDULE_TODAY_TIME')} {todaySchedule.start_time?.slice(0,5)} - {todaySchedule.end_time?.slice(0,5)}</span>
                       <SketchBtn 
                         variant={getCheckInOutButtonVariant()}
                         style={{ minWidth: '100px', marginLeft: '0.5rem', background: '#5e656f', color: 'white' }}

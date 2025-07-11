@@ -4,7 +4,7 @@ import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
-import { Calendar, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, MessageCircle, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
 import ApiClient from '@utils/ApiClient';
 import { useAuth } from '../contexts/AuthContext';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
@@ -334,9 +334,10 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
       date: formatDate(bk.reserved_at),
       startTime: startTime,
       endTime: adjustedEndTime,
-      duration: durationHours ? `${durationHours}시간` : '',
-      attendee: `${bk.attendee}명`,
-      memo: bk.note || ''
+      duration: durationHours ? `${durationHours}${get('Reservation.HourUnit')}` : '',
+      attendee: `${bk.attendee}${get('Reservation.PersonUnit')}`,
+      memo: bk.note || '',
+      no_show_count: `${bk.no_show_count}${get('text.cnt.1')}`
     };
   
     const messages = {
@@ -964,9 +965,10 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
                              </div>
                             </div>
                             <div className="booking-info">
-                              <div>{get('BOOKING_DATE_LABEL')} {bk.date || new Date(bk.res_date).toLocaleDateString()}</div>
-                              <div>{get('BOOKING_TIME_LABEL')} {bk.res_start_time}</div>
-                              <div>{get('BOOKING_CUSTOMER_LABEL')} {bk.client_name || bk.user_name}</div>
+                              <div><Edit size={10}/> {get('BOOKING_DATE_LABEL')} {bk.date || new Date(bk.res_date).toLocaleDateString()}</div>
+                              <div><Edit size={10}/> {get('BOOKING_TIME_LABEL')} {bk.res_start_time}</div>
+                              <div><Edit size={10}/> {get('BOOKING_CUSTOMER_LABEL')} {bk.client_name || bk.user_name}</div>
+                              <div><Edit size={10}/> {get('RESERVATION_NO_SHOW_BUTTON')}: {bk.no_show_count}{get('text.cnt.1')}</div>
                               <div style={{
                                 fontSize: '0.8rem',
                                 color: '#666',
@@ -1019,9 +1021,10 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
                              </div>
                             </div>
                             <div className="booking-info">
-                              <div>{get('BOOKING_DATE_LABEL')} {bk.date || new Date(bk.res_date).toLocaleDateString()}</div>
-                              <div>{get('BOOKING_TIME_LABEL')} {bk.time || bk.res_start_time}</div>
-                              <div>{get('BOOKING_CUSTOMER_LABEL')} {bk.client_name || bk.user_name}</div>
+                              <div><Edit size={10}/> {get('BOOKING_DATE_LABEL')} {bk.date || new Date(bk.res_date).toLocaleDateString()}</div>
+                              <div><Edit size={10}/> {get('BOOKING_TIME_LABEL')} {bk.time || bk.res_start_time}</div>
+                              <div><Edit size={10}/> {get('BOOKING_CUSTOMER_LABEL')} {bk.client_name || bk.user_name}</div>
+                              <div><Edit size={10}/> {get('RESERVATION_NO_SHOW_BUTTON')}: {bk.no_show_count}{get('text.cnt.1')}</div>
                               <div style={{
                                 fontSize: '0.8rem',
                                 color: '#666',
