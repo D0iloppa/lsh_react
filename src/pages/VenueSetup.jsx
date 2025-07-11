@@ -609,6 +609,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           padding: 0.5rem 1rem;
         }
         .time-input-row {
+          padding: 0.5rem 1rem;
           display: flex;
           gap: 0.5rem;
           margin-bottom: 0.7rem;
