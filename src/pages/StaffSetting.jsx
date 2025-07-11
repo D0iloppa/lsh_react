@@ -475,7 +475,7 @@ const handleSaveNewPassword = async () => {
                     borderBottomLeftRadius: '12px 6px',
                     transform: 'rotate(0.2deg)',
                     fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
-                    width: '212px'
+                    width: '224px'
                   }}
             >
               <option value="en">{get('language.name.english')}</option>

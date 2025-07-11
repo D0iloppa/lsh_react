@@ -552,11 +552,13 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
         .section-title {
+          padding: 0.5rem 1rem;
           font-size: 1.15rem;
           font-weight: 600;
           margin: 1.2rem 0 0.7rem 0;
         }
         .img-row {
+          padding: 0.5rem 1rem;
           display: flex;
           gap: 1.2rem;
           margin-bottom: 1.2rem;
@@ -604,6 +606,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         }
         .input-row {
           margin-bottom: 0.7rem;
+          padding: 0.5rem 1rem;
         }
         .time-input-row {
           display: flex;
@@ -620,6 +623,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           font-weight: 500;
         }
         .save-btn-row {
+          padding: 0.5rem 1rem;
           margin: 1.2rem 0 0.7rem 0;
         }
         .info-text {
@@ -643,10 +647,9 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         }
 
         .map-section {
-          width: 99%;
+          width: 95%;
           height: 250px;
-          margin-top: 1rem;
-          margin-bottom:1rem;
+          margin: 1rem auto;
           border: 1px solid #666;
         }   
         
