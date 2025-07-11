@@ -229,6 +229,11 @@ export default function RegisterView() {
     }
   };
 
+    const handleBack = useCallback(() => {
+      clearStorage();
+      navigate('/login');
+    }, [clearStorage, navigate]);
+    
   const onSubmit = async (e) => {
     e.preventDefault();
     
@@ -324,10 +329,7 @@ export default function RegisterView() {
       <SketchHeader 
         title={'MANAGER ' + get('Menu1.1')}
         showBack={true}
-        onBack={() => {
-          clearStorage();
-          navigate(-1);
-        }}
+        onBack={handleBack}
         rightButtons={[]}
       />
       
