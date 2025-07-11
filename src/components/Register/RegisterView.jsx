@@ -233,7 +233,7 @@ export default function RegisterView() {
       clearStorage();
       navigate('/login');
     }, [clearStorage, navigate]);
-    
+
   const onSubmit = async (e) => {
     e.preventDefault();
     
@@ -333,7 +333,7 @@ export default function RegisterView() {
         rightButtons={[]}
       />
       
-      <div className='registerContainer' style={{padding: '1.5rem'}}>
+      <div className='registerContainer' style={{padding: '1rem'}}>
         
         <p style={{ 
           fontSize: '0.875rem', 

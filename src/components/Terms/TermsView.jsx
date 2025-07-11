@@ -11,6 +11,10 @@ import LoadingScreen from '@components/LoadingScreen';
 
 import Terms_kr from './Terms_kr';
 import Terms_en from './Terms_en';
+import Terms_vi from './Terms_vi';
+import Terms_cn from './Terms_cn';
+
+
 
 import './TermsView.css'
 
@@ -165,8 +169,12 @@ export default function TermsView() {
                   return <Terms_kr />;
                 case 'en':
                   return <Terms_en />;
+                case 'vi':
+                  return <Terms_vi />;
+                case 'cn':
+                  return <Terms_cn />;
                 default:
-                  return <Terms_kr />;
+                  return <Terms_en />;
               }
             })()}
           </SketchDiv>

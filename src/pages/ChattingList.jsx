@@ -64,9 +64,13 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
       case 'manager':
         params.venue_id = venue_id;
         params.manager_id = user.manager_id;
+        params.account_type = 'manager';
+        params.account_id = user.manager_id;
         break;
       case 'staff':
         params.staff_id = user.staff_id;
+        params.account_type = 'staff';
+        params.account_id = user.staff_id;
         break;
     }
 

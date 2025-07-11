@@ -42,7 +42,12 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
 
       // API 호출 (실제 구현에 맞게 수정)
        const response = await ApiClient.get('/api/getManagerUnreadCount', {
-         params: { venue_id, manager_id: user?.manager_id }
+         params: { 
+          venue_id, 
+          manager_id: user?.manager_id, 
+          participant_type: 'manager', 
+          participant_user_id: user?.manager_id
+         }
        });
 
       setNotificationCounts({
@@ -52,11 +57,11 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       });
     } catch (error) {
       console.error('알림 개수 조회 실패:', error);
-      // 임시 테스트 데이터
+      
       setNotificationCounts({
-        reservations: 3,
-        reviews: 2,
-        chatting: 5,
+        reservations: 0,
+        reviews: 0,
+        chatting: 0,
       });
     }
   };

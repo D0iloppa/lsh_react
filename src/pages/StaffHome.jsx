@@ -79,6 +79,8 @@ useEffect(() => {
     }
   }, [messages, currentLang, user]);
 
+  
+
   // 환영 메시지 포맷 함수
   const formatWelcomeTitle = (name) => {
     return get('STAFF_WELCOME_TITLE').replace('{name}', name);
@@ -104,6 +106,7 @@ useEffect(() => {
       params: {
         venue_id: user.venue_id,
         target_id: user.staff_id,
+        staff_id:  user.staff_id,
         notification_type: 5
       }
     });
@@ -114,20 +117,51 @@ useEffect(() => {
     // API 응답에서 데이터 추출 - 응답 구조에 맞게 수정
     let todaysReservations = [];
     let notifications = { unread_count: 0, total_count: 0 };
+    let activePromotions = []; // activePromotions 추가
     
     // response.data 구조인 경우
     if (response.data) {
       todaysReservations = response.data.todaysReservations || [];
       notifications = response.data.notifications || { unread_count: 0, total_count: 0 };
+      activePromotions = response.data.activePromotions || []; // activePromotions 추출
     } 
     // response 직접 구조인 경우
     else if (response) {
       todaysReservations = response.todaysReservations || [];
       notifications = response.notifications || { unread_count: 0, total_count: 0 };
+      activePromotions = response.activePromotions || []; // activePromotions 추출
     }
 
     console.log("todaysReservations:", todaysReservations);
     console.log("notifications:", notifications);
+    console.log("activePromotions:", activePromotions);
+
+    // activePromotions 데이터 처리 (work_date 변환 및 포맷팅)
+    const upcomingShifts = activePromotions.map(promo => {
+      // work_date가 timestamp인 경우 변환
+      const workDate = new Date(promo.work_date);
+      const formattedDate = workDate.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        weekday: 'short'
+      });
+
+      // 시간 포맷팅 (HH:MM 형태로)
+      const startTime = promo.start_time ? promo.start_time.slice(0, 5) : '00:00';
+      const endTime = promo.end_time ? promo.end_time.slice(0, 5) : '23:59';
+
+      return {
+        date: formattedDate,
+        startTime: startTime,
+        endTime: endTime,
+        status: promo.status,
+        schedule_id: promo.schedule_id,
+        work_date: promo.work_date,
+        // 표시용 포맷
+        displayText: `${formattedDate} - ${startTime} to ${endTime}`
+      };
+    });
 
     // notifications에서 unread_count와 total_count 추출
     const unread_count = notifications?.unread_count ?? 0;
@@ -148,7 +182,8 @@ useEffect(() => {
         totalReservations,
         hourlyData,
         unread_count,
-        total_count
+        total_count,
+        upcomingShifts
       });
 
       setDashboardInfo(prev => ({
@@ -158,7 +193,8 @@ useEffect(() => {
         notifications: {
           unread_count: unread_count,
           total_count: total_count,
-        },  
+        },
+        upcomingShifts: upcomingShifts, // activePromotions에서 변환된 데이터
         // 시간별 데이터를 todaysBookings 형태로 변환
         todaysBookings: hourlyData
           .filter(item => item.reservationCount > 0)
@@ -175,6 +211,7 @@ useEffect(() => {
         todaysReservations: 0,
         hourlyReservations: [],
         todaysBookings: [],
+        upcomingShifts: upcomingShifts, // activePromotions에서 변환된 데이터
         notifications: {
           unread_count: unread_count,
           total_count: total_count,
@@ -201,6 +238,7 @@ useEffect(() => {
       todaysReservations: 0,
       hourlyReservations: [],
       todaysBookings: [],
+      upcomingShifts: [], // 빈 배열로 초기화
       notifications: {
         unread_count: 0,
         total_count: 0,

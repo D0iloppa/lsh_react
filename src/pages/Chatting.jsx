@@ -244,16 +244,12 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
   const registerReader = async (roomSn) => {
     try {
-      if (!user?.manager_id) {
-        console.warn('Manager ID가 없어서 registerReader를 건너뜁니다.');
-        return;
-      }
-
+      
       const response = await ApiClient.postForm('/api/registerReader', {
-        target_table: 'ManagerChat',
+        target_table: user.type === 'manager' ? 'ManagerChat' : 'StaffChat',
         target_id: roomSn,
-        reader_type: 'manager',
-        reader_id: user.manager_id
+        reader_type: user.type,
+        reader_id: user.type === 'manager' ? user.manager_id : user.staff_id
       });
 
       console.log('✅ registerReader 성공:', response);
@@ -388,7 +384,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         room_sn,
         limit: 10,
         direction: 'older',
-        before_chat_sn: oldestMessage.chat_sn
+        before_chat_sn: oldestMessage.chat_sn,
+        account_type: user.type
       };
 
       const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
@@ -443,6 +440,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
     
     // 디버깅 로그 추가
+    /*
     console.log('📜 스크롤 이벤트:', {
       scrollTop,
       scrollHeight,
@@ -451,6 +449,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       showFloatButton: showFloatButton,
       isScrolling: isScrollingRef.current
     });
+    */
     
     // 스크롤 중일 때는 FloatButton 상태 변경하지 않음
     if (isScrollingRef.current) {
@@ -722,7 +721,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       const params = { 
         room_sn,
         limit: 10,
-        direction: loadOlder ? 'older' : 'newer'
+        direction: loadOlder ? 'older' : 'newer',
+        account_type: user.type
       };
 
       // 초기 로딩이거나 새 메시지 로딩

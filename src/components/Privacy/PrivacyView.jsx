@@ -11,6 +11,8 @@ import LoadingScreen from '@components/LoadingScreen';
 
 import Privacy_kr from './Privacy_kr';
 import Privacy_en from './Privacy_en';
+import Privacy_vi from './Privacy_vi';
+import Privacy_cn from './Privacy_cn';
 
 import './PrivacyView.css'
 
@@ -152,13 +154,19 @@ export default function TermsView() {
 
           <SketchDiv className="terms flex-1 mb-8 relative">
             {(() => {
+              console.log(lang);
+
               switch(lang) {
                 case 'kr':
                   return <Privacy_kr />;
                 case 'en':
                   return <Privacy_en />;
+                case 'vi':
+                  return <Privacy_vi />;
+                case 'cn' :
+                  return <Privacy_cn/>;
                 default:
-                  return <Privacy_kr />;
+                  return <Privacy_en />;
               }
             })()}
           </SketchDiv>

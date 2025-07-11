@@ -9,6 +9,7 @@ import { PAGE_COMPONENTS, DEFAULT_MANAGER_PAGE } from '../config/pages.config';
 import HatchPattern from '@components/HatchPattern';
 import LoadingScreen from '@components/LoadingScreen';
 import SketchHeader from '@components/SketchHeader'
+import ApiClient from '@utils/ApiClient';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -64,6 +65,45 @@ const MainApp = () => {
 
     const processedQueryRef = useRef(false);
     const lastProcessedQuery = useRef('');
+    const [unreadChatCount, setUnreadChatCount] = useState(0);
+
+    // 채팅 개수 가져오기
+    const fetchUnreadChatCount = async () => {
+               if (!user?.manager_id) return;
+       
+               try {
+               const response = await ApiClient.get('/api/getUnreadCountChat_mng', {
+                   params: {
+                   participant_type: 'manager',
+                   participant_user_id: user.manager_id
+                   }
+               });
+       
+               console.log("count", response)
+   
+               if (response > 0) {
+                   setUnreadChatCount(response || 0);
+               }
+               } catch (error) {
+               console.error('읽지 않은 채팅 개수 조회 실패:', error);
+               setUnreadChatCount(0);
+               }
+           };
+       
+           // 초기 로드 및 주기적 업데이트
+           useEffect(() => {
+               fetchUnreadChatCount();
+               
+               const interval = setInterval(fetchUnreadChatCount, 3000);
+               
+               return () => clearInterval(interval);
+           }, [user]);
+       
+           // 채팅 페이지 이동 시 개수 초기화 함수
+           const resetChatCount = () => {
+               //setUnreadChatCount(0);
+           };
+
 
     useEffect(() => {
         const currentQuery = location.search;
@@ -151,7 +191,15 @@ const MainApp = () => {
                             }}
                             className={`nav-item ${currentPage === id ? 'active' : ''}`}
                         >
-                            <Icon className="nav-icon" />
+                            <div className="nav-icon-container">
+                                <Icon className="nav-icon" />
+                                {/* 채팅 버튼에만 뱃지 추가 */}
+                                {id === PAGES.CHATTINGLIST && unreadChatCount > 0 && (
+                                    <span className="chat-badge">
+                                        {unreadChatCount > 99 ? '99+' : unreadChatCount}
+                                    </span>
+                                )}
+                            </div>
                             <span className="nav-label">{label}</span>
                         </button>
                     ))}

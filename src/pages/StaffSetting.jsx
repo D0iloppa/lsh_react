@@ -304,7 +304,7 @@ const handleSaveNewPassword = async () => {
         .lang-row {
           display: flex;
           align-items: center;
-          gap: 1rem;
+          gap: 10px;
         }
         .staff-delete {
           text-align: center;
@@ -475,7 +475,7 @@ const handleSaveNewPassword = async () => {
                     borderBottomLeftRadius: '12px 6px',
                     transform: 'rotate(0.2deg)',
                     fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
-                    width: '100%',
+                    width: '67%',
                     border: '0.8px solid #666'
                   }}
             >

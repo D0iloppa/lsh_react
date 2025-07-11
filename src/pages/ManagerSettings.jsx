@@ -70,6 +70,11 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           params: { venue_id: user?.venue_id }
         });
         console.log('vd', vd);
+
+        const {schedule_status} = vd;
+
+        setScheduleStatus(schedule_status);
+
         setVenueData(prev => ({
           ...prev,
           ...vd
@@ -91,6 +96,15 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
 
 
   }, [ messages, currentLang ]);
+
+
+  useEffect(() => {
+    // 스케쥴 상태가 반영된 경우 컴포넌트 재렌더링
+    console.log('scheduleStatus!', scheduleStatus);
+
+
+  }, [ scheduleStatus ]);
+
 
   
 
@@ -117,6 +131,8 @@ const handleVenueStatusUpdate = async () => {
   const newStatus = statusFlow[scheduleStatus];
   const currentStatusText = statusMap[scheduleStatus]?.text;
   const newStatusText = statusMap[newStatus]?.text;
+
+  console.log("newStatus", newStatus)
   
   // 확인창 표시
   const result = await Swal.fire({
@@ -416,7 +432,7 @@ const handleSaveNewPassword = async () => {
         .lang-row {
           display: flex;
           align-items: center;
-          gap: 1rem;
+          gap: 10px;
         }
           .venue-onOff {     
             display: flex;
@@ -600,7 +616,7 @@ const handleSaveNewPassword = async () => {
                           borderBottomLeftRadius: '12px 6px',
                           transform: 'rotate(0.2deg)',
                           fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
-                          width: '100%',
+                          width: '67%',
                           border: '0.8px solid #666'
                         }}>
               <option value="en">{get('language.name.english')}</option>
