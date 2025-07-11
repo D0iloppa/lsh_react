@@ -193,7 +193,9 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
         status: item.status, // 'pending', 'available', 'declined'
         start_time: item.start_time,
         end_time: item.end_time,
-        work_date: item.work_date
+        work_date: item.work_date,
+        check_in: item.check_in || '',
+        check_out: item.check_out || ''
       }));
 
       const dayoffList = dayoff.map(item => ({
@@ -444,6 +446,7 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
         }
         .staff-name {
           font-size: 1.02rem;
+          margin-bottom: 0.3rem;
         }
         .staff-time {
           font-size: 0.92rem;
@@ -509,6 +512,24 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
         .toggle-slider.declined {
           transform: translateX(0);
         }
+          .status-badge {
+            font-size: 0.7rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 8px;
+            margin-left: 0.5rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+          }
+
+          .checkin-badge {
+            background: #10b981;
+            color: white;
+          }
+
+          .checkout-badge {
+            background: #6b7280;
+            color: white;
+          }
       `}</style>
       <div className="schedule-container">
         <SketchHeader
@@ -595,10 +616,18 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
                   <div key={staff.schedule_id} className="staff-row">
                     <HatchPattern opacity={0.6} />
                     <div className="staff-info">
-                      <div className="staff-name">{staff.staff_name}</div>
+                      <div className="staff-name">
+                          {staff.staff_name}
+                          {staff.check_out ? (
+                            <span className="status-badge checkout-badge">{get('WORK_SCHEDULE_CHECK_OUT')}</span>
+                          ) : staff.check_in ? (
+                            <span className="status-badge checkin-badge">{get('WORK_SCHEDULE_CHECK_IN')}</span>
+                          ) : null}
+                        </div>
                       <div className="staff-time">
                         {staff.start_time?.substring(0, 5)} - {staff.end_time?.substring(0, 5)}
                       </div>
+                    
                     </div>
                     <div>
                       <SketchBtn

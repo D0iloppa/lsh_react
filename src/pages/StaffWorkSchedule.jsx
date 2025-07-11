@@ -278,11 +278,16 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
 
   // 선택된 날짜에 따라 스케줄을 필터링하는 함수
   const getFilteredSchedules = () => {
-    return schedules.filter(schedule => {
-      const scheduleDate = schedule.work_date || new Date(schedule.date).toLocaleDateString('en-CA');
-      return scheduleDate === selectedDate;
-    });
-  };
+  return schedules.filter(schedule => {
+    const scheduleDate = schedule.work_date || new Date(schedule.date).toLocaleDateString('en-CA');
+    if (scheduleDate !== selectedDate) return false;
+    
+    // 실제 스케줄이 설정된 것만 반환
+    return schedule.status && 
+           schedule.status !== 'no-schedule' && 
+           (schedule.start_time || schedule.end_time);
+  });
+};
 
   // API 연계를 위한 함수 - 전체 스케줄 데이터를 가져옴
   const fetchSchedules = async () => {
@@ -310,6 +315,17 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
     } finally {
       setIsLoadingData(false);
     }
+};
+
+// 날짜 비교 유틸리티 함수 추가
+const isPastDate = (dateString) => {
+  const today = new Date().toISOString().split('T')[0];
+  return dateString < today;
+};
+
+const isTodayOrFuture = (dateString) => {
+  const today = new Date().toISOString().split('T')[0];
+  return dateString >= today;
 };
 
     const handleCreateSchedule = () => {
@@ -538,6 +554,17 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
   // };
 
   const handleEditSchedule = (schedule) => {
+  // 과거 날짜 체크
+  if (isPastDate(schedule.work_date)) {
+    Swal.fire({
+      title: get('SCHEDULE_PAST_EDIT_ERROR_TITLE') || '과거 스케줄 수정 불가',
+      text: get('SCHEDULE_PAST_EDIT_ERROR_MESSAGE') || '과거 날짜의 스케줄은 수정할 수 없습니다.',
+      icon: 'warning',
+      confirmButtonText: get('SCHEDULE_MODAL_OK')
+    });
+    return;
+  }
+
   if (editingScheduleId === schedule.schedule_id) {
     // 이미 편집 중이면 편집 취소
     setEditingScheduleId(null);
@@ -644,7 +671,7 @@ const handleSaveSchedule = async (schedule) => {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'available': return get('SCHEDULE_STATUS_AVAILABLE');
+      case 'available': return get('SCHEDULE_MODAL_ON');
       case 'pending': return get('SCHEDULE_STATUS_PENDING');
       case 'rejected': return get('SCHEDULE_STATUS_REJECTED');
       case 'dayoff': return get('SCHEDULE_STATUS_DAYOFF');
@@ -751,7 +778,7 @@ const weekDates = getWeekDates(currentWeek, mondayStart);
         .schedule-time { flex: 2; font-size: 1.05rem; }
         .schedule-actions { flex: 1.2; display: flex;}
         .schedule-action-btn { min-width: 90px; font-size: 0.95rem; padding: 0.18rem 0.5rem; }
-        .create-btn-row { margin: 1.2rem 0 0.7rem 0; }
+        .create-btn-row { margin: 1.2rem 0 0.7rem 0;  display: flex; gap: 10px;}
         .week-navigation {
           display: flex;
           justify-content: space-between;
@@ -1680,7 +1707,7 @@ const weekDates = getWeekDates(currentWeek, mondayStart);
                                 {(() => {
                                   const status = getScheduleStatusByDate(cell.date);
                                   if (status === 'dayoff') {
-                                    return <div className="dayoff-indicator">휴무</div>;
+                                    return <div className="dayoff-indicator">{get('STAFF_DAYOFF_STATUS')}</div>;
                                   } else if (status === 'scheduled') {
                                     return <div className="scheduled-indicator"><Check size={14} /></div>;
                                   } else if (status === 'no-schedule' || status == null) {
@@ -1705,24 +1732,25 @@ const weekDates = getWeekDates(currentWeek, mondayStart);
         <div className="schedule-section-title">
           <div className="section-title-text">
             {selectedDate === getToday() 
-              ? get('TODAY_SCHEDULE_TITLE') || '오늘의 근무 스케줄'
-              : `${formatDateForDisplay(selectedDate)} 근무 스케줄`
+              ? get('TODAY_SCHEDULE_TITLE') 
+              : `${formatDateForDisplay(selectedDate)} ${get('WORK_SCHEDULE_TITLE')}`
             }
           </div>
-          <div className="section-count">{filteredSchedules.length}</div>
+          {/* <div className="section-count">{filteredSchedules.length}</div> */}
         </div>
 
         {filteredSchedules.length === 0 ? (
           <div className="no-schedule-message">
             {selectedDate === getToday() 
-              ? (get('NO_SCHEDULE_TODAY') || '오늘 등록된 근무 스케줄이 없습니다.')
-              : `${formatDateForDisplay(selectedDate)}에 등록된 근무 스케줄이 없습니다.`
+              ? (get('NO_SCHEDULE_TODAY'))
+              : `${formatDateForDisplay(selectedDate)} ${get('STAFF_NO_UPCOMING_SHIFTS')}`
             }
           </div>
         ) : (
           <div className="schedule-list">
             {filteredSchedules.map((schedule, index) => {
               const isEditing = editingScheduleId === schedule.schedule_id;
+              const isPast = isPastDate(schedule.work_date);
               const hourOptions = Array.from({ length: 24 }, (_, i) => {
                 const hourStr = String(i).padStart(2, '0');
                 return { value: `${hourStr}:00:00`, label: `${i}` };
@@ -1801,6 +1829,13 @@ const weekDates = getWeekDates(currentWeek, mondayStart);
                       
                       <div className="edit-form-actions">
                         <SketchBtn 
+                          variant="primary" 
+                          size="small" 
+                          onClick={() => handleSaveSchedule(schedule)}
+                        >
+                          {get('SCHEDULE_MODAL_SAVE')}
+                        </SketchBtn>
+                        <SketchBtn 
                           variant="danger" 
                           size="small" 
                           onClick={() => {
@@ -1809,13 +1844,6 @@ const weekDates = getWeekDates(currentWeek, mondayStart);
                           }}
                         >
                           {get('SCHEDULE_MODAL_CANCEL')}
-                        </SketchBtn>
-                        <SketchBtn 
-                          variant="primary" 
-                          size="small" 
-                          onClick={() => handleSaveSchedule(schedule)}
-                        >
-                          {get('SCHEDULE_MODAL_SAVE')}
                         </SketchBtn>
                       </div>
                     </div>
@@ -1835,41 +1863,39 @@ const weekDates = getWeekDates(currentWeek, mondayStart);
                         {schedule.check_in && (
                           <div className="detail-row">
                             <CheckCircle className="detail-icon" />
-                            <span>체크인: {formatTimeToAMPM(schedule.check_in)}</span>
+                            <span>{get('WORK_SCHEDULE_CHECK_IN')}: {formatTimeToAMPM(schedule.check_in)}</span>
                           </div>
                         )}
                         
                         {schedule.check_out && (
                           <div className="detail-row">
                             <XCircle className="detail-icon" />
-                            <span>체크아웃: {formatTimeToAMPM(schedule.check_out)}</span>
+                            <span>{get('WORK_SCHEDULE_CHECK_OUT')}: {formatTimeToAMPM(schedule.check_out)}</span>
                           </div>
                         )}
                       </div>
                       
-                      <div className="schedule-actions">
-                        <SketchBtn 
-                          variant="primary" 
-                          size="small" 
-                          className="action-btn"
-                          onClick={() => handleEditSchedule(schedule)}
-                        >
-                          {get('WORK_SCHEDULE_REQUEST_CHANGE')}
-                        </SketchBtn>
-                        
-                        {/* {schedule.status === 'available' && schedule.work_date === getToday() && (
-                          <SketchBtn 
-                            variant={schedule.check_out ? "secondary" : (schedule.check_in ? "warning" : "primary")} 
-                            size="small" 
-                            className="action-btn"
-                            onClick={() => handleCheckInOut(schedule, !!schedule.check_in, !!schedule.check_out)}
-                            disabled={!!schedule.check_out}
-                          >
-                            {getActionLabel(schedule.status, schedule)}
-                          </SketchBtn>
-                        )} */}
-                      </div>
-                    </>
+                     <div className="schedule-actions">
+                          {/* 과거 날짜가 아닐 때만 변경 버튼 표시 */}
+                          {!isPast && (
+                            <SketchBtn 
+                              variant="primary" 
+                              size="small" 
+                              className="action-btn"
+                              onClick={() => handleEditSchedule(schedule)}
+                            >
+                              {get('WORK_SCHEDULE_REQUEST_CHANGE')}
+                            </SketchBtn>
+                          )}
+                          
+                          {/* 과거 날짜일 때는 변경 불가 메시지 */}
+                          {isPast && (
+                            <div className="past-schedule-notice">
+                             
+                            </div>
+                          )}
+                        </div>
+                      </>
                   )}
                 </SketchDiv>
               );
@@ -1879,10 +1905,10 @@ const weekDates = getWeekDates(currentWeek, mondayStart);
 
 
         <div className="create-btn-row">
-          <SketchBtn variant="primary" size="medium" style={{ width: '100%', marginBottom: '0.3rem' }} onClick={chatWithManager}><HatchPattern opacity={0.4} />
+          <SketchBtn variant="primary" size="medium" style={{ width: '90%', marginBottom: '0.3rem', height: '40px' }} onClick={chatWithManager}><HatchPattern opacity={0.4} />
             {get('BOOKING_MANAGER_CHAT')} Chat <MessageCircle size={14}/>
           </SketchBtn>
-          <SketchBtn variant="event" size="medium" style={{ width: '100%' }} onClick={handleCreateSchedule}><HatchPattern opacity={0.4} />
+          <SketchBtn variant="event" size="medium" style={{ width: '90%',  height: '40px' }} onClick={handleCreateSchedule}><HatchPattern opacity={0.4} />
             {get('WORK_SCHEDULE_CREATE_SCHEDULE')}
           </SketchBtn>
         </div>

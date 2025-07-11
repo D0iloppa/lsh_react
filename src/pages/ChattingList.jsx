@@ -19,7 +19,7 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
   const { user } = useAuth();
   const intervalRef = useRef(null);
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
-  const [roomType, setRoomType] = useState('manager');
+  const [roomType, setRoomType] = useState('');
 
     useEffect(() => {
       const { chatRoomType = 'manager' } = otherProps;

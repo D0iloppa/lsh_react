@@ -121,6 +121,14 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
   const { initType = 'chat' } = otherProps;
 
+  // otherProps의 핵심 값들을 메모이제이션
+  const memoizedProps = useMemo(() => ({
+    room_sn: otherProps?.room_sn || null,
+    name: otherProps?.name || '',
+    send_to: otherProps?.send_to || null,
+    receiver_id: otherProps?.receiver_id || null,
+  }), [otherProps?.room_sn, otherProps?.name, otherProps?.send_to, otherProps?.receiver_id]);
+
   const [room_sn, setRoomSn] = useState(null);
   const [showReservationCard, setShowReservationCard] = useState(false);
   const [reservationCardData, setReservationCardData] = useState(null);
@@ -178,21 +186,34 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const chatBoxRef = useRef(null);
   const firstLoadRef = useRef(true);
   const chatInputRef = useRef(null);
+  const isScrollingRef = useRef(false); // 스크롤 중복 호출 방지 플래그
   const [modalImage, setModalImage] = useState(null);
   
   // room_sn 초기화
   useEffect(() => {
-    console.log('chatRoom init!', otherProps);
+    console.log('chatRoom init!', memoizedProps);
 
-    const roomSn = otherProps?.room_sn || null;
-    setRoomSn(roomSn);
-    setRoomTitle(otherProps?.name || '');
-    setSendTo(otherProps?.send_to || null);
-    setReceiverId(otherProps?.receiver_id || null);
-    setRoomTitle(otherProps?.name || '');
+    const roomSn = memoizedProps.room_sn;
+    const roomName = memoizedProps.name;
+    const sendToValue = memoizedProps.send_to;
+    const receiverIdValue = memoizedProps.receiver_id;
+    
+    // 값이 실제로 변경되었을 때만 상태 업데이트
+    if (roomSn !== room_sn) {
+      setRoomSn(roomSn);
+    }
+    if (roomName !== roomTitle) {
+      setRoomTitle(roomName);
+    }
+    if (sendToValue !== sendTo) {
+      setSendTo(sendToValue);
+    }
+    if (receiverIdValue !== receiverId) {
+      setReceiverId(receiverIdValue);
+    }
 
-    console.log('enter', sendTo, receiverId);
-  }, [otherProps]);
+    console.log('enter', sendToValue, receiverIdValue);
+  }, [memoizedProps, room_sn, roomTitle, sendTo, receiverId]);
 
   // ⭐ 인터벌을 시작하는 함수
   const startPolling = useCallback(() => {
@@ -278,14 +299,33 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     if (!chatBoxRef.current) return false;
     const { scrollTop, scrollHeight, clientHeight } = chatBoxRef.current;
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-    return distanceFromBottom < 50;
+    
+    // 더 엄격한 기준: 10px 이내에 있을 때만 맨 아래로 간주
+    const isAtBottom = distanceFromBottom < 10;
+    console.log('📍 사용자 위치 확인:', {
+      distanceFromBottom,
+      isAtBottom
+    });
+    return isAtBottom;
   }, []);
 
   // 스크롤을 맨 밑으로 이동시키는 함수
   const scrollToBottom = useCallback((behavior = 'smooth') => {
-    console.log('scrollToBottom', behavior);
+    console.log('🔄 scrollToBottom 호출됨:', behavior);
     
-    if (!chatBoxRef.current) return;
+    // 이미 스크롤 중이면 중복 호출 방지
+    if (isScrollingRef.current) {
+      console.log('⏸️ 이미 스크롤 중이므로 호출 무시');
+      return;
+    }
+    
+    if (!chatBoxRef.current) {
+      console.log('❌ chatBoxRef가 없음');
+      return;
+    }
+    
+    // 스크롤 시작 플래그 설정
+    isScrollingRef.current = true;
     
     const scrollToBottomImmediate = () => {
       if (!chatBoxRef.current) return;
@@ -293,30 +333,40 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       const { scrollHeight, clientHeight } = chatBoxRef.current;
       const maxScrollTop = scrollHeight - clientHeight;
       
+      console.log('📏 스크롤 계산:', {
+        scrollHeight,
+        clientHeight,
+        maxScrollTop,
+        currentScrollTop: chatBoxRef.current.scrollTop
+      });
+      
       if (behavior === 'auto') {
         chatBoxRef.current.scrollTop = maxScrollTop;
+        console.log('⚡ 즉시 스크롤 이동 완료');
+        // 즉시 스크롤 완료 시 플래그 해제 및 FloatButton 상태 업데이트
+        setTimeout(() => {
+          isScrollingRef.current = false;
+          // 스크롤 완료 후 FloatButton 상태 강제 업데이트
+          setShowFloatButton(false);
+        }, 1);
       } else {
         chatBoxRef.current.scrollTo({
           top: maxScrollTop,
           behavior: 'smooth'
         });
+        console.log('🔄 부드러운 스크롤 이동 시작');
+        // 부드러운 스크롤 완료 후 플래그 해제 및 FloatButton 상태 업데이트
+        setTimeout(() => {
+          isScrollingRef.current = false;
+          // 스크롤 완료 후 FloatButton 상태 강제 업데이트
+          setShowFloatButton(false);
+        }, 1);
       }
     };
     
+    // messageEndRef 방식 제거하고 직접 스크롤만 사용
     setTimeout(scrollToBottomImmediate, 50);
-    
-    setTimeout(() => {
-      if (messageEndRef.current) {
-        messageEndRef.current.scrollIntoView({ 
-          behavior, 
-          block: 'end',
-          inline: 'nearest'
-        });
-      }
-    }, 100);
   }, []);
-
-  setTimeout(scrollToBottom, 100)
 
   // 이전 메시지 로딩 함수
   const loadOlderMessages = useCallback(async () => {
@@ -392,10 +442,28 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     const { scrollTop, scrollHeight, clientHeight } = chatBoxRef.current;
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
     
+    // 디버깅 로그 추가
+    console.log('📜 스크롤 이벤트:', {
+      scrollTop,
+      scrollHeight,
+      clientHeight,
+      distanceFromBottom,
+      showFloatButton: showFloatButton,
+      isScrolling: isScrollingRef.current
+    });
+    
+    // 스크롤 중일 때는 FloatButton 상태 변경하지 않음
+    if (isScrollingRef.current) {
+      console.log('⏸️ 스크롤 중이므로 FloatButton 상태 변경 무시');
+      return;
+    }
+    
     // Float Button 표시/숨김 제어
     if (distanceFromBottom > 300) {
+      console.log('🔘 Float Button 표시');
       setShowFloatButton(true);
     } else {
+      console.log('🔘 Float Button 숨김');
       setShowFloatButton(false);
     }
     
@@ -407,7 +475,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       console.log('🔄 이전 메시지 로딩 시작');
       loadOlderMessages();
     }
-  }, [isLoadingOlder, hasMoreOlder, loadOlderMessages]);
+  }, [isLoadingOlder, hasMoreOlder, loadOlderMessages, showFloatButton]);
 
   // 스크롤 이벤트 리스너 등록
   useEffect(() => {
@@ -597,7 +665,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         ) : (
           <div className="chat-content-wrapper">
             <div className="chat-name">{msg.sender_name}</div>
-            <div className={`chat-message ${msg.sender}`}>
+            <div className={`chat-message ${msg.sender} ${msg.image ? 'has-image' : ''}`}>
               {msg.text && <div>{msg.text}</div>}
               {msg.image && (
                 <img
@@ -723,11 +791,21 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           console.log('🆕 새 메시지 로딩:', newChatMessages.map(m => ({ chat_sn: m.chat_sn, text: m.text })));
           setChatMessages(prev => dedupeMessages([...prev, ...newChatMessages]));
           const lastMessage = newChatMessages[newChatMessages.length - 1];
+          
+          // 자동 스크롤 조건 수정: 사용자가 맨 아래에 있을 때만 자동 스크롤
           const shouldScroll = lastMessage.sender_type === 'manager' || isUserAtBottom();
+          console.log('🔄 자동 스크롤 조건:', {
+            sender_type: lastMessage.sender_type,
+            isUserAtBottom: isUserAtBottom(),
+            shouldScroll
+          });
+          
           if (shouldScroll) {
             setTimeout(() => {
               scrollToBottom(lastMessage.sender_type === 'manager' ? 'auto' : 'smooth');
             }, 200);
+          } else {
+            console.log('⏸️ 사용자가 스크롤을 위로 올린 상태이므로 자동 스크롤하지 않음');
           }
           lastChatSnRef.current = lastMessage.chat_sn;
         }
@@ -996,6 +1074,13 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           color: white;
           border-bottom-right-radius: 0;
         }
+        .chat-message.has-image {
+          background-color: transparent !important;
+          color: inherit !important;
+          border-bottom-right-radius: 0 !important;
+        }
+
+
 
         .chat-message.other {
           background-color: #e5e7eb;
@@ -1089,7 +1174,15 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           {/* Float Bottom Button */}
           <FloatBottomButton 
             isVisible={showFloatButton}
-            onClick={() => scrollToBottom('smooth')}
+            onClick={() => {
+              // 스크롤 중일 때는 클릭 무시
+              if (isScrollingRef.current) {
+                console.log('⏸️ 스크롤 중이므로 FloatBottomButton 클릭 무시');
+                return;
+              }
+              console.log('🔘 FloatBottomButton 클릭됨');
+              scrollToBottom('smooth');
+            }}
           />
         </div>
 

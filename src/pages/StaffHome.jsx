@@ -509,10 +509,10 @@ console.log(PAGES)
                 {todaySchedule ? (
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.8rem' }}>
-                      <span><Briefcase size={10}/> {get('WORK_SCHEDULE_TODAY_TIME')} {todaySchedule.start_time?.slice(0,5)} - {todaySchedule.end_time?.slice(0,5)}</span>
+                      <div style={{minWidth: '57%'}}><Briefcase size={10}/> {get('WORK_SCHEDULE_TODAY_TIME')} <br></br>{todaySchedule.start_time?.slice(0,5)} - {todaySchedule.end_time?.slice(0,5)}</div>
                       <SketchBtn 
                         variant={getCheckInOutButtonVariant()}
-                        style={{ minWidth: '100px', marginLeft: '0.5rem', background: '#5e656f', color: 'white' }}
+                        style={{marginLeft: '0.5rem', background: '#5e656f', color: 'white' }}
                         size="small"
                         onClick={handleCheckInOut}
                         disabled={!todaySchedule || todaySchedule.status !== 'available' || !!todaySchedule.check_out}
@@ -553,10 +553,10 @@ console.log(PAGES)
                 variant="secondary" 
                 className="action-btn" 
                 style={{border: '1px solid #d1d5db'}}
-                onClick={handleEditProfile}
+                onClick={handleStaffSchedule}
               >
                 <HatchPattern opacity={0.6} />
-                <User size={24}/> {get('Staff.setting.profile.title')}
+                <ClipboardList size={24}/>{get('Staff.menu.1')}
               </SketchBtn>
               <SketchBtn 
                 size="medium" 
@@ -585,10 +585,10 @@ console.log(PAGES)
                 variant="secondary" 
                 className="action-btn" 
                 style={{border: '1px solid #d1d5db'}}
-                onClick={handleStaffSchedule}
+                onClick={handleEditProfile}
               >
                 <HatchPattern opacity={0.6} />
-                <ClipboardList size={24}/>{get('Staff.menu.1')}
+                <User size={24}/> {get('Staff.setting.profile.title')}
               </SketchBtn>
             </div>
           </div>

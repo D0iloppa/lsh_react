@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import qs from 'qs';
+
 import SketchInput from '@components/SketchInput';
 import SketchBtn from '@components/SketchBtn';
 import Header from '@components/Header';
@@ -10,43 +11,140 @@ import InitFooter2 from '@components/InitFooter2';
 import SketchHeader from '@components/SketchHeader';
 import LoadingScreen from '@components/LoadingScreen';
 
-import qs from 'qs';
-
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import Swal from 'sweetalert2';
 
+// Constants
+const STORAGE_KEYS = {
+  PRIVACY: 'manager_privacy_agreed',
+  TERMS: 'manager_terms_agreed',
+  FORM_DATA: 'manager_register_formData'
+};
+
+const INITIAL_FORM_DATA = {
+  email: '',
+  password: '',
+  rePassword: '',
+  nickname: ''
+};
+
+const INITIAL_AGREEMENTS = {
+  privacy: false,
+  terms: false
+};
 
 export default function RegisterView() {
+  const { messages, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const { messages, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();  
-  
-  useEffect(() => {
-  window.scrollTo(0, 0);
-      if (messages && Object.keys(messages).length > 0) {
-        console.log('✅ Messages loaded:', messages);
-        // setLanguage('en'); // 기본 언어 설정
-        console.log('Current language set to:', currentLang);
-        window.scrollTo(0, 0);
-      }
-    }, [messages, currentLang]);
-
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    rePassword: '',
-    nickname: ''
-  });
+  // State
+  const [formData, setFormData] = useState(INITIAL_FORM_DATA);
+  const [agreements, setAgreements] = useState(INITIAL_AGREEMENTS);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const navigate = useNavigate();
+  // Utility Functions
+  const clearStorage = useCallback(() => {
+    Object.values(STORAGE_KEYS).forEach(key => {
+      sessionStorage.removeItem(key);
+    });
+  }, []);
 
-  const handleInputChange = (e) => {
+  const saveFormData = useCallback((data) => {
+    try {
+      sessionStorage.setItem(STORAGE_KEYS.FORM_DATA, JSON.stringify(data));
+    } catch (error) {
+      console.error('Failed to save form data:', error);
+    }
+  }, []);
+
+  const loadFormData = useCallback(() => {
+    try {
+      const savedData = sessionStorage.getItem(STORAGE_KEYS.FORM_DATA);
+      return savedData ? JSON.parse(savedData) : INITIAL_FORM_DATA;
+    } catch (error) {
+      console.error('Failed to load form data:', error);
+      return INITIAL_FORM_DATA;
+    }
+  }, []);
+
+  const saveAgreements = useCallback((privacy, terms) => {
+    if (privacy) {
+      sessionStorage.setItem(STORAGE_KEYS.PRIVACY, 'true');
+    } else {
+      sessionStorage.removeItem(STORAGE_KEYS.PRIVACY);
+    }
+
+    if (terms) {
+      sessionStorage.setItem(STORAGE_KEYS.TERMS, 'true');
+    } else {
+      sessionStorage.removeItem(STORAGE_KEYS.TERMS);
+    }
+  }, []);
+
+  const loadAgreements = useCallback(() => {
+    return {
+      privacy: sessionStorage.getItem(STORAGE_KEYS.PRIVACY) === 'true',
+      terms: sessionStorage.getItem(STORAGE_KEYS.TERMS) === 'true'
+    };
+  }, []);
+
+  // Validation Functions
+  const validateNickname = (nickname) => {
+    if (!nickname.trim()) return get('VALIDATION_NICKNAME_REQUIRED') || '닉네임을 입력해주세요';
+    if (nickname.trim().length < 2) return get('VALIDATION_NICKNAME_MIN_LENGTH') || '닉네임은 최소 2자 이상이어야 합니다';
+    if (nickname.trim().length > 20) return get('VALIDATION_NICKNAME_MAX_LENGTH') || '닉네임은 20자 이하로 입력해주세요';
+    return null;
+  };
+
+  const validateForm = useCallback(() => {
+    const newErrors = {};
+    
+    // Required fields validation
+    if (!formData.email.trim()) {
+      newErrors.email = get('VALIDATION_EMAIL_REQUIRED') || 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = get('VALIDATION_EMAIL_INVALID') || 'Please enter a valid email';
+    }
+    
+    if (!formData.password) {
+      newErrors.password = get('VALIDATION_PASSWORD_REQUIRED') || 'Password is required';
+    } else if (formData.password.length < 6) {
+      newErrors.password = get('VALIDATION_PASSWORD_MIN_LENGTH') || 'Password must be at least 6 characters';
+    }
+    
+    if (!formData.rePassword) {
+      newErrors.rePassword = get('VALIDATION_RE_PASSWORD_REQUIRED') || 'Please confirm your password';
+    } else if (formData.password !== formData.rePassword) {
+      newErrors.rePassword = get('VALIDATION_RE_PASSWORD_MISMATCH') || 'Passwords do not match';
+    }
+
+    const nicknameError = validateNickname(formData.nickname);  
+    if (nicknameError) newErrors.nickname = nicknameError;
+
+    // Agreement validations
+    if (!agreements.privacy) {
+      newErrors.privacy = get('VALIDATION_PRIVACY_REQUIRED') || '개인정보처리방침에 동의해주세요';
+    }
+
+    if (!agreements.terms) {
+      newErrors.terms = get('VALIDATION_TERMS_REQUIRED') || '이용약관에 동의해주세요';
+    }
+    
+    return newErrors;
+  }, [formData, agreements, get]);
+
+  // Event Handlers
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    setFormData(prev => {
+      const newData = { ...prev, [name]: value };
+      saveFormData(newData);
+      return newData;
+    });
     
     // Clear error when user starts typing
     if (errors[name]) {
@@ -55,95 +153,72 @@ export default function RegisterView() {
         [name]: ''
       }));
     }
-  };
+  }, [errors, saveFormData]);
 
-   const validateNickname = (nickname) => {
-    if (!nickname.trim()) return get('VALIDATION_NICKNAME_REQUIRED') || '닉네임을 입력해주세요';
-    if (nickname.trim().length < 2) return get('VALIDATION_NICKNAME_MIN_LENGTH') || '닉네임은 최소 2자 이상이어야 합니다';
-    if (nickname.trim().length > 20) return get('VALIDATION_NICKNAME_MAX_LENGTH') || '닉네임은 20자 이하로 입력해주세요';
-    return null;
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
+  const handleAgreementClick = useCallback((type) => {
+    const currentPath = '/register';
+    const targetPath = type === 'privacy' ? '/privacy' : '/terms';
     
-    // Required fields validation
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-    
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-    
-    if (!formData.rePassword) {
-      newErrors.rePassword = 'Please confirm your password';
-    } else if (formData.password !== formData.rePassword) {
-      newErrors.rePassword = 'Passwords do not match';
-    }
-
-     const nicknameError = validateNickname(formData.nickname);  
-    if (nicknameError) newErrors.nickname = nicknameError;
-
-    // Optional fields validation (format check only if provided)
-    if (formData.birth_date && !/^\d{4}-\d{2}-\d{2}$/.test(formData.birth_date)) {
-      newErrors.birth_date = 'Date format should be YYYY-MM-DD (e.g., 1988-08-18)';
-    }
-
-    if (formData.phone && !/^\d{3}-\d{4}-\d{4}$/.test(formData.phone)) {
-      newErrors.phone = 'Phone format should be 010-1234-5678';
-    }
-    
-    return newErrors;
-  };
+    navigate(`${targetPath}?returnUrl=${encodeURIComponent(currentPath)}&agreementType=${type}`);
+  }, [navigate]);
 
   const registerUser = async (userData) => {
     try {
-      // API 호스트 설정 (환경변수나 설정에서 가져오기)
       const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
-
-      console.log(API_HOST);
       
       const response = await axios.post(
         `${API_HOST}/api/register`,
         qs.stringify({
-          account_type: userData?.account_type || "user",
-          login_type: userData?.login_type || "email",
-          login_id: userData?.login_id,
+          account_type: "manager",
+          login_type: "email",
+          login_id: userData.email,
           email: userData.email,
-          passwd: userData.password
+          passwd: userData.password,
+          privacy_agreed: agreements.privacy,
+          terms_agreed: agreements.terms
         }),
         {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
-          }
+          },
+          timeout: 10000
         }
       );
 
       return {
         success: true,
-        message: response.data.message || 'Registration successful! Please login.',
+        message: response.data.message || get('REGISTER_SUCCESS') || '회원가입이 완료되었습니다! 로그인해주세요.',
         data: response.data
       };
     } catch (error) {
       console.error("Registration error:", error);
       
-      let errorMessage = 'Registration failed. Please try again.';
+      let errorMessage = get('REGISTER_ERROR_DEFAULT') || '회원가입에 실패했습니다. 다시 시도해주세요.';
       let errors = {};
 
       if (error.response) {
-        // 서버에서 응답을 받은 경우
-        if (error.response.data) {
-          errorMessage = error.response.data.message || errorMessage;
-          errors = error.response.data.errors || {};
+        const { status, data } = error.response;
+        
+        if (data) {
+          errorMessage = data.message || errorMessage;
+          errors = data.errors || {};
+        }
+
+        switch (status) {
+          case 409:
+            errorMessage = get('REGISTER_ERROR_DUPLICATE') || '이미 사용 중인 이메일입니다';
+            break;
+          case 400:
+            errorMessage = get('REGISTER_ERROR_VALIDATION') || '입력 정보가 올바르지 않습니다';
+            break;
+          case 500:
+            errorMessage = get('REGISTER_ERROR_SERVER') || '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+            break;
         }
       } else if (error.request) {
-        // 요청이 만들어졌지만 응답을 받지 못한 경우
-        errorMessage = 'Network error. Please check your connection.';
+        errorMessage = get('REGISTER_ERROR_NETWORK') || '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.';
+      } else if (error.code === 'ECONNABORTED') {
+        errorMessage = get('REGISTER_ERROR_TIMEOUT') || '요청 시간이 초과되었습니다. 다시 시도해주세요.';
       }
 
       return {
@@ -156,32 +231,28 @@ export default function RegisterView() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    
+    if (isLoading) return;
+    
     setIsLoading(true);
     setErrors({});
     setMessage('');
 
-    const newErrors = validateForm();
+    const validationErrors = validateForm();
     
-    if (Object.keys(newErrors).length === 0) {
-
-      const sendForm = {
-        ...formData,
-        account_type: "manager",
-        login_type: "email",
-        login_id: formData.email,
-        email: formData.email,
-        passwd: formData.password
-      }
-      const result = await registerUser(sendForm);
-
-      console.log('formData', sendForm);
+    if (Object.keys(validationErrors).length === 0) {
+      const result = await registerUser(formData);
       
       if (result.success) {
+        await Swal.fire({
+          title: get('REGISTER_SUCCESS_ALERT'),
+          icon: 'success',
+          confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+        });
+        
         setMessage(result.message);
-        // 회원가입 성공 시 로그인 페이지로 이동
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000); // 2초 후 이동 (성공 메시지 표시용)
+        clearStorage();
+        navigate('/login');
       } else {
         if (result.errors && Object.keys(result.errors).length > 0) {
           setErrors(result.errors);
@@ -190,24 +261,73 @@ export default function RegisterView() {
         }
       }
     } else {
-      setErrors(newErrors);
+      setErrors(validationErrors);
     }
     
     setIsLoading(false);
   };
 
-  const handleSocialLogin = (provider) => {
-    // 소셜 로그인 처리
-    console.log(`${provider} 로그인 시도`);
-    // 실제 구현 시 OAuth 처리
-  };
+  // Effects
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
+
+    // Load saved form data
+    const savedFormData = loadFormData();
+    setFormData(savedFormData);
+
+    // Process URL parameters for agreements
+    const urlParams = new URLSearchParams(location.search);
+    const privacyParam = urlParams.get('privacy');
+    const termsParam = urlParams.get('terms');
+
+    if (privacyParam || termsParam) {
+      const currentAgreements = loadAgreements();
+      let newPrivacy = currentAgreements.privacy;
+      let newTerms = currentAgreements.terms;
+
+      if (privacyParam === 'agreed') {
+        newPrivacy = true;
+      } else if (privacyParam === 'declined') {
+        newPrivacy = false;
+      }
+
+      if (termsParam === 'agreed') {
+        newTerms = true;
+      } else if (termsParam === 'declined') {
+        newTerms = false;
+      }
+
+      setAgreements({ privacy: newPrivacy, terms: newTerms });
+      saveAgreements(newPrivacy, newTerms);
+
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+    } else {
+      // Load saved agreements
+      setAgreements(loadAgreements());
+    }
+  }, [messages, currentLang, location.search, loadFormData, loadAgreements, saveAgreements]);
+
+  // Show loading if messages not loaded
+  if (!messages || Object.keys(messages).length === 0) {
+    return <LoadingScreen variant="cocktail" loadingText="Loading..." isVisible={true} />;
+  }
 
   return (
     <div className="register-container max-w-md mx-auto bg-white border-gray-800 p-6">
       <SketchHeader 
-        title={  'MANAGER ' + get('Menu1.1') }
+        title={'MANAGER ' + get('Menu1.1')}
         showBack={true}
-        onBack={() => navigate(-1)}
+        onBack={() => {
+          clearStorage();
+          navigate(-1);
+        }}
         rightButtons={[]}
       />
       
@@ -227,67 +347,221 @@ export default function RegisterView() {
           {get('Register1.2')}
         </p>
 
-        <form onSubmit={onSubmit} style={{padding: '5px'}}>
+        <div style={{
+          color: '#ca1212', 
+          margin: '0', 
+          textAlign: 'start', 
+          fontSize: '13px', 
+          fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"
+        }}>
+          * {get('Intro.description1')}
+        </div>
+
+        <form onSubmit={onSubmit} style={{paddingBottom: '2rem'}}>
           {/* General Error/Success Message */}
           {errors.general && (
-            <div className="sketch-error-message">{errors.general}</div>
+            <div className="sketch-error-message" style={{ marginBottom: '1rem' }}>
+              {errors.general}
+            </div>
           )}
           {message && (
-            <div className="sketch-success-message">{message}</div>
+            <div className="sketch-success-message" style={{ marginBottom: '1rem' }}>
+              {message}
+            </div>
           )}
 
           {/* Email Input */}
-          <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.1')} *</p>
-          <SketchInput
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            disabled={isLoading}
-            error={errors.email}
-            variant="email" 
-            style={{ marginBottom: '-8px' }} 
-          />
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ 
+              margin: '0', 
+              fontSize: '13px', 
+              marginBottom: '3px',
+              fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
+              display: 'block'
+            }}>
+              {get('title.text.1')} *
+            </label>
+            <SketchInput
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              disabled={isLoading}
+              error={errors.email}
+              variant="email" 
+              autoComplete="email"
+            />
+          </div>
 
           {/* Password Input */}
-          <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.2')} *</p>
-          <SketchInput
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleInputChange}
-            disabled={isLoading}
-            error={errors.password}
-            variant="password"
-            style={{ marginBottom: '-8px' }} 
-          />
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ 
+              margin: '0', 
+              fontSize: '13px', 
+              marginBottom: '3px',
+              fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
+              display: 'block'
+            }}>
+              {get('title.text.2')} *
+            </label>
+            <SketchInput
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              disabled={isLoading}
+              error={errors.password}
+              variant="password"
+              autoComplete="new-password"
+            />
+          </div>
 
           {/* Re-Password Input */}
-          <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.3')} *</p>
-          <SketchInput
-            type="password"
-            name="rePassword"
-            value={formData.rePassword}
-            onChange={handleInputChange}
-            disabled={isLoading}
-            error={errors.rePassword}
-            variant="password"
-            style={{ marginBottom: '-8px' }} 
-          />
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ 
+              margin: '0', 
+              fontSize: '13px', 
+              marginBottom: '3px',
+              fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
+              display: 'block'
+            }}>
+              {get('title.text.3')} *
+            </label>
+            <SketchInput
+              type="password"
+              name="rePassword"
+              value={formData.rePassword}
+              onChange={handleInputChange}
+              disabled={isLoading}
+              error={errors.rePassword}
+              variant="password"
+              autoComplete="new-password"
+            />
+          </div>
 
-          {/* Nickname Input () */}
-          <p style={{ margin:'0', fontSize: '13px', marginBottom: '3px',fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"}}>{get('title.text.4')} *</p>
-          <SketchInput
-            type="text"
-            name="nickname"
-            value={formData.nickname}
-            onChange={handleInputChange}
-            disabled={isLoading}
-            error={errors.nickname}
-            variant="text"
-            style={{ marginBottom: '-8px' }} 
-          />
-        
+          {/* Nickname Input */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ 
+              margin: '0', 
+              fontSize: '13px', 
+              marginBottom: '3px',
+              fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
+              display: 'block'
+            }}>
+              {get('title.text.4')} *
+            </label>
+            <SketchInput
+              type="text"
+              name="nickname"
+              value={formData.nickname}
+              onChange={handleInputChange}
+              disabled={isLoading}
+              error={errors.nickname}
+              variant="text"
+              autoComplete="nickname"
+            />
+          </div>
+
+          {/* Agreement Section */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <div style={{ 
+              margin: '0 0 10px 0', 
+              fontSize: '14px', 
+              fontWeight: 'bold',
+              fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"
+            }}>
+              {get('REGISTER_AGREEMENTS_TITLE')} *
+            </div>
+
+            {/* Privacy Agreement */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              marginBottom: '8px',
+              padding: '8px',
+              border: errors.privacy ? '1px solid #ef4444' : '1px solid #d1d5db',
+              borderRadius: '4px',
+              backgroundColor: agreements.privacy ? '#f0fdf4' : '#ffffff',
+              cursor: 'pointer'
+            }}
+            onClick={() => handleAgreementClick('privacy')}>
+              <input
+                type="checkbox"
+                id="privacy-agreement"
+                checked={agreements.privacy}
+                readOnly
+                style={{ 
+                  marginRight: '8px',
+                  cursor: 'pointer',
+                  accentColor: 'rgb(202 255 237)',
+                  pointerEvents: 'none'
+                }}
+              />
+              <label 
+                htmlFor="privacy-agreement"
+                style={{ 
+                  fontSize: '13px',
+                  fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
+                  cursor: 'pointer',
+                  flex: 1,
+                  pointerEvents: 'none'
+                }}
+              >
+                {get('REGISTER_PRIVACY_LABEL') || '개인정보처리방침에 동의합니다'} {agreements.privacy ? '✓' : `(${get('REGISTER_VIEW_CONTENT') || '내용 확인하기'})`}
+              </label>
+            </div>
+            
+            {errors.privacy && (
+              <div style={{ color: '#ef4444', fontSize: '12px', margin: '0 0 8px 0', fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif" }}>
+                {errors.privacy}
+              </div>
+            )}
+
+            {/* Terms Agreement */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              marginBottom: '8px',
+              padding: '8px',
+              border: errors.terms ? '1px solid #ef4444' : '1px solid #d1d5db',
+              borderRadius: '4px',
+              backgroundColor: agreements.terms ? '#f0fdf4' : '#ffffff',
+              fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
+              cursor: 'pointer'
+            }}
+            onClick={() => handleAgreementClick('terms')}>
+              <input
+                type="checkbox"
+                id="terms-agreement"
+                checked={agreements.terms}
+                readOnly
+                style={{ 
+                  marginRight: '8px',
+                  cursor: 'pointer',
+                  accentColor: 'rgb(202 255 237)',
+                  pointerEvents: 'none'
+                }}
+              />
+              <label 
+                htmlFor="terms-agreement"
+                style={{ 
+                  fontSize: '13px',
+                  fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
+                  cursor: 'pointer',
+                  flex: 1,
+                  pointerEvents: 'none'
+                }}
+              >
+                {get('REGISTER_TERMS_LABEL') || '이용약관에 동의합니다'} {agreements.terms ? '✓' : `(${get('REGISTER_VIEW_CONTENT') || '내용 확인하기'})`}
+              </label>
+            </div>
+            
+            {errors.terms && (
+              <div style={{ color: '#ef4444', fontSize: '12px', margin: '0 0 8px 0', fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif" }}>
+                {errors.terms}
+              </div>
+            )}
+          </div>
 
           {/* Sign Up Button */}
           <SketchBtn
@@ -295,73 +569,24 @@ export default function RegisterView() {
             className="sketch-button" 
             variant="event"
             disabled={isLoading}
-            style={{marginTop: '1rem'}}
+            style={{ marginTop: '1rem', width: '100%' }}
           >
             <HatchPattern opacity={0.8} />
-            {get('title.text.11')}
+            {isLoading ? (get('LOADING_REGISTER') || '회원가입 중...') : (get('title.text.11') || '회원가입')}
           </SketchBtn>
         </form>
-
-        {/* 소셜 로그인 */}
-        <div style={{ textAlign: 'center', marginTop: '10px' , fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif", display: 'none'}}>
-          <p style={{marginBottom: '0', fontSize: '0.875rem', color: '#6b7280' }}>
-            {get('title.text.12')}
-          </p>
-          
-          <div style={{ display: 'flex', justifyContent: 'center'}}>
-            <button 
-              className="sketch-button sketch-button--secondary"
-              onClick={() => handleSocialLogin('facebook')}
-              style={{ width: '3rem', height: '3rem', borderRadius: '50%', padding: '0' }}
-              aria-label="Sign up with Facebook"
-            >
-              f
-            </button>
-            
-            <button 
-              className="sketch-button sketch-button--secondary"
-              onClick={() => handleSocialLogin('google')}
-              style={{ width: '3rem', height: '3rem', borderRadius: '50%', padding: '0' }}
-              aria-label="Sign up with Google"
-            >
-              G
-            </button>
-            
-            <button 
-              className="sketch-button sketch-button--secondary"
-              onClick={() => handleSocialLogin('twitter')}
-              style={{ width: '3rem', height: '3rem', borderRadius: '50%', padding: '0' }}
-              aria-label="Sign up with Twitter"
-            >
-              🐦
-            </button>
-          </div>
-        </div>
-
-        {/* Login Link */}
-        <div style={{ textAlign: 'center', fontSize: '0.875rem', color: '#6b7280', display: 'none'}}>
-          Already have an account?{' '}
-          <a 
-            href="#" 
-            className="sketch-link sketch-link--primary"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate('/login');
-            }}
-          >
-            Login
-          </a>
-        </div>
 
       </div>
 
       {/* 푸터 */}
       <InitFooter2 />
 
-        <LoadingScreen 
+      {/* Loading Screen */}
+      <LoadingScreen 
+        variant="cocktail"
+        loadingText={get('loading.register') || "회원가입 처리 중..."}
         isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+      />
     </div>
   );
 }
