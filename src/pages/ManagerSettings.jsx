@@ -70,11 +70,6 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           params: { venue_id: user?.venue_id }
         });
         console.log('vd', vd);
-
-        const {schedule_status} = vd;
-
-        setScheduleStatus(schedule_status);
-
         setVenueData(prev => ({
           ...prev,
           ...vd
@@ -99,12 +94,52 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
 
 
   useEffect(() => {
+    
     // 스케쥴 상태가 반영된 경우 컴포넌트 재렌더링
-    console.log('scheduleStatus!', scheduleStatus);
+    console.log('scheduleStatus', scheduleStatus);
 
 
   }, [ scheduleStatus ]);
 
+
+
+  const handleDelete = async () => {
+    const result = await Swal.fire({
+      title: '정말 계정 탈퇴를 하시겠습니까?',
+      text: '이 작업은 되돌릴 수 없습니다.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: '네, 탈퇴하겠습니다',
+      cancelButtonText: get('Reservation.CancelButton')
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await ApiClient.get('/api/managerDelete', {
+          params: { 
+            manager_id: user?.manager_id
+          }
+        });
+
+        await Swal.fire({
+          title: '탈퇴 완료',
+          text: '계정이 성공적으로 삭제되었습니다.',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        });
+        
+          await logout();
+          navigate('/login');
+
+      } catch (e) {
+        console.error('계정 탈퇴 중 오류:', e);
+      }
+    }
+
+};
 
   
 
@@ -440,6 +475,13 @@ const handleSaveNewPassword = async () => {
             margin-top: 1rem;
             margin-bottom: 0.3rem;
          }
+
+        .staff-delete {
+          text-align: center;
+          color: red;
+          margin-top: 0.8rem;
+          text-decoration: underline;
+        }
           
       `}</style>
       
@@ -633,6 +675,8 @@ const handleSaveNewPassword = async () => {
             <HatchPattern opacity={0.6} /> {get('Staff.setting.logout')}
           </SketchBtn>
         </div>
+
+        <div className='staff-delete' onClick={handleDelete}>{get('DELETE_ACCOUNT')}</div>
       </div>
     </>
   );
