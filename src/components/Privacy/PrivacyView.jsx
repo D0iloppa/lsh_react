@@ -13,6 +13,7 @@ import Privacy_kr from './Privacy_kr';
 import Privacy_en from './Privacy_en';
 import Privacy_vi from './Privacy_vi';
 import Privacy_cn from './Privacy_cn';
+import Privacy_ja from './Privacy_ja';
 
 import './PrivacyView.css'
 

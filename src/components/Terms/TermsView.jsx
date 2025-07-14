@@ -13,6 +13,7 @@ import Terms_kr from './Terms_kr';
 import Terms_en from './Terms_en';
 import Terms_vi from './Terms_vi';
 import Terms_cn from './Terms_cn';
+import Terms_ja from './Terms_ja';
 
 
 
