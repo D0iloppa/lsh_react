@@ -508,7 +508,7 @@ const handleSaveNewPassword = async () => {
             {get('Staff.setting.logout') || get('STAFF_SETTINGS_LOGOUT_BUTTON')}
           </SketchBtn>
         </div>
-          <div className='staff-delete' onClick={handleDelete}>{get('DELETE_ACCOUNT')}</div>
+          {/* <div className='staff-delete' onClick={handleDelete}>{get('DELETE_ACCOUNT')}</div> */}
       </div>
     </>
   );

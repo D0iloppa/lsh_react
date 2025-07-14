@@ -126,6 +126,18 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
     ? ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+
+    // 날짜 비교 유틸리티 함수
+  const isPastDate = (dateString) => {
+    const today = new Date().toISOString().split('T')[0];
+    return dateString < today;
+  };
+
+  const isTodayOrFuture = (dateString) => {
+    const today = new Date().toISOString().split('T')[0];
+    return dateString >= today;
+  };
+
   return (
     <>
       <style jsx="true">{`
@@ -251,15 +263,17 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
         <div className="week-title">{get('schedule.weekly.title')}</div>
         <div>
           {weekData.map((dayData, index) => {
-            const day = days[index];
-            // status와 시간 값만으로 on 상태 계산
+              const day = days[index];
+              const isPast = isPastDate(dayData.work_date);
+
+             // status와 시간 값만으로 on 상태 계산
             const isOn = dayData.status !== null && 
                         dayData.status !== 'dayoff' &&
                         dayData.start_time && 
                         dayData.end_time;
             
             return (
-              <div key={`${dayData?.work_date || index}`} className="week-row">
+              <div key={`${dayData?.work_date || index}`} className={`week-row ${isPast ? 'past-row' : ''}`}>
                 <div className="week-day">
                   <span>{day}</span>
                   <span>({parseInt(dayData.work_date.split('-')[2])})</span>
@@ -268,6 +282,17 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
                   <select 
                     value={isOn ? 'on' : 'off'} 
                     onChange={e => {
+                      // 과거 날짜는 수정 불가
+                      if (isPast) {
+                        Swal.fire({
+                          title: get('SCHEDULE_PAST_EDIT_ERROR_TITLE') || '과거 스케줄 수정 불가',
+                          text: get('SCHEDULE_PAST_EDIT_ERROR_MESSAGE') || '과거 날짜의 스케줄은 수정할 수 없습니다.',
+                          icon: 'warning',
+                          confirmButtonText: get('SCHEDULE_MODAL_OK')
+                        });
+                        return;
+                      }
+
                       const newWeekData = [...weekData];
                       if (e.target.value === 'on') {
                         newWeekData[index] = { 
@@ -286,7 +311,8 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
                       }
                       setWeekData(newWeekData);
                     }} 
-                    className="select-style"
+                    className={`select-style ${isPast ? 'disabled' : ''}`}
+                    disabled={isPast}
                   >
                     <option value="on">{get('schedule.status.on')}</option>
                     <option value="off">{get('schedule.status.off')}</option>
@@ -298,12 +324,24 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
                       <span className="hours-label">{get('schedule.hours.label')}</span>
                       <select 
                         value={dayData?.start_time || ''} 
-                        onChange={e => {
+                         onChange={e => {
+                          // 과거 날짜는 수정 불가
+                          if (isPast) {
+                            Swal.fire({
+                              title: get('SCHEDULE_PAST_EDIT_ERROR_TITLE') || '과거 스케줄 수정 불가',
+                              text: get('SCHEDULE_PAST_EDIT_ERROR_MESSAGE') || '과거 날짜의 스케줄은 수정할 수 없습니다.',
+                              icon: 'warning',
+                              confirmButtonText: get('SCHEDULE_MODAL_OK')
+                            });
+                            return;
+                          }
+
                           const newWeekData = [...weekData];
                           newWeekData[index] = { ...dayData, start_time: e.target.value };
                           setWeekData(newWeekData);
                         }} 
-                        className="select-style"
+                        className={`select-style ${isPast ? 'disabled' : ''}`}
+                        disabled={isPast}
                       >
                         <option value="">--</option>
                         {hourOptions.map(opt => (
@@ -314,19 +352,31 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
                     <div style={{marginLeft:'6.2rem', display:'flex',alignItems:'center'}}>
                       <span className="to-label">{get('schedule.time.to')}</span>
                       <select 
-                        value={dayData?.end_time || ''} 
-                        onChange={e => {
-                          const newWeekData = [...weekData];
-                          newWeekData[index] = { ...dayData, end_time: e.target.value };
-                          setWeekData(newWeekData);
-                        }} 
-                        className="select-style"
-                      >
-                        <option value="">{get('common.select.empty')}</option>
-                        {hourOptions.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
+                          value={dayData?.end_time || ''} 
+                          onChange={e => {
+                            // 과거 날짜는 수정 불가
+                            if (isPast) {
+                              Swal.fire({
+                                title: get('SCHEDULE_PAST_EDIT_ERROR_TITLE') || '과거 스케줄 수정 불가',
+                                text: get('SCHEDULE_PAST_EDIT_ERROR_MESSAGE') || '과거 날짜의 스케줄은 수정할 수 없습니다.',
+                                icon: 'warning',
+                                confirmButtonText: get('SCHEDULE_MODAL_OK')
+                              });
+                              return;
+                            }
+
+                            const newWeekData = [...weekData];
+                            newWeekData[index] = { ...dayData, end_time: e.target.value };
+                            setWeekData(newWeekData);
+                          }} 
+                          className={`select-style ${isPast ? 'disabled' : ''}`}
+                          disabled={isPast}
+                        >
+                          <option value="">{get('common.select.empty')}</option>
+                          {hourOptions.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
                     </div>
                   </div>
                 )}

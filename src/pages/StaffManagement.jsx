@@ -378,7 +378,7 @@ const loadStaffList = async () => {
                       onChange={(newState) => handleStaffToggle(staff, newState)}
                       disabled={loading}
                     />
-                    <span style={{ color: staff.status === 'active' ? 'green' : 'red' }}>{staff.status === 'active' ? '근무' : '휴직'}</span>
+                    <span style={{ color: staff.status === 'active' ? 'green' : 'red' }}>{staff.status === 'active' ? get('SCHEDULE_MODAL_ON') : get('SCHEDULE_MODAL_LEAVE')}</span>
                   </div>
                   </SketchDiv>
                 ))

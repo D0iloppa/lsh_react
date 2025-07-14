@@ -329,46 +329,46 @@ const isTodayOrFuture = (dateString) => {
 };
 
     const handleCreateSchedule = () => {
-  // 선택된 날짜 기준으로 해당 주의 일요일 시작일 계산
-  const selectedDateObj = new Date(selectedDate);
-  const dayOfWeek = selectedDateObj.getDay();
-  const startOfWeek = new Date(selectedDateObj);
-  startOfWeek.setDate(selectedDateObj.getDate() - dayOfWeek);
-  const startDate = startOfWeek.toISOString().split('T')[0];
+      // 선택된 날짜 기준으로 해당 주의 일요일 시작일 계산
+      const selectedDateObj = new Date(selectedDate);
+      const dayOfWeek = selectedDateObj.getDay();
+      const startOfWeek = new Date(selectedDateObj);
+      startOfWeek.setDate(selectedDateObj.getDate() - dayOfWeek);
+      const startDate = startOfWeek.toISOString().split('T')[0];
 
-  // 해당 주 7일 전체 배열 생성
-  const weekScheduleData = [];
-  for (let i = 0; i < 7; i++) {
-    const currentDate = new Date(startOfWeek);
-    currentDate.setDate(startOfWeek.getDate() + i);
-    const dateString = currentDate.toISOString().split('T')[0];
-    
-    // 해당 날짜의 기존 스케줄 찾기
-    const existingSchedule = schedules.find(schedule => {
-      const scheduleDate = schedule.work_date || new Date(schedule.date).toLocaleDateString('en-CA');
-      return scheduleDate === dateString;
-    });
-    
-    // 기존 스케줄이 있으면 그것을 사용하고, 없으면 기본 구조 생성
-    weekScheduleData.push(existingSchedule || {
-      work_date: dateString,
-      status: null,
-      start_time: null,
-      end_time: null,
-      // 필요한 다른 기본값들...
-    });
+      // 해당 주 7일 전체 배열 생성
+      const weekScheduleData = [];
+      for (let i = 0; i < 7; i++) {
+        const currentDate = new Date(startOfWeek);
+        currentDate.setDate(startOfWeek.getDate() + i);
+        const dateString = currentDate.toISOString().split('T')[0];
+        
+        // 해당 날짜의 기존 스케줄 찾기
+        const existingSchedule = schedules.find(schedule => {
+          const scheduleDate = schedule.work_date || new Date(schedule.date).toLocaleDateString('en-CA');
+          return scheduleDate === dateString;
+        });
+        
+        // 기존 스케줄이 있으면 그것을 사용하고, 없으면 기본 구조 생성
+        weekScheduleData.push(existingSchedule || {
+          work_date: dateString,
+          status: null,
+          start_time: null,
+          end_time: null,
+          // 필요한 다른 기본값들...
+        });
   }
 
-  console.log("selected date:", selectedDate);
-  console.log("startDate:", startDate);
-  console.log("weekScheduleData (7 days):", weekScheduleData);
+      console.log("selected date:", selectedDate);
+      console.log("startDate:", startDate);
+      console.log("weekScheduleData (7 days):", weekScheduleData);
 
-  navigateToPageWithData(PAGES.STAFF_SCHEDULE_CREATE, { 
-    mode: 'create', 
-    staff_id: user?.staff_id || user?.id,
-    start_date: selectedDate,
-    scheduleData: weekScheduleData // 7일 전체 데이터
-  });
+      navigateToPageWithData(PAGES.STAFF_SCHEDULE_CREATE, { 
+        mode: 'create', 
+        staff_id: user?.staff_id || user?.id,
+        start_date: selectedDate,
+        scheduleData: weekScheduleData // 7일 전체 데이터
+      });                       
 };
 
   // const handleEditSchedule = (schedule) => {
