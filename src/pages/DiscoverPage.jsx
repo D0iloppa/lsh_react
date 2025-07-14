@@ -15,9 +15,13 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
   const [loading, setLoading] = useState(false);
   const [topGirls, setTopGirls] = useState([]);
 
+  
   const handleDetail = (girl) => {
     navigateToPageWithData(PAGES.STAFFDETAIL, girl);
   };
+
+
+
 const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   useEffect(() => {
     window.scrollTo(0, 0); 
