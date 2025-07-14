@@ -111,7 +111,7 @@ const AgreementCheckbox2 = ({
         }
 
         .policy-list {
-          padding-left: 1rem;
+        padding: 0;
           margin: 0.5rem 0;
         }
 
@@ -131,6 +131,10 @@ const AgreementCheckbox2 = ({
             max-height: 150px;
           }
         }
+          
+        li {list-style-type: none;
+         padding: 0; /* 왼쪽 들여쓰기 제거 시 같이 사용 */
+  margin: 0;}
       `}</style>
 
       <div className={`agreement-container ${className}`}>
@@ -151,21 +155,21 @@ const AgreementCheckbox2 = ({
         {/* 정책 내용 */}
         <div className="policy-content">
             <div className="policy-title">
-                {get('Agreement.CancelRefundPolicy') || '취소 / 환불 / 노쇼 정책'}
+                {get('Agreement.CancelRefundPolicy')}
             </div>
             
             <div className="policy-section">
-                <div className="policy-subtitle">{get('Policy.Cancel.Title')}</div>
-                <div className="policy-text">{get('Policy.Cancel.Description')}</div>
+                {/* <div className="policy-subtitle">{get('Policy.Cancel.Title')}</div>
+                <div className="policy-text">{get('Policy.Cancel.Description')}</div> */}
                 <ul className="policy-list">
                 <li>{get('Policy.Cancel.7Days')}</li>
                 <li>{get('Policy.Cancel.3to6Days')}</li>
                 <li>{get('Policy.Cancel.1to2Days')}</li>
-                <li>{get('Policy.Cancel.SameDay')}</li>
+                <li style={{fontWeight: 'bold'}}>{get('Policy.Cancel.SameDay')}</li>
                 </ul>
             </div>
 
-            <div className="policy-section">
+            {/* <div className="policy-section">
                 <div className="policy-subtitle">{get('Policy.Refund.Title')}</div>
                 <div className="policy-text">{get('Policy.Refund.Processing')}</div>
                 <div className="policy-text">{get('Policy.Refund.Partial')}</div>
@@ -175,7 +179,7 @@ const AgreementCheckbox2 = ({
                 <div className="policy-subtitle">{get('Policy.NoShow.Title')}</div>
                 <div className="policy-text">{get('Policy.NoShow.Rule')}</div>
                 <div className="policy-text">{get('Policy.NoShow.Consequence')}</div>
-            </div>
+            </div> */}
         </div>
 
       </div>

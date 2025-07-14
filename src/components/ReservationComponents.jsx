@@ -1,7 +1,8 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
+
 
 // 주간 테이블 CSS 스타일 (이 스타일을 부모 컴포넌트에 추가하세요)
 export const weeklyTableStyles = `
@@ -198,6 +199,7 @@ export const weeklyTableStyles = `
   }
 `;
 
+ 
 // 주간 테이블 생성 유틸리티 함수 (오늘부터 7일간)
 export const generateWeeklyDays = (baseDate) => {
   const today = new Date(baseDate);
@@ -788,6 +790,7 @@ export const PickupSelector = ({ value, onChange, messages = {} }) => {
             {messages.pickupOption || '픽업 서비스 이용'}
           </span>
         </label>
+        <div></div>
         {value && (
           <div style={{ 
             marginTop: '8px', 
@@ -799,7 +802,11 @@ export const PickupSelector = ({ value, onChange, messages = {} }) => {
             color: '#1e40af',
             lineHeight: '1.4'
           }}>
-            {messages.pickupInfo || '주문 완료 후 약 15-20분 후 픽업 가능합니다. 픽업 준비 완료 시 알림을 보내드립니다.'}
+            <div style={{ fontSize: '1rem', marginBottom: '0.8rem'}}>[{messages.pickupInfo}]</div>
+            {messages.pickupInfo1}<br></br>
+            {messages.pickupInfo2}<br></br>
+            {messages.pickupInfo3}<br></br>
+            <div style={{    marginTop: '1rem', fontWeight: 'bold'}}>{messages.pickupInfo4}</div>
           </div>
         )}
       </div>
@@ -832,6 +839,8 @@ export const ReservationForm = ({
   getTargetLabel = () => {}
 }) => {
 
+
+console.log(messages)
 
   return (
     <div className="form-section">
@@ -886,7 +895,11 @@ export const ReservationForm = ({
       messages={{
         pickupLabel: messages['pickupLabel'] || '옵션',
         pickupOption: messages['pickupOption'] || '픽업 서비스 이용',
-        pickupInfo: messages['pickupInfo'] || '픽업 서비스 이용시 예약금에 함께 차징됩니다.'
+        pickupInfo: messages['pickupInfo'],
+        pickupInfo1: messages['pickupInfo1'],
+        pickupInfo2: messages['pickupInfo2'],
+        pickupInfo3: messages['pickupInfo3'],
+        pickupInfo4: messages['pickupInfo4'],
       }}
     />
 

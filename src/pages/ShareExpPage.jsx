@@ -50,37 +50,30 @@ const ShareExpPage = ({
   }, [messages, currentLang, pageData]);
 
   const handleSubmitReview = () => {
-    if (venueRating === 0) {
-      //alert(get('Review3.1')); // '평점을 선택해주세요.'
-      
-      Swal.fire({
-        title: get('Review3.1'),
-        icon: 'warning',
-        confirmButtonText: get('SWAL_CONFIRM_BUTTON')
-      });
+  if (venueRating === 0) {
+    Swal.fire({
+      title: get('Review3.1'),
+      icon: 'warning',
+      confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+    });
+    return;
+  }
 
-      return;
-    }
-    
-    if (!reviewText.trim()) {
-      //alert(get('Review3.2')); // '리뷰를 작성해주세요.'
+  if (target !== 'staff' && !reviewText.trim()) {
+    Swal.fire({
+      title: get('Review3.2'),
+      icon: 'warning',
+      confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+    });
+    return;
+  }
 
-      Swal.fire({
-        title: get('Review3.2'),
-        icon: 'warning',
-        confirmButtonText: get('SWAL_CONFIRM_BUTTON')
-      });
-
-
-      return;
-    }
-  
-    const reviewData = {
-      reservation_id,
-      user_id,
-      rating: venueRating,
-      content: reviewText
-    };
+  const reviewData = {
+    reservation_id,
+    user_id,
+    rating: venueRating,
+    content: target === 'staff' ? '-' : reviewText
+  };
     
     console.log('📝 Review submitted:', reviewData);
   
@@ -177,7 +170,6 @@ const ShareExpPage = ({
           display: flex;
           flex-direction: column;
           justify-content: center;
-          margin-top: 3rem;
         }
 
         .venue-name {
@@ -291,9 +283,26 @@ const ShareExpPage = ({
 
           .venue-image {
             width: 100%;
-            height: 120px;
+            height: 270px;
             align-self: center;
           }
+        }
+
+        .venue-image-placeholder {
+          width: 100% !important;
+          height: 270px !important;
+          object-fit: cover !important;
+          object-position: center top !important;
+          border-radius: 8px !important;
+          border: 2px solid #1f2937 !important;
+        }
+
+        .venue-image-placeholder img {
+          width: 100% !important;
+          height: 100% !important;
+          object-fit: cover !important;
+          object-position: center top !important;
+          border-radius: 8px !important;
         }
       `}</style>
 
@@ -311,9 +320,18 @@ const ShareExpPage = ({
             {/* Header with Image and Venue Info */}
             <div className="review-header">
               <div className="venue-image">
-                <ImagePlaceholder 
+               <ImagePlaceholder 
                   src={image} 
-                  className="" style={{objectPosition: 'top', height: '161px', objectFit: 'cover'}}
+                  className="venue-image-placeholder"
+                  alt="venue"
+                  style={{
+                    width: '120px',
+                    height: '120px',
+                    objectFit: 'cover',
+                    objectPosition: 'center top',
+                    borderRadius: '8px',
+                    border: '2px solid #1f2937'
+                  }}
                 />
               </div>
               
@@ -331,15 +349,19 @@ const ShareExpPage = ({
             />
 
             {/* Review Text Section */}
-            <div className="review-textarea-section">
-              <label className="textarea-label">{get('Review2.2')}</label>
-              <SketchTextarea
-                placeholder={get('Review2.2')}
-                value={reviewText}
-                onChange={(e) => setReviewText(e.target.value)}
-                rows={4}
-              />
-            </div>
+            {/* Review Text Section */}
+            {target !== 'staff' && (
+              <div className="review-textarea-section">
+                <label className="textarea-label">{get('Review2.2')}</label>
+                <SketchTextarea
+                  placeholder={get('Review2.2')}
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  rows={4}
+                />
+              </div>
+            )}
+
           </div>
         </div>
 

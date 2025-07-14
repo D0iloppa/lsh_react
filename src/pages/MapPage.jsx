@@ -9,6 +9,7 @@ import LoadingScreen from '@components/LoadingScreen';
 import SketchHeader from '@components/SketchHeaderMain'
 
 import { useMsg } from '@contexts/MsgContext';
+import { useAuth } from '@contexts/AuthContext';
 import { Users, Star, Heart, ArrowRight, Clock, MapPin, CreditCard } from 'lucide-react';
 
 const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithData, PAGES, goBack, onSearch = () => {}, initialKeyword = '' }) => {
@@ -30,6 +31,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
 
   const inputRef = useRef(null);
   const { messages, isLoading, get, currentLang } = useMsg();
+  const { iauMasking, isActiveUser } = useAuth();
 
 
   const handleBack = () =>{
@@ -47,8 +49,19 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
       const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
       const response = await axios.get(`${API_HOST}/api/getVenueList`, { params: { keyword } });
       const venueList = response.data || [];
-      setOriginalPlaces(venueList);
-      applyFilters(venueList);
+
+      const iau = await isActiveUser();
+      
+      
+      // 구독 정보 확인 및 주소 마스킹 적용
+      const processedVenueList = venueList.map(item => ({
+        ...item,
+        phone: iauMasking(iau, item.phone || ''),
+        address: iauMasking(iau, item.address || '')
+      }));
+      
+      setOriginalPlaces(processedVenueList);
+      applyFilters(processedVenueList);
       if (inputRef.current) inputRef.current.blur();
     } catch (error) {
       console.error('장소 목록 불러오기 실패:', error);

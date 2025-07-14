@@ -2,8 +2,10 @@
 import React, { useState } from 'react';
 import { usePopup } from '@contexts/PopupContext';
 import { useMsg } from '@contexts/MsgContext';
+import { useAuth } from '@contexts/AuthContext';
 import HatchPattern from '@components/HatchPattern';
-import { Pencil } from 'lucide-react';
+import { Pencil, Star } from 'lucide-react';
+import ApiClient from '@utils/ApiClient';
 
 const GlobalPopupManager = () => {
   const { activePopups, closePopup } = usePopup();
@@ -23,6 +25,7 @@ const GlobalPopupManager = () => {
 
 const PopupModal = ({ popup, onClose }) => {
   const { get } = useMsg();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('today'); // 'premium' | 'today'
 
   // 오늘 하루 열지 않음 체크박스 핸들러
@@ -40,16 +43,55 @@ const PopupModal = ({ popup, onClose }) => {
     }
   };
 
+  // 오늘의 체험권 구매 기본 함수
+  const defaultTodayTrial = () => {
+    // alert('🎯 오늘의 체험권 구매 시작');
+
+    alert(JSON.stringify(user));
+
+    ApiClient.postForm('/api/trialCoupon',{
+      user_id: user?.user_id
+    }).then(res => {
+      console.log('✅ 체험권 발급 성공:', res);
+      alert('체험권이 발급되었습니다!');
+      
+    }).catch(error => {
+      console.error('❌ 체험권 발급 실패:', error);
+      alert('체험권 발급에 실패했습니다. 다시 시도해주세요.');
+    });
+
+    /*
+    // 인앱 결제 요청
+    const payload = JSON.stringify({ action: 'buyItem' });
+
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.buyItem) {
+      // iOS WebView
+      console.log('📱 iOS 인앱 결제 요청');
+      window.webkit.messageHandlers.buyItem.postMessage(null);
+    } else if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+      // Android WebView
+      console.log('🤖 Android 인앱 결제 요청');
+      window.ReactNativeWebView.postMessage(payload);
+    } else {
+      console.warn('⚠️ 웹뷰 환경이 아님 - 인앱 결제 불가');
+      alert('인앱 결제가 지원되지 않는 환경입니다.');
+    }
+      */
+    
+    // 팝업 닫기
+    onClose();
+  };
+
   // 프리미엄 탭 콘텐츠
   const getPremiumContent = () => ({
     title: get('Popup.Premium.Title') || '프리미엄 회원만의 특별 혜택을 지금 확인해보세요!',
     description: get('Popup.Premium.Description') || '프리미엄 멤버십에 가입시 매장 예약 우선권과 10% 할인 혜택을 받으실 수 있습니다.',
     features: [
-      get('Popup.Premium.Benefit1') || '매장 예약시 우선 예약권 제공으로 원하시는 시간에 예약 가능',
-      get('Popup.Premium.Benefit2') || '모든 메뉴의 10%의 할인 혜택으로 더욱 저렴하게 즐기세요',
-      get('Popup.Premium.Benefit3') || '신규 칵테일 출시시 우선 체험 기회 및 할인 혜택 추가 제공',
-      get('Popup.Premium.Benefit4') || '추천하기',
-      get('Popup.Premium.Benefit5') || '무료 칵테일 제작 클래스 참여 기회와 전문가 상담 서비스'
+      get('Popup.Premium.Benefit1'),
+      get('Popup.Premium.Benefit2'),
+      get('Popup.Premium.Benefit3'),
+      get('Popup.Premium.Benefit4'),
+      get('Popup.Premium.Benefit5')
     ],
     buttons: [
       {
@@ -60,7 +102,7 @@ const PopupModal = ({ popup, onClose }) => {
       {
         text: get('Popup.Button.JoinNow') || '지금 가입하기',
         variant: 'primary',
-        onClick: popup.onConfirm || onClose
+        onClick: popup.onConfirm || defaultTodayTrial
       }
     ]
   });
@@ -68,24 +110,24 @@ const PopupModal = ({ popup, onClose }) => {
   // 오늘 하루 탭 콘텐츠
   const getTodayContent = () => ({
     title: get('Popup.Today.Title') || '오늘 하루, 프리미엄 혜택을 모두 누려보세요! 단, 단 하루 $9.9로!',
-    description: get('Popup.Today.Description') || '정회원 가입 없이도 간편하게 프리미엄 일일권을 구매하고 모든 서비스를 체험해 보세요.',
+    //description: get('Popup.Today.Description') || '정회원 가입 없이도 간편하게 프리미엄 일일권을 구매하고 모든 서비스를 체험해 보세요.',
     features: [
-      get('Popup.Today.Benefit1') || '채팅 서비스 이용 가능 – 실시간 상담 및 문의',
-      get('Popup.Today.Benefit2') || '픽업 서비스 이용 가능 – 더 편리한 방문 예약',
-      get('Popup.Today.Benefit3') || '무제한 예약 및 검색 가능 – 원하는 시간, 원하는 장소',
-      // get('Popup.Today.Benefit4') || '빼먹기 5% 등등의 실시간 할인 제공 (지속적 가격 정책)',
-      // get('Popup.Today.Benefit5') || '고객만의 신속 제작 클래스 참여 기회와 전문가 상담 서비스'
+      get('Popup.Today.Benefit1'),
+      get('Popup.Today.Benefit2'),
+      get('Popup.Today.Benefit3'),
+      get('Popup.Today.Benefit4'),
+      get('Popup.Today.Benefit5'),
+      get('Popup.Today.Benefit6')
     ],
     buttons: [
       {
-        text: get('Popup.Button.Later') || '다음 기회에',
+        text: get('Popup.Button.TodayTrial'),
+        variant: 'primary',
+        onClick: popup.onTodayTrial || defaultTodayTrial
+      },  {
+        text: get('Popup.Button.Later'),
         variant: 'secondary',
         onClick: onClose
-      },
-      {
-        text: get('Popup.Button.TodayTrial') || '오늘만 무료체험',
-        variant: 'primary',
-        onClick: popup.onTodayTrial || onClose
       }
     ],
     notice: get('Popup.Today.Notice') || '본 혜택은 오늘 하루에만 제공되는 한정 혜택입니다. * 가격: $9.9 / 1일 이용권'
@@ -256,17 +298,17 @@ const PopupModal = ({ popup, onClose }) => {
           font-size: 0.9rem;
           color: #555;
           line-height: 1.5;
-          margin-bottom: 0.5rem;
+          margin-bottom: 1.5rem;
           text-align: center;
         }
 
         .popup-features {
           border: 1px solid #adcfff;
-          padding: 1rem;
+          padding: 0.5rem;
           background: #f5fbff;
           margin-bottom: 0.5rem;
           color: #ffffff;
-          max-height: 225px;
+          max-height: 240px;
           overflow-y: auto;
         }
 
@@ -283,6 +325,7 @@ const PopupModal = ({ popup, onClose }) => {
         .icon-wrap {
           min-width: 16px;
           margin-right: 4px;
+          opacity: 0.5;
         }
           .feature-text {
             word-break: break-word;
@@ -411,9 +454,8 @@ const PopupModal = ({ popup, onClose }) => {
           }
 
           .popup-footer {
-            flex-direction: column;
             gap: 0.5rem;
-            padding: 0 1.2rem 0.2rem;
+            padding: 0 1.2rem 0.8rem;
           }
 
           .popup-btn {
@@ -427,6 +469,13 @@ const PopupModal = ({ popup, onClose }) => {
             padding: 0.4rem;
             font-size: 13px;
           }
+            .today-title{    
+              color: #3b4157;
+              background: #d0fdff;
+              margin: 0;
+              margin-bottom: 1rem;
+              text-align: center;
+        }}
         }
       `}</style>
 
@@ -476,6 +525,7 @@ const PopupModal = ({ popup, onClose }) => {
 
            {content.features && content.features.length > 0 && (
           <div className="popup-features">
+            <h3 className='today-title'><Star size={12} /> {get('Popup.Today.BIGTITLE')} <Star size={12} /></h3>
             {content.features.map((feature, index) => (
               <div key={index} className="popup-feature-item">
                 <span className="icon-wrap">
@@ -509,7 +559,7 @@ const PopupModal = ({ popup, onClose }) => {
           </div>
           
           {/* 오늘 하루 열지 않음 체크박스 */}
-          <div className='today-close'>
+          {/* <div className='today-close'>
             <input 
               type="checkbox" 
               id="todayClosePopup"
@@ -518,7 +568,7 @@ const PopupModal = ({ popup, onClose }) => {
             <label htmlFor="todayClosePopup">
               {get('Popup.TodayClose') || '오늘 하루 열지 않음'}
             </label>
-          </div>
+          </div> */}
         </div>
       </div>
     </>

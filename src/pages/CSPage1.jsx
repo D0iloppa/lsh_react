@@ -287,11 +287,11 @@ const CSPage1 = ({
         </div>
 
         {/* Footer */}
-        <div className="footer" style={{backgroundColor: '#f9fafb'}}>
+        {/* <div className="footer" style={{backgroundColor: '#f9fafb'}}>
           <p className="operating-hours">
             {get('CustomSupport1.7')}: Mon-Fri 9 PM - 5 PM
           </p>
-        </div>
+        </div> */}
       </div>
     </>
   );

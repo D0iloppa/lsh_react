@@ -21,6 +21,56 @@ const usePageNavigation = () => {
         setPageHistory(prev => [...prev, page]);
     };
 
+    const navigateToPageFromNotificationData = async (page_id, data) => {
+        console.log('navigateToPageFromNotificationData', page_id, data);
+        
+        const page = PAGES[page_id];
+        if (!page) {
+            console.error('해당 page_id를 찾을 수 없습니다:', page_id);
+            return;
+        }
+    
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        const NOTIFICATION_NAVIGATION_PATHS = {
+            'CHATTING': [
+                'CHATTINGLIST',
+                'CHATTING'
+            ]
+        };
+        
+        const navigationPath = NOTIFICATION_NAVIGATION_PATHS[page_id];
+    
+        if (navigationPath && navigationPath.length > 1) {
+            for (let i = 0; i < navigationPath.length; i++) {
+                const pageId = navigationPath[i];
+                const isLastPage = i === navigationPath.length - 1;
+                const pageData = isLastPage ? data : null;
+                
+                if (pageData) {
+                    navigateToPageWithData(pageId, pageData);
+                } else {
+                    navigateToPage(pageId);
+                }
+                
+                // 마지막 페이지가 아니면 잠시 대기
+                if (!isLastPage) {
+                    await delay(10);
+                }
+            }
+        } else {
+            // 단순 이동
+            if (data) {
+                navigateToPageWithData(page_id, data);
+            } else {
+                navigateToPage(page_id);
+            }
+        }
+    };
+
+
+
+
     // 현재 페이지 데이터 가져오기
     const getCurrentPageData = () => {
         const currentPageDataEntry = pageDataStack
@@ -85,6 +135,7 @@ const usePageNavigation = () => {
         currentPage,
         navigateToPage,
         navigateToPageWithData,
+        navigateToPageFromNotificationData,
         getCurrentPageData,
         navigateToMap,
         navigateToSearch,

@@ -12,6 +12,8 @@ import { useMsg } from '@contexts/MsgContext';
 import { useNavigate } from 'react-router-dom';
 import { useFcm } from '@contexts/FcmContext';
 
+import GlobalPopupManager from '@components/GlobalPopupManager';
+
 const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAGES }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [hotspots, setHotspots] = useState([]);
@@ -24,9 +26,16 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   const navigate = useNavigate();
   const [isReservationOnly, setIsReservationOnly] = useState(false); // ✅ 이 변수만 사용
   const { messages, get, currentLang, isLoading } = useMsg();
-  const { user } = useAuth();
+  const [showPopup, setShowPopup] = useState(false);
+  const { user, isActiveUser, iauMasking } = useAuth();
   const [favorites, setFavorits] = useState([]);
   const { fcmToken } = useFcm();
+
+  // 팝업 열기 핸들러
+  const handleOpenPopup = () => {
+    localStorage.removeItem('popupClosedDate');
+    testPopup.emit('adViewCount'); 
+  };
 
   useEffect(() => {
     // PopupProvider가 마운트된 후에 testPopup이 생성됨
@@ -96,12 +105,14 @@ useEffect(() => {
             .map((f) => f.target_id)
         );
 
+        const iau = await isActiveUser();
+
         const transformed = data.map((item, index) => ({
           id: item.venue_id || index,
           name: item.name || 'Unknown',
           rating: parseFloat(item.rating || 0).toFixed(1),
           image: item.image_url,
-          address: item.address || '',
+          address: iauMasking(iau, item.address || ''),
           opening_hours: `${item.open_time}~${item.close_time}` || '정보 없음',
           isFavorite: favoriteIds.has(item.venue_id),
           cat_nm: item.cat_nm || 'UNKNOWN',
@@ -359,7 +370,13 @@ useEffect(() => {
       <div className="homepage-container">
         <section className="hero-section">
           <HatchPattern opacity={0.3} />
-          <h1 className="hero-title">{get('HomePage1.1')}</h1>
+           <h1 
+            className="hero-title clickable-title" 
+            onClick={handleOpenPopup}
+            style={{ cursor: 'pointer' }}
+          >
+            {get('HomePage1.1')}
+          </h1>
           <SketchSearch
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}

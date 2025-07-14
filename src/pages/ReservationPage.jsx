@@ -421,56 +421,72 @@ const isAllAgreed = () => {
 
     return { isValid: true };
   };
+  
 
-  const handleReserve = () => {
-    // 유효성 검사 및 포커스 이동
-    const validationResult = validateAndFocus();
-    if (!validationResult.isValid) {
-      return; // 유효성 검사 실패 시 예약 진행하지 않음
+const handleReserve = async () => {
+  // 유효성 검사 및 포커스 이동
+  const validationResult = validateAndFocus();
+  if (!validationResult.isValid) {
+    return; // 유효성 검사 실패 시 예약 진행하지 않음
+  }
+
+  // 동의사항 확인 추가
+  if (!isAllAgreed()) {
+    //alert('중요정보 사항에 모두 동의해주세요.');
+
+          Swal.fire({
+            title: get('AGREE_CHECK'),
+            icon: 'warning',
+            confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+          });
+
+    // Important-info 섹션으로 스크롤
+    const importantInfoElement = document.querySelector('.Important-info');
+    if (importantInfoElement) {
+      importantInfoElement.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
     }
+    return;
+  }
 
-    // 동의사항 확인 추가
-    if (!isAllAgreed()) {
-      //alert('중요정보 사항에 모두 동의해주세요.');
-
-            Swal.fire({
-              title: get('AGREE_CHECK'),
-              icon: 'warning',
-              confirmButtonText: get('SWAL_CONFIRM_BUTTON')
-            });
-
-      // Important-info 섹션으로 스크롤
-      const importantInfoElement = document.querySelector('.Important-info');
-      if (importantInfoElement) {
-        importantInfoElement.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
-        });
-      }
-      return;
-    }
-
-    // Duration 방식의 예약 처리 로직
-    const legacyData = {
-      user,
-      user_id : user.user_id,
-      target: target,
-      target_id: id,
-      venueToItem: (target=='venue') ? true : false,
-      attendee,
-      selectedDate,
-      selectedTime: reservationData.startTime,
-      duration: reservationData.duration,
-      endTime: reservationData.endTime,
-      memo: memo ,
-      targetName,
-      pickupService
-    };
+  try {
+    // 구독 상태 확인
+    const response = await ApiClient.postForm('/api/getSubscriptionInfo', { user_id : user.user_id });
+    const { isActiveUser = false } = response;
     
-    navigateToPageWithData(PAGES.RESERVATION_SUM, {
-      reserve_data : legacyData
-    });
-  };
+    if (isActiveUser == true) {
+      // 구독 사용자 - 바로 예약 진행
+      const legacyData = {
+        user,
+        user_id : user.user_id,
+        target: target,
+        target_id: id,
+        venueToItem: (target=='venue') ? true : false,
+        attendee,
+        selectedDate,
+        selectedTime: reservationData.startTime,
+        duration: reservationData.duration,
+        endTime: reservationData.endTime,
+        memo: memo ,
+        targetName,
+        pickupService
+      };
+      
+      navigateToPageWithData(PAGES.RESERVATION_SUM, {
+        reserve_data : legacyData
+      });
+    } else {
+      // 비구독 사용자 - 팝업 표시하고 예약 차단
+      testPopup.emit('adViewCount');
+      return; // 예약 진행하지 않음
+    }
+  } catch (error) {
+    alert("구독 상태를 확인할 수 없습니다. 다시 시도해주세요.");
+    console.error('구독 상태 확인 중 오류:', error);
+  }
+};
 
   // 예약 가능 여부 체크
   const isReservationValid = () => {
@@ -516,7 +532,11 @@ const isAllAgreed = () => {
 
       targetLabel:get('BookingSum.Target'),
       pickupOption:get('reservation.escort.1'),
-      pickupInfo:get('reservation.escort.info')
+      pickupInfo: get('reservation.escort.title'),
+      pickupInfo1:get('reservation.escort.info1'),
+      pickupInfo2:get('reservation.escort.info2'),
+      pickupInfo3:get('reservation.escort.info3'),
+      pickupInfo4:get('reservation.escort.info4')
     };
   };
 

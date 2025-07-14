@@ -36,6 +36,8 @@ const FavoritesPage = ({
       );
     }
   };
+
+
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   // 마운트 시 즐겨찾기 가져오기
   useEffect(() => {
@@ -87,6 +89,14 @@ const FavoritesPage = ({
     navigateToPageWithData && navigateToPageWithData(PAGES.RESERVATION, {
       selectedVenue: venue
     });
+  };
+
+  const handleDiscover = (venue) => {
+    console.log("venueId", venue.target_id)
+
+    let venueId = venue.target_id;
+
+    navigateToPageWithData(PAGES.DISCOVER, { venueId });
   };
 
   const ShareIcon = ({ 
@@ -339,7 +349,7 @@ const FavoritesPage = ({
               <div key={venue.venue_id} className="favorite-card">
                 <HatchPattern opacity={0.4} />
                 
-                <div className="card-content">
+                  <div className="card-content" onClick={() => handleDiscover(venue)}>
                   <ImagePlaceholder 
                     src={venue.image_url} 
                     className="venue-image"
@@ -357,7 +367,10 @@ const FavoritesPage = ({
                     <SketchBtn 
                       variant="primary" 
                       size="small"
-                      onClick={() => handleBook(venue)}
+                       onClick={(e) => {
+                        e.stopPropagation();
+                        handleBook(venue);
+                      }}
                     >
                       {get('btn.booking.2')}
                     </SketchBtn>

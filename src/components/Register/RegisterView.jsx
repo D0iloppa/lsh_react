@@ -223,6 +223,7 @@ export default function RegisterView() {
           login_type: "email",
           email: userData.email,
           passwd: userData.password,
+          nickname: userData?.nickname || null,
           privacy_agreed: agreements.privacy,
           terms_agreed: agreements.terms
         }),
@@ -233,6 +234,19 @@ export default function RegisterView() {
           timeout: 10000 // 10초 타임아웃
         }
       );
+
+
+      console.log(response);
+      const {error = false} = response;
+      if(error){
+        let errorMessage = get('REGISTER_ERROR_DEFAULT') || '회원가입에 실패했습니다. 다시 시도해주세요.';
+
+        return {
+          success: false,
+          message: errorMessage,
+          errors: errors
+        };
+      }
 
       return {
         success: true,

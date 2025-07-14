@@ -10,11 +10,13 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
 import { Star, Clock, Users, Phone, CreditCard, MessageCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import ApiClient from '@utils/ApiClient';
+import { useAuth } from '../contexts/AuthContext';
 
 import { overlay } from 'overlay-kit';
 
+ 
 
-const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
+const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ...otherProps }) => {
 
   const venueId = otherProps?.venueId || null;
   const [venueInfo, setVenueInfo] = useState(null);
@@ -22,10 +24,83 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
   const [topGirls, setTopGirls] = useState([]);
   const [showFooter, setShowFooter] = useState(true);
   const [reviewCount, setReviewCount] = useState(0);
-
+/*
   const handleDetail = (girl) => {
     navigateToPageWithData(PAGES.STAFFDETAIL, girl);
-  };
+  };*/
+  const { user, isActiveUser, iauMasking } = useAuth();
+
+ const handleDetail = (girl) => {
+  try {
+    const storageKey = 'staffDetailClickCount';
+    let count = parseInt(localStorage.getItem(storageKey) || '0', 10);
+
+    count += 1;
+    localStorage.setItem(storageKey, count.toString());
+
+    const shouldShowAd = count % 5 === 0;
+
+    if (shouldShowAd) {
+
+
+      showAdWithCallback(
+        // 광고 완료 시 콜백
+        () => {
+          navigateToPageWithData(PAGES.STAFFDETAIL, girl);
+        },
+        // fallback 콜백 (광고 응답 없을 때)
+        () => {
+          navigateToPageWithData(PAGES.STAFFDETAIL, girl);
+        },
+        1000 // 1초 타임아웃
+      );
+
+
+      /*
+      // 광고 응답 대기 타이머 (1초 후 자동 이동)
+      const fallbackTimer = setTimeout(() => {
+        console.warn('광고 응답 없음 - 기본 이동');
+        navigateToPageWithData(PAGES.STAFFDETAIL, girl);
+      }, 1000);
+
+      const handleAdComplete = (event) => {
+        if (event.data === 'adCompleted') {
+          clearTimeout(fallbackTimer);
+          window.removeEventListener('message', handleAdComplete);
+          navigateToPageWithData(PAGES.STAFFDETAIL, girl);
+        }
+      };
+
+      window.addEventListener('message', handleAdComplete);
+
+      const isAndroid = !!window.ReactNativeWebView;
+      const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
+
+      if (isAndroid) {
+        window.ReactNativeWebView.postMessage('showAd');
+      } else if (isIOS) {
+        window.webkit.messageHandlers.native.postMessage('showAd');
+      } else {
+        console.warn('웹뷰 환경이 아님 - 바로 이동');
+        clearTimeout(fallbackTimer);
+        navigateToPageWithData(PAGES.STAFFDETAIL, girl);
+      }
+    */
+
+      
+
+
+    } else {
+      // 광고 없이 바로 이동
+      navigateToPageWithData(PAGES.STAFFDETAIL, girl);
+    }
+  } catch (e) {
+    console.error('광고 호출 중 예외 발생:', e);
+    navigateToPageWithData(PAGES.STAFFDETAIL, girl);
+  }
+};
+
+
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [staffList, setStaffList] = useState([]);
   // 스크롤 이벤트용 별도 useEffect
@@ -72,9 +147,18 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
           params: { venue_id: venueId },
         });
 
-        console.log("response", response.data)
+        // console.log("response", response.data)
 
-        setVenueInfo(response.data || null);
+        const iau = await isActiveUser();
+        const venueInfo = response.data;
+
+        const vi = {
+          ...venueInfo,
+          phone: iauMasking(iau, venueInfo.phone || ''),
+          address: iauMasking(iau, venueInfo.address || '')
+        };
+        
+        setVenueInfo(vi || null);
       } catch (error) {
         console.error('Venue 정보 가져오기 실패:', error);
       } finally {
@@ -277,6 +361,28 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
       setTranslateY(0);
       setIsZoomed(false);
     };
+
+    const handleSwipeStart = (e) => {
+      if (e.touches.length === 1 && !isZoomed) {
+        touchStartX.current = e.touches[0].clientX;
+      }
+    };
+
+    const handleSwipeEnd = (e) => {
+      if (!isZoomed && e.changedTouches.length === 1) {
+        touchEndX.current = e.changedTouches[0].clientX;
+        const deltaX = touchEndX.current - touchStartX.current;
+
+        if (Math.abs(deltaX) > 50) {
+          if (deltaX > 0) {
+            goToPrev(); // 오른쪽 → 왼쪽으로 밀기 → 이전 이미지
+          } else {
+            goToNext(); // 왼쪽 → 오른쪽으로 밀기 → 다음 이미지
+          }
+        }
+      }
+    };
+
   
     // 이미지 변경 시 줌 리셋
     useEffect(() => {
@@ -379,14 +485,15 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
       >
         <div
           style={{
-            position: 'relative',
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            maxWidth: '90vw',
-            maxHeight: '80vh',
-            width: '400px'
-          }}
+          position: 'relative',
+    backgroundColor: 'black',
+    overflow: 'hidden',
+    width: '100vw',
+    height: '100vh',
+    display: 'flex',
+    alignItems: 'center',     // 세로 정렬
+    justifyContent: 'center'  // 가로 정렬
+        }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* 닫기 버튼 */}
@@ -493,8 +600,12 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
               overflow: 'hidden',
               touchAction: isZoomed ? 'none' : 'auto'
             }}
-            onTouchStart={handleTouchStart}
+            onTouchStart={(e) => {
+              handleTouchStart(e);
+              handleSwipeStart(e);
+            }}
             onTouchMove={handleTouchMove}
+            onTouchEnd={handleSwipeEnd}
           >
             <img
               ref={imageRef}
@@ -550,7 +661,8 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
               color: 'white',
               padding: '4px 8px',
               borderRadius: '12px',
-              fontSize: '12px'
+              fontSize: '12px',
+              fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif" // ← 추가
             }}>
               {currentIndex + 1} / {menuList.length}
             </div>
@@ -578,17 +690,19 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
   };
 
   // 기존 컴포넌트에서 사용
-  const openMenuOverlay = (menuList) => {
-    const overlayElement = overlay.open(({ isOpen, close, unmount }) => (
-      <MenuOverlay
-        menuList={menuList}
-        onClose={() => {
-          console.log('Trying to close...');
-          unmount(); // close 대신 unmount 시도
-        }}
-      />
-    ));
-  };
+  // 기존 컴포넌트에서 사용
+const openMenuOverlay = (menuList) => {
+  const overlayElement = overlay.open(({ isOpen, close, unmount }) => (
+    <MenuOverlay
+      menuList={menuList}
+      onClose={() => {
+        console.log('Trying to close...');
+        unmount(); // close 대신 unmount 시도
+      }}
+    />
+  ));
+};
+
 
 
 
@@ -827,16 +941,40 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) 
 
           <div className="top-sum">
             <div className="stars">{renderStars(venueInfo?.rating)}</div>
-            <div 
+           <div 
               style={{ 
                 color: reviewCount > 0 ? '#0072ff' : '#999999',
                 cursor: reviewCount > 0 ? 'pointer' : 'default'
               }} 
-              onClick={reviewCount > 0 ? () =>
-                navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId })
-              : undefined}
+              onClick={async () => {
+                if (reviewCount > 0) {
+
+                  const { isActiveUser: isActive = false } = await isActiveUser();
+
+                  if (isActive) {
+                    navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
+                  } else {
+
+                    showAdWithCallback(
+                      // 광고 완료 시 콜백
+                      () => {
+                        navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
+                      },
+                      // fallback 콜백 (광고 응답 없을 때)
+                      () => {
+                        navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
+                      },
+                      1000 // 1초 타임아웃
+                    );
+                        
+                  }
+
+
+
+                }
+              }}
             >
-              {get('nav.review.1')} <span className='reviewCnt'>{reviewCount}</span>{get('text.cnt.1')} {get('text.cnt.2')} >
+              {get('nav.review.1')} <span className='reviewCnt'>{reviewCount}</span>{get('text.cnt.1')} {get('text.cnt.2')} &gt;
             </div>
           </div>
 

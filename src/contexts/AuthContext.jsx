@@ -80,12 +80,61 @@ export const AuthProvider = ({ children }) => {
       }
   };
 
+  const isActiveUser = async () => {
+    try {
+      if (!user?.user_id) {
+        console.log('❌ User not found, cannot check subscription');
+        return { isActiveUser: false, subscription: {} };
+      }
+
+      const response = await ApiClient.postForm('/api/getSubscriptionInfo', {
+        user_id: user.user_id
+      });
+
+      const { isActiveUser = false, subscription = {} } = response;
+      
+      console.log('✅ Subscription check result:', { isActiveUser, subscription });
+      
+      return { isActiveUser, subscription };
+      
+    } catch (error) {
+      console.error('❌ Failed to check subscription:', error);
+      return { isActiveUser: false, subscription: {} };
+    }
+  }
+
+
+  const iauMasking = (iau, text) => {
+      const {isActiveUser = false, subscription = {} } =  iau;
+
+      if(isActiveUser){
+        return text;
+      }else{
+        // 텍스트가 없거나 빈 문자열인 경우
+        if (!text || text.length === 0) {
+          return text;
+        }
+        
+        // 텍스트 길이의 절반을 계산
+        const halfLength = Math.floor(text.length / 4);
+        
+        // 앞부분은 그대로 두고, 나머지는 ***로 마스킹
+        const visiblePart = text.substring(0, halfLength);
+        // const maskedPart = '***'.repeat(Math.ceil((text.length - halfLength) / 3));
+        
+        return visiblePart + ' ***';
+      }
+  }
+
+
   const value = {
     isLoggedIn,
     user,
     loading,
     login,
-    logout
+    logout,
+    isActiveUser,
+    iauMasking
   };
 
   return (

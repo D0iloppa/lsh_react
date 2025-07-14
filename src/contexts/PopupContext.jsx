@@ -63,7 +63,7 @@ const EVENT_CONDITIONS = {
   adViewCount: {
     threshold: 3,
     popup: {
-      id: 'ad-reward',
+      id: 'todayTrial',
       type: 'premium-tabs',
       title: '광고 시청 완료!',
       content: '3번의 광고를 시청하셨습니다. 보상을 받으세요!',
@@ -109,11 +109,33 @@ export const PopupProvider = ({ children }) => {
     console.log(`📡 이벤트 발생: ${eventType}`);
     dispatch({ type: 'EMIT_EVENT', eventType });
   };
-
+/*
   const closePopup = (popupId) => {
     console.log(`❌ 팝업 닫기: ${popupId}`);
     dispatch({ type: 'CLOSE_POPUP', popupId });
   };
+*/
+
+const closePopup = (popupId) => {
+  console.log(`❌ 팝업 닫기: ${popupId}`);
+  dispatch({ type: 'CLOSE_POPUP', popupId });
+
+  if (popupId === 'todayTrial') {
+    // ✅ 오늘의 체험권 인앱결제 실행
+    const payload = JSON.stringify({ action: 'buyItem' });
+
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.buyItem) {
+      // iOS WebView
+      window.webkit.messageHandlers.buyItem.postMessage(null);
+    } else if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+      // Android WebView
+      window.ReactNativeWebView.postMessage(payload);
+    } else {
+      // alert('IAP 연동이 되어 있지 않거나, 플랫폼을 인식하지 못했습니다.');
+    }
+  }
+};
+
 
   const resetEvent = (eventType) => {
     console.log(`🔄 이벤트 리셋: ${eventType}`);

@@ -562,6 +562,53 @@ const LeTantonSheriffPage = () => {
 };
 
 
+
+// NotificationHandler를 별도 컴포넌트로 분리
+const NotificationHandler = () => {
+  const navigate = useNavigate(); // Router 안에서 사용 가능
+  const { setFcmToken } = useFcm();
+
+  useEffect(() => {
+    window.ReactReady = true;
+
+    window.onNotificationClick = (navigateTo, data) => {
+
+      let prefix = '/main' ;
+      // (data?.chatRoomType === 'staff') ? '/staff' : '/manager';
+
+      // 쿼리스트링 생성 (navigateTo, chatRoomType 등 불필요한 값은 제외 가능)
+      const params = new URLSearchParams({
+        ...data,
+        navigateTo // 목적지 페이지 정보도 쿼리로!
+      }).toString();
+
+      navigate(`${prefix}?${params}`);
+    };
+  }, [navigate]);
+
+  useEffect(() => {
+    window.receiveFcmToken = (token) => {
+      setFcmToken(token); // 정상 작동
+    };
+
+    if (window.AndroidInterface?.readyToReceiveToken) {
+      window.AndroidInterface.readyToReceiveToken();
+    }
+    
+    if (window.webkit?.messageHandlers?.native) {
+      window.webkit.messageHandlers.native.postMessage("readyToReceiveToken");
+      console.log("📤 readyToReceiveToken 메시지 전송");
+    }
+
+    return () => {
+      delete window.receiveFcmToken;
+    };
+  }, [setFcmToken]);
+
+  return null; // UI를 렌더링하지 않는 로직 전용 컴포넌트
+};
+
+
 const AppContent = () => {
   const { setFcmToken } = useFcm();
 
@@ -581,6 +628,7 @@ const AppContent = () => {
 
   return (
     <Router basename={import.meta.env.BASE_URL}>
+      <NotificationHandler />
       <AppRoutes />
       <GlobalPopupManager />
     </Router>

@@ -11,6 +11,8 @@ import SketchBtn from '@components/SketchBtn';
 
 import InitFooter from '@components/InitFooter';
 import LoadingScreen from '@components/LoadingScreen';
+import Swal from 'sweetalert2';
+import ApiClient from '@utils/ApiClient';
 
 export default function LoginForm() {
 
@@ -64,22 +66,65 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
   };
 
   const onForgotPassword = async () => {
-    if (!email) {
-      setErrors({ email: 'Please enter your email first' });
-      return;
-    }
+    // SweetAlert2를 사용한 이메일 입력 다이얼로그
+    const { value: emailForReset } = await Swal.fire({
+      title: get('FORGOT_PASSWORD_TITLE') || '비밀번호 찾기',
+      input: 'email',
+      inputLabel: get('FORGOT_PASSWORD_EMAIL_LABEL') || '암호를 찾고자 하는 이메일을 입력해주세요',
+      inputPlaceholder: get('FORGOT_PASSWORD_EMAIL_PLACEHOLDER') || 'example@email.com',
+      showCancelButton: true,
+      confirmButtonText: get('FORGOT_PASSWORD_CONFIRM') || '전송',
+      cancelButtonText: get('FORGOT_PASSWORD_CANCEL') || '취소',
+      inputValidator: (value) => {
+        if (!value) {
+          return get('FORGOT_PASSWORD_EMAIL_REQUIRED') || '이메일을 입력해주세요';
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          return get('FORGOT_PASSWORD_EMAIL_INVALID') || '올바른 이메일 형식을 입력해주세요';
+        }
+      }
+    });
 
-    setIsLoading(true);
-    const result = await handleForgotPassword(email);
-    
-    if (result.success) {
-      setMessage(result.message);
-      setErrors({});
-    } else {
-      setErrors({ general: result.error });
+    if (emailForReset) {
+      // 로딩 상태 표시
+      Swal.fire({
+        title: get('FORGOT_PASSWORD_SENDING') || '전송 중...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      try {
+        // 실제 API 호출
+        const result = await ApiClient.postForm('/api/forgetPassword', {
+          account_type: 'user',
+          email: emailForReset,
+          login_type: 'email'
+        });
+        
+        console.log('Password reset API response:', result);
+        
+        // 성공 메시지 표시
+        Swal.fire({
+          title: get('FORGOT_PASSWORD_SUCCESS_TITLE') || '전송 완료',
+          text: get('FORGOT_PASSWORD_SUCCESS_MESSAGE') || '암호가 이메일로 전송되었습니다.',
+          icon: 'success',
+          confirmButtonText: get('FORGOT_PASSWORD_SUCCESS_CONFIRM') || '확인'
+        });
+        
+      } catch (error) {
+        console.error('Password reset error:', error);
+        
+        // 에러 메시지 표시
+        Swal.fire({
+          title: get('FORGOT_PASSWORD_ERROR_TITLE') || '전송 실패',
+          text: get('FORGOT_PASSWORD_ERROR_MESSAGE') || '이메일 전송 중 오류가 발생했습니다. 다시 시도해주세요.',
+          icon: 'error',
+          confirmButtonText: get('FORGOT_PASSWORD_ERROR_CONFIRM') || '확인'
+        });
+      }
     }
-    
-    setIsLoading(false);
   };
 
   return (

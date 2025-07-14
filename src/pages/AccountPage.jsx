@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import SketchHeader from '@components/SketchHeaderMain'
 
-import { User, History, CreditCard, Bell, Heart, Settings, HelpCircle, LogOut, MessageCircle   } from 'lucide-react';
+import { User, History, CreditCard, Bell, Heart, Settings, HelpCircle, LogOut, MessageCircle, Tag   } from 'lucide-react';
 import LoadingScreen from '@components/LoadingScreen';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -53,6 +53,7 @@ const AccountPage = ({
     // 또는 외부 채팅 서비스 연결
     // window.open('https://chat-service.com', '_blank');
   };
+  console.log('PAGES', PAGES)
 
   const menuBtnClick = (menu_id) => {
     // 각 알림 타입에 따른 페이지 이동 로직
@@ -64,18 +65,21 @@ const AccountPage = ({
         navigateToPageWithData && navigateToPageWithData(PAGES.BOOKINGHISTORY);
         break;
       case 3: // Payment (제작 필요)
+        navigateToPageWithData && navigateToPageWithData(PAGES.PROMOTION);
+        break;
+      case 4: // Payment (제작 필요)
         navigateToPageWithData && navigateToPageWithData(PAGES.PAYMENT);
         break;
-      case 4: // Notifications
+      case 5: // Notifications
         navigateToPageWithData && navigateToPageWithData(PAGES.NOTIFICATIONS);
         break;
-      case 5: // Favorites
+      case 6: // Favorites
         navigateToPageWithData && navigateToPageWithData(PAGES.FAVORITES);
         break;
-      case 6: // Settings
+      case 7: // Settings
         navigateToPageWithData && navigateToPageWithData(PAGES.SETTING);
         break;
-      case 7: // Support
+      case 8: // Support
         navigateToPageWithData && navigateToPageWithData(PAGES.CSPAGE2);
         break;
     }
@@ -96,36 +100,43 @@ const AccountPage = ({
       isRead: true,
       hasArrow: false
     },
-    {
+     {
       id: 3,
+      icon: <Tag size={20} />,
+      name: get('btn.promotion.1'),
+      isRead: true,
+      hasArrow: false
+    },
+    {
+      id: 4,
       icon: <CreditCard size={20} />,
       name:  get('Menu1.7'),
       isRead: true,
       hasArrow: false
     },
     {
-      id: 4,
+      id: 5,
       icon: <Bell size={20} />,
       name: get('Notification1.1'),
       isRead: false,
       hasArrow: false
     },
     {
-      id: 5,
+      id: 6,
       icon: <Heart size={20} />,
       name: get('Menu1.8'),
       isRead: true,
       hasArrow: false
     },
     {
-      id: 6,
+      id: 7,
       icon: <Settings size={20} />,
       name: get('Menu1.3'),
       isRead: true,
       hasArrow: false
     },
     {
-      id: 7,
+      id: 8,
       icon: <HelpCircle size={20} />,
       name: get('Menu1.9'),
       isRead: true,
