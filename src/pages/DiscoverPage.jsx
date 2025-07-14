@@ -38,7 +38,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
     count += 1;
     localStorage.setItem(storageKey, count.toString());
 
-    const shouldShowAd = count % 5 === 0;
+    const shouldShowAd = count % 3 === 0;
 
     if (shouldShowAd) {
 
