@@ -163,6 +163,8 @@ export default function TermsView() {
                   return <Privacy_en />;
                 case 'vi':
                   return <Privacy_vi />;
+                case 'ja':
+                  return <Privacy_ja />;
                 case 'cn' :
                   return <Privacy_cn/>;
                 default:

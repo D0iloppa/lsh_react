@@ -169,6 +169,8 @@ export default function TermsView() {
                   return <Terms_kr />;
                 case 'en':
                   return <Terms_en />;
+                case 'ja':
+                  return <Terms_ja />;
                 case 'vi':
                   return <Terms_vi />;
                 case 'cn':
