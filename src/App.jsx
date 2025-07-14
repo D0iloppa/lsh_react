@@ -691,6 +691,7 @@ function App() {
 
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
+
   if (!isMobile) {
     {/*
     return (
@@ -704,10 +705,13 @@ function App() {
       </div>
     );
     */}
-
+    {
+      /*
     return (
       <LeTantonSheriffPage />
     )
+      */
+    }
   }
 
   // App.jsx 또는 main.jsx
