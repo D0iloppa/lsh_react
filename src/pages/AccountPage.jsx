@@ -13,6 +13,9 @@ import { User, History, CreditCard, Bell, Heart, Settings, HelpCircle, LogOut, M
 import LoadingScreen from '@components/LoadingScreen';
 import { useAuth } from '../contexts/AuthContext';
 
+import Swal from 'sweetalert2';
+import ApiClient from '@utils/ApiClient';
+
 const AccountPage = ({ 
   navigateToPageWithData, 
   navigateToPage,
@@ -21,20 +24,15 @@ const AccountPage = ({
   ...otherProps 
 }) => {
 
-
   const navigate = useNavigate();
 
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [showChatButton, setShowChatButton] = useState(true);
-
-
-  
 
   useEffect(() => {
       if (messages && Object.keys(messages).length > 0) {
         console.log('✅ Messages loaded:', messages);
-        // setLanguage('en'); // 기본 언어 설정
         console.log('Current language set to:', currentLang);
         window.scrollTo(0, 0);
       }
@@ -42,44 +40,37 @@ const AccountPage = ({
 
   const handleBack = () => {
     console.log('Back 클릭');
-    // navigateToPageWithData && navigateToPageWithData(PAGES.HOME);
     navigateToPage(PAGES.HOME);
   };
 
   const handleChatClick = () => {
-    // 채팅 페이지로 이동하거나 채팅 기능 연결
     console.log('채팅 버튼 클릭');
-    // navigateToPageWithData && navigateToPageWithData(PAGES.CHAT);
-    // 또는 외부 채팅 서비스 연결
-    // window.open('https://chat-service.com', '_blank');
   };
-  console.log('PAGES', PAGES)
 
   const menuBtnClick = (menu_id) => {
-    // 각 알림 타입에 따른 페이지 이동 로직
     switch(menu_id) {
-      case 1: // Profile (제작 필요)
+      case 1:
         navigateToPageWithData && navigateToPageWithData(PAGES.PROFILE);
         break;
-      case 2:  // Booking History
+      case 2:
         navigateToPageWithData && navigateToPageWithData(PAGES.BOOKINGHISTORY);
         break;
-      case 3: // Payment (제작 필요)
+      case 3:
         navigateToPageWithData && navigateToPageWithData(PAGES.PROMOTION);
         break;
-      case 4: // Payment (제작 필요)
+      case 4:
         navigateToPageWithData && navigateToPageWithData(PAGES.PAYMENT);
         break;
-      case 5: // Notifications
+      case 5:
         navigateToPageWithData && navigateToPageWithData(PAGES.NOTIFICATIONS);
         break;
-      case 6: // Favorites
+      case 6:
         navigateToPageWithData && navigateToPageWithData(PAGES.FAVORITES);
         break;
-      case 7: // Settings
+      case 7:
         navigateToPageWithData && navigateToPageWithData(PAGES.SETTING);
         break;
-      case 8: // Support
+      case 8:
         navigateToPageWithData && navigateToPageWithData(PAGES.CSPAGE2);
         break;
     }
@@ -144,20 +135,95 @@ const AccountPage = ({
     }
   ];
 
+  const handleDelete = async () => {
+    const result = await Swal.fire({
+      title: '정말 계정 탈퇴를 하시겠습니까?',
+      text: '이 작업은 되돌릴 수 없습니다.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: '네, 탈퇴하겠습니다',
+      cancelButtonText: get('Reservation.CancelButton')
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await ApiClient.get('/api/userDelete', {
+          params: { 
+            user_id: user?.user_id
+          }
+        });
+
+        await Swal.fire({
+          title: '탈퇴 완료',
+          text: '계정이 성공적으로 삭제되었습니다.',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        });
+        
+        await logout();
+        navigateToPage(PAGES.HOME);
+        
+      } catch (e) {
+        console.error('계정 탈퇴 중 오류:', e);
+      }
+    }
+  };
+
   return (
     <>
-      <style jsx="true">{`
+      {/* 강제 고정을 위한 글로벌 스타일 */}
+      <style>{`
+        /* 최고 우선순위로 헤더 고정 */
+        .account-page-header.page-header {
+          position: fixed !important;
+          top: 0 !important;
+          left: 50% !important;
+          transform: translateX(-50%) rotate(0.1deg) !important;
+          width: 100% !important;
+          max-width: 28rem !important;
+          z-index: 10000 !important;
+          background-color: #ffffff !important;
+          border-bottom: 0.8px solid #666 !important;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+          padding: 0.3rem 0 !important;
+          min-height: 2rem !important;
+        }
+
+        /* 모바일 반응형 */
+        @media (max-width: 480px) {
+          .account-page-header.page-header {
+            padding: 0.75rem 1rem !important;
+            min-height: 3rem !important;
+          }
+        }
+
+        .page-wrapper {
+          position: relative;
+          min-height: 100vh;
+          background: #fff;
+        }
+
         .account-container {
           max-width: 28rem;
           margin: 0 auto;
-          background-color: white;
-          position: relative;
+          background: #fff;
+          min-height: 100vh;
+          font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+          padding-top: 50px; /* 헤더 높이만큼 여백 */
+        }
+
+        @media (max-width: 480px) {
+          .account-container {
+            padding-top: 50px;
+          }
         }
 
         .menu-section {
           padding: 1.5rem;
         }
-
 
         .menu-item {
           width: 100%;
@@ -175,13 +241,9 @@ const AccountPage = ({
           overflow: hidden;
         }
 
-        .logout{
-          /*margin-top:100px;*/
-        }
-
         .chat-button {
           position: fixed;
-          bottom: 110px; /* 하단 네비게이션 위에 위치 */
+          bottom: 110px;
           right: 20px;
           width: 50px;
           height: 50px;
@@ -192,7 +254,7 @@ const AccountPage = ({
           justify-content: center;
           cursor: pointer;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-          z-index: 1000;
+          z-index: 999;
           transition: all 0.3s ease;
           border: 2px solid #333;
         }
@@ -210,65 +272,72 @@ const AccountPage = ({
           color: white;
         }
 
+        .staff-delete {
+          text-align: center;
+          color: red;
+          margin-top: 0.8rem;
+          text-decoration: underline;
+          cursor: pointer;
+        }
 
+        .delete-container {
+          margin-top: 20px;
+        }
       `}</style>
 
-      <div className="account-container">
-        
-        {/* Header */}
+      <div className="page-wrapper">
+        {/* 특별한 className을 추가하여 우선순위 높이기 */}
         <SketchHeader 
-          title= { get('Menu1.4') }
+          title={get('Menu1.4')} 
           showBack={true}
           onBack={goBack}
-          rightButtons={[]}
+          sticky={true}
+          className="account-page-header"
         />
 
-        {/* Menus Section */}
-        <div className="menu-section">
-          {menus.map((menu) => (
-          <SketchMenuBtn
-              key={menu.id}
-              icon={menu.icon}
-              name={menu.name}
-              hasArrow={menu.hasArrow}
-              onClick={() => menuBtnClick(menu.id)}
-              className={`menu-item`}
-            />
-          ))}
+        <div className="account-container">
+          <div className="menu-section">
+            {menus.map((menu) => (
+              <SketchMenuBtn
+                key={menu.id}
+                icon={menu.icon}
+                name={menu.name}
+                hasArrow={menu.hasArrow}
+                onClick={() => menuBtnClick(menu.id)}
+                className="menu-item"
+              />
+            ))}
 
-          <SketchMenuBtn
-              key={'logout'}
+            <SketchMenuBtn
+              key="logout"
               icon={<LogOut size={20} />}
               name={get('Menu1.10')}
               hasArrow={false}
               onClick={async () => {
-
                 console.log('logout')
-
                 await logout();
-                navigate('/login'); 
-
+                navigateToPage(PAGES.HOME);
               }}
-              className={`logout`}
+              className="logout"
             />
-        </div>
-        {/* 고정 채팅 버튼 */}
-        <div className="chat-button" onClick={handleChatClick}>
-          <MessageCircle size={24} className="chat-icon" />
-        </div>
 
-        <LoadingScreen 
-          variant="cocktail"
-          loadingText="Loading..."
-          isVisible={isLoading} 
-        />
-               <LoadingScreen 
-                         variant="cocktail"
-                         loadingText="Loading..."
-                         isVisible={isLoading} 
-                       />
-        
+            <div className="delete-container">
+              <div className="staff-delete" onClick={handleDelete}>
+                {get('DELETE_ACCOUNT')}
+              </div>
+            </div>
+          </div>
 
+          <div className="chat-button" onClick={handleChatClick}>
+            <MessageCircle size={24} className="chat-icon" />
+          </div>
+
+          <LoadingScreen 
+            variant="cocktail"
+            loadingText="Loading..."
+            isVisible={isLoading} 
+          />
+        </div>
       </div>
     </>
   );

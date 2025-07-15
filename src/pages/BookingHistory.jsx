@@ -163,17 +163,20 @@ const BookingHistoryPage = ({
   };
   
   const handleRebook = (booking) => {
+    const venue_id = booking.venue_id;
+
+    navigateToPageWithData(PAGES.DISCOVER, { venue_id });
     // isReviewable이 false면 함수 실행하지 않음
-    if (!booking.is_reservation) {
-      return;
-    }
+    // if (!booking.is_reservation) {
+    //   return;
+    // }
     
-    console.log('Rebook clicked:', booking);
-    navigateToPageWithData && navigateToPageWithData(PAGES.RESERVATION, {
-      target: booking.targetType,
-      id: (booking.targetType == 'venue') ? booking.venue_id : booking.targetId,
-      staff: (booking.targetType == 'staff') ? { name : booking.targetName} : {}
-    });
+    // console.log('Rebook clicked:', booking);
+    // navigateToPageWithData && navigateToPageWithData(PAGES.RESERVATION, {
+    //   target: booking.targetType,
+    //   id: (booking.targetType == 'venue') ? booking.venue_id : booking.targetId,
+    //   staff: (booking.targetType == 'staff') ? { name : booking.targetName} : {}
+    // });
   };
 
   const getReviewButtonState = (booking) => {
@@ -204,7 +207,7 @@ const BookingHistoryPage = ({
     console.log('grb', booking);
     if (booking.is_reservation) {
       return {
-        text: get('DiscoverPage1.1.able'), // '다시 예약'
+        text: get('COMMON_VIEW_DETAILS'), // '다시 예약'
         disabled: false
       };
     } else {
@@ -765,7 +768,7 @@ const BookingHistoryPage = ({
           {selectedDate && (
             <div style={{ 
               textAlign: 'center', 
-              margin: '1rem 0', 
+              marginBottom: '1rem', 
               padding: '0.5rem',
               background: '#f0f9ff',
               border: '1px solid #e0f2fe',
@@ -837,36 +840,24 @@ const BookingHistoryPage = ({
                     </div>
                     
                     <div className="action-buttons">
-                      <SketchBtn 
-                        variant="event" 
-                        size="small"
-                        disabled={!booking.is_reservation}
-                        onClick={() => handleRebook(booking)}
-                        style={{
-                          opacity: booking.is_reservation ? 1 : 0.5,
-                          cursor: booking.is_reservation ? 'pointer' : 'not-allowed'
-                        }}
-                      >
-                        <HatchPattern opacity={booking.is_reservation ? 0.8 : 0.3} />
-                        {getRebookButtonState(booking).text}
-                      </SketchBtn>
-                      
-                      <SketchBtn 
-                        variant="primary" 
-                        size="small"
-                        disabled={getReviewButtonState(booking).disabled}
-                        onClick={() => handleReview(booking)}
-                      >
-                        <HatchPattern opacity={0.4} />
-                        {getReviewButtonState(booking).text}
-                      </SketchBtn>
+                        {booking.status === 'completed' && (
+                          <SketchBtn 
+                            variant="event" 
+                            size="small"
+                            disabled={getReviewButtonState(booking).disabled}
+                            onClick={() => handleReview(booking)}
+                          >
+                            <HatchPattern opacity={0.4} />
+                            {getReviewButtonState(booking).text}
+                          </SketchBtn>
+                        )}
 
-                      <LoadingScreen 
-                        variant="cocktail"
-                        loadingText="Loading..."
-                        isVisible={isLoading} 
-                      />
-                    </div>
+                        <LoadingScreen 
+                          variant="cocktail"
+                          loadingText="Loading..."
+                          isVisible={isLoading} 
+                        />
+                      </div>
                   </div>
                 </div>
               </div>

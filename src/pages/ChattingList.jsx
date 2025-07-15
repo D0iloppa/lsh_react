@@ -19,7 +19,7 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
   const { user } = useAuth();
   const intervalRef = useRef(null);
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
-  const [roomType, setRoomType] = useState('user');
+  const [roomType, setRoomType] = useState('');
 
     useEffect(() => {
       const { chatRoomType = 'user' } = otherProps;
@@ -39,42 +39,53 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    if (user?.venue_id && roomType) {
-      fetchAndUpdate(user.venue_id); // 최초 데이터
-      startInterval(user.venue_id);  // 주기적 갱신
-    }
+
+    console.log('init chatlist');
+    
+    fetchAndUpdate(); // 최초 데이터
+    startInterval();  // 주기적 갱신
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current); // 언마운트 시 정리
     };
   }, [user, roomType]); // roomType 의존성 추가
 
-  const startInterval = (venue_id) => {
+  const startInterval = () => {
     intervalRef.current = setInterval(() => {
-      fetchAndUpdate(venue_id);
+      fetchAndUpdate();
     }, 500); // 0.5초마다 갱신
   };
 
-  const fetchAndUpdate = async (venue_id) => {
+  const fetchAndUpdate = async () => {
     const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
 
-    let params = { account_type : roomType };
+    let params = {
+      account_type : 'user',
+      target: 'manager',
+      user_id : user.user_id,
+      account_id : user.user_id
+    };
 
-    switch(roomType){
-      case 'manager':
-        params.venue_id = venue_id;
-        params.manager_id = user.manager_id;
-        break;
-      case 'staff':
-        params.staff_id = user.staff_id;
-        break;
-    }
 
     try {
+      /*
       const response = await axios.get(`${API_HOST}/api/getChattingList`, {
         params: params
       });
-      const data = response.data || [];
+      */
+
+      const chatList = await ApiClient.get('/api/getChattingList', {
+        params: {
+          target : 'manager',
+          user_id : user.user_id,
+          account_id : user.user_id,
+          account_type: user.type
+        }
+      })
+
+
+
+      const data = chatList || [];
 
 
       const mappedStaffs = data.map((item, index) => ({
@@ -105,10 +116,11 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
     }
   };
 
-  const handleClickStaff = (staff) => {
+  const handleClickStaff = (chat) => {
     navigateToPageWithData(PAGES.CHATTING, {
-      room_sn: staff.room_sn,
-      name: staff.name,
+      room_sn: chat.room_sn,
+      name: chat.name,
+      venue_id: chat.venue_id
     });
   };
 
@@ -119,7 +131,7 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
 
     ApiClient.postForm('/api/deleteChatRoom', {
       room_sn: chatRoom.room_sn,
-      account_id: (user.type == 'manager') ? user.manager_id : user.staff_id,
+      account_id: user.user_id,
       account_type: user.type
     });
 

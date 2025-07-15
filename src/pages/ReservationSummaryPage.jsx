@@ -97,7 +97,7 @@ console.log("user", user)
         note: memo || '',
         mngCode:0,
         use_escort: pickupService ? 1 : 0,
-        venueToItem, pickupService
+        venueToItem:true, pickupService:pickupService
       };
 
       setReservationPayload(api_payload);

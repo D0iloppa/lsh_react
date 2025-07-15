@@ -14,6 +14,10 @@ import { useAuth } from '../contexts/AuthContext';
 
 import { overlay } from 'overlay-kit';
 
+import Swal from 'sweetalert2';
+
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+
  
 
 const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ...otherProps }) => {
@@ -24,6 +28,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   const [topGirls, setTopGirls] = useState([]);
   const [showFooter, setShowFooter] = useState(true);
   const [reviewCount, setReviewCount] = useState(0);
+
 /*
   const handleDetail = (girl) => {
     navigateToPageWithData(PAGES.STAFFDETAIL, girl);
@@ -38,22 +43,27 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
     count += 1;
     localStorage.setItem(storageKey, count.toString());
 
-    const shouldShowAd = count % 3 === 0;
+    // const shouldShowAd = count % 3 === 0;
+
+
+    showAdWithCallback(
+      // 광고 완료 시 콜백
+      () => {
+        navigateToPageWithData(PAGES.STAFFDETAIL, girl);
+      },
+      // fallback 콜백 (광고 응답 없을 때)
+      () => {
+        navigateToPageWithData(PAGES.STAFFDETAIL, girl);
+      },
+      1000 // 1초 타임아웃
+    );
+
+
 
     if (shouldShowAd) {
 
 
-      showAdWithCallback(
-        // 광고 완료 시 콜백
-        () => {
-          navigateToPageWithData(PAGES.STAFFDETAIL, girl);
-        },
-        // fallback 콜백 (광고 응답 없을 때)
-        () => {
-          navigateToPageWithData(PAGES.STAFFDETAIL, girl);
-        },
-        1000 // 1초 타임아웃
-      );
+
 
 
       /*
@@ -105,7 +115,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   const [staffList, setStaffList] = useState([]);
   // 스크롤 이벤트용 별도 useEffect
 
-
+  const navigate = useNavigate();
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
@@ -147,7 +157,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
           params: { venue_id: venueId },
         });
 
-        // console.log("response", response.data)
+        console.log("response", response.data)
 
         const iau = await isActiveUser();
         const venueInfo = response.data;
@@ -874,10 +884,10 @@ const openMenuOverlay = (menuList) => {
             <div
               className="is-reservation"
               style={{
-                right: '22px',
-                top: '90px',
-                position: 'absolute',
-                backgroundColor: venueInfo.is_reservation ? 'rgb(11 199 97)' : 'rgb(107 107 107)',
+                right: '-130px',
+                top: '-210px',
+                position: 'relative',
+                backgroundColor: venueInfo.is_reservation ? 'rgb(11, 199, 97)' : 'rgb(107 107 107)',
                 color: '#fff',
                 padding: '5px 7px',
                 borderRadius: '3px',
@@ -949,6 +959,23 @@ const openMenuOverlay = (menuList) => {
               onClick={async () => {
                 if (reviewCount > 0) {
 
+                  showAdWithCallback(
+                    // 광고 완료 시 콜백
+                    () => {
+                      navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
+                    },
+                    // fallback 콜백 (광고 응답 없을 때)
+                    () => {
+                      navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
+                    },
+                    1000 // 1초 타임아웃
+                  );
+
+
+
+
+
+/*
                   const { isActiveUser: isActive = false } = await isActiveUser();
 
                   if (isActive) {
@@ -968,7 +995,7 @@ const openMenuOverlay = (menuList) => {
                     );
                         
                   }
-
+*/
 
 
                 }
@@ -1076,28 +1103,103 @@ const openMenuOverlay = (menuList) => {
                 className="sketch-button enter-button"
                 variant="event"
                 style={{ width: '45px', height: '39px', marginTop: '10px', background: '#374151', color: 'white' }}
-               onClick={() =>
-                 navigateToPageWithData(PAGES.CHATTING, {
-                   target: 'venue',
-                   id: venueId || 1,
-                   name : venueInfo?.name,
-                 })
-               }
+              onClick={async () => {
+                  // 로그인 여부 체크
+                  if (!user || !user.user_id) {
+                    navigate('/login');
+                    return;
+                  }
+
+                  try {
+                    // 1. room_sn 조회
+                    const chatList = await ApiClient.get('/api/getChattingList', {
+                      params: {
+                        venue_id: venueId,
+                        target: 'manager',
+                        user_id: user.user_id,
+                        account_id: user.user_id,
+                        account_type: user.type,
+                      },
+                    });
+
+                    let room_sn = null;
+                    if (chatList.length > 0) {
+                      room_sn = chatList[0].room_sn;
+                      console.log('room_sn', room_sn);
+                    }
+
+                    navigateToPageWithData(PAGES.CHATTING, {
+                      name: venueInfo?.name,
+                      room_sn: room_sn,
+                      send_to: 'manager',
+                      receiver_id: venueInfo.manager_id,
+                    });
+                  } catch (error) {
+                    console.error('채팅방 조회 실패:', error);
+                    alert('채팅방 정보를 불러오는 데 실패했습니다.');
+                  }
+                }}
+
               ><MessageCircle size={16} /></SketchBtn>
               <SketchBtn
                 className="sketch-button enter-button"
                 variant="event"
                 style={{ width: '85px', height: '39px', marginTop: '10px', marginLeft: '-55px' }}
                 disabled={!venueInfo?.is_reservation}
-                onClick={() => {
+                onClick={async () => {
+                    if (!venueInfo.is_reservation) return;
 
-                  if (!venueInfo.is_reservation) return;
+                    // 로그인 여부 체크
+                    if (!user || !user.user_id) {
+                      navigate('/login');
+                      return;
+                    }
 
-                  navigateToPageWithData(PAGES.RESERVATION, {
-                    target: 'venue',
-                    id: venueId || 1,
-                  })
-                }}
+                    try {
+                      const response = await ApiClient.postForm('/api/getSubscriptionInfo', { 
+                        user_id: user.user_id 
+                      });
+
+                      let { isActiveUser = false } = response;
+
+                      console.log('isActiveUser:', isActiveUser);
+
+                      if (isActiveUser === true) {
+                        // 구독자인 경우 바로 예약 페이지로 이동
+                        navigateToPageWithData(PAGES.RESERVATION, {
+                          target: 'venue',
+                          id: venueId || 1,
+                        });
+                      } else {
+                        // 미구독자인 경우 일일권 구매 안내
+                        const result = await Swal.fire({
+                          title: get('Popup.Button.TodayTrial'),
+                          text: get('reservation.daily_pass.purchase_required'),
+                          icon: 'info',
+                          showCancelButton: true,
+                          confirmButtonText: get('Popup.Button.TodayTrial'),
+                          cancelButtonText: get('Common.Cancel'),
+                          confirmButtonColor: '#3085d6',
+                          cancelButtonColor: '#d33'
+                        });
+
+                        if (result.isConfirmed) {
+                          // 구매하기 버튼 클릭 시 처리할 로직
+                          // 예: 일일권 구매 페이지로 이동
+                          // navigateToPageWithData(PAGES.PURCHASE, { type: 'daily' });
+                          console.log('일일권 구매 페이지로 이동');
+                        }
+                      }
+                    } catch (error) {
+                      console.error('구독 정보 확인 중 오류:', error);
+                      // 에러 발생 시 기본 동작 (예약 페이지로 이동)
+                      navigateToPageWithData(PAGES.RESERVATION, {
+                        target: 'venue',
+                        id: venueId || 1,
+                      });
+                    }
+                  }}
+
               >
                 <HatchPattern opacity={0.8} />
                 {venueInfo?.is_reservation

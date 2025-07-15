@@ -19,10 +19,11 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   // 로그인 함수 (Login 컴포넌트 로직 재활용)
-    const login = async (email, password) => {
+    const login = async (params={}) => {
       try {
         setLoading(true);
         
+        /*
         // Login 컴포넌트의 유효성 검사 함수 사용
         const validation = validateForm(email, password);
         if (!validation.isValid) {
@@ -31,9 +32,10 @@ export const AuthProvider = ({ children }) => {
             errors: validation.errors
           };
         }
+          */
 
         // Login 컴포넌트의 API 호출 함수 사용
-        const result = await loginPost(email, password);
+        const result = await loginPost(params);
         
         if (result.success) {
           // 성공 시 상태 업데이트
@@ -134,7 +136,7 @@ const iauMasking = (iau, text, onPurchaseClick) => {
           </button>
         </span>
         
-         <style jsx="true">{`
+       <style jsx="true">{`
           .masked-content-wrapper {
             position: relative;
             display: inline-block;
@@ -145,29 +147,24 @@ const iauMasking = (iau, text, onPurchaseClick) => {
           }
           
           .masked-section {
-            top: 5px;
-          display: inline-block;
-          background: linear-gradient(2deg, rgb(255 232 161) 0%, rgb(255 255 255 / 10%) 100%);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          border-radius: 15px;
-          padding: 0px 7px;
-          margin-left: 8px;
-          border: 1px solid #ffcc01;
-              opacity: 0.8;
-          // box-shadow: 2px 2px 0px #c1c1c1;
-          position: relative;
-              height: 23px;
-          overflow: hidden;
+            // top: 5px;
+            display: inline-block;
+            // background: url('/cdn/ticket.png') center/cover no-repeat;
+            //padding: 0px 15px 0px 7px;
+            margin-left: 8px;
+            position: relative;
+            height: 23px;
+            overflow: visible;
+            opacity: 0.8;
           }
           
-          .masked-section::before {
+          .masked-section::after {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
+            top: 25%;
+            left: 0;
+            width: 100%;
+            height: 50%;
             background: linear-gradient(
               45deg,
               transparent,
@@ -181,20 +178,16 @@ const iauMasking = (iau, text, onPurchaseClick) => {
           
           @keyframes shimmer {
             0% {
-              transform: translateX(-100%) translateY(-100%) rotate(45deg);
-            }
-            50% {
-              transform: translateX(50%) translateY(50%) rotate(45deg);
+              transform: translateX(0%) rotate(45deg);
             }
             100% {
-              transform: translateX(200%) translateY(200%) rotate(45deg);
+              transform: translateX(200%) rotate(45deg);
             }
           }
           
           .masked-dots {
             color:#c9980e;
             font-weight: bold;
-            margin-right: 8px;
             position: relative;
             z-index: 2;
           }
@@ -211,16 +204,11 @@ const iauMasking = (iau, text, onPurchaseClick) => {
             white-space: nowrap;
             position: relative;
             z-index: 2;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            // border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.2) url('/cdn/ticket.png') center/cover no-repeat;
           }
           
           .daily-pass-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-1px);
-            // box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.3) url('/cdn/ticket.png') center/cover no-repeat;
           }
           
           .daily-pass-btn:active {
@@ -229,7 +217,7 @@ const iauMasking = (iau, text, onPurchaseClick) => {
           
           @media (max-width: 480px) {
             .daily-pass-btn {
-              font-size: 9px;
+              font-size: 11px;
               padding: 3px 8px;
             }
           }
@@ -239,6 +227,31 @@ const iauMasking = (iau, text, onPurchaseClick) => {
   }
 };
 
+
+
+const verifyPassword = async (params={}) => {
+  try {
+    // setLoading(true); // 제거 - 비밀번호 인증에서는 불필요한 상태 변경 방지
+    const result = await loginPost(params);
+    return result;
+  } catch (error) {
+    console.error('Password verification error:', error);
+    return {
+      success: false,
+      errors: { general: 'Something went wrong. Please try again.' }
+    };
+  }
+  // finally 블록 제거 - setLoading(false) 제거
+};
+
+// 사용자 언어 업데이트 함수
+const updateUserLang = (newLang) => {
+  const updatedUser = { ...user, language: newLang };
+  setUser(updatedUser);
+  localStorage.setItem('user', JSON.stringify(updatedUser));
+};
+
+
   const value = {
     isLoggedIn,
     user,
@@ -246,7 +259,9 @@ const iauMasking = (iau, text, onPurchaseClick) => {
     login,
     logout,
     isActiveUser,
-    iauMasking
+    iauMasking,
+    verifyPassword,
+    updateUserLang
   };
 
   return (

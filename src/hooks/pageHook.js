@@ -6,19 +6,32 @@ const usePageNavigation = () => {
     const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE);
     const [pageDataStack, setPageDataStack] = useState([]);
     const [pageHistory, setPageHistory] = useState([DEFAULT_PAGE]);
+    const [noBottom, setNobottom] = useState(false);
 
     // 일반 페이지 이동
     const navigateToPage = (page) => {
         setCurrentPage(page);
         setPageHistory(prev => [...prev, page]);
         setPageDataStack(prev => [...prev, { page, data: null }]);
+
+        window.testPopup.emit('adViewCount'); 
     };
 
     // 데이터와 함께 페이지 이동
     const navigateToPageWithData = (page, data) => {
+        if(page == PAGES.LOGIN){
+            setNobottom(true); 
+        } else {
+            setNobottom(false); 
+        }
+
+
         setCurrentPage(page);
         setPageDataStack(prev => [...prev, { page, data }]);
         setPageHistory(prev => [...prev, page]);
+
+
+        window.testPopup.emit('adViewCount'); 
     };
 
     const navigateToPageFromNotificationData = async (page_id, data) => {

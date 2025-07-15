@@ -60,7 +60,7 @@ const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
   ];
 
   const onExpore = () => {
-    navigate('/login');
+    navigate('/main');
   };
 
   const onCreateAccount = () => {

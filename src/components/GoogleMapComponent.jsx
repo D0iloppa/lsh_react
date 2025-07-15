@@ -37,7 +37,7 @@ const GoogleMapComponent = ({
 
     const baseOptions = {
       center: { lat: 10.782865, lng: 106.701439 },
-      zoom: 20,
+      zoom: 18,
       disableDefaultUI: true,
       styles: [
         { featureType: "road", elementType: "geometry", stylers: [{ color: "#FFFFFF" }] },

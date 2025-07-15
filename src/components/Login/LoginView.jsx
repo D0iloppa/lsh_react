@@ -8,6 +8,7 @@ import HatchPattern from '@components/HatchPattern';
 import LoadingScreen from '@components/LoadingScreen';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import SketchHeader from '@components/SketchHeader';
 
 // 칵테일 아이콘 컴포넌트
 const CocktailIcon = () => (
@@ -47,10 +48,10 @@ const CocktailIcon = () => (
   </svg>
 );
 
-export default function LoginView() {
+export default function LoginView({ navigateToPage, PAGES }) {
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
-     useEffect(() => {
+  useEffect(() => {
     if (messages && Object.keys(messages).length > 0) {
       console.log('✅ Messages loaded:', messages);
       window.scrollTo(0, 0);
@@ -60,32 +61,41 @@ export default function LoginView() {
   return (
     <div className="login-container">
       <div className="login-wrapper">
+
+        {/* 우측 상단 메인 이동 버튼 */}
+        <button
+          className="go-home-button"
+          onClick={() => navigateToPage(PAGES.HOME)}
+        >
+          홈으로
+        </button>
+
         {/* Header */}
         <header className="login-header">
           <div className="logo-container">
             <CocktailIcon />
-            <h1 className="sketch-title sketch-title--large" style={{display:'flex'}}>LeTanTon Sheriff <ImagePlaceholder src="/cdn/age.png" style={{lineHeight: '0.5', marginLeft: '8px', width:'26px'}}/></h1>
+            <h1 className="sketch-title sketch-title--large" style={{ display: 'flex' }}>
+              LeTanTon Sheriff
+              <ImagePlaceholder src="/cdn/age.png" style={{ lineHeight: '0.5', marginLeft: '8px', width: '26px' }} />
+            </h1>
           </div>
-          <p className="description" style={{color:'#ca1212', margin: '0', textAlign: 'center', fontSize: '13px'}}>
+          <p className="description" style={{ color: '#ca1212', margin: '0', textAlign: 'center', fontSize: '13px' }}>
             {get('Intro.description1')}
           </p>
         </header>
 
-        {/* Login Form Container */}
+        {/* Login Form */}
         <SketchDiv variant="container">
           <HatchPattern opacity={0.3} />
           <LoginForm />
         </SketchDiv>
 
         {/* Footer */}
-          
-          <InitFooter 
-            className="custom-footer"
-            privacyHref="/privacy"
-            termsHref="/terms"
-          />
-
-
+        <InitFooter
+          className="custom-footer"
+          privacyHref="/privacy"
+          termsHref="/terms"
+        />
       </div>
     </div>
   );

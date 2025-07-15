@@ -35,6 +35,9 @@ import ViewReviewDetail from '@pages/ViewReviewDetail';
 import Chatting from '@pages/Chatting';
 import ChattingList from '@pages/ChattingList';
 
+
+import Login from '@components/Login/LoginView';
+
 // 페이지 상수
 export const PAGES = {
     HOME: 'HOME',
@@ -60,7 +63,8 @@ export const PAGES = {
     PROFILE: 'PROFILE',
     PAYMENT: 'PAYMENT',
     CHATTING: 'CHATTING',
-    CHATTINGLIST: 'CHATTINGLIST'
+    CHATTINGLIST: 'CHATTINGLIST',
+    LOGIN: 'LOGIN'
 };
 
 // 페이지 컴포넌트 매핑
@@ -88,7 +92,8 @@ export const PAGE_COMPONENTS = {
     [PAGES.PROFILE]: Profile,
     [PAGES.PAYMENT]: Payment,
     [PAGES.CHATTING]: Chatting,
-    [PAGES.CHATTINGLIST]: ChattingList
+    [PAGES.CHATTINGLIST]: ChattingList,
+    [PAGES.LOGIN]: Login
 };
 
 // 기본 페이지

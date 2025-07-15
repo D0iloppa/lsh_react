@@ -50,7 +50,14 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
     setErrors({});
     setMessage('');
 
-    const result = await login(email, password);
+    //const result = await login(email, password);
+
+    const result = await login({
+      login_id: email,
+      passwd: password,
+      account_type: 'user',
+      login_type: 'email'
+    });
     
     if (result.success) {
       setMessage(result.message);
@@ -132,10 +139,6 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
       <h2 className="sketch-title">{ get('Login1.1') }</h2>
       
       <form onSubmit={onSubmit}>
-        {/* General Error/Success Message */}
-        {errors.general && (
-          <div className="sketch-error-message">{errors.general}</div>
-        )}
         {message && (
           <div className="sketch-success-message">{message}</div>
         )}
@@ -161,6 +164,18 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
           error={errors.password}
           variant="password"
         />
+
+        {/* General Error/Success Message */}
+        {errors.general && (
+          <div className="sketch-error-message" style={{marginTop: '-0.5rem', marginBottom: '0.5rem'}}>
+            {(() => {
+              const errCode = errors.general || errors.errCode || errors.errMsg;
+
+              const tmp = get(errCode);
+              return tmp; // 또는 원하는 JSX 반환
+            })()}
+          </div>
+        )}
 
         {/* Login Button */}
         <SketchBtn

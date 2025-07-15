@@ -1,7 +1,7 @@
 // 전체 상단 import는 동일
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Users, Star, Heart, ArrowRight, Clock, MapPin,  MoveLeft } from 'lucide-react';
+import { Users, Star, Heart, ArrowRight, Clock, MapPin,  MoveLeft, Sparkles, Diamond } from 'lucide-react';
 import GoogleMapComponent from '@components/GoogleMapComponent';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import SketchSearch from '@components/SketchSearch';
@@ -24,7 +24,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   const [sortStaff, setSortStaff] = useState('STAFF_ALL');
   const [staffLanguageFilter, setStaffLanguageFilter] = useState('ALL');
   const navigate = useNavigate();
-  const [isReservationOnly, setIsReservationOnly] = useState(false); // ✅ 이 변수만 사용
+  const [isReservationOnly, setIsReservationOnly] = useState(false);
   const { messages, get, currentLang, isLoading } = useMsg();
   const [showPopup, setShowPopup] = useState(false);
   const { user, isActiveUser, iauMasking } = useAuth();
@@ -34,51 +34,52 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   // 팝업 열기 핸들러
   const handleOpenPopup = () => {
     localStorage.removeItem('popupClosedDate');
-    testPopup.emit('adViewCount'); 
+    // testPopup.emit('adViewCount'); 
   };
 
   useEffect(() => {
     // PopupProvider가 마운트된 후에 testPopup이 생성됨
     if (window.testPopup) {
       //console.log('✅ testPopup 사용 가능');
+      
       window.testPopup.emit('adViewCount');
-      window.testPopup.emit('adViewCount');
-      window.testPopup.emit('adViewCount');
+      
     } else {
       console.log('❌ testPopup이 아직 생성되지 않음');
     }
   }, []); // 컴포넌트 마운트 후 실행
 
+  useEffect(() => {
+    const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
 
-useEffect(() => {
-  
-  const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+    const upateAppId = async () => {
+      try {
+        const res = await axios.get(`${API_HOST}/api/upateAppId`, {
+          params: {
+            user_id: user?.user_id || 1,
+            app_id: fcmToken,
+            login_type:0
+          },
+        });
+        return res.data || [];
+      } catch (err) {
+        console.error('즐겨찾기 실패:', err);
+        return [];
+      }
+    };
 
-  const upateAppId = async () => {
-
-    try {
-      const res = await axios.get(`${API_HOST}/api/upateAppId`, {
-        params: {
-          user_id: user?.user_id || 1,
-          app_id: fcmToken,
-          login_type:0
-        },
-      });
-      return res.data || [];
-    } catch (err) {
-      console.error('즐겨찾기 실패:', err);
-      return [];
+    //alert(fcmToken);
+    if (fcmToken) {
+      upateAppId();
+      // optional logging
+      console.log('📲 HomePage에서 받은 FCM 토큰:', fcmToken, 'user_id:', user?.user_id || 1);
     }
-  };
-
-  if (fcmToken) {
-    upateAppId();
-    // optional logging
-    console.log('📲 HomePage에서 받은 FCM 토큰:', fcmToken, 'user_id:', user?.user_id || 1);
-  }
-}, [fcmToken, user]);
+  }, [fcmToken, user]);
 
   useEffect(() => {
+    if (window.testPopup) {
+      window.testPopup.emit('adViewCount');
+    } 
 
     const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
 
@@ -120,7 +121,7 @@ useEffect(() => {
           price: item.price || 0,
           staff_cnt: item.staff_cnt || 0,
           is_reservation: item.is_reservation === true,
-          staff_languages: item.staff_languages || '', // ✅ 이 줄 추가
+          staff_languages: item.staff_languages || '',
         }));
 
         setOriginalHotspots(transformed);
@@ -143,10 +144,9 @@ useEffect(() => {
   }, [messages, currentLang]);
 
   const handleGoBack = () => {
-    navigate(-1); // 브라우저 히스토리에서 한 단계 뒤로
+    navigate(-1);
   };
   
-
   const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort) => {
     let filtered = [...originalHotspots];
 
@@ -171,7 +171,6 @@ useEffect(() => {
     else if (staffSort === 'STAFF_5') filtered = filtered.filter((spot) => spot.staff_cnt >= 5);
     else if (staffSort === 'STAFF_3') filtered = filtered.filter((spot) => spot.staff_cnt >= 3);
 
-    // ✅ 예약 가능 필터 조건 추가
     if (isReservationOnly) {
       filtered = filtered.filter((spot) => spot.is_reservation === true);
     }
@@ -187,7 +186,7 @@ useEffect(() => {
 
   useEffect(() => {
     filterAndSortHotspots(searchQuery, categoryFilter, sortRating, sortPrice, sortStaff);
-  }, [searchQuery, categoryFilter, sortRating, sortPrice, sortStaff, isReservationOnly,staffLanguageFilter]); // ✅ 여기도 의존성 추가
+  }, [searchQuery, categoryFilter, sortRating, sortPrice, sortStaff, isReservationOnly,staffLanguageFilter]);
 
   const handleDiscover = (venueId) => {
     navigateToPageWithData(PAGES.DISCOVER, { venueId });
@@ -217,10 +216,48 @@ useEffect(() => {
     }
   };
 
+  // 오늘의 체험권 구매 기본 함수
+    const defaultTodayTrial = () => {
+      // alert('🎯 오늘의 체험권 구매 시작');
+  
+      alert(JSON.stringify(user));
+  
+      ApiClient.postForm('/api/trialCoupon',{
+        user_id: user?.user_id
+      }).then(res => {
+        console.log('✅ 체험권 발급 성공:', res);
+        alert('체험권이 발급되었습니다!');
+        
+      }).catch(error => {
+        console.error('❌ 체험권 발급 실패:', error);
+        alert('체험권 발급에 실패했습니다. 다시 시도해주세요.');
+      });
+  
+      /*
+      // 인앱 결제 요청
+      const payload = JSON.stringify({ action: 'buyItem' });
+  
+      if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.buyItem) {
+        // iOS WebView
+        console.log('📱 iOS 인앱 결제 요청');
+        window.webkit.messageHandlers.buyItem.postMessage(null);
+      } else if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+        // Android WebView
+        console.log('🤖 Android 인앱 결제 요청');
+        window.ReactNativeWebView.postMessage(payload);
+      } else {
+        console.warn('⚠️ 웹뷰 환경이 아님 - 인앱 결제 불가');
+        alert('인앱 결제가 지원되지 않는 환경입니다.');
+      }
+        */
+      
+      // 팝업 닫기
+      onClose();
+    };
+
   return (
     <>
-      <style jsx="true">{`
-      
+      <style jsx>{`
         .filter-selects {
           display: flex;
           gap: 12px;
@@ -270,7 +307,7 @@ useEffect(() => {
           border-radius: 10px;
           overflow: hidden;
           background: white;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1rem;
           position: relative;
         }
         .rating-badge {
@@ -349,201 +386,304 @@ useEffect(() => {
           margin-bottom:-15px;
         }
 
+         .daily-purchase {
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            padding: 1rem;
+            margin: 1rem 0;
+            //background: linear-gradient(135deg, rgb(255 255 255), rgb(231 245 255), rgb(188 254 255));
+            border: 1px solid rgb(14, 133, 189);
+            border-radius: 8px;
+            color: #0369a1;
+            font-weight: bold;
+            max-width: 400px;
+        }
+
+        .daily-purchase::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -100%;
+            width: 50%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255, 255, 255, 0.05),
+                rgba(255, 255, 255, 0.15),
+                rgba(255, 255, 255, 0.25),
+                rgba(255, 255, 255, 0.15),
+                rgba(255, 255, 255, 0.05),
+                transparent
+            );
+            transform: rotate(30deg);
+            animation: shine-diagonal 2s ease-in-out infinite;
+            filter: blur(2px);
+        }
+
+        @keyframes shine-diagonal {
+            0% {
+                left: -50%;
+                opacity: 0;
+            }
+            30% {
+                opacity: 0.6;
+            }
+            70% {
+                opacity: 0.8;
+            }
+            100% {
+                left: 120%;
+                opacity: 0;
+            }
+        }
+
+        .benefits {
+            margin-top: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: normal;
+            color: #334155;
+            text-align: start;
+            margin-left: 2rem;
+        }
+
+        .benefit-item {
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .benefit-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .sparkle {
+            width: 10px;
+            height: 10px;
+            color: #fbbf24;
+        }
+
+        .purchase-btn {
+            margin-top: 1rem;
+            color: white;
+            background-color: rgb(59, 174, 228);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .purchase-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 174, 228, 0.3);
+        }
       `}</style>
-{/* <button onClick={handleGoBack} style={{
-        position: 'fixed',
-        bottom: '145px',
-        right: '11px',
-        zIndex: 1000,
-        background: 'white',
-        border: '1px solid #333',
-        borderRadius: '50%',
-        width: '40px',
-        height: '40px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer'
-      }}>
-        < MoveLeft size={16} />
-      </button> */}
+
       <div className="homepage-container">
         <section className="hero-section">
           <HatchPattern opacity={0.3} />
-           <h1 
-            className="hero-title clickable-title" 
-            onClick={handleOpenPopup}
-            style={{ cursor: 'pointer' }}
-          >
-            {get('HomePage1.1')}
-          </h1>
+          <h1 className="hero-title">{get('HomePage1.1')}</h1>
           <SketchSearch
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
-            handleSearch={() =>
-              filterAndSortHotspots(searchQuery, categoryFilter, sortRating, sortPrice, sortStaff)
-            }
-            style={{ marginTop: 0, marginBottom: 0 }}
           />
-          <div className="filter-selects">
-            <select 
-              style={{'display':'none'}}
-              className="select-box" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-              <option value="ALL">{get('main.filter.category.all')}</option>
-              <option value="BAR">{get('main.filter.category.bar')}</option>
-              <option value="RESTAURANT">{get('main.filter.category.restaurant')}</option>
-            </select>
-            <select className="select-box" value={sortRating} onChange={(e) => setSortRating(e.target.value)}>
-              <option value="RATING_ALL">{get('main.filter.rating.all')}</option>
-              <option value="RATING_5">{get('main.filter.rating.5plus')}</option>
-              <option value="RATING_4">{get('main.filter.rating.4plus')}</option>
-              <option value="RATING_3">{get('main.filter.rating.3plus')}</option>
-            </select>
-             
-          </div>
-
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={isReservationOnly}
-              onChange={(e) => setIsReservationOnly(e.target.checked)}
-              style={{ transform: 'scale(1.1)' }}
-            />
-            {get('main.filter.reservation.available')}
-          </label>
         </section>
-        
 
-       <section className="content-section">
-  {hotspots.map((spot, index) => {
-    const isOverlayStyle = index >= 3;
+        {/* 단일 content-section - 중복 제거 */}
+        <section className="content-section">
+          {hotspots.map((spot, index) => {
+            const isOverlayStyle = index >= 3;
 
-    // 시간 처리
-    const formatTime = (t) => {
-      if (!t || typeof t !== 'string') return '';
-      const [h, m] = t.split(':');
-      return `${h}:${m}`;
-    };
+            // 시간 처리
+            const formatTime = (t) => {
+              if (!t || typeof t !== 'string') return '';
+              const [h, m] = t.split(':');
+              return `${h}:${m}`;
+            };
 
-    const openTime = formatTime(spot.opening_hours?.split('~')[0]);
-    const closeTime = formatTime(spot.opening_hours?.split('~')[1]);
-    const openHoursText = `${openTime} ~ ${closeTime}`;
+            const openTime = formatTime(spot.opening_hours?.split('~')[0]);
+            const closeTime = formatTime(spot.opening_hours?.split('~')[1]);
+            const openHoursText = `${openTime} ~ ${closeTime}`;
 
-    return (
-      <div
-        className="card"
-        key={spot.id}
-        onClick={() => handleDiscover(spot.id)}
-        style={{
-          cursor: 'pointer',
-          display: isOverlayStyle ? 'flex' : 'block',
-          flexDirection: isOverlayStyle ? 'row' : 'initial',
-          alignItems: isOverlayStyle ? 'center' : 'initial',
-          gap: isOverlayStyle ? '1rem' : '0',
-          padding: isOverlayStyle ? '1rem' : '0',
-          position: 'relative',
-        }}
-      >
-        {/* 이미지 */}
-        <div
-          style={{
-            flex: isOverlayStyle ? '0 0 100px' : '1',
-            width: isOverlayStyle ? '100px' : '100%',
-            height: isOverlayStyle ? '100px' : '200px',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            position: 'relative',
-          }}
-        >
-          <img
-            src={spot.image}
-            alt={spot.name}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              borderRadius: '8px',
-            }}
-          />
+            // 일일권 구매 카드 표시 조건
+            const shouldShowDailyPass = () => {
+              const currentIndex = index + 1; // 1부터 시작
+              
+              if (currentIndex === 3) {
+                // 처음 3개 후에 표시
+                return true;
+              } else if (currentIndex > 3) {
+                // 3개 이후부터는 10개마다 표시 (13, 23, 33, 43, ...)
+                return (currentIndex - 3) % 10 === 0;
+              }
+              
+              return false;
+            };
 
-          {/* 공통 하트 위치 */}
-          <div
-            className="heart-icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleFavorite(spot);
-            }}
-            style={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              cursor: 'pointer',
-              zIndex: 2,
-            }}
-          >
-            <Heart fill={spot.isFavorite ? '#f43f5e' : 'white'} color="white" />
-          </div>
-
-          {/* 평점 뱃지 (1~3번째만) */}
-          {!isOverlayStyle && (
-            <div className="rating-badge">
-              <Star size={16} style={{ marginRight: '4px', fill: '#ffe800', animation: 'shake 1s ease-in-out infinite'}} />
-              {spot.rating}
-            </div>
-          )}
-        </div>
-
-        {/* 텍스트 영역 */}
-        <div style={{ flex: '1', position: 'relative' }}>
-          <div style={{ padding: isOverlayStyle ? '0' : '0.75rem 1rem' }}>
-            <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{spot.name}</div>
-            <div
-                  className="is-reservation"
+            return (
+              <React.Fragment key={spot.id}>
+                <div
+                  className="card"
+                  onClick={() => handleDiscover(spot.id)}
                   style={{
-                    backgroundColor: spot.is_reservation ? 'rgb(17 157 81)' : 'rgb(107 107 107)',
-                    color: '#fff',
-                    padding: '5px 7px',
-                    borderRadius: '3px',
-                    display: 'inline-block',
-                    marginTop: '4px',
-                    fontSize: '12px',
-                    height: '13px'
+                    cursor: 'pointer',
+                    display: isOverlayStyle ? 'flex' : 'block',
+                    flexDirection: isOverlayStyle ? 'row' : 'initial',
+                    alignItems: isOverlayStyle ? 'center' : 'initial',
+                    gap: isOverlayStyle ? '1rem' : '0',
+                    padding: isOverlayStyle ? '1rem' : '0',
+                    position: 'relative',
                   }}
                 >
-                  {spot.is_reservation ? get('DiscoverPage1.1.able') : get('DiscoverPage1.1.disable')}
+                  {/* 이미지 영역 */}
+                  <div
+                    style={{
+                      flex: isOverlayStyle ? '0 0 100px' : '1',
+                      width: isOverlayStyle ? '100px' : '100%',
+                      height: isOverlayStyle ? '100px' : '200px',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      position: 'relative',
+                    }}
+                  >
+                    <img
+                      src={spot.image}
+                      alt={spot.name}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '8px',
+                      }}
+                    />
+
+                    <div
+                      className="heart-icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(spot);
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        cursor: 'pointer',
+                        zIndex: 2,
+                      }}
+                    >
+                      <Heart fill={spot.isFavorite ? '#f43f5e' : 'white'} color="white" />
+                    </div>
+
+                    {!isOverlayStyle && (
+                      <div className="rating-badge">
+                        <Star size={16} style={{ marginRight: '4px', fill: '#ffe800', animation: 'shake 1s ease-in-out infinite'}} />
+                        {spot.rating}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 텍스트 영역 */}
+                  <div style={{ flex: '1', position: 'relative' }}>
+                    <div style={{ padding: isOverlayStyle ? '0' : '0.75rem 1rem' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{spot.name}</div>
+                      <div
+                        className="is-reservation"
+                        style={{
+                          backgroundColor: spot.is_reservation ? 'rgb(11, 199, 97)' : 'rgb(107 107 107)',
+                          color: '#fff',
+                          padding: '5px 7px',
+                          borderRadius: '3px',
+                          display: 'inline-block',
+                          marginTop: '4px',
+                          fontSize: '12px',
+                          height: '13px'
+                        }}
+                      >
+                        {spot.is_reservation ? get('DiscoverPage1.1.able') : get('DiscoverPage1.1.disable')}
+                      </div>
+                      <div style={{ fontSize: '14px', color: '#333', marginTop: '6px' }}>
+                        <MapPin size={14}/> {spot.address}
+                      </div>
+                      <div style={{ fontSize: '14px', color: '#555', marginTop: '4px' }}>
+                        <Clock size={14}/> {openHoursText}  / <Users size={14}/> {spot.staff_cnt} {get('title.text.16')}
+                      </div>
+
+                      {isOverlayStyle && (
+                        <div
+                          style={{
+                            fontSize: '14px',
+                            marginTop: '4px',
+                            color: '#333',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                        >
+                          <Star size={14} style={{ fill: '#ffe800' }} />
+                          {spot.rating}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-            <div style={{ fontSize: '14px', color: '#333', marginTop: '6px' }}>
-              <MapPin size={14}/> {spot.address}
-            </div>
-            <div style={{ fontSize: '14px', color: '#555', marginTop: '4px' }}>
-              <Clock size={14}/> {openHoursText}  / <Users size={14}/> {spot.staff_cnt} {get('title.text.16')}
-            </div>
 
-            {/* 평점 (4번째부터만) */}
-            {isOverlayStyle && (
-              <div
-                style={{
-                  fontSize: '14px',
-                  marginTop: '4px',
-                  color: '#333',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                <Star size={14} style={{ fill: '#ffe800' }} />
-                {spot.rating}
-              </div>
-            )}
-          </div>
-
-         
-        </div>
-      </div>
-    );
-  })}
-</section>
-
+                {/* 일일권 구매 안내 표시 */}
+                {shouldShowDailyPass() && (
+                  <div className='daily-purchase' style={{
+                    textAlign: 'center',
+                    padding: '1rem',
+                    margin: '1rem 0',
+                    border: '1px solid rgb(14, 133, 189)',
+                    borderRadius: '8px',
+                    color: '#0369a1',
+                    fontWeight: 'bold'
+                  }}>
+                    {get('reservation.daily_pass.benefits_title')}
+                    <div style={{
+                        marginTop: '0.75rem',
+                        fontSize: '0.75rem',
+                        fontWeight: 'normal',
+                        color: '#334155',
+                        textAlign: 'start',
+                        marginLeft:'2rem'
+                      }}>
+                        <div style={{ marginBottom: '0.25rem' }}>
+                          <Sparkles size={10} style={{ color: '#fbbf24' }}/> {get('reservation.daily_pass.benefit_no_ads')}
+                        </div>
+                        <div style={{ marginBottom: '0.25rem' }}>
+                          <Sparkles size={10} style={{ color: '#fbbf24' }}/> {get('reservation.daily_pass.benefit_unlimited_info')}
+                        </div>
+                        <div style={{ marginBottom: '0.25rem' }}>
+                          <Sparkles size={10} style={{ color: '#fbbf24' }}/> {get('reservation.daily_pass.benefit_unlimited_booking')}
+                        </div>
+                        <div>
+                          <Sparkles size={10} style={{ color: '#fbbf24' }}/> {get('reservation.daily_pass.benefit_escort_reviews')}
+                        </div>
+                      </div>
+                     <SketchBtn 
+                        className="purchase-btn-shine"
+                        onClick={defaultTodayTrial}
+                        style={{
+                          marginTop: '1rem', 
+                          color: 'white', 
+                          backgroundColor: 'rgb(66 179 222)'
+                        }}
+                      ><HatchPattern opacity={0.5} />
+                        {get('reservation.daily_pass.purchase_button')}
+                      </SketchBtn>
+                  </div>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </section>
       </div>
     </>
   );

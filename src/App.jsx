@@ -54,7 +54,7 @@ const AppRoutes = () => {
     if (isLoggedIn) {
       navigate('/main');
     } else {
-      navigate('/login');
+      navigate('/main');
     }
   };
 
@@ -74,7 +74,7 @@ const AppRoutes = () => {
       {/* 2. 로그인 페이지 */}
       <Route
         path="/login"
-        element={
+        element={ 
           /*<LoginView />*/
           isLoggedIn ? <Navigate to="/main" replace /> : <LoginView />
         }
@@ -93,8 +93,8 @@ const AppRoutes = () => {
       <Route
         path="/main"
         element={
-          /*<MainApp />*/
-          isLoggedIn ? <MainApp /> : <Navigate to="/login" replace />
+          <MainApp />
+          /*isLoggedIn ? <MainApp /> : <Navigate to="/login" replace />*/
         }
       />
 
@@ -572,7 +572,6 @@ const NotificationHandler = () => {
     window.ReactReady = true;
 
     window.onNotificationClick = (navigateTo, data) => {
-
       let prefix = '/main' ;
       // (data?.chatRoomType === 'staff') ? '/staff' : '/manager';
 
@@ -591,8 +590,8 @@ const NotificationHandler = () => {
       setFcmToken(token); // 정상 작동
     };
 
-    if (window.AndroidInterface?.readyToReceiveToken) {
-      window.AndroidInterface.readyToReceiveToken();
+    if (window.native?.readyToReceiveToken) {
+      window.native.readyToReceiveToken();
     }
     
     if (window.webkit?.messageHandlers?.native) {
@@ -617,8 +616,8 @@ const AppContent = () => {
       setFcmToken(token); // 정상 작동
     };
 
-    if (window.AndroidInterface?.readyToReceiveToken) {
-      window.AndroidInterface.readyToReceiveToken();
+    if (window.native?.readyToReceiveToken) {
+      window.native.readyToReceiveToken();
     }
 
     return () => {

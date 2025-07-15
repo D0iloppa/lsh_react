@@ -121,6 +121,14 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
   const { initType = 'chat' } = otherProps;
 
+  // otherProps의 핵심 값들을 메모이제이션
+  const memoizedProps = useMemo(() => ({
+    room_sn: otherProps?.room_sn || null,
+    name: otherProps?.name || '',
+    send_to: otherProps?.send_to || null,
+    receiver_id: otherProps?.receiver_id || null,
+  }), [otherProps?.room_sn, otherProps?.name, otherProps?.send_to, otherProps?.receiver_id]);
+
   const [room_sn, setRoomSn] = useState(null);
   const [showReservationCard, setShowReservationCard] = useState(false);
   const [reservationCardData, setReservationCardData] = useState(null);
@@ -140,6 +148,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const [showTranslateIcon, setShowTranslateIcon] = useState({});
 
   const handleLongPress = useCallback((chatSn) => {
+    console.log('🔤 Long Press 감지됨:', chatSn);
     setShowTranslateIcon(prev => ({
       ...prev,
       [chatSn]: true,
@@ -147,9 +156,15 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   }, []);
 
   const handleTranslate = useCallback(async (chatSn, text) => {
-    if (translationMap[chatSn]) return;
+    console.log('🔤 번역 요청:', { chatSn, text });
+    
+    if (translationMap[chatSn]) {
+      console.log('🔤 이미 번역된 메시지:', chatSn);
+      return;
+    }
 
     try {
+      console.log('🔤 Google Translate API 호출 시작');
       const response = await axios.post(
         `https://translation.googleapis.com/language/translate/v2?key=AIzaSyAnvkb7_-zX-aI8WVw6zLMRn63yQQrss9c`,
         {
@@ -160,13 +175,14 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       );
 
       const translated = response.data.data.translations[0].translatedText;
+      console.log('🔤 번역 완료:', translated);
 
       setTranslationMap(prev => ({
         ...prev,
         [chatSn]: translated,
       }));
     } catch (error) {
-      console.error('번역 실패:', error);
+      console.error('❌ 번역 실패:', error);
       Swal.fire('번역 오류', 'Google Translate API 호출에 실패했습니다.', 'error');
     }
   }, [translationMap, user.language]);
@@ -178,21 +194,34 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const chatBoxRef = useRef(null);
   const firstLoadRef = useRef(true);
   const chatInputRef = useRef(null);
+  const isScrollingRef = useRef(false); // 스크롤 중복 호출 방지 플래그
   const [modalImage, setModalImage] = useState(null);
-
+  
   // room_sn 초기화
   useEffect(() => {
-    console.log('chatRoom init!', otherProps);
+    console.log('chatRoom init!', memoizedProps);
 
-    const roomSn = otherProps?.room_sn || null;
-    setRoomSn(roomSn);
-    setRoomTitle(otherProps?.name || '');
-    setSendTo(otherProps?.send_to || null);
-    setReceiverId(otherProps?.receiver_id || null);
-    setRoomTitle(otherProps?.name || '');
+    const roomSn = memoizedProps.room_sn;
+    const roomName = memoizedProps.name;
+    const sendToValue = memoizedProps.send_to;
+    const receiverIdValue = memoizedProps.receiver_id;
+    
+    // 값이 실제로 변경되었을 때만 상태 업데이트
+    if (roomSn !== room_sn) {
+      setRoomSn(roomSn);
+    }
+    if (roomName !== roomTitle) {
+      setRoomTitle(roomName);
+    }
+    if (sendToValue !== sendTo) {
+      setSendTo(sendToValue);
+    }
+    if (receiverIdValue !== receiverId) {
+      setReceiverId(receiverIdValue);
+    }
 
-    console.log('enter', sendTo, receiverId);
-  }, [otherProps]);
+    console.log('enter', sendToValue, receiverIdValue);
+  }, [memoizedProps, room_sn, roomTitle, sendTo, receiverId]);
 
   // ⭐ 인터벌을 시작하는 함수
   const startPolling = useCallback(() => {
@@ -223,16 +252,12 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
   const registerReader = async (roomSn) => {
     try {
-      if (!user?.manager_id) {
-        console.warn('Manager ID가 없어서 registerReader를 건너뜁니다.');
-        return;
-      }
-
+      
       const response = await ApiClient.postForm('/api/registerReader', {
-        target_table: 'ManagerChat',
+        target_table: 'UserChat',
         target_id: roomSn,
-        reader_type: 'manager',
-        reader_id: user.manager_id
+        reader_type: 'user',
+        reader_id: user.user_id
       });
 
       console.log('✅ registerReader 성공:', response);
@@ -278,14 +303,33 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     if (!chatBoxRef.current) return false;
     const { scrollTop, scrollHeight, clientHeight } = chatBoxRef.current;
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-    return distanceFromBottom < 50;
+    
+    // 더 엄격한 기준: 10px 이내에 있을 때만 맨 아래로 간주
+    const isAtBottom = distanceFromBottom < 10;
+    console.log('📍 사용자 위치 확인:', {
+      distanceFromBottom,
+      isAtBottom
+    });
+    return isAtBottom;
   }, []);
 
   // 스크롤을 맨 밑으로 이동시키는 함수
   const scrollToBottom = useCallback((behavior = 'smooth') => {
-    console.log('scrollToBottom', behavior);
+    console.log('🔄 scrollToBottom 호출됨:', behavior);
     
-    if (!chatBoxRef.current) return;
+    // 이미 스크롤 중이면 중복 호출 방지
+    if (isScrollingRef.current) {
+      console.log('⏸️ 이미 스크롤 중이므로 호출 무시');
+      return;
+    }
+    
+    if (!chatBoxRef.current) {
+      console.log('❌ chatBoxRef가 없음');
+      return;
+    }
+    
+    // 스크롤 시작 플래그 설정
+    isScrollingRef.current = true;
     
     const scrollToBottomImmediate = () => {
       if (!chatBoxRef.current) return;
@@ -293,27 +337,39 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       const { scrollHeight, clientHeight } = chatBoxRef.current;
       const maxScrollTop = scrollHeight - clientHeight;
       
+      console.log('📏 스크롤 계산:', {
+        scrollHeight,
+        clientHeight,
+        maxScrollTop,
+        currentScrollTop: chatBoxRef.current.scrollTop
+      });
+      
       if (behavior === 'auto') {
         chatBoxRef.current.scrollTop = maxScrollTop;
+        console.log('⚡ 즉시 스크롤 이동 완료');
+        // 즉시 스크롤 완료 시 플래그 해제 및 FloatButton 상태 업데이트
+        setTimeout(() => {
+          isScrollingRef.current = false;
+          // 스크롤 완료 후 FloatButton 상태 강제 업데이트
+          setShowFloatButton(false);
+        }, 1);
       } else {
         chatBoxRef.current.scrollTo({
           top: maxScrollTop,
           behavior: 'smooth'
         });
+        console.log('🔄 부드러운 스크롤 이동 시작');
+        // 부드러운 스크롤 완료 후 플래그 해제 및 FloatButton 상태 업데이트
+        setTimeout(() => {
+          isScrollingRef.current = false;
+          // 스크롤 완료 후 FloatButton 상태 강제 업데이트
+          setShowFloatButton(false);
+        }, 1);
       }
     };
     
+    // messageEndRef 방식 제거하고 직접 스크롤만 사용
     setTimeout(scrollToBottomImmediate, 50);
-    
-    setTimeout(() => {
-      if (messageEndRef.current) {
-        messageEndRef.current.scrollIntoView({ 
-          behavior, 
-          block: 'end',
-          inline: 'nearest'
-        });
-      }
-    }, 100);
   }, []);
 
   // 이전 메시지 로딩 함수
@@ -336,7 +392,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         room_sn,
         limit: 10,
         direction: 'older',
-        before_chat_sn: oldestMessage.chat_sn
+        before_chat_sn: oldestMessage.chat_sn,
+        account_type: user.type
       };
 
       const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
@@ -390,10 +447,30 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     const { scrollTop, scrollHeight, clientHeight } = chatBoxRef.current;
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
     
+    // 디버깅 로그 추가
+    /*
+    console.log('📜 스크롤 이벤트:', {
+      scrollTop,
+      scrollHeight,
+      clientHeight,
+      distanceFromBottom,
+      showFloatButton: showFloatButton,
+      isScrolling: isScrollingRef.current
+    });
+    */
+    
+    // 스크롤 중일 때는 FloatButton 상태 변경하지 않음
+    if (isScrollingRef.current) {
+      console.log('⏸️ 스크롤 중이므로 FloatButton 상태 변경 무시');
+      return;
+    }
+    
     // Float Button 표시/숨김 제어
     if (distanceFromBottom > 300) {
+      console.log('🔘 Float Button 표시');
       setShowFloatButton(true);
     } else {
+      console.log('🔘 Float Button 숨김');
       setShowFloatButton(false);
     }
     
@@ -405,7 +482,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       console.log('🔄 이전 메시지 로딩 시작');
       loadOlderMessages();
     }
-  }, [isLoadingOlder, hasMoreOlder, loadOlderMessages]);
+  }, [isLoadingOlder, hasMoreOlder, loadOlderMessages, showFloatButton]);
 
   // 스크롤 이벤트 리스너 등록
   useEffect(() => {
@@ -562,10 +639,19 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     const isTranslated = translationMap[msg.chat_sn];
     const showIcon = showTranslateIcon[msg.chat_sn];
 
+    console.log('🔤 ChatMessage 렌더링:', {
+      chat_sn: msg.chat_sn,
+      isMine,
+      isTranslated,
+      showIcon,
+      hasText: !!msg.text
+    });
+
     const pressTimerRef = useRef(null);
 
     const handleMouseDown = () => {
       if (!isMine) {
+        console.log('🔤 Mouse Down 감지:', msg.chat_sn);
         pressTimerRef.current = setTimeout(() => {
           handleLongPress(msg.chat_sn);
         }, 600);
@@ -573,7 +659,10 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     };
 
     const handleMouseUp = () => {
-      clearTimeout(pressTimerRef.current);
+      if (pressTimerRef.current) {
+        console.log('🔤 Mouse Up 감지 (타이머 취소):', msg.chat_sn);
+        clearTimeout(pressTimerRef.current);
+      }
     };
 
     return (
@@ -595,7 +684,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         ) : (
           <div className="chat-content-wrapper">
             <div className="chat-name">{msg.sender_name}</div>
-            <div className={`chat-message ${msg.sender}`}>
+            <div className={`chat-message ${msg.sender} ${msg.image ? 'has-image' : ''}`}>
               {msg.text && <div>{msg.text}</div>}
               {msg.image && (
                 <img
@@ -609,7 +698,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
                   {isTranslated} <span style={{ fontSize: 10, marginLeft: 4 }}>번역됨</span>
                 </div>
               )}
-              {showIcon && !isTranslated && msg.text && (
+              {!isMine && !isTranslated && msg.text && (
                 <div style={{ textAlign: 'right', marginTop: 4 }}>
                   <button
                     style={{
@@ -652,7 +741,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       const params = { 
         room_sn,
         limit: 10,
-        direction: loadOlder ? 'older' : 'newer'
+        direction: loadOlder ? 'older' : 'newer',
+        account_type: user.type
       };
 
       // 초기 로딩이거나 새 메시지 로딩
@@ -721,11 +811,21 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           console.log('🆕 새 메시지 로딩:', newChatMessages.map(m => ({ chat_sn: m.chat_sn, text: m.text })));
           setChatMessages(prev => dedupeMessages([...prev, ...newChatMessages]));
           const lastMessage = newChatMessages[newChatMessages.length - 1];
+          
+          // 자동 스크롤 조건 수정: 사용자가 맨 아래에 있을 때만 자동 스크롤
           const shouldScroll = lastMessage.sender_type === 'manager' || isUserAtBottom();
+          console.log('🔄 자동 스크롤 조건:', {
+            sender_type: lastMessage.sender_type,
+            isUserAtBottom: isUserAtBottom(),
+            shouldScroll
+          });
+          
           if (shouldScroll) {
             setTimeout(() => {
               scrollToBottom(lastMessage.sender_type === 'manager' ? 'auto' : 'smooth');
             }, 200);
+          } else {
+            console.log('⏸️ 사용자가 스크롤을 위로 올린 상태이므로 자동 스크롤하지 않음');
           }
           lastChatSnRef.current = lastMessage.chat_sn;
         }
@@ -738,7 +838,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   // 최적화된 메시지 전송 핸들러
   const handleMessageSend = useCallback(async (message) => {
     const {type} = user;
-    let login_id = (type=='staff') ? user.staff_id : user.manager_id;
+    let login_id = user.user_id;
     
     const chatData = {
       room_sn,
@@ -752,7 +852,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       creator_type: user.type,
       last_message_preview: message,
       venue_id,
-      send_to: sendTo,
+      send_to: 'manager',
       receiver_id: receiverId
     };
 
@@ -859,7 +959,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     console.log('reservationCardData send!', reservationCardData, params);
 
     const {type} = user;
-    let login_id = (type=='staff') ? user.staff_id : user.manager_id;
+    let login_id = user.user_id;
 
     const chatData = {
       room_sn: room_sn || 0,
@@ -927,7 +1027,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         .chat-container {
           display: flex;
           flex-direction: column;
-          height: 86vh;
+          height: 87vh;
           background-color: #f2f2f2;
         }
         .chat-messages {
@@ -994,6 +1094,13 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           color: white;
           border-bottom-right-radius: 0;
         }
+        .chat-message.has-image {
+          background-color: transparent !important;
+          color: inherit !important;
+          border-bottom-right-radius: 0 !important;
+        }
+
+
 
         .chat-message.other {
           background-color: #e5e7eb;
@@ -1009,9 +1116,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         .chat-input-wrapper {
            display: flex;
            align-items: center;
-           padding: 0.75rem;
+           padding: 0.8rem 1rem 0 1rem;
            background-color: white;
-           padding-bottom: 1.2rem;
         }
         .chat-input {
           flex: 1;
@@ -1088,7 +1194,15 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           {/* Float Bottom Button */}
           <FloatBottomButton 
             isVisible={showFloatButton}
-            onClick={() => scrollToBottom('smooth')}
+            onClick={() => {
+              // 스크롤 중일 때는 클릭 무시
+              if (isScrollingRef.current) {
+                console.log('⏸️ 스크롤 중이므로 FloatBottomButton 클릭 무시');
+                return;
+              }
+              console.log('🔘 FloatBottomButton 클릭됨');
+              scrollToBottom('smooth');
+            }}
           />
         </div>
 

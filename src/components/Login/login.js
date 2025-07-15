@@ -39,12 +39,16 @@ import qs from 'qs';
 
 const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
 
-export const loginPost = async (email, password) => {
+export const loginPost = async ({login_id, passwd, login_type ='email', ...args}) => {
+
+    console.log('args', args);
 
     const data =  qs.stringify({
-        login_type: "email",
-        email,
-        passwd: password
+        login_type: login_type,
+        email: login_id,
+        login_id: login_id,
+        passwd: passwd,
+        account_type: args.account_type || null
       });
 
     try {
@@ -59,13 +63,19 @@ export const loginPost = async (email, password) => {
         );
     
 
-        const { error=false, errMsg=false, user=false, staff=false } = response.data;
+        let { error=false, errMsg=false, errCode=false, user=false, staff=false, manager=false } = response.data;
+
+        // type decoration
+        user = user && { type: 'user', 
+                        'login_type': login_type, 
+                        login_id: login_id, ...user };
+
 
         if(error){
             return {
                 success: false,
                 errors: {
-                  general: errMsg || 'Invalid login'
+                  general: errCode || errMsg || 'Invalid login'
                 }
               };
         }
@@ -73,7 +83,7 @@ export const loginPost = async (email, password) => {
         return {
           success: true,
           message: 'Login successful!',
-          user: user
+          user: user || manager || staff
         };
     
       } catch (error) {
@@ -113,7 +123,7 @@ export const loginPost = async (email, password) => {
 };
 
 // 로그인 핸들러
-export const handleLogin = async (email, password) => {
+export const handleLogin = async (email, password, login_type = 'email') => {
     try {
         // 폼 유효성 검사
         const validation = validateForm(email, password);
@@ -129,7 +139,7 @@ export const handleLogin = async (email, password) => {
 
 
 
-        return await loginPost(email, password);
+        return await loginPost(email, password, login_type);
 
     } catch (error) {
         console.error('Login error:', error);

@@ -1,5 +1,5 @@
 .main-app-container {
-    /*height: calc(100vh - 80px);  /* 80px = 네비게이션 바 높이 */
+   height: 100vh;
     max-width: 28rem;
     margin: 0 auto;
     background-color: white;
@@ -9,6 +9,10 @@
 
     font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
   }
+
+  .hidden {
+  display: none !important;
+}
   
   .content-area {
     flex: 1;

@@ -193,6 +193,7 @@ export default function RegisterView() {
     if (nicknameError) newErrors.nickname = nicknameError;
 
 
+    formData.birth_date="1980-01-01";
     const birthDateError = validateBirthDate(formData.birth_date);
     if (birthDateError) newErrors.birth_date = birthDateError;
 
@@ -560,7 +561,7 @@ export default function RegisterView() {
             fontSize: '13px', 
             marginBottom: '3px',
             fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
-            display: 'block'
+            display: 'none'
           }}>
             {get('title.text.5')}
           </label>
@@ -576,6 +577,7 @@ export default function RegisterView() {
               borderRadius: '4px',
               fontSize: '1rem',
               backgroundColor: '#fff',
+              display:'none',
               fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"
             }}
           >
@@ -592,7 +594,7 @@ export default function RegisterView() {
             fontSize: '13px', 
             marginBottom: '3px',
             fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
-            display: 'block'
+            display: 'none'
           }}>
             {get('title.text.9')}
           </label>
@@ -600,11 +602,15 @@ export default function RegisterView() {
             type="date"
             name="birth_date"
             value={formData.birth_date}
+            style={{
+              display:'none'
+            }}
             onChange={handleInputChange}
             disabled={isLoading}
             error={errors.birth_date}
             variant="text"
             placeholder="1988-08-18"
+            
           />
         </div>
 
@@ -612,6 +618,7 @@ export default function RegisterView() {
         <div style={{ marginBottom: '1.5rem' }}>
           <label style={{ 
             margin: '0', 
+            display: 'none',
             fontSize: '13px', 
             marginBottom: '3px',
             fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
@@ -621,6 +628,9 @@ export default function RegisterView() {
           </label>
           <SketchInput
             type="tel"
+            style={{
+              display:'none'
+            }}
             name="phone"
             value={formData.phone}
             onChange={handleInputChange}

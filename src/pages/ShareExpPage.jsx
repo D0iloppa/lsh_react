@@ -142,7 +142,7 @@ const ShareExpPage = ({
           border: 1px solid #1f2937;
           background-color: #f8fafc;
           padding: 1.5rem;
-          margin-bottom: 2rem;
+          margin-bottom: 1rem;
           transform: rotate(-0.2deg);
           position: relative;
           overflow: hidden;
