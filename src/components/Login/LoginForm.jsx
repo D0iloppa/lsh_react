@@ -108,6 +108,29 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
     const { value: formValues } = await Swal.fire({
       title: get('INQUIRY_TITLE'),
       html: `
+        <style>
+                /* 아이폰에서 셀렉트 박스 드롭다운 위치 조정 */
+                #swal-inquiry-type {
+                    -webkit-appearance: none;
+                    -moz-appearance: none;
+                    appearance: none;
+                    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+                    background-repeat: no-repeat;
+                    background-position: right 8px center;
+                    background-size: 16px;
+                    padding-right: 30px;
+                }
+                
+                /* 아이폰에서 옵션 리스트 위치 조정 */
+                #swal-inquiry-type option {
+                    padding: 8px;
+                }
+                
+                /* 전체 폼 컨테이너에 여백 추가 */
+                .swal2-html-container {
+                    padding: 20px;
+                }
+            </style>
           <div style="text-align: left;">
               <div style="margin-bottom: 15px;">
                   <label style="display: block; margin-bottom: 5px; font-weight: bold;">${get('INQUIRY_TYPE_LABEL')}</label>
@@ -389,7 +412,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
             disabled={isLoading}
             className="sketch-btn sketch-btn--secondary"
           >
-            { get('Login1.2') }
+            { get('btn.contact.1') }
           </button>
         </div>
 
