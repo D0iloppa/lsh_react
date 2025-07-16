@@ -8,7 +8,6 @@ const usePageNavigation = () => {
     const [pageHistory, setPageHistory] = useState([DEFAULT_PAGE]);
     const [noBottom, setNobottom] = useState(false);
 
-
     const scrollToTopAndEmitAd = () => {
 
         console.log('scrollToTopAndEmitAd');

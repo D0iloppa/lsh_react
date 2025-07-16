@@ -11,8 +11,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { useMsg } from '@contexts/MsgContext';
 import { useNavigate } from 'react-router-dom';
 import { useFcm } from '@contexts/FcmContext';
+import LoadingScreen from '@components/LoadingScreen';
 
 import GlobalPopupManager from '@components/GlobalPopupManager';
+import Swal from 'sweetalert2';
+import ApiClient from '@utils/ApiClient';
 
 const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAGES }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -220,17 +223,44 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
     const defaultTodayTrial = () => {
       // alert('🎯 오늘의 체험권 구매 시작');
   
-      alert(JSON.stringify(user));
+      // alert(JSON.stringify(user));
+
+      let accessFlag = (user?.type == 'user') && user.user_id && user.user_id > 0;
+
+      if(!accessFlag){
+        Swal.fire(
+          get('SWAL_SIGNUP_REQUIRED_TITLE'), 
+          get('SWAL_SIGNUP_REQUIRED_TEXT'), 
+          'warning'
+        );
+        return;
+      }
+
   
       ApiClient.postForm('/api/trialCoupon',{
         user_id: user?.user_id
       }).then(res => {
-        console.log('✅ 체험권 발급 성공:', res);
-        alert('체험권이 발급되었습니다!');
+
+        const {success = false} = res;
+        
+        if(success){
+          Swal.fire({
+            title: get('SWAL_DAILY_TICKET_SUCCESS_TITLE'),
+            text: get('SWAL_DAILY_TICKET_SUCCESS_TEXT'),
+            icon: 'success',
+            confirmButtonText: '확인'
+          }).then(() => {
+            // Swal 확인 버튼 클릭 후 페이지 새로고침
+            window.location.reload();
+          });
+        }
+
+        console.log('✅ 체험권 발급 :', res);
+        // alert('체험권이 발급되었습니다!');
         
       }).catch(error => {
         console.error('❌ 체험권 발급 실패:', error);
-        alert('체험권 발급에 실패했습니다. 다시 시도해주세요.');
+        // alert('체험권 발급에 실패했습니다. 다시 시도해주세요.');
       });
   
       /*
@@ -684,6 +714,11 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
             );
           })}
         </section>
+         <LoadingScreen 
+          variant="cocktail"
+          loadingText="Loading..."
+          isVisible={isLoading} 
+        />
       </div>
     </>
   );

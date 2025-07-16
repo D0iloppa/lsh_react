@@ -251,6 +251,15 @@ const updateUserLang = (newLang) => {
   localStorage.setItem('user', JSON.stringify(updatedUser));
 };
 
+// 로그인 상태 강제 업데이트 함수 (오버레이용)
+const updateLoginState = (userData) => {
+  localStorage.setItem('isLoggedIn', 'true');
+  localStorage.setItem('user', JSON.stringify(userData));
+  setIsLoggedIn(true);
+  setUser(userData);
+  console.log('로그인 상태 강제 업데이트:', userData);
+};
+
 
   const value = {
     isLoggedIn,
@@ -261,7 +270,8 @@ const updateUserLang = (newLang) => {
     isActiveUser,
     iauMasking,
     verifyPassword,
-    updateUserLang
+    updateUserLang,
+    updateLoginState
   };
 
   return (

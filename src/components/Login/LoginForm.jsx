@@ -61,10 +61,18 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
     
     if (result.success) {
       setMessage(result.message);
-      // 로그인 성공 시 메인 페이지로 이동
-      setTimeout(() => {
-        navigate('/main');
-      }, 300); // 0.3초 후 이동 (성공 메시지 표시용)
+      // 오버레이 모드인지 확인
+        if (window.overlayLoginSuccessHandler) {
+            // 오버레이 모드 - 전역 함수 실행
+            console.log('오버레이 모드에서 Login 성공');
+            window.overlayLoginSuccessHandler(result.user); // user 데이터만 전달
+        } else {
+            // 일반 모드 - 기존 방식
+            console.log('일반 모드에서 Login 성공');
+            setTimeout(() => {
+               navigate('/main');
+            }, 300);
+        }
     } else {
       setErrors(result.errors);
     }

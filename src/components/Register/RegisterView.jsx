@@ -315,8 +315,8 @@ export default function RegisterView() {
 
   const handleBack = useCallback(() => {
     clearStorage();
-    navigate('/login');
-  }, [clearStorage, navigate]);
+    navigateToPageWithData(PAGES.HOME)
+  }, [clearStorage]);
 
   const handleAgreementClick = useCallback((type) => {
     const currentPath = '/register';

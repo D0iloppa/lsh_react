@@ -11,7 +11,12 @@ import LoadingScreen from '@components/LoadingScreen';
 import { Star, Clock, Users, Phone, CreditCard, MessageCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import ApiClient from '@utils/ApiClient';
 import { useAuth } from '../contexts/AuthContext';
-import { useLoginOverlay } from '@hooks/useLoginOverlay.jsx';
+import { overlay } from 'overlay-kit';
+import { MsgProvider } from '@contexts/MsgContext';
+import { AuthProvider } from '@contexts/AuthContext';
+import { BrowserRouter } from 'react-router-dom';
+
+import LoginComp from '@components/Login/LoginView';
 
 import Swal from 'sweetalert2';
 
@@ -19,7 +24,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'r
 
  
 
-const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ...otherProps }) => {
+const DiscoverPageVenue = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ...otherProps }) => {
 
   const venueId = otherProps?.venueId || null;
   const [venueInfo, setVenueInfo] = useState(null);
@@ -34,9 +39,121 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   };*/
   const { user, isActiveUser, iauMasking } = useAuth();
 
-    // 커스텀 훅 사용
-  const navigationProps = { navigateToPageWithData, PAGES, goBack };
-  const { openLoginOverlay } = useLoginOverlay(navigationProps);
+
+  const openLoginOverlay = () => {
+          // 여기서 unmount를 전역에 저장
+            window.overlayUnmount = unmount;
+            
+            // 여기서 전역 함수 등록
+            window.overlayRegisterHandler = () => {
+                console.log('Register 버튼 클릭 - 오버레이 닫고 Register 페이지로');
+                if (window.overlayUnmount) {
+                    window.overlayUnmount();
+                }
+                navigateToPage(PAGES.REGISTER); // 회원가입 페이지로 이동
+                
+                // 정리
+                delete window.overlayUnmount;
+                delete window.overlayRegisterHandler;
+            };
+    
+            window.overlayLoginSuccessHandler = (userData) => {
+                console.log('Login success:', userData);
+                unmount();
+                delete window.overlayUnmount;
+                delete window.overlayRegisterHandler;
+                delete window.overlayLoginSuccessHandler;
+                
+                 setTimeout(() => {
+                    window.location.reload();
+                }, 100);
+            };
+            
+            return (
+                <BrowserRouter>
+                    <MsgProvider>
+                        <AuthProvider>
+                            <style>{`
+                                .go-home-button {
+                                    display: none !important;
+                                }
+                                .login-container{min-height: 72vh;}
+                            `}</style>
+                            <div 
+                                style={{
+                                    position: 'fixed',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100vw',
+                                    height: '100vh',
+                                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    zIndex: 9998,
+                                    padding: '20px',
+                                    boxSizing: 'border-box'
+                                }}
+                                onClick={(e) => {
+                                    if (e.target === e.currentTarget) {
+                                        unmount();
+                                        // 정리
+                                        delete window.overlayUnmount;
+                                        delete window.overlayRegisterHandler;
+                                    }
+                                }}
+                            >
+                                <div style={{
+                                    maxWidth: '400px',
+                                    width: '100%',
+                                    maxHeight: '90vh',
+                                    overflow: 'auto',
+                                    backgroundColor: 'white',
+                                    borderRadius: '8px',
+                                    position: 'relative'
+                                }}>
+                                    <button
+                                        onClick={() => {
+                                            unmount();
+                                            // 정리
+                                            delete window.overlayUnmount;
+                                            delete window.overlayRegisterHandler;
+                                        }}
+                                        style={{
+                                            position: 'absolute',
+                                            top: '10px',
+                                            right: '10px',
+                                            background: 'none',
+                                            border: 'none',
+                                            fontSize: '24px',
+                                            cursor: 'pointer',
+                                            zIndex: 10,
+                                            color: '#666'
+                                        }}
+                                    >
+                                        ×
+                                    </button>
+                                    
+                                    <LoginComp
+                                        onClose={() => {
+                                            console.log('Login overlay closing...');
+                                            unmount();
+                                            // 정리
+                                            delete window.overlayUnmount;
+                                            delete window.overlayRegisterHandler;
+                                        }}
+                                      
+                                        redirectUrl="/profile"
+                                        showSocialLogin={true}
+                                        isOverlay={true}
+                                    />
+                                </div>
+                            </div>
+                        </AuthProvider>
+                    </MsgProvider>
+                </BrowserRouter>
+            );
+  };
 
  const handleDetail = (girl) => {
   try {
@@ -68,33 +185,33 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
 
   const navigate = useNavigate();
   
-// useEffect(() => {
-//   const debugScroll = () => {
-//     console.log('=== 스크롤 디버깅 ===');
-//     console.log('window.scrollY:', window.scrollY);
-//     console.log('window.pageYOffset:', window.pageYOffset);
-//     console.log('document.documentElement.scrollTop:', document.documentElement.scrollTop);
-//     console.log('document.body.scrollTop:', document.body.scrollTop);
-//     console.log('document.documentElement.clientHeight:', document.documentElement.clientHeight);
-//     console.log('document.documentElement.scrollHeight:', document.documentElement.scrollHeight);
-//     console.log('document.body.clientHeight:', document.body.clientHeight);
-//     console.log('document.body.scrollHeight:', document.body.scrollHeight);
+useEffect(() => {
+  const debugScroll = () => {
+    console.log('=== 스크롤 디버깅 ===');
+    console.log('window.scrollY:', window.scrollY);
+    console.log('window.pageYOffset:', window.pageYOffset);
+    console.log('document.documentElement.scrollTop:', document.documentElement.scrollTop);
+    console.log('document.body.scrollTop:', document.body.scrollTop);
+    console.log('document.documentElement.clientHeight:', document.documentElement.clientHeight);
+    console.log('document.documentElement.scrollHeight:', document.documentElement.scrollHeight);
+    console.log('document.body.clientHeight:', document.body.clientHeight);
+    console.log('document.body.scrollHeight:', document.body.scrollHeight);
     
-//     const discoverContainer = document.querySelector('.discover-container');
-//     if (discoverContainer) {
-//       console.log('discover-container scrollTop:', discoverContainer.scrollTop);
-//       console.log('discover-container scrollHeight:', discoverContainer.scrollHeight);
-//       console.log('discover-container clientHeight:', discoverContainer.clientHeight);
-//     }
-//   };
+    const discoverContainer = document.querySelector('.discover-container');
+    if (discoverContainer) {
+      console.log('discover-container scrollTop:', discoverContainer.scrollTop);
+      console.log('discover-container scrollHeight:', discoverContainer.scrollHeight);
+      console.log('discover-container clientHeight:', discoverContainer.clientHeight);
+    }
+  };
 
-//   debugScroll();
+  debugScroll();
   
-//   // 스크롤 시도
-//   window.scrollTo(0, 0);
+  // 스크롤 시도
+  window.scrollTo(0, 0);
   
-//   setTimeout(debugScroll, 1000);
-// }, [venueId]);
+  setTimeout(debugScroll, 1000);
+}, [venueId]);
 
   // useEffect(() => {
   //   const handleScroll = () => {
@@ -1110,7 +1227,7 @@ const openMenuOverlay = (menuList) => {
                   // 로그인 여부 체크
                   if (!user || !user.user_id) {
                     // navigate('/login'); ← 이거 대신 오버레이로 변경
-                    openLoginOverlay(PAGES.DISCOVER, { venueId }); // 오버레이 함수 호출
+                    openLoginOverlay(); // 오버레이 함수 호출
                     return;
                   }
 
@@ -1156,7 +1273,7 @@ const openMenuOverlay = (menuList) => {
 
                     // 로그인 여부 체크
                     if (!user || !user.user_id) {
-                      openLoginOverlay(PAGES.DISCOVER, { venueId }); // 오버레이 함수 호출
+                      openLoginOverlay(); // 오버레이 함수 호출
                       return;
                     }
 
@@ -1247,4 +1364,4 @@ const openMenuOverlay = (menuList) => {
   );
 };
 
-export default DiscoverPage;
+export default DiscoverPageVenue;

@@ -17,9 +17,8 @@
   .content-area {
     flex: 1;
     overflow-y: auto;
-    padding-bottom: 70px;
-    scroll-behavior: auto; /* smooth 대신 auto로 즉시 이동 */
-    overscroll-behavior: contain; /* 스크롤 경계 제어 */
+    padding-bottom: calc(20vh - 20px);
+    
   }
   
   .bottom-navigation {

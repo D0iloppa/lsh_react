@@ -1,16 +1,21 @@
 // src/layout/MainApp.jsx
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@contexts/AuthContext';
 import { Home, Search, Calendar, User, Map, ChevronUp, Star, History, MessagesSquare } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
-import { useLoginOverlay } from '@hooks/useLoginOverlay.jsx';
 
 import { PAGE_COMPONENTS, DEFAULT_PAGE } from '../config/pages.config';
 import HatchPattern from '@components/HatchPattern';
 import LoadingScreen from '@components/LoadingScreen';
 
 import { useLocation, useNavigate } from 'react-router-dom';
+import { overlay } from 'overlay-kit';
+import { MsgProvider } from '@contexts/MsgContext';
+import { AuthProvider } from '@contexts/AuthContext';
+import { BrowserRouter } from 'react-router-dom';
+
+import LoginComp from '@components/Login/LoginView';
 
 import './MainApp.css';
 
@@ -39,36 +44,17 @@ const MainApp = () => {
     const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = msgContext;
 
     const [ activeUser, setActiveUser] = useState({});
-    const [loginId, setLoginId] = useState('');
-    const [pageRefreshKey, setPageRefreshKey] = useState({});
+    
 
     console.log('welcome!', user);
 
-    // user 상태 변화 감지 및 처리
     useEffect(() => {
-        console.log('User 상태 변경됨:', user);
-
-        setPageRefreshKey(prev => ({
-            ...prev,
-            [currentPage]: Date.now()
-        }));
-
-        
-        // 스크롤 리셋
-        window.scrollTo(0, 0);
-        
-        
-        // 일반적인 user 상태 변경 처리
-        if (user && Object.keys(activeUser).length > 0) {
-            setActiveUser({});
-        }
-        
-        // 스크롤 리셋
         window.scrollTo(0, 0);
         if (messages && Object.keys(messages).length > 0) {
-            window.scrollTo(0, 0);
-        }
-    }, [user, messages, currentLang, activeUser, loginId]);
+                window.scrollTo(0, 0);
+              }
+    
+      }, [messages, currentLang, activeUser]);
 
     const {
         currentPage,
@@ -243,23 +229,6 @@ const MainApp = () => {
         showAdWithCallback
     };
 
-
-    
-
-
-    // 커스텀 훅 사용 - 로그인 성공 시 추가 재렌더링 콜백
-    const handleLoginSuccess = useCallback((userData) => {
-        setLoginId(crypto.randomUUID());
-        
-        // 현재 페이지만 재렌더링
-        setPageRefreshKey(prev => ({
-            ...prev,
-            [currentPage]: Date.now()
-        }));
-    }, [currentPage]);
-
-    const { openLoginOverlay } = useLoginOverlay(navigationProps, handleLoginSuccess);
-
 //console.log('PAGES', PAGES)
 
     // 현재 페이지 렌더링 (데이터와 함께)
@@ -268,12 +237,7 @@ const MainApp = () => {
         const pageData = getCurrentPageData();
         const PageComponent = PAGE_COMPONENTS[currentPage] || PAGE_COMPONENTS[DEFAULT_PAGE];
         
-        // 페이지별 refresh key를 사용하여 특정 페이지만 재렌더링
-        const pageKey = pageRefreshKey[currentPage] 
-            ? `${currentPage}-${pageRefreshKey[currentPage]}` 
-            : currentPage;
-        
-        return <PageComponent key={pageKey} {...pageData} {...navigationProps} />;
+        return <PageComponent {...pageData} {...navigationProps} />;
     };
     const handleMapClick = () => {
         navigateToMap({
@@ -282,7 +246,165 @@ const MainApp = () => {
     };
 
 
+    const openLoginOverlay = (targetPage = null, targetData = null) => {
+        console.log('openLoginOverlay');
+          // 목표 페이지 정보를 전역에 저장
+            window.loginTargetPage = targetPage;
+            window.loginTargetData = targetData;
 
+        overlay.open(({ isOpen, close, unmount }) => {
+            // 여기서 unmount를 전역에 저장
+            window.overlayUnmount = unmount;
+
+            // 여기서 전역 함수 등록
+            window.overlayRegisterHandler = () => {
+                console.log('Register 버튼 클릭 - 오버레이 닫고 Register 페이지로');
+                if (window.overlayUnmount) {
+                    window.overlayUnmount();
+                }
+                navigateToPage(PAGES.REGISTER); // 회원가입 페이지로 이동
+                
+                // 정리
+                delete window.overlayUnmount;
+                delete window.overlayRegisterHandler;
+            };
+
+              window.overlayLoginSuccessHandler = (userData) => {
+                console.log('Login success:', userData);
+                unmount();
+                delete window.overlayUnmount;
+                delete window.overlayRegisterHandler;
+                delete window.overlayLoginSuccessHandler;
+                
+                
+                // 목표 페이지가 있으면 그 페이지로, 없으면 새로고침
+                if (window.loginTargetPage) {
+                    console.log('로그인 성공 - 목표 페이지로 이동:', window.loginTargetPage);
+                    
+                    if (window.loginTargetData) {
+                        navigateToPageWithData(window.loginTargetPage, window.loginTargetData);
+                    } else {
+                        navigateToPage(window.loginTargetPage);
+                    }
+                    
+                    // 정리
+                    delete window.loginTargetPage;
+                    delete window.loginTargetData;
+
+                } else {
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 100);
+                }
+            };
+            
+            return (
+                <BrowserRouter>
+                    <MsgProvider>
+                        <AuthProvider>
+                            <style>{`
+                                .go-home-button {
+                                    display: none !important;
+                                }
+                                .login-container{min-height: 72vh;}
+                            `}</style>
+                            <div 
+                                style={{
+                                    position: 'fixed',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100vw',
+                                    height: '100vh',
+                                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    zIndex: 9998,
+                                    padding: '20px',
+                                    boxSizing: 'border-box'
+                                }}
+                                onClick={(e) => {
+                                    if (e.target === e.currentTarget) {
+                                        unmount();
+                                        // 정리
+                                        delete window.overlayUnmount;
+                                        delete window.overlayRegisterHandler;
+                                    }
+                                }}
+                            >
+                                <div style={{
+                                    maxWidth: '400px',
+                                    width: '100%',
+                                    maxHeight: '90vh',
+                                    overflow: 'auto',
+                                    backgroundColor: 'white',
+                                    borderRadius: '8px',
+                                    position: 'relative'
+                                }}>
+                                    <button
+                                        onClick={() => {
+                                            unmount();
+                                            // 정리
+                                            delete window.overlayUnmount;
+                                            delete window.overlayRegisterHandler;
+                                        }}
+                                        style={{
+                                            position: 'absolute',
+                                            top: '10px',
+                                            right: '10px',
+                                            background: 'none',
+                                            border: 'none',
+                                            fontSize: '24px',
+                                            cursor: 'pointer',
+                                            zIndex: 10,
+                                            color: '#666'
+                                        }}
+                                    >
+                                        ×
+                                    </button>
+                                    
+                                    <LoginComp
+                                        onClose={() => {
+                                            console.log('Login overlay closing...');
+                                            unmount();
+                                            // 정리
+                                            delete window.overlayUnmount;
+                                            delete window.overlayRegisterHandler;
+                                        }}
+                                    
+                                        redirectUrl="/profile"
+                                        showSocialLogin={true}
+                                        isOverlay={true}
+                                    />
+                                </div>
+                            </div>
+                        </AuthProvider>
+                    </MsgProvider>
+                </BrowserRouter>
+            );
+        });
+        //navigateToPage(PAGES.LOGIN);
+        /*
+        const overlayElement = overlay.open(({ isOpen, close, unmount }) => (
+            <LoginComp
+                propsUseMsg={() => msgContext} // 전체 context 객체 전달
+                onClose={() => {
+                    console.log('Login overlay closing...');
+                    unmount();
+                }}
+                onLoginSuccess={(userData) => {
+                    console.log('Login success:', userData);
+                    unmount();
+                    // 로그인 성공 후 페이지 이동 등
+                    navigateToPage(PAGES.PROFILE);
+                }}
+                // Login 컴포넌트에 필요한 다른 props들
+                redirectUrl="/profile"
+                showSocialLogin={true}
+            />
+        ));
+        */
+    };
 
     // 네비게이션 메뉴들
     const navigationItems = [

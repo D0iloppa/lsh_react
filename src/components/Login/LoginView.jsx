@@ -9,6 +9,9 @@ import LoadingScreen from '@components/LoadingScreen';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import SketchHeader from '@components/SketchHeader';
+import { Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+
 
 // 칵테일 아이콘 컴포넌트
 const CocktailIcon = () => (
@@ -51,6 +54,9 @@ const CocktailIcon = () => (
 export default function LoginView({ navigateToPage, PAGES, propsUseMsg = false }) {
   const { messages, get } =  propsUseMsg ? propsUseMsg() : useMsg();
 
+  
+const navigate = useNavigate();
+
   useEffect(() => {
     if (messages && Object.keys(messages).length > 0) {
       console.log('✅ Messages loaded:', messages);
@@ -67,7 +73,7 @@ export default function LoginView({ navigateToPage, PAGES, propsUseMsg = false }
         {/* 우측 상단 메인 이동 버튼 */}
         <button
           className="go-home-button"
-          onClick={() => navigateToPage(PAGES.HOME)}
+          onClick={() => navigate('/main')}
         >
           홈으로
         </button>

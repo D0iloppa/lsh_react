@@ -646,15 +646,12 @@ const ViewReviewPage = ({
                   </div>
                   <p className="review-text">{review.content}</p>
 
-                  {/* 매니저/스태프 답변 표시 */}
+                  {/* 매니저 답변 표시 */}
                   {review.reply_content && (
-                    <div className={`manager-response ${review.target_type === 'staff' ? 'staff-response' : ''}`}>
+                    <div className="manager-response">
                       <div className="response-header">
                         <span className="response-label">
-                          {review.target_type === 'venue' 
-                            ? get('REVIEW_MANAGER_RESPONSE') 
-                            : get('REVIEW_STAFF_RESPONSE')
-                          }
+                          {get('REVIEW_MANAGER_RESPONSE')}
                         </span>
                         <span className="response-badge"><User size={14} /></span>
                       </div>
