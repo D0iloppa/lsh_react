@@ -93,9 +93,9 @@ export default function RegisterView() {
 
   // Validation Functions
   const validateNickname = (nickname) => {
-    if (!nickname.trim()) return get('VALIDATION_NICKNAME_REQUIRED') || '닉네임을 입력해주세요';
-    if (nickname.trim().length < 2) return get('VALIDATION_NICKNAME_MIN_LENGTH') || '닉네임은 최소 2자 이상이어야 합니다';
-    if (nickname.trim().length > 20) return get('VALIDATION_NICKNAME_MAX_LENGTH') || '닉네임은 20자 이하로 입력해주세요';
+    if (!nickname.trim()) return get('VALIDATION_ZALO_REQUIRED') || '닉네임을 입력해주세요';
+    if (nickname.trim().length < 2) return get('VALIDATION_ZALO_MIN_LENGTH') || '닉네임은 최소 2자 이상이어야 합니다';
+    if (nickname.trim().length > 40) return get('VALIDATION_ZALO_MAX_LENGTH') || '닉네임은 20자 이하로 입력해주세요';
     return null;
   };
 
@@ -474,7 +474,7 @@ export default function RegisterView() {
               fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
               display: 'block'
             }}>
-              {get('title.text.4')} *
+              {get('INQUIRER_LABEL')} *
             </label>
             <SketchInput
               type="text"

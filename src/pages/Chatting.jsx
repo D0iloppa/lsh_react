@@ -1026,6 +1026,26 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     }
   }, [initType]);
 
+  
+useEffect(() => {
+  // 탈퇴한 사용자 체크
+  if (otherProps?.account_status === 'deleted') {
+    
+    // SweetAlert 표시
+    Swal.fire({
+      title: get('SWAL_ACCOUNT_STATUS1'),
+      text: get('SWAL_ACCOUNT_STATUS2'),
+      icon: 'warning',
+      confirmButtonText: get('BUTTON_CONFIRM')
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // 확인 버튼 클릭 시 이전 페이지로 돌아가기
+        goBack();
+      }
+    });
+  }
+}, [otherProps?.account_status]); // account_status 변경 시만 실행
+
   return (
     <>
       <style jsx="true">{`

@@ -152,16 +152,6 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
                 }
             </style>
           <div style="text-align: left;">
-              <input id="swal-hidden" type="text" value="hidden" style="display:none">
-              <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px; font-weight: bold;">${get('INQUIRY_TYPE_LABEL')}</label>
-                  <select id="swal-inquiry-type" style="width: 95%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                      <option value="">${get('INQUIRY_TYPE_PLACEHOLDER')}</option>
-                      <option value="account">${get('INQUIRY_TYPE_ACCOUNT')}</option>
-                      <option value="password">${get('INQUIRY_TYPE_PASSWORD')}</option>
-                  </select>
-              </div>
-              
               <div style="margin-bottom: 15px;">
                   <label style="display: block; margin-bottom: 5px; font-weight: bold;">${get('VENUE_NAME_LABEL')}</label>
                   <input id="swal-venue-name" type="text" placeholder="${get('VENUE_NAME_PLACEHOLDER')}" 
@@ -170,7 +160,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
               
               <div style="margin-bottom: 15px;">
                   <label style="display: block; margin-bottom: 5px; font-weight: bold;">${get('INQUIRER_LABEL')}</label>
-                  <input id="swal-email" type="email" placeholder="${get('INQUIRER_PLACEHOLDER')}" 
+                  <input id="swal-email" type="text" placeholder="${get('INQUIRER_PLACEHOLDER')}" 
                         style="width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
               </div>
               
@@ -196,35 +186,28 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
       },
       preConfirm: () => {
           // 폼 데이터 수집
-          const inquiryType = document.getElementById('swal-inquiry-type').value;
+          
           const venueName = document.getElementById('swal-venue-name').value;
           const email = document.getElementById('swal-email').value;
           const inquiryContent = document.getElementById('swal-inquiry-content').value;
           
           // 유효성 검사
-          if (!inquiryType) {
-              Swal.showValidationMessage(get('INQUIRY_VALIDATION_TYPE'));
-              return false;
-          }
           if (!venueName.trim()) {
               Swal.showValidationMessage(get('INQUIRY_VALIDATION_VENUE'));
               return false;
           }
+
           if (!email.trim()) {
               Swal.showValidationMessage(get('INQUIRY_VALIDATION_EMAIL'));
               return false;
           }
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-              Swal.showValidationMessage(get('INQUIRY_VALIDATION_EMAIL_FORMAT'));
-              return false;
-          }
+
           if (!inquiryContent.trim()) {
               Swal.showValidationMessage(get('INQUIRY_VALIDATION_CONTENT'));
               return false;
           }
           
           return {
-              inquiryType,
               venueName: venueName.trim(),
               email: email.trim(),
               inquiryContent: inquiryContent.trim()
@@ -246,10 +229,9 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
           // API 호출
           const response = await ApiClient.postForm('/api/insertSupport', {
               user_id : 1,
-              email: formValues.email,
-              name: formValues.email,
+              email: formValues.email, //zalo id
+              name: formValues.email, // zalo id
               contents: JSON.stringify({
-                inquiry_type: formValues.inquiryType,
                 venue_name: formValues.venueName,
                 inquiry_content: formValues.inquiryContent
               })
