@@ -192,6 +192,14 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
             textareaElement.focus();
         }
         */
+        // 모든 input 요소들의 포커스 해제
+        const inputs = document.querySelectorAll('#swal-venue-name, #swal-email, #swal-inquiry-content');
+        inputs.forEach(input => {
+            input.blur(); // 포커스 해제
+        });
+        
+        // body에 포커스를 주어 아무것도 선택되지 않도록 함
+        document.body.focus();
       },
       preConfirm: () => {
           // 폼 데이터 수집
