@@ -504,9 +504,27 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
 
   const handleDetail = (venueId) => {
+    if ( venueId == null ||  venueId == -1) {
+      Swal.fire({
+        title: '매장 등록 필요',
+        text: '매장 정보를 먼저 등록해주세요',
+        icon: 'warning',
+        confirmButtonText: '확인'
+      });
+      
+      return;
+    }
     console.log(venueId)
     if(PAGES) {
       navigateToPageWithData(PAGES.DISCOVERVENUE, {venueId: venueId});
+    } else {
+      let prefix ='/manager';
+      let params ='navigateTo=DISCOVERVENUE&chatRoomType=manager&venueId='+venueId;
+      // 쿼리스트링 생성 (navigateTo, chatRoomType 등 불필요한 값은 제외 가능)
+   
+      // alert(`${prefix}?${params} 페이지로 이동 예정`);
+      // 예: /manager?navigateTo=CHATTING&room_sn=48&name=DORIS&chatRoomType=manager
+      navigate(`${prefix}?${params}`);
     }
     
   };
