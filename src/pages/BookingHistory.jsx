@@ -11,6 +11,7 @@ import { Edit} from 'lucide-react';
 import ApiClient from '@utils/ApiClient';
 import LoadingScreen from '@components/LoadingScreen';
 import { useAuth } from '@contexts/AuthContext';
+import Swal from 'sweetalert2';
 
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; // ⬅ 요일 배열 추가
 
@@ -180,6 +181,9 @@ const BookingHistoryPage = ({
   };
 
   const getReviewButtonState = (booking) => {
+
+//console.log("booking", booking)
+
     if (booking.review_cnt > 0) {
       return {
         text: get('Review1.1'), // '내 리뷰'
@@ -247,6 +251,67 @@ const BookingHistoryPage = ({
       });
     }
   };
+
+
+
+ const cancelReserve = async (booking) => {
+  console.log('cancelReserve', booking.id, booking);
+  
+  // 취소 확인 다이얼로그
+  const result = await Swal.fire({
+    title: get('RESERVATION_CANCELED_BUTTON'),
+    text: get('RESERVATION_CANCEL_CONFIRM_TITLE'),
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc2626',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: get('BUTTON_CONFIRM'),
+    cancelButtonText: get('STAFF_CANCEL_BUTTON')
+  });
+
+  if (!result.isConfirmed) {
+    return; // 사용자가 취소를 선택한 경우
+  }
+
+  try {
+    // 버튼 로딩 상태로 변경 (필요시)
+    // setButtonLoading('cancel', booking.id, true);
+
+    // API 호출
+    const response = await ApiClient.postForm('/api/cancelReservation', {
+      reservation_id: booking.id
+    });
+
+    // 성공 메시지
+    await Swal.fire({
+      title: get('RESERVATION_CANCELED_BUTTON'),
+      text: get('RESERVATION_CANCEL_SUCCESS'),
+      icon: 'success',
+      confirmButtonText: get('BUTTON_CONFIRM')
+    });
+
+    // 예약 목록 새로고침 
+    loadBookingHistory(); 
+    
+  } catch (error) {
+    console.error('예약 취소 중 오류:', error);
+    
+    // 에러 메시지
+    Swal.fire({
+      title: get('RESERVATION_CANCEL_ERROR_TITLE'),
+      text: get('RESERVATION_CANCEL_ERROR_TEXT'),
+      icon: 'error',
+      confirmButtonText: get('COMMON_CONFIRM')
+    });
+  } finally {
+    // 버튼 상태 복구 (필요시)
+    // enableButton('cancel', booking.id);
+  }
+};
+
+
+
+
 
   const formatTimeDisplay = (startTime, endTime) => {
     if (!startTime) return '';
@@ -374,7 +439,8 @@ const BookingHistoryPage = ({
           review_cnt:item.review_cnt,
           isReviewable:item.isReviewable,
           is_reservation:item.is_reservation,
-          clientId: item.client_id
+          clientId: item.client_id,
+          cancelable:item.cancelable
         }));
         
         setAllBookings(formattedBookings); // ⬅ 전체 데이터 저장
@@ -425,6 +491,7 @@ const BookingHistoryPage = ({
     
     return `${diffHours}${get('Reservation.HourUnit') || '시간'}`;
   };
+
 
   return (
     <>
@@ -840,6 +907,18 @@ const BookingHistoryPage = ({
                     </div>
                     
                     <div className="action-buttons">
+                       {booking.cancelable && (
+                          <SketchBtn 
+                            variant="danger" 
+                            size="small"
+                            onClick={() => cancelReserve(booking)}
+                          >
+                            <HatchPattern opacity={0.4} />
+                            {get('RESERVATION_CANCELED_BUTTON')}
+                          </SketchBtn>
+                        )}
+
+
                         {booking.status === 'completed' && (
                           <SketchBtn 
                             variant="event" 

@@ -750,7 +750,7 @@ export default function RegisterView() {
           className="sketch-button" 
           variant="event"
           disabled={isLoading}
-          style={{ width: '100%' }}
+          style={{ width: '100%', marginBottom:'2rem' }}
         >
           <HatchPattern opacity={0.8} />
           {isLoading ? (get('LOADING_REGISTER') || '회원가입 중...') : (get('title.text.11') || '회원가입')}

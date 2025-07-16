@@ -48,8 +48,8 @@ const CocktailIcon = () => (
   </svg>
 );
 
-export default function LoginView({ navigateToPage, PAGES }) {
-  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+export default function LoginView({ navigateToPage, PAGES, propsUseMsg = false }) {
+  const { messages, get } =  propsUseMsg ? propsUseMsg() : useMsg();
 
   useEffect(() => {
     if (messages && Object.keys(messages).length > 0) {

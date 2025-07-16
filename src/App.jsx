@@ -12,6 +12,7 @@ import GlobalPopupManager from '@components/GlobalPopupManager';
 
 import { FcmProvider, useFcm } from '@contexts/FcmContext';
 
+
 import { OverlayProvider } from 'overlay-kit';
 
 
@@ -74,7 +75,7 @@ const AppRoutes = () => {
       {/* 2. 로그인 페이지 */}
       <Route
         path="/login"
-        element={ 
+        element={
           /*<LoginView />*/
           isLoggedIn ? <Navigate to="/main" replace /> : <LoginView />
         }
@@ -572,6 +573,9 @@ const NotificationHandler = () => {
     window.ReactReady = true;
 
     window.onNotificationClick = (navigateTo, data) => {
+
+      alert("onNotificationClick");
+
       let prefix = '/main' ;
       // (data?.chatRoomType === 'staff') ? '/staff' : '/manager';
 
@@ -769,7 +773,7 @@ return (
       <AuthProvider>
         <MsgProvider>
           <PopupProvider>
-            <AppContent />
+              <AppContent />
           </PopupProvider>
         </MsgProvider>
       </AuthProvider>

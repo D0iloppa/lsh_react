@@ -31,7 +31,7 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
 
     const onExpore = () => {
-      navigate('/login');
+      navigate('/main');
     };
 
 

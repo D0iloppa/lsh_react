@@ -328,9 +328,9 @@ const AccountPage = ({
             </div>
           </div>
 
-          <div className="chat-button" onClick={handleChatClick}>
+          {/* <div className="chat-button" onClick={handleChatClick}>
             <MessageCircle size={24} className="chat-icon" />
-          </div>
+          </div> */}
 
           <LoadingScreen 
             variant="cocktail"

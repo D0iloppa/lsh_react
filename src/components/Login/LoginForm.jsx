@@ -208,9 +208,18 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
           href="#" 
           className="sketch-link sketch-link--primary"
           onClick={(e) => {
-            e.preventDefault();
+        e.preventDefault();
+        
+        if (window.overlayRegisterHandler) {
+            // 오버레이 모드 - 전역 함수 실행
+            console.log('오버레이 모드에서 Register 클릭');
+            window.overlayRegisterHandler();
+        } else {
+            // 일반 모드 - navigate 사용
+            console.log('일반 모드에서 Register 클릭');
             navigate('/register');
-          }}
+        }
+    }}
         >
           { get('Welcome1.4') }
         </a>

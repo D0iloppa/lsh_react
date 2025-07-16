@@ -11,8 +11,12 @@ import LoadingScreen from '@components/LoadingScreen';
 import { Star, Clock, Users, Phone, CreditCard, MessageCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import ApiClient from '@utils/ApiClient';
 import { useAuth } from '../contexts/AuthContext';
-
 import { overlay } from 'overlay-kit';
+import { MsgProvider } from '@contexts/MsgContext';
+import { AuthProvider } from '@contexts/AuthContext';
+import { BrowserRouter } from 'react-router-dom';
+
+import LoginComp from '@components/Login/LoginView';
 
 import Swal from 'sweetalert2';
 
@@ -35,15 +39,91 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   };*/
   const { user, isActiveUser, iauMasking } = useAuth();
 
+
+  const openLoginOverlay = () => {
+    console.log('openLoginOverlay');
+    
+    overlay.open(({ isOpen, close, unmount }) => (
+      <BrowserRouter>
+        <MsgProvider>
+          <AuthProvider>
+            <style>{`
+              .go-home-button {
+                display: none !important;
+              }
+              .login-container{min-height: 72vh;}
+            `}</style>
+            <div 
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 9998,
+                padding: '20px',
+                boxSizing: 'border-box'
+              }}
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  unmount();
+                }
+              }}
+            >
+              <div style={{
+                maxWidth: '400px',
+                width: '100%',
+                maxHeight: '90vh',
+                overflow: 'auto',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                position: 'relative'
+              }}>
+                <button
+                  onClick={unmount}
+                  style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    zIndex: 10,
+                    color: '#666'
+                  }}
+                >
+                  ×
+                </button>
+                
+                <LoginComp
+                  onClose={() => {
+                    console.log('Login overlay closing...');
+                    unmount();
+                  }}
+                  onLoginSuccess={(userData) => {
+                    console.log('Login success:', userData);
+                    unmount();
+                    window.location.reload();
+                  }}
+                  redirectUrl="/profile"
+                  showSocialLogin={true}
+                  isOverlay={true}
+                />
+              </div>
+            </div>
+          </AuthProvider>
+        </MsgProvider>
+      </BrowserRouter>
+    ));
+  };
+
  const handleDetail = (girl) => {
   try {
-    const storageKey = 'staffDetailClickCount';
-    let count = parseInt(localStorage.getItem(storageKey) || '0', 10);
-
-    count += 1;
-    localStorage.setItem(storageKey, count.toString());
-
-    // const shouldShowAd = count % 3 === 0;
 
 
     showAdWithCallback(
@@ -59,51 +139,6 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
     );
 
 
-
-    if (shouldShowAd) {
-
-
-
-
-
-      /*
-      // 광고 응답 대기 타이머 (1초 후 자동 이동)
-      const fallbackTimer = setTimeout(() => {
-        console.warn('광고 응답 없음 - 기본 이동');
-        navigateToPageWithData(PAGES.STAFFDETAIL, girl);
-      }, 1000);
-
-      const handleAdComplete = (event) => {
-        if (event.data === 'adCompleted') {
-          clearTimeout(fallbackTimer);
-          window.removeEventListener('message', handleAdComplete);
-          navigateToPageWithData(PAGES.STAFFDETAIL, girl);
-        }
-      };
-
-      window.addEventListener('message', handleAdComplete);
-
-      const isAndroid = !!window.ReactNativeWebView;
-      const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
-
-      if (isAndroid) {
-        window.ReactNativeWebView.postMessage('showAd');
-      } else if (isIOS) {
-        window.webkit.messageHandlers.native.postMessage('showAd');
-      } else {
-        console.warn('웹뷰 환경이 아님 - 바로 이동');
-        clearTimeout(fallbackTimer);
-        navigateToPageWithData(PAGES.STAFFDETAIL, girl);
-      }
-    */
-
-      
-
-
-    } else {
-      // 광고 없이 바로 이동
-      navigateToPageWithData(PAGES.STAFFDETAIL, girl);
-    }
   } catch (e) {
     console.error('광고 호출 중 예외 발생:', e);
     navigateToPageWithData(PAGES.STAFFDETAIL, girl);
@@ -116,34 +151,83 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   // 스크롤 이벤트용 별도 useEffect
 
   const navigate = useNavigate();
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
+  
+useEffect(() => {
+  const debugScroll = () => {
+    console.log('=== 스크롤 디버깅 ===');
+    console.log('window.scrollY:', window.scrollY);
+    console.log('window.pageYOffset:', window.pageYOffset);
+    console.log('document.documentElement.scrollTop:', document.documentElement.scrollTop);
+    console.log('document.body.scrollTop:', document.body.scrollTop);
+    console.log('document.documentElement.clientHeight:', document.documentElement.clientHeight);
+    console.log('document.documentElement.scrollHeight:', document.documentElement.scrollHeight);
+    console.log('document.body.clientHeight:', document.body.clientHeight);
+    console.log('document.body.scrollHeight:', document.body.scrollHeight);
+    
+    const discoverContainer = document.querySelector('.discover-container');
+    if (discoverContainer) {
+      console.log('discover-container scrollTop:', discoverContainer.scrollTop);
+      console.log('discover-container scrollHeight:', discoverContainer.scrollHeight);
+      console.log('discover-container clientHeight:', discoverContainer.clientHeight);
+    }
+  };
 
-      const scrollPercentage = scrollY / (documentHeight - windowHeight);
+  debugScroll();
+  
+  // 스크롤 시도
+  window.scrollTo(0, 0);
+  
+  setTimeout(debugScroll, 1000);
+}, [venueId]);
 
-      if (scrollPercentage > 0.5) {
-        setShowFooter(false);
-      } else {
-        setShowFooter(true);
-      }
-    };
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     const scrollY = window.scrollY;
+  //     const windowHeight = window.innerHeight;
+  //     const documentHeight = document.documentElement.scrollHeight;
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []); // 의존성 배열 비움
+  //     const scrollPercentage = scrollY / (documentHeight - windowHeight);
+
+  //     if (scrollPercentage > 0.5) {
+  //       setShowFooter(false);
+  //     } else {
+  //       setShowFooter(true);
+  //     }
+  //   };
+
+  //   window.addEventListener('scroll', handleScroll);
+  //   return () => window.removeEventListener('scroll', handleScroll);
+  // }, []); // 의존성 배열 비움
 
 
-  useEffect(() => {
+useEffect(() => {
+  const resetContentAreaScroll = () => {
+    // 진짜 스크롤 컨테이너인 .content-area를 리셋
+    const contentArea = document.querySelector('.content-area');
+    if (contentArea) {
+      contentArea.scrollTop = 0;
+      console.log('content-area 스크롤이 0으로 리셋됨');
+    }
+    
+    // window도 함께 (혹시 모르니)
     window.scrollTo(0, 0);
+  };
+
+  resetContentAreaScroll();
+  
+  // DOM 렌더링 완료 후 한 번 더
+  setTimeout(resetContentAreaScroll, 100);
+  
+}, [venueId]);
+
+  useEffect(() => {
+    //window.scrollTo(0, 0);
 
     if (messages && Object.keys(messages).length > 0) {
       console.log('✅ Messages loaded:', messages);
       // setLanguage('en'); // 기본 언어 설정
       console.log('Current language set to:', currentLang);
-      window.scrollTo(0, 0);
+      //window.scrollTo(0, 0);
     }
 
 
@@ -167,7 +251,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
           phone: iauMasking(iau, venueInfo.phone || ''),
           address: iauMasking(iau, venueInfo.address || '')
         };
-        
+        window.scrollTo(0, 0);
         setVenueInfo(vi || null);
       } catch (error) {
         console.error('Venue 정보 가져오기 실패:', error);
@@ -201,6 +285,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
     // };
 
     fetchVenueInfo();
+    
     //fetchTopGirls();
   }, [venueId, messages, currentLang]);
 
@@ -283,6 +368,8 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
     };
 
     fetchAllData();
+    
+    window.scrollTo(0, 0);
   }, [venueId]);
 
 
@@ -736,7 +823,7 @@ const openMenuOverlay = (menuList) => {
           max-width: 28rem;
           margin: 0 auto;
           background-color: white;
-          min-height: 100vh;
+          //min-height: 100vh;
 
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
@@ -1103,10 +1190,11 @@ const openMenuOverlay = (menuList) => {
                 className="sketch-button enter-button"
                 variant="event"
                 style={{ width: '45px', height: '39px', marginTop: '10px', background: '#374151', color: 'white' }}
-              onClick={async () => {
+                onClick={async () => {
                   // 로그인 여부 체크
                   if (!user || !user.user_id) {
-                    navigate('/login');
+                    // navigate('/login'); ← 이거 대신 오버레이로 변경
+                    openLoginOverlay(); // 오버레이 함수 호출
                     return;
                   }
 
@@ -1139,8 +1227,9 @@ const openMenuOverlay = (menuList) => {
                     alert('채팅방 정보를 불러오는 데 실패했습니다.');
                   }
                 }}
-
-              ><MessageCircle size={16} /></SketchBtn>
+              >
+                <MessageCircle size={16} />
+              </SketchBtn>
               <SketchBtn
                 className="sketch-button enter-button"
                 variant="event"
@@ -1151,7 +1240,7 @@ const openMenuOverlay = (menuList) => {
 
                     // 로그인 여부 체크
                     if (!user || !user.user_id) {
-                      navigate('/login');
+                      openLoginOverlay(); // 오버레이 함수 호출
                       return;
                     }
 

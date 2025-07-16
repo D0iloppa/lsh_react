@@ -8,30 +8,52 @@ const usePageNavigation = () => {
     const [pageHistory, setPageHistory] = useState([DEFAULT_PAGE]);
     const [noBottom, setNobottom] = useState(false);
 
+
+    const scrollToTopAndEmitAd = () => {
+
+        console.log('scrollToTopAndEmitAd');
+        
+        // 스크롤 실행
+        const scrollToTop = () => {
+            console.log('scrollToTop');
+            window.scrollTo({
+                top: 0,
+                left: 0,
+                behavior: 'smooth'
+            });
+        };
+    
+        scrollToTop();
+        setTimeout(scrollToTop, 50);
+        setTimeout(scrollToTop, 200);
+    
+        // 스크롤 후 광고 이벤트
+        setTimeout(() => {
+            window.testPopup.emit('adViewCount');
+        }, 100);
+    };
+
     // 일반 페이지 이동
     const navigateToPage = (page) => {
         setCurrentPage(page);
         setPageHistory(prev => [...prev, page]);
         setPageDataStack(prev => [...prev, { page, data: null }]);
-
-        window.testPopup.emit('adViewCount'); 
+    
+        scrollToTopAndEmitAd();
     };
-
-    // 데이터와 함께 페이지 이동
+    
     const navigateToPageWithData = (page, data) => {
         if(page == PAGES.LOGIN){
             setNobottom(true); 
         } else {
             setNobottom(false); 
         }
-
-
+    
         setCurrentPage(page);
         setPageDataStack(prev => [...prev, { page, data }]);
         setPageHistory(prev => [...prev, page]);
-
-
-        window.testPopup.emit('adViewCount'); 
+    
+        scrollToTopAndEmitAd();
     };
 
     const navigateToPageFromNotificationData = async (page_id, data) => {

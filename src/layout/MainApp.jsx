@@ -10,48 +10,38 @@ import HatchPattern from '@components/HatchPattern';
 import LoadingScreen from '@components/LoadingScreen';
 
 import { useLocation, useNavigate } from 'react-router-dom';
+import { overlay } from 'overlay-kit';
+import { MsgProvider } from '@contexts/MsgContext';
+import { AuthProvider } from '@contexts/AuthContext';
+import { BrowserRouter } from 'react-router-dom';
+
+import LoginComp from '@components/Login/LoginView';
 
 import './MainApp.css';
 
 const MainApp = () => {
-
-
-  const scrollToTop = () => {
-   console.log('단계별 안전 스크롤');
-    
-    // 1단계: 다른 컨테이너들 먼저 정리
-    const containers = document.querySelectorAll('[class*="container"], [class*="wrapper"], [class*="app"], main, #root, #app');
-    containers.forEach(container => {
-      if (container.scrollTop > 0) {
-        if (container.scrollTo) {
-          container.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-          container.scrollTop = 0;
-        }
-      }
-    });
-    
-    // 2단계: 50ms 후 window 스크롤
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 50);
-    
-    // 3단계: 백업 - 1초 후에도 스크롤이 안 됐으면 강제 실행
-    setTimeout(() => {
-      if (window.scrollY > 10) { // 10px 이상 남아있으면
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-        window.scrollTo(0, 0);
-      }
-    }, 1000);
-};
-
     const location = useLocation();
     const navigate = useNavigate();
 
+    const scrollToTop = () => {
+         console.log('올바른 스크롤 리셋');
+  
+            // 진짜 스크롤 컨테이너인 content-area 리셋
+        const contentArea = document.querySelector('.content-area');
+            if (contentArea) {
+            contentArea.scrollTop = 0;
+                contentArea.scrollTo && contentArea.scrollTo(0, 0);
+            }
+
+            // window도 리셋
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+    };
     
     const { user, isLoggedIn, isActiveUser } = useAuth();
-    const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+    const msgContext = useMsg();
+    const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = msgContext;
 
     const [ activeUser, setActiveUser] = useState({});
     
@@ -129,24 +119,6 @@ const MainApp = () => {
     // 광고 호출 함수 (useCallback으로 메모이제이션)
     const showAdWithCallback = useCallback(async (onAdComplete, fallbackAction, timeoutMs = 4000) => {
 
-        const clickCount = parseInt(localStorage.getItem('adClickCount') || '0');
-        const newClickCount = clickCount + 1;
-    
-        // 새로운 클릭 횟수를 localStorage에 저장
-        localStorage.setItem('adClickCount', newClickCount.toString());
-        
-        console.log(`클릭 횟수: ${newClickCount}/5`);
-        // 5회마다 광고 표시
-        if (newClickCount % 5 !== 0) {
-            console.log('5회 미만 - 광고 스킵');
-            onAdComplete(); // 광고 없이 바로 완료 처리
-            return;
-        }
-
-
-
-        let currentActiveUser = activeUser; // 로컬 변수로 현재 상태 복사
-
 
         if (Object.keys(activeUser).length === 0) {
             // 빈 객체인 경우
@@ -155,24 +127,19 @@ const MainApp = () => {
             try {
                 const {isActiveUser:isActive = false, subscription = {}} = await isActiveUser();
                 
-                // 로컬 변수 업데이트
-                currentActiveUser = {
+                setActiveUser({
                     isActive,
                     lastChecked: new Date().toISOString()
-                };
-                
-                // 상태도 업데이트
-                setActiveUser(currentActiveUser);
+                });
                 
                 console.log('사용자 상태 초기화 완료:', { isActive, lastChecked: new Date().toISOString() });
                 
             } catch (error) {
                 console.error('사용자 상태 확인 실패:', error);
-                currentActiveUser = {
+                setActiveUser({
                     isActive: false,
                     lastChecked: new Date().toISOString()
-                };
-                setActiveUser(currentActiveUser);
+                });
             }
 
         }else{
@@ -189,21 +156,19 @@ const MainApp = () => {
                 try {
                     const {isActiveUser:isActive = false, subscription = {}} = await isActiveUser();
                     
-                    currentActiveUser = {
+                    setActiveUser({
                         isActive,
                         lastChecked: new Date().toISOString()
-                    };
+                    });
                     
-                    setActiveUser(currentActiveUser);
-                    console.log('사용자 상태 재검증 완료:', currentActiveUser);
+                    console.log('사용자 상태 재검증 완료:', { isActive, lastChecked: new Date().toISOString() });
                     
                 } catch (error) {
                     console.error('사용자 상태 재검증 실패:', error);
-                    currentActiveUser = {
+                    setActiveUser({
                         isActive: false,
                         lastChecked: new Date().toISOString()
-                    };
-                    setActiveUser(currentActiveUser);
+                    });
                 }
             } else {
                 // 오늘 이미 체크한 경우 - 기존 상태 유지
@@ -211,13 +176,8 @@ const MainApp = () => {
             }
         }
 
-        console.log('showAdWithCallback', currentActiveUser);
+        console.log('showAdWithCallback', activeUser);
 
-        if(currentActiveUser.isActive){
-            // 티켓구메 유저 무조건 fallback
-            fallbackAction();
-            return;
-        }
 
         try {
             // 광고 응답 대기 타이머 (기본 4초)
@@ -255,7 +215,7 @@ const MainApp = () => {
             alert(JSON.stringify(error));
             fallbackAction();
         }
-    }, [activeUser.isActive, activeUser.lastChecked]); 
+    }, []); 
     
     const navigationProps = {
         navigateToMap,
@@ -269,6 +229,7 @@ const MainApp = () => {
         showAdWithCallback
     };
 
+//console.log('PAGES', PAGES)
 
     // 현재 페이지 렌더링 (데이터와 함께)
     // 페이지 이동시 MainApp.jsx에 정의 필요
@@ -284,23 +245,158 @@ const MainApp = () => {
         });
     };
 
+
+       const openLoginOverlay = () => {
+    console.log('openLoginOverlay');
+    
+    overlay.open(({ isOpen, close, unmount }) => {
+        // 여기서 unmount를 전역에 저장
+        window.overlayUnmount = unmount;
+        
+        // 여기서 전역 함수 등록
+        window.overlayRegisterHandler = () => {
+            console.log('Register 버튼 클릭 - 오버레이 닫고 Register 페이지로');
+            if (window.overlayUnmount) {
+                window.overlayUnmount();
+            }
+            navigateToPage(PAGES.REGISTER); // 회원가입 페이지로 이동
+            
+            // 정리
+            delete window.overlayUnmount;
+            delete window.overlayRegisterHandler;
+        };
+        
+        return (
+            <BrowserRouter>
+                <MsgProvider>
+                    <AuthProvider>
+                        <style>{`
+                            .go-home-button {
+                                display: none !important;
+                            }
+                            .login-container{min-height: 72vh;}
+                        `}</style>
+                        <div 
+                            style={{
+                                position: 'fixed',
+                                top: 0,
+                                left: 0,
+                                width: '100vw',
+                                height: '100vh',
+                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                zIndex: 9998,
+                                padding: '20px',
+                                boxSizing: 'border-box'
+                            }}
+                            onClick={(e) => {
+                                if (e.target === e.currentTarget) {
+                                    unmount();
+                                    // 정리
+                                    delete window.overlayUnmount;
+                                    delete window.overlayRegisterHandler;
+                                }
+                            }}
+                        >
+                            <div style={{
+                                maxWidth: '400px',
+                                width: '100%',
+                                maxHeight: '90vh',
+                                overflow: 'auto',
+                                backgroundColor: 'white',
+                                borderRadius: '8px',
+                                position: 'relative'
+                            }}>
+                                <button
+                                    onClick={() => {
+                                        unmount();
+                                        // 정리
+                                        delete window.overlayUnmount;
+                                        delete window.overlayRegisterHandler;
+                                    }}
+                                    style={{
+                                        position: 'absolute',
+                                        top: '10px',
+                                        right: '10px',
+                                        background: 'none',
+                                        border: 'none',
+                                        fontSize: '24px',
+                                        cursor: 'pointer',
+                                        zIndex: 10,
+                                        color: '#666'
+                                    }}
+                                >
+                                    ×
+                                </button>
+                                
+                                <LoginComp
+                                    onClose={() => {
+                                        console.log('Login overlay closing...');
+                                        unmount();
+                                        // 정리
+                                        delete window.overlayUnmount;
+                                        delete window.overlayRegisterHandler;
+                                    }}
+                                    onLoginSuccess={(userData) => {
+                                        console.log('Login success:', userData);
+                                        unmount();
+                                        // 정리
+                                        delete window.overlayUnmount;
+                                        delete window.overlayRegisterHandler;
+                                        window.location.reload();
+                                    }}
+                                    redirectUrl="/profile"
+                                    showSocialLogin={true}
+                                    isOverlay={true}
+                                />
+                            </div>
+                        </div>
+                    </AuthProvider>
+                </MsgProvider>
+            </BrowserRouter>
+        );
+    });
+        //navigateToPage(PAGES.LOGIN);
+        /*
+        const overlayElement = overlay.open(({ isOpen, close, unmount }) => (
+            <LoginComp
+                propsUseMsg={() => msgContext} // 전체 context 객체 전달
+                onClose={() => {
+                    console.log('Login overlay closing...');
+                    unmount();
+                }}
+                onLoginSuccess={(userData) => {
+                    console.log('Login success:', userData);
+                    unmount();
+                    // 로그인 성공 후 페이지 이동 등
+                    navigateToPage(PAGES.PROFILE);
+                }}
+                // Login 컴포넌트에 필요한 다른 props들
+                redirectUrl="/profile"
+                showSocialLogin={true}
+            />
+        ));
+        */
+    };
+
     // 네비게이션 메뉴들
     const navigationItems = [
-        { id: PAGES.HOME, icon: Home, label: get('Footer1.3') },
-        { id: PAGES.SEARCH, icon: Search, label: get('btn.searchMap.1.1') },
-    {
-        id: PAGES.CHATTINGLIST,
-        icon: MessagesSquare,
-        label: get('MENU_CHATTING'),
+        { id: PAGES.HOME, icon: Home, label: get('Footer1.3'), needLogin:false },
+        { id: PAGES.SEARCH, icon: Search, label: get('btn.searchMap.1.1'), needLogin:false },
+        { id: PAGES.CHATTINGLIST, icon: MessagesSquare, label: get('MENU_CHATTING'), 
+            needLogin:true,
             data: { 
                 chatRoomType: 'user'
             }   
         },
-        { id: PAGES.BOOKINGHISTORY, icon: History, label: get('menu.reserve.history') },
-        { id: PAGES.ACCOUNT, icon: User, label: get('Menu1.4') }
+        { id: PAGES.BOOKINGHISTORY, icon: History, label: get('menu.reserve.history') ,needLogin:true},
+        { id: PAGES.ACCOUNT, icon: User, label: get('Menu1.4'), needLogin:true }
     ];
 
     return (
+        
         <div className="main-app-container">
             {/* 메인 콘텐츠 영역 (스크롤 가능) */}
             <main className="content-area">
@@ -308,23 +404,20 @@ const MainApp = () => {
             </main>
 
             {/* 하단 네비게이션 (고정) */}
-           {currentPage !== PAGES.LOGIN && (
-                    <nav className="bottom-navigation">
-                        <div className="nav-container">
-                        {<HatchPattern opacity={0.3} />}
-                        {navigationItems.map(({ id, icon: Icon, label, data = false }) => {
-                            const isProtectedPage =
-                            id === PAGES.CHATTINGLIST ||
-                            id === PAGES.BOOKINGHISTORY ||
-                            id === PAGES.ACCOUNT;
+            <nav className="bottom-navigation">
+                <div className="nav-container">
+                    {<HatchPattern opacity={0.3} />}
+                    {navigationItems.map(({ id, icon: Icon, label, data = false, needLogin = false }) => (
+                        <button
+                            key={id}
+                            onClick={() => {
 
-                            return (
-                            <button
-                                key={id}
-                                onClick={() => {
-                                if (user == null && isProtectedPage) {
-                                    navigateToPageWithData(PAGES.LOGIN);
-                                    return;
+                                if(needLogin){
+                                    if(!user || user?.user_id == 1){
+
+                                        openLoginOverlay();
+                                        return;
+                                    }
                                 }
 
                                 if (data) {
@@ -332,28 +425,25 @@ const MainApp = () => {
                                 } else {
                                     navigateToPage(id);
                                 }
-                                }}
-                                className={`nav-item ${currentPage === id ? 'active' : ''}`}
-                            >
-                                <Icon className="nav-icon" />
-                                <span className="nav-label">{label}</span>
-                            </button>
-                            );
-                        })}
-                        </div>
-                    </nav>
-                    )}
+                            }}
+                            className={`nav-item ${currentPage === id ? 'active' : ''}`}
+                        >
+                            <Icon className="nav-icon" />
+                            <span className="nav-label">{label}</span>
+                        </button>
+                    ))}
+                </div>
+            </nav>
 
-        {currentPage === 'HOME' && (
+            {currentPage == 'HOME' && (
                 <section className="bottom-map-section">
                     <div className="map-icon-container" onClick={handleMapClick}>
-                    <Map size={20} />
-                    <span style={{ marginLeft: '5px' }}>{get('Main1.1')}</span>
+                    <Map size={20} /> <span style={{marginLeft: '5px'}}>{get('Main1.1')}</span>
                     </div>
                 </section>
                 )}
 
-        {currentPage === 'HOME' && (
+            {currentPage == 'HOME' && (
                  <button className="scroll-up-btn" onClick={scrollToTop}>
                     <ChevronUp size={24} />
                     </button>
@@ -366,7 +456,6 @@ const MainApp = () => {
                                        />
         </div>
     );
-
 };
 
 export default MainApp;

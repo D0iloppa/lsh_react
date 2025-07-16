@@ -7,6 +7,9 @@
     font-size: 9px;
     max-width: 85%;
   }
+  .swal2-container {
+    z-index: 9999;
+  }
 
   .swal-compact-popup {
     padding: 1.2rem 1.2rem !important;
@@ -56,6 +59,7 @@
   }
 
  :root {
+    overflow-y: hidden; /* 스크롤바 숨김 */
   --font-primary: 'YourDefaultFont', sans-serif;
   --font-japanese: 'NotoSansJP', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif;
   --font-chinese: 'NotoSansJP', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif;

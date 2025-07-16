@@ -37,6 +37,8 @@ import ChattingList from '@pages/ChattingList';
 
 
 import Login from '@components/Login/LoginView';
+import RegisterView from '@components/Register/RegisterView';
+
 
 // 페이지 상수
 export const PAGES = {
@@ -64,7 +66,8 @@ export const PAGES = {
     PAYMENT: 'PAYMENT',
     CHATTING: 'CHATTING',
     CHATTINGLIST: 'CHATTINGLIST',
-    LOGIN: 'LOGIN'
+    LOGIN: 'LOGIN',
+    REGISTER : 'REGISTER'
 };
 
 // 페이지 컴포넌트 매핑
@@ -93,7 +96,8 @@ export const PAGE_COMPONENTS = {
     [PAGES.PAYMENT]: Payment,
     [PAGES.CHATTING]: Chatting,
     [PAGES.CHATTINGLIST]: ChattingList,
-    [PAGES.LOGIN]: Login
+    [PAGES.LOGIN]: Login,
+    [PAGES.REGISTER]: RegisterView
 };
 
 // 기본 페이지

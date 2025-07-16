@@ -11,12 +11,12 @@ export default function Privacy_kr() {
                 <div className="space-y-3">
                     <div>
                         <strong>제1조(목적)</strong><br />
-                        본 개인정보처리방침은 LetanTon Sheriff(이하 "회사")가 제공하는 서비스 이용과 관련하여 회원의 개인정보를 어떻게 수집, 이용, 보관, 보호하는지에 대한 기준을 규정합니다.
+                        본 개인정보처리방침은 LetanTon Sheriff(이하 “회사”)가 제공하는 서비스 이용과 관련하여 회원의 개인정보를 어떻게 수집, 이용, 보관, 보호하는지에 대한 기준을 규정합니다.
                     </div><br /><br />
 
                     <div>
                         <strong>제2조(수집하는 개인정보 항목)</strong><br />
-                        회원가입 시: 이름, 이메일, 비밀번호, 생년월일, 휴대전화번호, 프로필 사진 등<br /><br />
+                        회원가입 시: 이메일, 비밀번호, 생년월일, 휴대전화번호, 프로필 사진 등<br /><br />
                         서비스 이용 시: 예약내역, 결제정보(카드/계좌), 접속IP, 쿠키, 기기정보 등<br /><br />
                         기타: 고객문의, 이벤트 참여 시 추가 정보
                     </div><br /><br />
@@ -59,8 +59,8 @@ export default function Privacy_kr() {
                     <div>
                         <strong>제9조(개인정보 보호책임자)</strong><br />
                         회사는 개인정보 보호책임자를 지정하여 개인정보 관련 문의 및 불만처리를 담당합니다.<br /><br />
-                        책임자: [담당자명]<br /><br />
-                        연락처: [이메일/전화번호]
+                        책임자 : 이광빈<br /><br />
+                        연락처 : smilelkb85@gmail.com
                     </div><br /><br />
 
                     <div>
@@ -70,7 +70,7 @@ export default function Privacy_kr() {
 
                     <div>
                         <strong>부칙</strong><br />
-                        본 방침은 2025년 6월 17일부터 시행합니다.
+                        본 방침은 2025년 8월 01일부터 시행합니다.
                     </div>
                 </div>
             </div>
