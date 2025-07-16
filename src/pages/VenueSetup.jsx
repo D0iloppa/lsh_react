@@ -401,6 +401,11 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   };
 
   const updateVenue = async () => {
+
+
+
+
+
   try {
     // 먼저 주소 → 위도/경도 변환 수행
     const response = await ApiClient.get('/api/getPoi', {
@@ -435,6 +440,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       name: formRef.current.name.trim(),
       address: formRef.current.address.trim(),
       phone: formRef.current.phone.trim(),
+      profile_content_id:formRef.current.profile_content_id,
       latitude: lat,
       longitude: lng,
       open_time: formatTimeToSeconds(formRef.current.open_time.trim()),
@@ -446,7 +452,23 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       venueData.profile_content_id = updatedForm.newProfile;
     }
 
-    console.log('venueData', venueData, galleryImages);
+
+    console.log('venueData', venueData, formRef.current, galleryImages);
+
+    
+    if(!venueData.profile_content_id){
+      // 기존 alert('no profile'); 부분을 다음과 같이 변경
+      await Swal.fire({
+        title: get('VENUE_PROFILE_REQUIRED_TITLE'),
+        text: get('VENUE_PROFILE_REQUIRED_TEXT'),
+        icon: 'warning',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON'),
+        confirmButtonColor: '#3085d6'
+      });
+      return;
+    }
+
+
 
     const updateResponse = await ApiClient.postForm('/api/venueEdit', venueData);
     

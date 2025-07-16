@@ -320,7 +320,33 @@ const handleSubmitResponse = async (reviewId) => {
     };
 
     // 신고 모달 열기
-  const handleReport = (review) => {
+  const handleReport = async (review) => {
+    // 중복 신고 확인을 위한 API 호출
+    try {
+      const checkPayload = {
+        target_id: user.manager_id,
+        reporter_id: review.review_id
+      };
+      
+      const checkResponse = await ApiClient.postForm('/api/isAlreadyReported', checkPayload);
+      
+      // 이미 신고한 이력이 있는 경우 (res > 0)
+      if (checkResponse && checkResponse > 0) {
+        Swal.fire({
+          title: get('MENU_NOTIFICATIONS'),
+          text: '이미 신고한 이력이 있습니다.',
+          icon: 'warning',
+          confirmButtonText: get('BUTTON_CONFIRM'),
+          confirmButtonColor: '#f59e0b'
+        });
+        return;
+      }
+    } catch (error) {
+      console.error('신고 이력 확인 실패:', error);
+      // 에러가 발생해도 신고 모달은 열 수 있도록 함
+    }
+
+    // 중복 신고가 아닌 경우에만 모달 열기
     setSelectedReview(review);
     setReportReason('');
     
