@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { overlay } from 'overlay-kit';
 import { ImageIcon, Upload, ChevronLeft, ChevronRight } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 const PhotoGallery = ({
   photoGalleryMode = false,
@@ -26,6 +27,7 @@ const PhotoGallery = ({
   const [contentId, setContentId] = useState([]);
   const [loading, setLoading] = useState(true);
   const [venueId, setVenueId] = useState(venue_id);
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
   const fetchImages = async () => {
     setLoading(true);
@@ -44,6 +46,17 @@ const PhotoGallery = ({
       setLoading(false);
     }
   };
+
+
+   useEffect(() => {
+        if (messages && Object.keys(messages).length > 0) {
+          console.log('✅ Messages loaded:', messages);
+          // setLanguage('en'); // 기본 언어 설정
+          console.log('Current language set to:', currentLang);
+          window.scrollTo(0, 0);
+        }
+      }, [messages, currentLang]);
+      
 
   useEffect(() => {
     let mounted = true;
@@ -64,12 +77,24 @@ const PhotoGallery = ({
   const openGalleryOverlay = () => {
 
     if(venue_id < 1){
+      /*
       Swal.fire({
-        title: '매장 등록 필요',
-        text: '매장 정보를 먼저 등록해주세요',
+        title: get('SWAL_VENUE_REG1'),
+        text: get('SWAL_VENUE_REG2'),
         icon: 'warning',
-        confirmButtonText: '확인'
+        confirmButtonText: get('INQUIRY_CONFIRM')
       });
+      */
+
+      Swal.fire({
+        title: get('SWAL_VENUE_REG1'),
+        text:  get('SWAL_VENUE_REG2'),
+        icon: 'warning',
+        confirmButtonText: get('INQUIRY_CONFIRM'),
+        showCancelButton: false,
+        allowOutsideClick: true
+    });
+
       return;
     }
 
@@ -156,7 +181,7 @@ const PhotoGallery = ({
                 background: '#f8f9fa',
               }}
             >
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#333' }}>갤러리</h3>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#333' }}>Gallery</h3>
               <button
                 style={{
                   background: '#10b981',

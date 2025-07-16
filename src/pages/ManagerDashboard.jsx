@@ -22,6 +22,7 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
   const { fcmToken } = useFcm();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   
+  
   const [dashboardInfo, setDashboardInfo] = useState({
     recentReviews: 0,
     todaysReservations: 0,
@@ -199,10 +200,10 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
         console.log('venue 생성 전');
 
         Swal.fire({
-            title: '매장 등록 필요',
-            text: '매장을 등록해야 이용 가능합니다.',
+            title: get('SWAL_VENUE_REG1'),
+            text:  get('SWAL_VENUE_REG2'),
             icon: 'info',
-            confirmButtonText: '확인',
+            confirmButtonText: get('BUTTON_CONFIRM'),
             confirmButtonColor: '#3085d6',
             showCancelButton: false,
             allowOutsideClick: true

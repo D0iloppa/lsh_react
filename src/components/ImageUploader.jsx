@@ -684,7 +684,8 @@ export const ImageUploader = ({
                     border: 'none',
                     borderRadius: '6px',
                     cursor: 'pointer',
-                    fontSize: '14px'
+                    fontSize: '14px',
+                    display:'none'
                   }}
                 >
                   다운로드
@@ -698,7 +699,7 @@ export const ImageUploader = ({
                     border: 'none',
                     borderRadius: '6px',
                     cursor: 'pointer',
-                    fontSize: '14px'
+                    fontSize: '14px',
                   }}
                 >
                   닫기

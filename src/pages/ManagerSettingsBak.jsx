@@ -24,7 +24,9 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
 
   // 비밀번호 변경 관련 state
   const [password, setPassword] = useState({ current: '', new: '', confirm: '' });
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isPasswordVerified, setIsPasswordVerified] = useState(false);
+  const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
+  const [showNewPasswordFields, setShowNewPasswordFields] = useState(false);
 
   const [scheduleStatus, setScheduleStatus] = useState('before_open');
 
@@ -109,13 +111,13 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
 
   const handleDelete = async () => {
     const result = await Swal.fire({
-      title: get('ACCOUNT_DELETE_CONFIRM_TITLE'),
-      text: get('ACCOUNT_DELETE_CONFIRM_TEXT'),
+      title: '정말 계정 탈퇴를 하시겠습니까?',
+      text: '이 작업은 되돌릴 수 없습니다.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
-      confirmButtonText: get('ACCOUNT_DELETE_CONFIRM_BUTTON'),
+      confirmButtonText: '네, 탈퇴하겠습니다',
       cancelButtonText: get('Reservation.CancelButton')
     });
 
@@ -128,8 +130,8 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
         });
 
         await Swal.fire({
-          title: get('ACCOUNT_DELETE_SUCCESS_TITLE'),
-          text: get('ACCOUNT_DELETE_SUCCESS_TEXT'),
+          title: '탈퇴 완료',
+          text: '계정이 성공적으로 삭제되었습니다.',
           icon: 'success',
           timer: 1500,
           showConfirmButton: false
@@ -268,9 +270,8 @@ const handleLogout = async () => {
     navigate('/login'); 
 }
 
-// 통합된 비밀번호 변경 함수
-const handleChangePassword = async () => {
-  // 1. 입력값 검증
+// 현재 비밀번호 인증
+const handleVerifyCurrentPassword = async () => {
   if (!password.current.trim()) {
     Swal.fire({
       title: get('SWAL_ERROR_TITLE'),
@@ -280,25 +281,54 @@ const handleChangePassword = async () => {
     return;
   }
 
-  if (!password.new.trim()) {
+  setIsVerifyingPassword(true);
+  try {
+    // 비밀번호 검증 전용 함수 사용 (navigate 없음)
+    const response = await verifyPassword({
+      login_id: user.login_id,
+      email: user.login_id,
+      passwd: password.current,
+      login_type: user.login_type,
+      account_type: user.type
+    });
+    
+    console.log('response', response);
+
+    const { success = false } = response;
+
+    if (success) {
+      setIsPasswordVerified(true);
+      setShowNewPasswordFields(true);
+      Swal.fire({
+        title: get('SWAL_SUCCESS_TITLE'),
+        text: get('PASSWORD_VERIFY_SUCCESS'),
+        icon: 'success',
+        timer: 1500
+      });
+    } else {
+      setIsPasswordVerified(false);
+      Swal.fire({
+        title: get('SWAL_ERROR_TITLE'),
+        text: get('PASSWORD_CURRENT_INCORRECT'),
+        icon: 'error'
+      });
+    }
+  } catch (error) {
+    console.error('Password verification error:', error);
+    setIsPasswordVerified(false);
     Swal.fire({
       title: get('SWAL_ERROR_TITLE'),
-      text: get('VALIDATION_NEW_PASSWORD_REQUIRED'),
+      text: get('PASSWORD_VERIFY_FAILED'),
       icon: 'error'
     });
-    return;
+  } finally {
+    setIsVerifyingPassword(false);
   }
+};
 
-  if (!password.confirm.trim()) {
-    Swal.fire({
-      title: get('SWAL_ERROR_TITLE'),
-      text: get('VALIDATION_CONFIRM_PASSWORD_REQUIRED'),
-      icon: 'error'
-    });
-    return;
-  }
-
-  // 2. 새 비밀번호 유효성 검사
+// 새 비밀번호 저장
+const handleSaveNewPassword = async () => {
+  // 1. Current Password vs New Password 체크
   if (password.current === password.new) {
     Swal.fire({
       title: get('SWAL_ERROR_TITLE'),
@@ -308,6 +338,7 @@ const handleChangePassword = async () => {
     return;
   }
 
+  // 2. New Password vs Confirm Password 체크
   if (password.new !== password.confirm) {
     Swal.fire({
       title: get('SWAL_ERROR_TITLE'),
@@ -317,6 +348,7 @@ const handleChangePassword = async () => {
     return;
   }
 
+  // 3. 새 비밀번호 길이 체크
   if (password.new.length < 6) {
     Swal.fire({
       title: get('SWAL_ERROR_TITLE'),
@@ -326,29 +358,10 @@ const handleChangePassword = async () => {
     return;
   }
 
-  setIsChangingPassword(true);
-
   try {
-    // 3. 현재 비밀번호 검증
-    const verifyResponse = await verifyPassword({
-      login_id: user.login_id,
-      email: user.login_id,
-      passwd: password.current,
-      login_type: user.login_type,
-      account_type: user.type
-    });
-
-    if (!verifyResponse.success) {
-      Swal.fire({
-        title: get('SWAL_ERROR_TITLE'),
-        text: get('PASSWORD_CURRENT_INCORRECT'),
-        icon: 'error'
-      });
-      return;
-    }
-
-    // 4. 새 비밀번호로 업데이트
-    const updateResponse = await ApiClient.postForm('/api/UpdatePassword', {
+    // API 호출 (백엔드에서 구현 예정)
+    const response = await ApiClient.postForm('/api/UpdatePassword', {
+      // 인자는 백엔드에서 결정
       login_type: user.login_type,
       account_type: user.account_type,
       login_id: user.login_id,
@@ -357,7 +370,7 @@ const handleChangePassword = async () => {
       rePasswd: password.confirm,
     });
 
-    if (updateResponse.success) {
+    if (response.success) {
       Swal.fire({
         title: get('SWAL_SUCCESS_TITLE'),
         text: get('PASSWORD_UPDATE_SUCCESS'),
@@ -366,23 +379,22 @@ const handleChangePassword = async () => {
       
       // 폼 초기화
       setPassword({ current: '', new: '', confirm: '' });
+      setIsPasswordVerified(false);
+      setShowNewPasswordFields(false);
     } else {
       Swal.fire({
         title: get('SWAL_ERROR_TITLE'),
-        text: updateResponse.message || get('PASSWORD_UPDATE_FAILED'),
+        text: response.message || get('PASSWORD_UPDATE_FAILED'),
         icon: 'error'
       });
     }
-
   } catch (error) {
-    console.error('Password change error:', error);
+    console.error('Password update error:', error);
     Swal.fire({
       title: get('SWAL_ERROR_TITLE'),
       text: get('PASSWORD_UPDATE_FAILED'),
       icon: 'error'
     });
-  } finally {
-    setIsChangingPassword(false);
   }
 };
 
@@ -560,51 +572,69 @@ const handleChangePassword = async () => {
         <div className="password-section">
           <div className="section-title">{get('SETTINGS_CHANGE_PASSWORD')}</div>
           <SketchDiv className="section-box">
-            <div className="input-row">
-              <SketchInput
-                name="currentPassword"
-                value={password.current}
-                onChange={e => setPassword(p => ({ ...p, current: e.target.value }))}
-                placeholder={get('SETTINGS_CURRENT_PASSWORD_PLACEHOLDER')}
-                type="password" 
-                style={{fontFamily: 'none', padding:'0.4rem'}}
-              />
+            <div className="input-row" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+              <div style={{flex: 1}}>
+                <SketchInput
+                  name="currentPassword"
+                  value={password.current}
+                  onChange={e => setPassword(p => ({ ...p, current: e.target.value }))}
+                  placeholder={get('SETTINGS_CURRENT_PASSWORD_PLACEHOLDER')}
+                  type="password" 
+                  style={{fontFamily: 'none', Height: '30px', padding:'0.4rem'}}
+                  disabled={isPasswordVerified}
+                />
+              </div>
+              {!isPasswordVerified ? (
+                <SketchBtn 
+                  variant="accent" 
+                  size="small" 
+                  onClick={handleVerifyCurrentPassword}
+                  disabled={isVerifyingPassword}
+                  style={{width: '30%', marginBottom : '0.9rem', padding:'0.5rem 0.75rem'}}
+                >
+                  <HatchPattern opacity={0.6} />
+                  {isVerifyingPassword ? get('SETTINGS_CHECKING_BUTTON') : get('SETTINGS_CHECK_BUTTON')}
+                </SketchBtn>
+              ) : (
+                <div style={{color: 'green', fontSize: '20px'}}>
+                  <Check size={20} />
+                </div>
+              )}
             </div>
             
-            <div className="input-row">
-              <SketchInput
-                name="newPassword"
-                value={password.new}
-                onChange={e => setPassword(p => ({ ...p, new: e.target.value }))}
-                placeholder={get('SETTINGS_NEW_PASSWORD_PLACEHOLDER')}
-                type="password" 
-                style={{fontFamily: 'none', padding:'0.4rem'}}
-              />
-            </div>
-            
-            <div className="input-row">
-              <SketchInput
-                name="confirmPassword"
-                value={password.confirm}
-                onChange={e => setPassword(p => ({ ...p, confirm: e.target.value }))}
-                placeholder={get('SETTINGS_CONFIRM_PASSWORD_PLACEHOLDER')}
-                type="password" 
-                style={{fontFamily: 'none', padding:'0.4rem'}}
-              />
-            </div>
-            
-            <div className="save-btn-row">
-              <SketchBtn 
-                variant="accent" 
-                size="small" 
-                style={{width: '30%'}}
-                onClick={handleChangePassword}
-                disabled={isChangingPassword}
-              >
-                <HatchPattern opacity={0.6} />
-                {isChangingPassword ? '변경 중...' : get('SETTINGS_SAVE_BUTTON')}
-              </SketchBtn>
-            </div>
+            {showNewPasswordFields && (
+              <>
+                <div className="input-row">
+                  <SketchInput
+                    name="newPassword"
+                    value={password.new}
+                    onChange={e => setPassword(p => ({ ...p, new: e.target.value }))}
+                    placeholder={get('SETTINGS_NEW_PASSWORD_PLACEHOLDER')}
+                    type="password" style={{fontFamily: 'none'}}
+                  />
+                </div>
+                <div className="input-row">
+                  <SketchInput
+                    name="confirmPassword"
+                    value={password.confirm}
+                    onChange={e => setPassword(p => ({ ...p, confirm: e.target.value }))}
+                    placeholder={get('SETTINGS_CONFIRM_PASSWORD_PLACEHOLDER')}
+                    type="password" style={{fontFamily: 'none'}}
+                  />
+                </div>
+                <div className="save-btn-row">
+                  <SketchBtn 
+                    variant="accent" 
+                    size="small" 
+                    style={{width: '30%'}}
+                    onClick={handleSaveNewPassword}
+                  >
+                    <HatchPattern opacity={0.6} />
+                    {get('SETTINGS_SAVE_BUTTON')}
+                  </SketchBtn>
+                </div>
+              </>
+            )}
           </SketchDiv> 
         </div>
 

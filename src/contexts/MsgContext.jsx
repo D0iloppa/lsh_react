@@ -10,7 +10,7 @@ export const MsgProvider = ({ children }) => {
   const [messages, setMessages] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentLang, setCurrentLang] = useState('kr'); // 기본 언어
+  const [currentLang, setCurrentLang] = useState('vi'); // 기본 언어
 
   // API에서 메시지 데이터 가져오기
   const fetchMessages = async () => {

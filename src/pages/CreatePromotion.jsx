@@ -328,7 +328,8 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
                   transform: 'rotate(0.2deg)',
                   fontSize: '0.8rem',
                   width: '120px',
-                  fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif"
+                  fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
+                  display: 'none'
                 }}
             >
               <option value="percent">{get('PROMOTION_DISCOUNT_PERCENT')}</option>

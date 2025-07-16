@@ -143,11 +143,11 @@ const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
       // Rating 필터 적용
       if (ratingFilter !== 'All') {
         if (ratingFilter === '5.0') {
-          filtered = filtered.filter(review => review.rating === 5);
-        } else if (ratingFilter === '4.0+') {
-          filtered = filtered.filter(review => review.rating >= 4);
-        } else if (ratingFilter === '3.0+') {
-          filtered = filtered.filter(review => review.rating >= 3);
+          filtered = filtered.filter(review => review.rating <= 5);
+        } else if (ratingFilter === '4.0') {
+          filtered = filtered.filter(review => review.rating <= 4);
+        } else if (ratingFilter === '3.0') {
+          filtered = filtered.filter(review => review.rating <= 3);
         }
       }
   
@@ -743,9 +743,9 @@ const handleSubmitResponse = async (reviewId) => {
               <span className="filter-label">{get('REVIEW_FILTER_RATING')}</span>
               <select className="filter-select" value={ratingFilter} onChange={e => setRatingFilter(e.target.value)}>
                 <option value="All">{get('REVIEW_FILTER_ALL')}</option>
-                <option value="5.0">5.0</option>
-                <option value="4.0+">4.0+</option>
-                <option value="3.0+">3.0+</option>
+                <option value="5.0">⭐5.0 ↓</option>
+                <option value="4.0">⭐4.0 ↓</option>
+                <option value="3.0">⭐3.0 ↓</option>
               </select>
             </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>

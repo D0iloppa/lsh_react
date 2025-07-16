@@ -506,10 +506,10 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   const handleDetail = (venueId) => {
     if ( venueId == null ||  venueId == -1) {
       Swal.fire({
-        title: '매장 등록 필요',
-        text: '매장 정보를 먼저 등록해주세요',
+        title: get('SWAL_VENUE_REG1'),
+        text: get('SWAL_VENUE_REG2'),
         icon: 'warning',
-        confirmButtonText: '확인'
+        confirmButtonText: get('BUTTON_CONFIRM')
       });
       
       return;

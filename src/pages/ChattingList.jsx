@@ -321,9 +321,13 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
                   <div className="staff-info">
                     <div className="staff-name">
                       {staff.name} <span className='roomType'>{staff.creator_type}</span> 
-                      <span className='account-status'>
-                        {staff.account_status == 'deleted' ? '탈퇴한 사용자' : staff.account_status}
-                      </span>
+                     {(staff.account_status === 'deleted' || staff.account_status === 'on_leave') && (
+                          <span className="account-status">
+                            {staff.account_status === 'deleted'
+                              ? get('ACCOUNT_USER')
+                              : get('SCHEDULE_MODAL_LEAVE')}
+                          </span>
+                        )}
                     </div>
                     <div className="staff-rating">{staff.lastMessage}</div>
                   </div>
