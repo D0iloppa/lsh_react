@@ -24,8 +24,12 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
   }, [messages, currentLang]);
 
   // 개발용
+  /*
   const [email, setEmail] = useState('manager@lsh.com');
   const [password, setPassword] = useState('webdnpfzjs1!');
+  */
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');

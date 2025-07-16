@@ -110,10 +110,23 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
   };
 
   const handleClickStaff = (staff) => {
-    navigateToPageWithData(PAGES.CHATTING, {
-      room_sn: staff.room_sn,
-      name: staff.name,
-    });
+        if(staff.account_status == 'deleted'){
+          Swal.fire({
+            title: '탈퇴한 사용자입니다',
+            text: '탈퇴한 사용자는 채팅을 할 수 없습니다.',
+            icon: 'warning',
+            confirmButtonText: get('BUTTON_CONFIRM')
+          });
+          return;
+
+        }else {
+        navigateToPageWithData(PAGES.CHATTING, {
+              room_sn: staff.room_sn,
+              name: staff.name,
+            });
+        }
+
+    
   };
 
   // 삭제 핸들러 추가
