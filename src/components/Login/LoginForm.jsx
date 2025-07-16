@@ -35,9 +35,10 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
 
   useEffect(() => {
     // 당분간 test계정 바인딩 force
+    /*
     setEmail('test@test.com');
     setPassword('dnpfzjs1!');
-    
+    */
   }, []);
   
 
