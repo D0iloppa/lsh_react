@@ -112,8 +112,8 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
   const handleClickStaff = (staff) => {
         if(staff.account_status == 'deleted'){
           Swal.fire({
-            title: '탈퇴한 사용자입니다',
-            text: '탈퇴한 사용자는 채팅을 할 수 없습니다.',
+            title: get('SWAL_ACCOUNT_STATUS1'),
+            text: get('SWAL_ACCOUNT_STATUS2'),
             icon: 'warning',
             confirmButtonText: get('BUTTON_CONFIRM')
           });
@@ -284,13 +284,12 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
           border-radius: 5px;
         }
           .account-status {
-            color: rgb(87 87 87);
+            color: rgb(243 62 62);
             background: #ffe8e8;
             font-size: 0.8rem;
             margin-left: 5px;
-            background: #e2e2e2;
+            background: #ffe8e8;
             font-weight: normal;
-            border-radius: 10px;
             padding: 3px;}
       `}</style>
 
@@ -333,7 +332,7 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
                   <div className="staff-info">
                     <div className="staff-name">
                       {staff.name} <span className='roomType'>{staff.creator_type}</span> 
-                      <span className='account-status' style={{ color: staff.account_status == 'deleted' ? '#ca1212' : '#555', fontSize: '0.8rem', marginLeft: '5px' }}>
+                      <span className='account-status'>
                         {staff.account_status == 'deleted' ? '탈퇴한 사용자' : staff.account_status}
                       </span>
                     </div>
