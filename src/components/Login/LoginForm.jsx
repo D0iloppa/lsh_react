@@ -443,21 +443,22 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
           </button>
         </div>
 
-    {/* Sign Up Link */}
-    <div style={{ textAlign: 'center', fontSize: '0.875rem', color: '#6b7280', marginTop: '10px' }}>
-            { get('Login1.3') }{' '}
-            {/* <a href="#" className="sketch-link sketch-link--primary">Sign Up</a> */}
-            <a 
-              href="#" 
-              className="sketch-link sketch-link--primary"
-              onClick={(e) => {
+        {/* Sign Up Link */}
+        {accountType === 'manager' && (
+      <div style={{ textAlign: 'center', fontSize: '0.875rem', color: '#6b7280', marginTop: '10px' }}>
+        { get('Login1.3') }{' '}
+        <a 
+          href="#" 
+          className="sketch-link sketch-link--primary"
+          onClick={(e) => {
             e.preventDefault();
             navigate('/register');
-            }}
-            >
-              { get('Welcome1.4') }
-            </a>
-          </div>
+          }}
+        >
+          { get('Welcome1.4') }
+        </a>
+      </div>
+    )}
 
 
 
