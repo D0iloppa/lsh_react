@@ -20,7 +20,6 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
   const intervalRef = useRef(null);
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [roomType, setRoomType] = useState('');
-  const [unreadChatCount, setUnreadChatCount] = useState(0);
 
     useEffect(() => {
       const { chatRoomType = 'manager' } = otherProps;
@@ -111,34 +110,12 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
   };
 
   const handleClickStaff = (staff) => {
-        if(staff.account_status == 'deleted'){
-         
-          setStaffs(current => 
-            current.map(item => 
-              item.id === staff.id 
-                ? { ...item, isNew: 0 }
-                : item
-            )
-          );
-          setUnreadChatCount(0);
-
-          Swal.fire({
-            title: get('SWAL_ACCOUNT_STATUS1'),
-            text: get('SWAL_ACCOUNT_STATUS2'),
-            icon: 'warning',
-            confirmButtonText: get('BUTTON_CONFIRM')
-          });
-          
-          return;
-
-        }else {
+      
         navigateToPageWithData(PAGES.CHATTING, {
               room_sn: staff.room_sn,
               name: staff.name,
+              account_status: staff.account_status,
             });
-        }
-
-    
   };
 
   // 삭제 핸들러 추가
