@@ -111,12 +111,16 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
 
   const handleClickStaff = (staff) => {
         if(staff.account_status == 'deleted'){
+         
+          staff.isNew = 0;
+
           Swal.fire({
             title: get('SWAL_ACCOUNT_STATUS1'),
             text: get('SWAL_ACCOUNT_STATUS2'),
             icon: 'warning',
             confirmButtonText: get('BUTTON_CONFIRM')
           });
+          
           return;
 
         }else {

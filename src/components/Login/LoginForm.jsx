@@ -166,6 +166,13 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
       focusConfirm: false,
+      didOpen: () => {
+        // 아이폰에서 셀렉트 박스 초기화
+          const selectElement = document.getElementById('swal-inquiry-type');
+          if (selectElement) {
+              selectElement.selectedIndex = -1; // 아무것도 선택되지 않도록 설정
+          }
+      },
       preConfirm: () => {
           // 폼 데이터 수집
           const inquiryType = document.getElementById('swal-inquiry-type').value;
