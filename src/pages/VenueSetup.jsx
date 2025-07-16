@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import GoogleMapComponent from '@components/GoogleMapComponent';
 import SketchBtn from '@components/SketchBtn';
@@ -51,6 +51,17 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   const [venueId, setVenueId] = useState(otherProps.venue_id || null);
   const [form, setForm] = useState(defaultForm);
 
+  // ref로 폼 값 관리
+  const formRef = useRef({
+    name: '',
+    address: '',
+    phone: '',
+    open_time: '',
+    close_time: '',
+    description: '',
+    // ... 다른 필드들
+  });
+
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -84,12 +95,16 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
             params: { venue_id: venueId }
           });
           
-          setForm(prev => ({
-            ...prev,
+          const updatedForm = {
+            ...form,
             ...venueData,
             open_time: formatTimeForInput(venueData.open_time),
             close_time: formatTimeForInput(venueData.close_time)
-          }));
+          };
+          setForm(updatedForm);
+          
+          // formRef도 함께 업데이트
+          Object.assign(formRef.current, updatedForm);
         } catch (e) {
           console.error('Venue data fetch error:', e);
         }
@@ -98,6 +113,9 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     } else {
       // create 모드일 때는 form을 비움
       setForm(defaultForm);
+      
+      // formRef도 함께 초기화
+      Object.assign(formRef.current, defaultForm);
     }
 
     // messages, currentLang 등은 별도 처리
@@ -108,6 +126,11 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     console.log('galleryImages', galleryImages);
   }, [galleryImages]);
 
+  // form이 변경될 때마다 ref도 업데이트
+  useEffect(() => {
+    Object.assign(formRef.current, form);
+  }, [form]);
+
 
 
   useEffect(() => {
@@ -117,20 +140,19 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
     if(contentId){
       setForm(prev => ({ ...prev, newProfile: contentId }));
+      
+      // formRef도 함께 업데이트
+      formRef.current.newProfile = contentId;
     }
 
   }, [uploadedImages]);
 
 
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  // handleInputChange - ref와 form 상태 모두 업데이트
+  const handleInputChange = (name, value) => {
+    formRef.current[name] = value;
     setForm(prev => ({ ...prev, [name]: value }));
-    
-    // 입력 시 해당 필드의 에러 제거
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
   };
 
 
@@ -259,12 +281,12 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   const validateForm = () => {
     const newErrors = {};
 
-    newErrors.name = validateName(form.name);
-    newErrors.address = validateAddress(form.address);
-    newErrors.phone = validatePhone(form.phone);
-    newErrors.open_time = validateOpenTime(form.open_time);
-    newErrors.close_time = validateCloseTime(form.close_time);
-    newErrors.description = validateIntro(form.description);
+    newErrors.name = validateName(formRef.current.name);
+    newErrors.address = validateAddress(formRef.current.address);
+    newErrors.phone = validatePhone(formRef.current.phone);
+    newErrors.open_time = validateOpenTime(formRef.current.open_time);
+    newErrors.close_time = validateCloseTime(formRef.current.close_time);
+    newErrors.description = validateIntro(formRef.current.description);
 
     // 빈 에러 메시지 제거
     Object.keys(newErrors).forEach(key => {
@@ -309,15 +331,15 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   };
 
   const insertVenue = async () => {
-    // form 데이터에서 logo, cover 제외하고 전송 (이미지는 별도 처리)
+    // formRef에서 데이터 읽어오기
     const venueData = {
       cat_id: 1,
-      name: form.name.trim(),
-      address: form.address.trim(),
-      phone: form.phone.trim(),
-      open_time: formatTimeToSeconds(form.open_time.trim()),    // HH:MM:SS 형식으로 변환
-      close_time: formatTimeToSeconds(form.close_time.trim()),  // HH:MM:SS 형식으로 변환
-      description: form.description.trim()
+      name: formRef.current.name.trim(),
+      address: formRef.current.address.trim(),
+      phone: formRef.current.phone.trim(),
+      open_time: formatTimeToSeconds(formRef.current.open_time.trim()),    // HH:MM:SS 형식으로 변환
+      close_time: formatTimeToSeconds(formRef.current.close_time.trim()),  // HH:MM:SS 형식으로 변환
+      description: formRef.current.description.trim()
     };
     
 
@@ -380,7 +402,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   try {
     // 먼저 주소 → 위도/경도 변환 수행
     const response = await ApiClient.get('/api/getPoi', {
-      params: { keyword: form.address }
+      params: { keyword: formRef.current.address }
     });
 
     const result = response;
@@ -400,19 +422,22 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
     setForm(updatedForm); // 폼 상태도 업데이트 (필요 시)
     
-    // venue 수정 데이터 준비
+    // formRef도 함께 업데이트
+    Object.assign(formRef.current, updatedForm);
+    
+    // venue 수정 데이터 준비 (formRef에서 읽어오기)
     const venueData = {
       cat_id: 1,
       venue_id: user?.venue_id,
       manager_id: user?.manager_id,
-      name: updatedForm.name.trim(),
-      address: updatedForm.address.trim(),
-      phone: updatedForm.phone.trim(),
-      latitude: updatedForm.latitude.trim(),
-      longitude: updatedForm.longitude.trim(),
-      open_time: formatTimeToSeconds(updatedForm.open_time.trim()),
-      close_time: formatTimeToSeconds(updatedForm.close_time.trim()),
-      description: updatedForm.description.trim()
+      name: formRef.current.name.trim(),
+      address: formRef.current.address.trim(),
+      phone: formRef.current.phone.trim(),
+      latitude: lat,
+      longitude: lng,
+      open_time: formatTimeToSeconds(formRef.current.open_time.trim()),
+      close_time: formatTimeToSeconds(formRef.current.close_time.trim()),
+      description: formRef.current.description.trim()
     };
 
     if(updatedForm.newProfile){
@@ -530,7 +555,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   const handleClickSearchPoi = async () => {
   try {
     const response = await ApiClient.get('/api/getPoi', {
-      params: { keyword: form.address }
+      params: { keyword: formRef.current.address }
     });
 
     const result = response;
@@ -546,6 +571,10 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       latitude: lat,
       longitude: lng
     }));
+    
+    // formRef도 함께 업데이트
+    formRef.current.latitude = lat;
+    formRef.current.longitude = lng;
 
   } catch (err) {
     //alert('위치 검색 실패'); 
@@ -847,7 +876,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           <SketchInput
             name="name"
             value={form.name} style={{width: '50%'}}
-            onChange={handleChange}
+            onChange={(e) => handleInputChange('name', e.target.value)}
             onBlur={handleBlur}
             placeholder={get('VENUE_NAME_PLACEHOLDER')}
             error={errors.name}
@@ -860,7 +889,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           <SketchInput
             name="address" 
             value={form.address} 
-            onChange={handleChange}
+            onChange={(e) => handleInputChange('address', e.target.value)}
             onBlur={handleBlur}
             placeholder={get('VENUE_ADDRESS_PLACEHOLDER')}
             error={errors.address}
@@ -900,7 +929,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           <SketchInput
             name="phone"
             value={form.phone}
-            onChange={handleChange}
+            onChange={(e) => handleInputChange('phone', e.target.value)}
             onBlur={handleBlur}
             placeholder={get('VENUE_PHONE_PLACEHOLDER')}
             error={errors.phone}
@@ -914,7 +943,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
               name="open_time" style={{width: '80%', height: '40px'}}
               type="time"
               value={form.open_time}
-              onChange={handleChange}
+              onChange={(e) => handleInputChange('open_time', e.target.value)}
               onBlur={handleBlur}
               placeholder="09:00"
               error={errors.open_time}
@@ -926,7 +955,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
               name="close_time" style={{width: '80%', height: '40px'}}
               type="time"
               value={form.close_time}
-              onChange={handleChange}
+              onChange={(e) => handleInputChange('close_time', e.target.value)}
               onBlur={handleBlur}
               placeholder="22:00"
               error={errors.close_time} 
@@ -939,7 +968,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           <SketchInput
             name="description" 
             value={form.description || ''}
-            onChange={handleChange}
+            onChange={(e) => handleInputChange('description', e.target.value)}
             onBlur={handleBlur}
             placeholder={get('VENUE_INTRO_PLACEHOLDER')}
             as="textarea"

@@ -168,6 +168,8 @@ export const weeklyTableStyles = `
   }
 `;
 
+
+
 // 주간 테이블 생성 유틸리티 함수 (오늘부터 7일간)
 export const generateWeeklyDays = (baseDate) => {
   const today = new Date(baseDate);

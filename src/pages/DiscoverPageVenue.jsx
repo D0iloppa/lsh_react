@@ -1048,21 +1048,21 @@ const openMenuOverlay = (menuList) => {
                 cursor: reviewCount > 0 ? 'pointer' : 'default'
               }} 
               onClick={async () => {
-                if (reviewCount > 0) {
+                // if (reviewCount > 0) {
 
-                  showAdWithCallback(
-                    // 광고 완료 시 콜백
-                    () => {
-                      navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
-                    },
-                    // fallback 콜백 (광고 응답 없을 때)
-                    () => {
-                      navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
-                    },
-                    1000 // 1초 타임아웃
-                  );
+                //   showAdWithCallback(
+                //     // 광고 완료 시 콜백
+                //     () => {
+                //       navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
+                //     },
+                //     // fallback 콜백 (광고 응답 없을 때)
+                //     () => {
+                //       navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
+                //     },
+                //     1000 // 1초 타임아웃
+                //   );
 
-                }
+                // }
               }}
             >
               {get('nav.review.1')} <span className='reviewCnt'>{reviewCount}</span>{get('text.cnt.1')} {get('text.cnt.2')} &gt;
