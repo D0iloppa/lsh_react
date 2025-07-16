@@ -100,10 +100,8 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
       }));
 
       // 기존 데이터와 비교해 다를 때만 setState
-      if (JSON.stringify(mappedStaffs) !== JSON.stringify(staffs)) {
-        setStaffs(mappedStaffs);
-      }
-
+     setStaffs(mappedStaffs);
+     
     } catch (error) {
       console.error('❌ 채팅 리스트 불러오기 실패:', error);
     }

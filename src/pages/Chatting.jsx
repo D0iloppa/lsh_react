@@ -839,7 +839,12 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const handleMessageSend = useCallback(async (message) => {
     const {type} = user;
     let login_id = (type=='staff') ? user.staff_id : user.manager_id;
-    
+    let receiver_id = (type=='staff') ? user.manager_id : user.staff_id;
+    let send_to =  (type=='staff') ? 'manager' : 'staff'
+     
+    console.log("user", user);
+    //alert(receiver_id);
+
     const chatData = {
       room_sn,
       chat_msg: message,
@@ -852,8 +857,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       creator_type: user.type,
       last_message_preview: message,
       venue_id,
-      send_to: user.type,
-      receiver_id: receiverId
+      send_to: send_to,
+      receiver_id: receiver_id
     };
 
     setTimeout(() => {
