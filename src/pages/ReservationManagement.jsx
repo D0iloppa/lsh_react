@@ -591,6 +591,7 @@ const chatWithUser = async(r) => {
           display: flex;
           flex-direction: column;
           gap: 0.6rem;
+          padding-bottom: 1rem;
         }
         .reservation-card {
           border-top-left-radius: 12px 7px;

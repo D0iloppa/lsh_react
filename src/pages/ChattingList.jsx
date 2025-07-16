@@ -23,6 +23,7 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
 
     useEffect(() => {
       const { chatRoomType = 'manager' } = otherProps;
+
       
       setRoomType(chatRoomType);
     }, [otherProps]); // 의존성 배열로 제어
@@ -85,6 +86,7 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
         
         id: item.user_id || index,
         creator_type: item.participant_type || item.creator_type,
+        account_status: item.account_status,
         room_sn: item.room_sn,
         name: item.room_name || '이름 없음',
         lastMessage: item.last_message_preview || '메시지 없음',
@@ -268,6 +270,15 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
           padding: 1px 3px;
           border-radius: 5px;
         }
+          .account-status {
+            color: rgb(87 87 87);
+            background: #ffe8e8;
+            font-size: 0.8rem;
+            margin-left: 5px;
+            background: #e2e2e2;
+            font-weight: normal;
+            border-radius: 10px;
+            padding: 3px;}
       `}</style>
 
       <div className="staff-container">
@@ -308,7 +319,10 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
                   </div>
                   <div className="staff-info">
                     <div className="staff-name">
-                      {staff.name} <span className='roomType'>{staff.creator_type}</span>
+                      {staff.name} <span className='roomType'>{staff.creator_type}</span> 
+                      <span className='account-status' style={{ color: staff.account_status == 'deleted' ? '#ca1212' : '#555', fontSize: '0.8rem', marginLeft: '5px' }}>
+                        {staff.account_status == 'deleted' ? '탈퇴한 사용자' : staff.account_status}
+                      </span>
                     </div>
                     <div className="staff-rating">{staff.lastMessage}</div>
                   </div>

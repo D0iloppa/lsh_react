@@ -10,7 +10,8 @@ import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import InitFooter from '@components/InitFooter';
 import LoadingScreen from '@components/LoadingScreen';
-
+import Swal from 'sweetalert2';
+import ApiClient from '@utils/ApiClient';
 
 export default function LoginForm() {
 
@@ -98,22 +99,193 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
   };
 
   const onForgotPassword = async () => {
-    if (!email) {
-      setErrors({ email: 'Please enter your email first' });
-      return;
-    }
 
-    setIsLoading(true);
-    const result = await handleForgotPassword(email);
-    
-    if (result.success) {
-      setMessage(result.message);
-      setErrors({});
-    } else {
-      setErrors({ general: result.error });
+       // Swal을 사용한 폼 다이얼로그
+    const { value: formValues } = await Swal.fire({
+      title: get('INQUIRY_TITLE'),
+      html: `
+          <div style="text-align: left;">
+              <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold;">${get('INQUIRY_TYPE_LABEL')}</label>
+                  <select id="swal-inquiry-type" style="width: 95%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                      <option value="">${get('INQUIRY_TYPE_PLACEHOLDER')}</option>
+                      <option value="account">${get('INQUIRY_TYPE_ACCOUNT')}</option>
+                      <option value="password">${get('INQUIRY_TYPE_PASSWORD')}</option>
+                  </select>
+              </div>
+              
+              <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold;">${get('VENUE_NAME_LABEL')}</label>
+                  <input id="swal-venue-name" type="text" placeholder="${get('VENUE_NAME_PLACEHOLDER')}" 
+                        style="width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+              </div>
+              
+              <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold;">${get('INQUIRER_LABEL')}</label>
+                  <input id="swal-email" type="email" placeholder="${get('INQUIRER_PLACEHOLDER')}" 
+                        style="width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+              </div>
+              
+              <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold;">${get('INQUIRY_CONTENT_LABEL')}</label>
+                  <textarea id="swal-inquiry-content" placeholder="${get('INQUIRY_CONTENT_PLACEHOLDER')}" 
+                            style="width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; height: 100px; resize: vertical;"></textarea>
+              </div>
+          </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: get('INQUIRY_SUBMIT'),
+      cancelButtonText: get('INQUIRY_CANCEL'),
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      focusConfirm: false,
+      preConfirm: () => {
+          // 폼 데이터 수집
+          const inquiryType = document.getElementById('swal-inquiry-type').value;
+          const venueName = document.getElementById('swal-venue-name').value;
+          const email = document.getElementById('swal-email').value;
+          const inquiryContent = document.getElementById('swal-inquiry-content').value;
+          
+          // 유효성 검사
+          if (!inquiryType) {
+              Swal.showValidationMessage(get('INQUIRY_VALIDATION_TYPE'));
+              return false;
+          }
+          if (!venueName.trim()) {
+              Swal.showValidationMessage(get('INQUIRY_VALIDATION_VENUE'));
+              return false;
+          }
+          if (!email.trim()) {
+              Swal.showValidationMessage(get('INQUIRY_VALIDATION_EMAIL'));
+              return false;
+          }
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+              Swal.showValidationMessage(get('INQUIRY_VALIDATION_EMAIL_FORMAT'));
+              return false;
+          }
+          if (!inquiryContent.trim()) {
+              Swal.showValidationMessage(get('INQUIRY_VALIDATION_CONTENT'));
+              return false;
+          }
+          
+          return {
+              inquiryType,
+              venueName: venueName.trim(),
+              email: email.trim(),
+              inquiryContent: inquiryContent.trim()
+          };
+      }
+  });
+
+  if (formValues) {
+      try {
+          // 로딩 표시
+          Swal.fire({
+              title: get('INQUIRY_SENDING'),
+              allowOutsideClick: false,
+              didOpen: () => {
+                  Swal.showLoading();
+              }
+          });
+
+          // API 호출
+          const response = await ApiClient.postForm('/api/insertSupport', {
+              user_id : 1,
+              email: formValues.email,
+              name: formValues.email,
+              contents: JSON.stringify({
+                inquiry_type: formValues.inquiryType,
+                venue_name: formValues.venueName,
+                inquiry_content: formValues.inquiryContent
+              })
+          });
+
+          // 성공 메시지
+          Swal.fire({
+              title: get('INQUIRY_SUCCESS_TITLE'),
+              text: get('INQUIRY_SUCCESS_MESSAGE'),
+              icon: 'success',
+              confirmButtonText: get('INQUIRY_CONFIRM'),
+              confirmButtonColor: '#3085d6'
+          });
+
+      } catch (error) {
+          console.error('문의 전송 실패:', error);
+          
+          // 에러 메시지
+          Swal.fire({
+              title: get('INQUIRY_ERROR_TITLE'),
+              text: get('INQUIRY_ERROR_MESSAGE'),
+              icon: 'error',
+              confirmButtonText: get('INQUIRY_CONFIRM'),
+              confirmButtonColor: '#d33'
+          });
+      }
+  }
+
+
+
+    /*
+    // SweetAlert2를 사용한 이메일 입력 다이얼로그
+    const { value: emailForReset } = await Swal.fire({
+      title: get('FORGOT_PASSWORD_TITLE') || '비밀번호 찾기',
+      input: 'email',
+      inputLabel: get('FORGOT_PASSWORD_EMAIL_LABEL') || '암호를 찾고자 하는 이메일을 입력해주세요',
+      inputPlaceholder: get('FORGOT_PASSWORD_EMAIL_PLACEHOLDER') || 'example@email.com',
+      showCancelButton: true,
+      confirmButtonText: get('FORGOT_PASSWORD_CONFIRM') || '전송',
+      cancelButtonText: get('FORGOT_PASSWORD_CANCEL') || '취소',
+      inputValidator: (value) => {
+        if (!value) {
+          return get('FORGOT_PASSWORD_EMAIL_REQUIRED') || '이메일을 입력해주세요';
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          return get('FORGOT_PASSWORD_EMAIL_INVALID') || '올바른 이메일 형식을 입력해주세요';
+        }
+      }
+    });
+
+    if (emailForReset) {
+      // 로딩 상태 표시
+      Swal.fire({
+        title: get('FORGOT_PASSWORD_SENDING') || '전송 중...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      try {
+        // 실제 API 호출
+        const result = await ApiClient.postForm('/api/forgetPassword', {
+          account_type: 'user',
+          email: emailForReset,
+          login_type: 'email'
+        });
+        
+        console.log('Password reset API response:', result);
+        
+        // 성공 메시지 표시
+        Swal.fire({
+          title: get('FORGOT_PASSWORD_SUCCESS_TITLE') || '전송 완료',
+          text: get('FORGOT_PASSWORD_SUCCESS_MESSAGE') || '암호가 이메일로 전송되었습니다.',
+          icon: 'success',
+          confirmButtonText: get('FORGOT_PASSWORD_SUCCESS_CONFIRM') || '확인'
+        });
+        
+      } catch (error) {
+        console.error('Password reset error:', error);
+        
+        // 에러 메시지 표시
+        Swal.fire({
+          title: get('FORGOT_PASSWORD_ERROR_TITLE') || '전송 실패',
+          text: get('FORGOT_PASSWORD_ERROR_MESSAGE') || '이메일 전송 중 오류가 발생했습니다. 다시 시도해주세요.',
+          icon: 'error',
+          confirmButtonText: get('FORGOT_PASSWORD_ERROR_CONFIRM') || '확인'
+        });
+      }
     }
-    
-    setIsLoading(false);
+    */
   };
 
   return (
@@ -205,20 +377,33 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
           { get('Login1.1') }
         </SketchBtn>
 
-        {/* Register Button */}
-        {accountType === 'manager' && (
-          <div style={{display: 'flex', justifyContent: 'center', marginTop: '1rem'}}>
-            <a href="#" 
-                className="sketch-link sketch-link--primary"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate('/register');
-                }}
-                >
-              { get('Login1.3') }
+        {/* Forgot Password */}
+        <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+          <button
+            type="button"
+            onClick={onForgotPassword}
+            disabled={isLoading}
+            className="sketch-btn sketch-btn--secondary"
+          >
+            { get('Login1.2') }
+          </button>
+        </div>
+
+    {/* Sign Up Link */}
+    <div style={{ textAlign: 'center', fontSize: '0.875rem', color: '#6b7280', marginTop: '10px' }}>
+            { get('Login1.3') }{' '}
+            {/* <a href="#" className="sketch-link sketch-link--primary">Sign Up</a> */}
+            <a 
+              href="#" 
+              className="sketch-link sketch-link--primary"
+              onClick={(e) => {
+            e.preventDefault();
+            navigate('/register');
+            }}
+            >
+              { get('Welcome1.4') }
             </a>
           </div>
-        )}
 
 
 

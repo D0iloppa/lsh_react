@@ -623,7 +623,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     <>
       <style jsx="true">{`
         .venue-container {
-          margin-bottom: 1rem;
+          margin-bottom: 2rem;
           max-width: 28rem;
           background: #fff;
           min-height: 100vh;
