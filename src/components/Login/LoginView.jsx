@@ -58,6 +58,8 @@ export default function LoginView({ navigateToPage, PAGES, propsUseMsg = false }
     }
   }, [messages]);
 
+//console.log('PAGES', PAGES)
+
   return (
     <div className="login-container">
       <div className="login-wrapper">
