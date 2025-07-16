@@ -130,8 +130,29 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
                 .swal2-html-container {
                     padding: 20px;
                 }
+
+                /* 일반 웹 */
+                select {
+                  appearance: none;
+                  -webkit-appearance: none;
+                  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>');
+                  background-repeat: no-repeat;
+                  background-position: right 8px center;
+                  background-size: 16px;
+                }
+
+                /* 모바일 앱 환경 */
+                @media (max-width: 768px) and (pointer: coarse) {
+                  select {
+                    /* 네이티브 모바일 select 사용 */
+                    appearance: menulist;
+                    -webkit-appearance: menulist;
+                    background-image: none;
+                  }
+                }
             </style>
           <div style="text-align: left;">
+              <input id="swal-hidden" type="text" value="hidden" style="display:none">
               <div style="margin-bottom: 15px;">
                   <label style="display: block; margin-bottom: 5px; font-weight: bold;">${get('INQUIRY_TYPE_LABEL')}</label>
                   <select id="swal-inquiry-type" style="width: 95%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">

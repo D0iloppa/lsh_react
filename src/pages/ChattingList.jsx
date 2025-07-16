@@ -20,6 +20,7 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
   const intervalRef = useRef(null);
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [roomType, setRoomType] = useState('');
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
 
     useEffect(() => {
       const { chatRoomType = 'manager' } = otherProps;
@@ -112,7 +113,14 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
   const handleClickStaff = (staff) => {
         if(staff.account_status == 'deleted'){
          
-          staff.isNew = 0;
+          setStaffs(current => 
+            current.map(item => 
+              item.id === staff.id 
+                ? { ...item, isNew: 0 }
+                : item
+            )
+          );
+          setUnreadChatCount(0);
 
           Swal.fire({
             title: get('SWAL_ACCOUNT_STATUS1'),
