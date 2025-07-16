@@ -145,8 +145,11 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
 
 
   const handleShopDetail = () => {
+    const hasValidVenueId = user?.venue_id && user.venue_id !== 0 && user.venue_id !== '0';
+  
     navigateToPageWithData(PAGES.VENUE_SETUP, { 
-      mode: 'edit', venue_id: user?.venue_id
+      mode: hasValidVenueId ? 'edit' : 'create',
+      venue_id: hasValidVenueId ? user.venue_id : -1
     });
   }
 

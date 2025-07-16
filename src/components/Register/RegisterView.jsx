@@ -166,30 +166,52 @@ export default function RegisterView() {
     try {
       const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
       
-      const response = await axios.post(
-        `${API_HOST}/api/register`,
-        qs.stringify({
-          account_type: "manager",
-          login_type: "email",
-          login_id: userData.email,
-          email: userData.email,
-          passwd: userData.password,
-          privacy_agreed: agreements.privacy,
-          terms_agreed: agreements.terms
-        }),
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          timeout: 10000
-        }
-      );
+      try {
+        const response = await axios.post(
+          `${API_HOST}/api/register`,
+          qs.stringify({
+            account_type: "manager",
+            login_type: "email",
+            login_id: userData.email,
+            email: userData.email,
+            passwd: userData.password,
+            privacy_agreed: agreements.privacy,
+            terms_agreed: agreements.terms
+          }),
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            timeout: 10000
+          }
+        );
 
-      return {
-        success: true,
-        message: response.data.message || get('REGISTER_SUCCESS') || '회원가입이 완료되었습니다! 로그인해주세요.',
-        data: response.data
-      };
+        // 에러 응답 처리
+        if (response.data.error) {
+
+          await Swal.fire({
+            title: get('REGISTER_ERROR_DUPLICATE') || '이미 사용 중인 이메일입니다',
+            icon: 'error',
+            confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+          });
+          setIsLoading(false);
+          return; // 현재 자리에 머무름
+        }
+
+        return {
+          success: true,
+          message: response.data.message || get('REGISTER_SUCCESS') || '회원가입이 완료되었습니다! 로그인해주세요.',
+          data: response.data
+        };
+      } catch (error) {
+        await Swal.fire({
+            title: get('REGISTER_ERROR_SERVER') || '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+            icon: 'error',
+            confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+          });
+        console.error('회원가입 요청 중 오류:', error);
+      }
+
     } catch (error) {
       console.error("Registration error:", error);
       

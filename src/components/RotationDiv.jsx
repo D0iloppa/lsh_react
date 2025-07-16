@@ -29,9 +29,9 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
   useEffect(() => {
     if (!autoRotate || rotationItems.length <= 1 || isPaused) return;
 
-     if (messages && Object.keys(messages).length > 0) {
-        window.scrollTo(0, 0);
-      }
+    //  if (messages && Object.keys(messages).length > 0) {
+    //     window.scrollTo(0, 0);
+    //   }
 
     const timer = setInterval(() => {
       handleNext();

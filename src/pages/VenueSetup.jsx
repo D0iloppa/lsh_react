@@ -43,7 +43,7 @@ const defaultForm = {
 };
 
 const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
-  const { user } = useAuth();
+  const { user, updateVenueId } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [mode, setMode] = useState(otherProps.mode || 'create');
   const [venueId, setVenueId] = useState(otherProps.venue_id || null);
@@ -328,7 +328,15 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     // API 호출
     const response = await ApiClient.postForm('/api/register_venue', venueData);
     
+
+    const {venue_id = false} = response;
     console.log('API response:', response);
+
+    if (venue_id) {
+      // venue_id를 받았으면 user의 venue_id 업데이트
+      updateVenueId(venue_id);
+      console.log('venue_id 업데이트 완료:', venue_id);
+    }
     
     // 성공 응답 체크 (API 응답 구조에 따라 조정)
     if (response && (response.success || response.data || response.venue_id)) {

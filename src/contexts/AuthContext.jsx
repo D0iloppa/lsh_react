@@ -36,6 +36,24 @@ export const AuthProvider = ({ children }) => {
 
   const [loading, setLoading] = useState(false);
 
+
+  // 사용자 정보 업데이트 함수
+  const updateUser = (updates) => {
+    const updatedUser = { ...user, ...updates };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    console.log('사용자 정보 업데이트:', updatedUser);
+  };
+
+  // venue_id 업데이트 전용 함수
+  const updateVenueId = (venue_id) => {
+    updateUser({ venue_id });
+  };
+
+
+
+
+
   // 로그인 함수 (Login 컴포넌트 로직 재활용)
     const login = async (params={}) => {
       try {
@@ -149,7 +167,9 @@ export const AuthProvider = ({ children }) => {
     setLoginType,
     accountType,
     setAccountType,
-    updateUserLang
+    updateUserLang,
+    updateUser,      // 추가
+    updateVenueId    // 추가
   };
 
   return (

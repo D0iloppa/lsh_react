@@ -165,7 +165,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
             <div className="form-field">
               <div className="form-label">{get('STAFF_PASSWORD_LABEL')}</div>
               <SketchInput
-                name="password"
+                name="password" style={{fontFamily: 'none'}}
                 value={form.password}
                 onChange={handleChange}
                 placeholder={get('STAFF_PASSWORD_PLACEHOLDER')}
