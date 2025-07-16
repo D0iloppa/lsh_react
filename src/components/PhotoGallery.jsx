@@ -8,6 +8,7 @@ const PhotoGallery = ({
   appendedImages = [],
   onAppendedImagesChange,
   onDeleted,
+  venue_id = 0
 }) => {
   if (
     !photoGalleryMode ||
@@ -24,6 +25,7 @@ const PhotoGallery = ({
   const [images, setImages] = useState([]);
   const [contentId, setContentId] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [venueId, setVenueId] = useState(venue_id);
 
   const fetchImages = async () => {
     setLoading(true);
@@ -60,8 +62,18 @@ const PhotoGallery = ({
   const emptyCount = 4 - thumbnails.length;
 
   const openGalleryOverlay = () => {
-    overlay.open(({ isOpen, close, unmount }) => {
 
+    if(venue_id < 1){
+      Swal.fire({
+        title: '매장 등록 필요',
+        text: '매장 정보를 먼저 등록해주세요',
+        icon: 'warning',
+        confirmButtonText: '확인'
+      });
+      return;
+    }
+
+    overlay.open(({ isOpen, close, unmount }) => {
 
       console.log('overlayimages', contentId);
 

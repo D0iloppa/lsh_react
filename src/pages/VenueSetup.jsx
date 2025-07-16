@@ -11,6 +11,8 @@ import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
 import { useNavigate, useLocation } from 'react-router-dom';
 
+import { Search} from 'lucide-react';
+
 import Swal from 'sweetalert2';
 import ImageUploader from '@components/ImageUploader';
 import PhotoGallery from '@components/PhotoGallery';
@@ -465,6 +467,12 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   }
 };
 
+
+  const handleDetail = (venueId) => {
+    console.log(venueId)
+    navigateToPageWithData(PAGES.DISCOVERVENUE, {venueId: venueId});
+  };
+
   const handleSave = async () => {
     if (!validateForm()) {
       // 첫 번째 에러 필드로 스크롤
@@ -673,7 +681,9 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         />
         
         {/* 이미지 업로드 */}
-        <div className="section-title">{get('VENUE_UPLOAD_IMAGES')}</div>
+        <div className="section-title" style={{lineHeight: '2', display: 'flex', justifyContent: 'space-between'}}>
+          {get('VENUE_UPLOAD_IMAGES')} <SketchBtn  onClick={() => handleDetail(venueId)} variant="secondary" size='small' style={{width: '30%'}}>
+            <HatchPattern opacity={0.6} /> <Search size={12}/> 미리보기</SketchBtn></div>
         <div className="img-row">
           {/* 
           // 예전 이미지 업로드
@@ -734,6 +744,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
             <div style={{}}>
             <PhotoGallery
+              venue_id = {user.venue_id}
               photoGalleryMode={{
                 fetchList: async () => {
                   const response = await ApiClient.postForm('/api/getVenueGallery', {

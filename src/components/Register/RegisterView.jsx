@@ -173,6 +173,7 @@ export default function RegisterView() {
             account_type: "manager",
             login_type: "email",
             login_id: userData.email,
+            nickname:userData.nickname,
             email: userData.email,
             passwd: userData.password,
             privacy_agreed: agreements.privacy,
