@@ -13,6 +13,8 @@ import LoadingScreen from '@components/LoadingScreen';
 import Swal from 'sweetalert2';
 import ApiClient from '@utils/ApiClient';
 
+import { HelpCircle } from 'lucide-react';
+
 export default function LoginForm() {
 
 const { messages, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
@@ -150,6 +152,11 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
                     background-image: none;
                   }
                 }
+
+                .swal2-title{    
+                      border-bottom: 1px solid #e4e4e4;
+                      padding: 10px;
+                  }
             </style>
           <div style="text-align: left;">
               <div style="margin-bottom: 15px;">
@@ -178,11 +185,13 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
       cancelButtonColor: '#d33',
       focusConfirm: false,
       didOpen: () => {
+        /*
         // textarea에 포커스 설정
         const textareaElement = document.getElementById('swal-inquiry-content');
         if (textareaElement) {
             textareaElement.focus();
         }
+        */
       },
       preConfirm: () => {
           // 폼 데이터 수집
