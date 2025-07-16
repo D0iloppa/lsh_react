@@ -384,6 +384,8 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       setGalleryImages([]);
       setGalleryImagesContentId([]);
       
+      setMode('edit');
+
       // SweetAlert로 성공 메시지 표시
       await Swal.fire({
         title: get('SWAL_SUCCESS_TITLE'),
@@ -450,6 +452,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     
     console.log('API response:', updateResponse);
 
+
       
     if (updateResponse && (updateResponse.success || updateResponse.data)) {
       // 성공 후 갤러리 이미지들 DB에 저장
@@ -471,6 +474,13 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       // galleryImages 초기화
       setGalleryImages([]);
       setGalleryImagesContentId([]);
+
+      const {venue_id = false} = updateResponse;
+      if (venue_id) {
+        // venue_id를 받았으면 user의 venue_id 업데이트
+        updateVenueId(venue_id);
+        console.log('venue_id 업데이트 완료:', venue_id);
+      }
       
       await Swal.fire({
         title: get('SWAL_SUCCESS_TITLE'),
@@ -495,7 +505,10 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
   const handleDetail = (venueId) => {
     console.log(venueId)
-    navigateToPageWithData(PAGES.DISCOVERVENUE, {venueId: venueId});
+    if(PAGES) {
+      navigateToPageWithData(PAGES.DISCOVERVENUE, {venueId: venueId});
+    }
+    
   };
 
   const handleSave = async () => {
@@ -514,7 +527,8 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
     try {
       if (mode === 'create') {
-        await insertVenue();
+        //await insertVenue();
+        await updateVenue();
       } else if (mode === 'edit') {
         await updateVenue();
       }

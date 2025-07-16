@@ -62,7 +62,7 @@ const VenueTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES}) => {
           borderLeft: '4px solid #f59e0b',
           background: '#fffbeb',
           padding: '1rem 1.5rem',
-          marginBottom: '1.5rem',
+          marginBottom: '0.5rem',
           borderRadius: '0 8px 8px 0',
           position: 'relative'
         }}>
@@ -85,7 +85,7 @@ const VenueTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES}) => {
         <ImagePlaceholder src={get('VENUE_SETTING_IMAGE')}
         className="w-full h-auto object-contain"
           style={{ 
-            height: '395px',
+            height: '415px',
             width: '100%',
             borderRadius: '1px solid #666',
             borderRadius: '10px',

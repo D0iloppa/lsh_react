@@ -168,7 +168,7 @@ const CocktailIcon = () => (
             {'STAFF'}
           </SketchBtn>
         </div>
-        <div className="relative" style={{ marginTop: '1rem' }}>
+        <div className="relative" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
           <HatchPattern opacity={0.4} />
           
           <SketchBtn 
