@@ -462,7 +462,8 @@ const handleEndPromotion = async (promotionId) => {
             <SketchBtn 
               variant="primary" 
               size="medium" 
-              style={{ width: '100%' }} 
+              style={{ width: '100%', marginBottom: '1rem'
+               }} 
               onClick={handleCreatePromotion}
             >
               {get('PROMOTION_CREATE_BUTTON')}

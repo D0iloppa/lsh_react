@@ -10,6 +10,7 @@ import HatchPattern from '@components/HatchPattern';
 import LoadingScreen from '@components/LoadingScreen';
 import SketchHeader from '@components/SketchHeader'
 import ApiClient from '@utils/ApiClient';
+import Swal from 'sweetalert2';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -184,6 +185,29 @@ const MainApp = () => {
                         <button
                             key={id}
                             onClick={() => {
+                                if( id == PAGES.RESERVATION_MANAGEMENT || id == PAGES.CHATTINGLIST){
+                                    const chk = user.venue_id;
+
+                                    if(!chk || chk < 1){
+                                        console.log('venue 생성 전');
+
+                                        Swal.fire({
+                                            title: '매장 등록 필요',
+                                            text: '매장을 등록해야 이용 가능합니다.',
+                                            icon: 'info',
+                                            confirmButtonText: '확인',
+                                            confirmButtonColor: '#3085d6',
+                                            showCancelButton: false,
+                                            allowOutsideClick: true
+                                        });
+
+
+                                        return false;
+                                    }
+
+
+                                }
+
                                 if(data) {
                                     navigateToPageWithData(id, data)
                                 } else {

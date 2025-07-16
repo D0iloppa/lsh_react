@@ -15,6 +15,7 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
 
 import ApiClient from '@utils/ApiClient';
+import Swal from 'sweetalert2';
 
 export default function ManagerDashboard({ navigateToPage, navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) {
   const { user, verifyPassword, logout } = useAuth();
@@ -146,7 +147,11 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       title: (
         <div
           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-          onClick={() => navigateToPage(PAGES.RESERVATION_MANAGEMENT)}
+          onClick={() => {
+            if(!chkAlert()) return;
+
+            navigateToPage(PAGES.RESERVATION_MANAGEMENT)
+          }}
         >
           <Calendar size={16} opacity={0.5}/>
           <span>{get('DASHBOARD_TODAYS_RESERVATIONS')}</span>
@@ -158,7 +163,10 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       title: (
         <div
           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-          onClick={() => navigateToPage(PAGES.PROMOTION_MANAGEMENT)}
+          onClick={() => {
+            if(!chkAlert()) return;
+            navigateToPage(PAGES.PROMOTION_MANAGEMENT);
+          }}
         >
           <Tag size={16} opacity={0.5}/>
           <span>{get('DASHBOARD_ACTIVE_PROMOTIONS')}</span>
@@ -170,7 +178,11 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       title: (
         <div
           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-          onClick={() => navigateToPage(PAGES.REVIEW_MANAGEMENT)}
+          onClick={() => {
+            if(!chkAlert()) return;
+            
+            navigateToPage(PAGES.REVIEW_MANAGEMENT);
+          }}
         >
           <Star size={16} opacity={0.5}/>
           <span>{get('DASHBOARD_RECENT_REVIEWS')}</span>
@@ -179,6 +191,29 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       content: formatMessage('DASHBOARD_REVIEWS_COUNT', dashboardInfo.recentReviews)
     }
   ];
+
+  const chkAlert = () => {
+    const chk = user.venue_id;
+
+    if(!chk || chk < 1){
+        console.log('venue 생성 전');
+
+        Swal.fire({
+            title: '매장 등록 필요',
+            text: '매장을 등록해야 이용 가능합니다.',
+            icon: 'info',
+            confirmButtonText: '확인',
+            confirmButtonColor: '#3085d6',
+            showCancelButton: false,
+            allowOutsideClick: true
+        });
+
+
+        return false;
+    }
+
+    return true;
+  }
 
   // 대시보드 주요 메뉴 (뱃지 정보 추가)
   const menus = [
@@ -189,7 +224,11 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       page: PAGES.RESERVATION_MANAGEMENT,
       badgeCount: notificationCounts.reservations,  // 예약관리 뱃지
       showBadge: true,
-      menuEvent: () => { navigateToPage(PAGES.RESERVATION_MANAGEMENT); }
+      menuEvent: () => { 
+        if(!chkAlert()) return;
+
+        navigateToPage(PAGES.RESERVATION_MANAGEMENT); 
+      }
     },
     {
       id: 2,
@@ -198,7 +237,11 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       page: PAGES.STAFF_MANAGEMENT,
       badgeCount: 0,
       showBadge: false, // 스태프 관리는 뱃지 없음
-      menuEvent: () => { navigateToPage(PAGES.STAFF_MANAGEMENT); }
+      menuEvent: () => { 
+        if(!chkAlert()) return;
+
+        navigateToPage(PAGES.STAFF_MANAGEMENT); 
+      }
     },
     {
       id: 3,
@@ -207,7 +250,10 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       page: PAGES.STAFF_SCHEDULE,
       badgeCount: 0,
       showBadge: false, // 스태프 스케줄은 뱃지 없음
-      menuEvent: () => { navigateToPage(PAGES.STAFF_SCHEDULE); }
+      menuEvent: () => { 
+        if(!chkAlert()) return;
+        navigateToPage(PAGES.STAFF_SCHEDULE); 
+      }
     },
     { 
       id: 4, 
@@ -216,7 +262,10 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       page: PAGES.PROMOTION_MANAGEMENT,
       badgeCount: 0,
       showBadge: false, // 프로모션은 뱃지 없음
-      menuEvent: () => { navigateToPage(PAGES.PROMOTION_MANAGEMENT); }
+      menuEvent: () => { 
+        if(!chkAlert()) return;
+        navigateToPage(PAGES.PROMOTION_MANAGEMENT); 
+      }
     },
     { 
       id: 5, 
@@ -225,7 +274,10 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       page: PAGES.REVIEW_MANAGEMENT,
       badgeCount: notificationCounts.reviews, // 리뷰 관리 뱃지
       showBadge: true,
-      menuEvent: () => { navigateToPage(PAGES.REVIEW_MANAGEMENT); }
+      menuEvent: () => { 
+        if(!chkAlert()) return;
+        navigateToPage(PAGES.REVIEW_MANAGEMENT); 
+      }
     },
     { 
       id: 6, 
@@ -234,7 +286,10 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       page: PAGES.CHATTING,
       badgeCount: notificationCounts.chatting, // 채팅 뱃지
       showBadge: true,
-      menuEvent: () => { navigateToPageWithData(PAGES.CHATTINGLIST, { chatRoomType: 'manager' }); } 
+      menuEvent: () => { 
+        if(!chkAlert()) return;
+        navigateToPageWithData(PAGES.CHATTINGLIST, { chatRoomType: 'manager' }); 
+      } 
     },
     { 
       id: 7, 
@@ -243,7 +298,10 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       page: PAGES.NOTIFICATION_CENTER,
       badgeCount: 0,
       showBadge: false, // 알림센터는 뱃지 없음
-      menuEvent: () => { navigateToPage(PAGES.NOTIFICATION_CENTER); }
+      menuEvent: () => { 
+        if(!chkAlert()) return;
+        navigateToPage(PAGES.NOTIFICATION_CENTER); 
+      }
     },
     { 
       id: 8, 
@@ -252,7 +310,10 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       page: PAGES.MANAGER_SETTINGS,
       badgeCount: 0,
       showBadge: false, // 설정은 뱃지 없음
-      menuEvent: () => { navigateToPage(PAGES.MANAGER_SETTINGS); }
+      menuEvent: () => { 
+        if(!chkAlert()) return;
+        navigateToPage(PAGES.MANAGER_SETTINGS); 
+      }
     }
   ];
 

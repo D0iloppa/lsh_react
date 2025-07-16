@@ -20,6 +20,9 @@ const GlobalPopupManager = () => {
   );
 };
 
+
+
+
 const PopupModal = ({ popup, onClose }) => {
   const { get } = useMsg();
   const [activeTab, setActiveTab] = useState('premium'); // 'premium' | 'today'

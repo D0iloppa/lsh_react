@@ -5,7 +5,7 @@ const API_HOST = import.meta.env.VITE_API_HOST;
 // axios 인스턴스 생성
 const axiosInstance = axios.create({
   baseURL: API_HOST,
-  timeout: 3000,
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
   }

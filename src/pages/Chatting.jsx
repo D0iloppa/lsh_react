@@ -852,7 +852,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       creator_type: user.type,
       last_message_preview: message,
       venue_id,
-      send_to: sendTo,
+      send_to: user.type,
       receiver_id: receiverId
     };
 
@@ -896,7 +896,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       creator_type: user.type,
       last_message_preview: '사진',
       venue_id,
-      send_to: sendTo,
+      send_to: user.type,
       receiver_id: receiverId
     });
 
@@ -975,7 +975,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       venue_id,
       link_type: 'reservation',
       link_target: reservationCardData?.reservation_id || params.reservation_id,
-      send_to: sendTo,
+      send_to: user.type,
       receiver_id: receiverId
     };
 

@@ -106,6 +106,14 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
     toast.error(get('PROMOTION_END_DATE_REQUIRED'));
     return;
   }
+
+  const start = new Date(form.startDate);
+  const end = new Date(form.endDate);
+  if (end < start) {
+    toast.error(get('PROMOTION_END_DATE_REQUIRED')); // 또는 새로운 메시지 key 사용 가능
+    return;
+  }
+
   if (!form.discount_value || form.discount_value <= 0 || form.discount_value > 100) {
     toast.error(get('PROMOTION_DISCOUNT_INVALID'));
     return;
