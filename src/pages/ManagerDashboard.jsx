@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios, { getAdapter } from 'axios';
+import axios from 'axios';
 import { Calendar, Users, ClipboardList, Tag, Star, Headphones, Bell, Settings, MessagesSquare } from 'lucide-react';
 
 import SketchHeader from '@components/SketchHeader';
@@ -306,7 +306,7 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
     { 
       id: 8, 
       icon: <Settings size={24} />, 
-      name: getAdapter('MENU_SETTINGS'), 
+      name: get('MENU_SETTINGS'), 
       page: PAGES.MANAGER_SETTINGS,
       badgeCount: 0,
       showBadge: false, // 설정은 뱃지 없음
