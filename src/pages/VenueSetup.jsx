@@ -317,6 +317,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       close_time: formatTimeToSeconds(form.close_time.trim()),  // HH:MM:SS 형식으로 변환
       description: form.description.trim()
     };
+    
 
     // newProfile이 있을 때만 추가
     if (form.newProfile) {
