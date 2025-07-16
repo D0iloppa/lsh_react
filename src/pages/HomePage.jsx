@@ -665,7 +665,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
                 </div>
 
                 {/* 일일권 구매 안내 표시 */}
-                {shouldShowDailyPass() && (
+                {shouldShowDailyPass() && !isActiveUser && (
                   <div className='daily-purchase' style={{
                     textAlign: 'center',
                     padding: '1rem',

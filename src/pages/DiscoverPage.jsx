@@ -736,6 +736,7 @@ const openMenuOverlay = (menuList) => {
     <>
       <style jsx="true">{`
         .discover-container {
+            touch-action: pan-y !important;
           max-width: 28rem;
           margin: 0 auto;
           background-color: white;
@@ -803,6 +804,7 @@ const openMenuOverlay = (menuList) => {
         }
         @media (max-width: 480px) {
           .discover-container {
+              touch-action: pan-y !important;
             max-width: 100%;
             border-left: none;
             border-right: none;
