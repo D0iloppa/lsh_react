@@ -882,7 +882,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     console.log('이미지 전송 ^_T', room_sn, content_id, sendTo, receiverId);
 
     const {type} = user;
-    let login_id = (type=='staff') ? user.staff_id : user.manager_id;
+    let login_id = user.user_id;
 
     insertChattingData({
       room_sn,

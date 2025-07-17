@@ -10,7 +10,11 @@ export const MsgProvider = ({ children }) => {
   const [messages, setMessages] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentLang, setCurrentLang] = useState('kr'); // 기본 언어
+  const [currentLang, setCurrentLang] = useState(() => {
+    // 로컬스토리지에서 저장된 언어 설정 불러오기
+    const savedLang = localStorage.getItem('lsh_language');
+    return savedLang || 'kr'; // 저장된 값이 없으면 기본값 'kr' 사용
+  }); // 기본 언어
 
   // API에서 메시지 데이터 가져오기
   const fetchMessages = async () => {

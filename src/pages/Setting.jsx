@@ -69,7 +69,10 @@ const SettingsPage = ({
       try {
         const response = await axios.post(
           `${API_HOST}/api/selectSetting`,
-          qs.stringify({ user_id: user?.user_id || 1 }),
+          qs.stringify({ 
+            user_id: user?.user_id || 1,
+            user_type: 'user'
+          }),
           {
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
@@ -488,7 +491,7 @@ const SettingsPage = ({
         <div className="settings-content">
 
           {/* Language Selection */}
-          <SketchDiv className="settings-section">
+          <SketchDiv className="settings-section" >
             <HatchPattern opacity={0.4} />
             <div className="section-content">
               <h2 className="section-title">{get('Setting1.1')}</h2>
@@ -511,12 +514,12 @@ const SettingsPage = ({
             <HatchPattern opacity={0.4} />
             <div className="section-content">
               <h2 className="section-title">{get('Setting1.2')}</h2>
-              <ToggleSwitch 
+              <div style={{display:'none'}}><ToggleSwitch 
                 checked={receiveUpdates}
                 onChange={setReceiveUpdates}
                 label={get('Setting1.5')}
-              />
-              <ToggleSwitch 
+              /></div>
+              <ToggleSwitch  
                 checked={eventAlerts}
                 onChange={setEventAlerts}
                 label={get('Setting1.6')}
@@ -622,7 +625,7 @@ const SettingsPage = ({
           </SketchDiv>
 
           {/* Privacy Settings */}
-          <SketchDiv className="settings-section">
+          <SketchDiv className="settings-section" style={{ display: 'none' }}>
             <HatchPattern opacity={0.4} />
             <div className="section-content">
               <h2 className="section-title">{get('Setting1.4')}</h2>
