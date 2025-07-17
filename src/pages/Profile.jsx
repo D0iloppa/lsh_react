@@ -9,7 +9,7 @@ import '@components/SketchComponents.css';
 import {ChevronRight} from 'lucide-react';
 import SketchHeader from '@components/SketchHeader';
 
-import { Star, Edit3, User, Sparkles } from 'lucide-react';
+import { Star, Edit3, User, Sparkles, Check } from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '../contexts/AuthContext';
 import LoadingScreen from '@components/LoadingScreen';
@@ -28,6 +28,7 @@ const Profile = ({
   const [userReviews, setUserReviews] = useState([]);
   const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  const [iauData, setIauData] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -51,6 +52,7 @@ const Profile = ({
 
       const iau = await isActiveUser();
       console.log('IAU:', iau.isActiveUser);
+      setIauData(iau);
     };
 
     const fetchUserReviews = async () => {
@@ -69,6 +71,20 @@ const Profile = ({
 
   }, [user, messages, currentLang]);
 
+  const handleDailyPassClick = () => {
+  if (iauData?.isActiveUser) {
+    // 이미 활성화됨 알림
+    Swal.fire({
+      title: '이미 활성화됨',
+      text: '이미 일일권을 보유하고 있습니다.',
+      icon: 'info'
+    });
+    return; // 페이지 이동 차단
+  }
+  
+  // 구매 페이지로 이동
+  navigateToPageWithData(PAGES.PURCHASEPAGE);
+};
 
   const handleBack = () => {
     navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
@@ -491,8 +507,22 @@ const deleteReview = async (reviewId) => {
             </div>
           </div>
 
-          <SketchBtn className='daily-stats' variant="event" onClick={() => navigateToPageWithData(PAGES.PURCHASEPAGE)}>
-            {get('reservation.daily_pass.purchase_button2')} <Sparkles size={16} color='#448e8d'/>
+           <SketchBtn 
+            className={`daily-stats ${iauData?.isActiveUser ? 'active' : ''}`}
+            variant={iauData?.isActiveUser ? 'success' : 'event'}
+            onClick={handleDailyPassClick}
+          >
+            {iauData?.isActiveUser ? (
+              <>
+                <Check size={16} style={{ marginRight: '0.5rem' }} />
+                구매완료
+              </>
+            ) : (
+              <>
+                {get('reservation.daily_pass.purchase_button2')} 
+                <Sparkles size={16} color='#448e8d' style={{ marginLeft: '0.5rem' }} />
+              </>
+            )}
           </SketchBtn>
           </SketchDiv>
 
