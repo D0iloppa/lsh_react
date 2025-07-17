@@ -77,6 +77,9 @@ export const AuthProvider = ({ children }) => {
         if (result.success) {
           // 성공 시 상태 업데이트
 
+          // 로컬 language가 아닌 설정값 참조위함
+          localStorage.removeItem('lsh_language');
+
           localStorage.setItem('isLoggedIn', 'true');
           localStorage.setItem('user', JSON.stringify(result.user));
           localStorage.setItem('loginType', params.login_type);
