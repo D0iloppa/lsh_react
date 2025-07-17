@@ -10,7 +10,7 @@
 ```sql
 INSERT INTO public.lsh_message_code
 (msg_code, "scope", msg_kr, msg_en, msg_vi, msg_ja)
-VALUES('BOOKING_RESERVED_AT_LABEL', 'ui', '예약 생성일시', 'Booking Created At', 'Thời gian tạo đặt chỗ', '予約作成日時');
+VALUES(${msg_code}, ${scope}, ${msg_kr}, ${msg_en}, ${msg_vi}, ${msg_ja}, ${msg_cn});
 ```
 
 ## 사용법
@@ -22,6 +22,7 @@ VALUES('BOOKING_RESERVED_AT_LABEL', 'ui', '예약 생성일시', 'Booking Create
 - msg_en: 영어 메시지  
 - msg_vi: 베트남어 메시지
 - msg_ja: 일본어 메시지
+- msg_cn: 중국어 메세지
 
 ## 동기화
 https://doil.chickenkiller.com/lsh_api/api/msgCodeReload

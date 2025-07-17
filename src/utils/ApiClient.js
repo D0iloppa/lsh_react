@@ -99,7 +99,27 @@ const ApiClient = {
   },
 
   // axios 인스턴스 직접 접근 (필요시)
-  instance: axiosInstance
+  instance: axiosInstance,
+
+  // 메뉴 관리 API
+  // 1. 메뉴 이미지 리스트 조회
+  getVenueMenuList(venueId) {
+    return this.get(`/api/getVenueMenuList?venue_id=${venueId}`);
+  },
+
+  // 2. 메뉴 이미지 등록
+  insertVenueMenu(venueId, contentId, name = 'menu') {
+    return this.postForm('/api/insertVenueMenu', {
+      venue_id: venueId,
+      content_id: contentId,
+      name: name
+    });
+  },
+
+  // 3. 메뉴 삭제
+  deleteVenueMenu(itemId, venueId) {
+    return this.delete(`/api/deleteVenueMenu?item_id=${itemId}&venue_id=${venueId}`);
+  }
 };
 
 export default ApiClient;

@@ -11,7 +11,8 @@ import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-import { Search} from 'lucide-react';
+import { Search, Settings } from 'lucide-react';
+import MenuManagement, { useMenuManagement } from '@components/Menu/MenuManagement';
 
 import Swal from 'sweetalert2';
 import ImageUploader from '@components/ImageUploader';
@@ -71,6 +72,8 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryImagesContentId, setGalleryImagesContentId] = useState([]);
   const [galleryImagesMap, setGalleryImagesMap] = useState([]); // {url, contentId} 형태로 관리
+  const [showMenuManagement, setShowMenuManagement] = useState(false);
+  const [menuVenueId, setMenuVenueId] = useState(null);
 
   const navigate = useNavigate();
 
@@ -79,9 +82,6 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
     useEffect(() => {
         if (messages && Object.keys(messages).length > 0) {
-          console.log('✅ Messages loaded:', messages);
-           //setLanguage('vi'); // 기본 언어 설정
-          console.log('Current language set to:', currentLang);
           window.scrollTo(0, 0);
         }
       }, [messages, currentLang]);
@@ -122,9 +122,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   }, [mode, venueId]);
 
 
-  useEffect(() => {
-    console.log('galleryImages', galleryImages);
-  }, [galleryImages]);
+
 
   // form이 변경될 때마다 ref도 업데이트
   useEffect(() => {
@@ -134,8 +132,6 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
 
   useEffect(() => {
-    console.log('uploadedImages Changed', uploadedImages);
-
     const contentId = uploadedImages[0]?.contentId;
 
     if(contentId){
@@ -348,19 +344,15 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       venueData.newProfile = form.newProfile;
     }
     
-    console.log('Saving venue data:', venueData);
-    
     // API 호출
     const response = await ApiClient.postForm('/api/register_venue', venueData);
     
 
     const {venue_id = false} = response;
-    console.log('API response:', response);
 
     if (venue_id) {
       // venue_id를 받았으면 user의 venue_id 업데이트
       updateVenueId(venue_id);
-      console.log('venue_id 업데이트 완료:', venue_id);
     }
     
     // 성공 응답 체크 (API 응답 구조에 따라 조정)
@@ -453,7 +445,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     }
 
 
-    console.log('venueData', venueData, formRef.current, galleryImages);
+
 
     
     if(!venueData.profile_content_id){
@@ -471,8 +463,6 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
 
     const updateResponse = await ApiClient.postForm('/api/venueEdit', venueData);
-    
-    console.log('API response:', updateResponse);
 
 
       
@@ -501,7 +491,6 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       if (venue_id) {
         // venue_id를 받았으면 user의 venue_id 업데이트
         updateVenueId(venue_id);
-        console.log('venue_id 업데이트 완료:', venue_id);
       }
       
       await Swal.fire({
@@ -525,6 +514,23 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 };
 
 
+  const handleMenu = (venueId) => {
+    if (venueId == null || venueId == -1) {
+      Swal.fire({
+        title: get('SWAL_VENUE_REG1'),
+        text: get('SWAL_VENUE_REG2'),
+        icon: 'warning',
+        confirmButtonText: get('BUTTON_CONFIRM')
+      });
+      return;
+    }
+    
+    // 메뉴 관리 모달 열기
+    setMenuVenueId(venueId);
+    setShowMenuManagement(true);
+  };
+
+
   const handleDetail = (venueId) => {
     if ( venueId == null ||  venueId == -1) {
       Swal.fire({
@@ -536,7 +542,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       
       return;
     }
-    console.log(venueId)
+
     if(PAGES) {
       navigateToPageWithData(PAGES.DISCOVERVENUE, {venueId: venueId});
     } else {
@@ -643,6 +649,22 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
   return (
     <>
+      {/* 메뉴 관리 모달 */}
+      {showMenuManagement && (
+        <MenuManagement 
+          venueId={menuVenueId} 
+          onMenuUpdate={() => {
+            // 메뉴 업데이트 완료
+          }}
+          onClose={() => {
+            setShowMenuManagement(false);
+            setMenuVenueId(null);
+          }}
+          user={user}
+          get={get}
+        />
+      )}
+
       <style jsx="true">{`
         .venue-container {
           margin-bottom: 2rem;
@@ -733,6 +755,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           text-align: center;
           margin-top: 1rem;
           line-height: 1.4;
+          padding: 3px;
         }
         .required-field {
           position: relative;
@@ -766,7 +789,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         {/* 이미지 업로드 */}
         <div className="section-title" style={{lineHeight: '2', display: 'flex', justifyContent: 'space-between'}}>
           {get('VENUE_UPLOAD_IMAGES')} <SketchBtn  onClick={() => handleDetail(venueId)} variant="secondary" size='small' style={{width: '30%'}}>
-            <HatchPattern opacity={0.6} /> <Search size={12}/> 미리보기</SketchBtn></div>
+            <HatchPattern opacity={0.6} /> <Search size={12}/> {get('VIEW_SEARCH')}</SketchBtn></div>
         <div className="img-row">
           {/* 
           // 예전 이미지 업로드
@@ -836,7 +859,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
                   const { data = [] } = response;
 
-                  console.log('data fetch', data);
+
 
                   // 기존 DB 이미지 + 새로 추가된 이미지들 합치기
                   const dbImages = (data || []).map(item => item.url);
@@ -869,7 +892,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
                 },
                 onDeleted:async ({img_url, content_id}) => {
 
-                  console.log('deletedImageUrl', img_url, content_id);
+
 
 
                   const response = await ApiClient.postForm('/api/contentDelete', {
@@ -880,7 +903,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
                   const { success = false } = response;
 
-                  console.log('response', response);
+
 
 
 
@@ -902,7 +925,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
               onAppendedImagesChange={setGalleryImages}
               onDeleted={({img_url, content_id}) => {
 
-                console.log('deletedImageUrl', img_url, content_id, galleryImages);
+
                 // galleryImages에서 삭제된 이미지 제거
                 setGalleryImages(prev => prev.filter(img => img !== deletedImageUrl));
                 
@@ -950,7 +973,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           />
         </div>
         <div style={{ flex: 2 }}>
-          <button
+          <button className="search-poi-btn"
             onClick={handleClickSearchPoi}
             style={{
              padding: '4px 10px',
@@ -1016,6 +1039,29 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
             />
           </div>
         </div>
+
+        {/* 메뉴 입력 */}
+        <div className="input-row">
+          <div>
+              <div className="time-label">
+                  {get('MENU')}
+              </div>
+             
+              <SketchBtn
+                onClick={() => handleMenu(venueId)} 
+                variant="secondary" size='small'
+              >
+                <HatchPattern opacity={0.6} /> 
+                <Settings size={12}/> {get('MENU_MANAGEMENT')}
+              </SketchBtn>
+            
+
+
+          </div>
+        </div>
+
+
+
         
         <div className="input-row">
             <div className="time-label">{get('VENUE_INTRO_PLACEHOLDER')}</div>
@@ -1048,6 +1094,8 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           * {get('VENUE_EDIT_ANYTIME')}
         </div>
       </div>
+
+
     </>
   );
 };

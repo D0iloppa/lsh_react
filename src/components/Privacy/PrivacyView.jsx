@@ -100,14 +100,14 @@ export default function TermsView() {
 
         /* 약관 컨테이너에 스크롤 추가 */
         .terms {
-          max-height: 345px;
+          max-height: 450px;
           overflow-y: auto;
           padding: 20px;
         }
 
         .scroll-indicator {
           position: fixed;
-          bottom: 120px;
+          bottom: 150px;
           left: 50%;
           transform: translateX(-50%);
           background: rgba(0, 0, 0, 0.7);

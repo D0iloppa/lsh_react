@@ -72,13 +72,13 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
 
   const handleDelete = async () => {
     const result = await Swal.fire({
-      title: '정말 계정 탈퇴를 하시겠습니까?',
-      text: '이 작업은 되돌릴 수 없습니다.',
+      title: get('DELETE_ACCOUNT'),
+      text: get('ACCOUNT_DELETE_CONFIRM_TITLE'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
-      confirmButtonText: '네, 탈퇴하겠습니다',
+      confirmButtonText: get('ACCOUNT_DELETE_CONFIRM_BUTTON'),
       cancelButtonText: get('Reservation.CancelButton')
     });
 
@@ -89,8 +89,8 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
         });
 
         await Swal.fire({
-          title: '탈퇴 완료',
-          text: '계정이 성공적으로 삭제되었습니다.',
+          title: get('ACCOUNT_DELETE_SUCCESS_TITLE'),
+          text: get('ACCOUNT_DELETE_SUCCESS_TEXT'),
           icon: 'success',
           timer: 1500,
           showConfirmButton: false

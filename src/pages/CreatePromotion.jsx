@@ -181,7 +181,7 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
         .form-label {
           font-size: 1rem;
           margin-bottom: 0.2rem;
-          font-weight: 500;
+          font-weight: bold;
         }
         .form-field {
           margin-bottom: 0.7rem;
@@ -276,19 +276,19 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
         <div className="form-label">{get('PROMOTION_DATES_LABEL')}</div>
         <div className="date-row">
           <div className="date-field">
-            <div className="form-label" style={{fontSize: '0.9rem'}}>
+            <div className="form-label" style={{fontSize: '0.9rem', fontWeight:'normal'}}>
               {get('PROMOTION_START_DATE_LABEL')}
             </div>
             <SketchInput
               name="startDate"
               value={form.startDate}
               onChange={handleChange}
-              placeholder="YYYY-MM-DD"
+              placeholder={"YYYY-MM-DD"}
               type="date"
             />
           </div>
           <div className="date-field">
-            <div className="form-label" style={{fontSize: '0.9rem'}}>
+            <div className="form-label" style={{fontSize: '0.9rem', fontWeight:'normal'}}>
               {get('PROMOTION_END_DATE_LABEL')}
             </div>
             <SketchInput

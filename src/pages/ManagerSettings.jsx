@@ -49,7 +49,7 @@ const ManagerSettings = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
     <SketchBtn
       variant={statusMap[scheduleStatus]?.variant || 'secondary'}
       size="small"
-      style={{ width: '30%' }}
+      style={{ width: '50%' }}
       onClick={handleVenueStatusUpdate}
     >
       <HatchPattern opacity={0.6} />

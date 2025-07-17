@@ -124,6 +124,7 @@ const transformReservationData = (apiData) => {
       client_name: item.client_name,
       client_id: item.client_id,
       use_escort: item.use_escort,
+      use_staff: item.use_staff,
       note: item.note,
       attendee: item.attendee,
       noShowCount: item.no_show_count
@@ -1111,6 +1112,12 @@ const chatWithUser = async(r) => {
                             {r.use_escort === 1 ? get('ESCORT_APPLIED') : get('ESCORT_NOT_APPLIED')}
                           </span>
                         </div>
+                         <div>
+                          <Edit size={10}/> {get('STAFF_MSG_1')} 
+                          <span className={`use_escort ${r.use_staff === 1 ? 'applied' : 'not_applied'}`}>
+                            {r.use_staff === 1 ? get('ESCORT_APPLIED') : get('ESCORT_NOT_APPLIED')}
+                          </span>
+                        </div>
                         <div>
                           <Edit size={10}/> {get('RESERVATION_NOTE_LABEL')} {r.note ? r.note : <span style={{color:'#9d9d9d'}}>{get('NO_NOTE_MESSAGE')}</span>}
                         </div>
@@ -1120,7 +1127,7 @@ const chatWithUser = async(r) => {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                     {/* 에스코트 신청했을 때만 전광판 버튼 표시 */}
                     {r.use_escort === 1 ? (
-                      <SketchBtn 
+                      <SketchBtn className="billboard-btn"
                         size="small"
                         variant="primary" 
                         style={{width: '30%', background: 'linear-gradient(135deg, rgb(255 111 241 / 0%), rgb(255 225 249))'}}

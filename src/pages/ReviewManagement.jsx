@@ -324,8 +324,8 @@ const handleSubmitResponse = async (reviewId) => {
     // 중복 신고 확인을 위한 API 호출
     try {
       const checkPayload = {
-        target_id: user.manager_id,
-        reporter_id: review.review_id
+        target_id: review.review_id,
+        reporter_id: user.manager_id
       };
       
       const checkResponse = await ApiClient.postForm('/api/isAlreadyReported', checkPayload);
@@ -334,7 +334,7 @@ const handleSubmitResponse = async (reviewId) => {
       if (checkResponse && checkResponse > 0) {
         Swal.fire({
           title: get('MENU_NOTIFICATIONS'),
-          text: '이미 신고한 이력이 있습니다.',
+          text: get('MENU_NOTIFICATIONS2'),
           icon: 'warning',
           confirmButtonText: get('BUTTON_CONFIRM'),
           confirmButtonColor: '#f59e0b'

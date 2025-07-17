@@ -56,7 +56,7 @@ const PhotoGallery = ({
           window.scrollTo(0, 0);
         }
       }, [messages, currentLang]);
-      
+
 
   useEffect(() => {
     let mounted = true;
@@ -199,7 +199,7 @@ const PhotoGallery = ({
                   document.getElementById('photo-gallery-upload-input')?.click();
                 }}
               >
-                <Upload size={16} /> 업로드
+                <Upload size={16} /> {get('PHOTO_INFO8')}
               </button>
               <input
                 id="photo-gallery-upload-input"

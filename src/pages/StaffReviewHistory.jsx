@@ -238,219 +238,245 @@ const handleSubmitResponse = async (reviewId) => {
   };
 
   // 신고 모달 열기
-  const handleReport = (review) => {
+  const handleReport = async (review) => {
+    // 중복 신고 확인을 위한 API 호출
+    try {
+      const checkPayload = {
+        target_id: review.review_id,
+        reporter_id: user.staff_id
+      };
+      
+      const checkResponse = await ApiClient.postForm('/api/isAlreadyReported', checkPayload);
+      
+      // 이미 신고한 이력이 있는 경우 (res > 0)
+      if (checkResponse && checkResponse > 0) {
+        Swal.fire({
+          title: get('MENU_NOTIFICATIONS'),
+          text: get('MENU_NOTIFICATIONS2'),
+          icon: 'warning',
+          confirmButtonText: get('BUTTON_CONFIRM'),
+          confirmButtonColor: '#f59e0b'
+        });
+        return;
+      }
+    } catch (error) {
+      console.error('신고 이력 확인 실패:', error);
+      // 에러가 발생해도 신고 모달은 열 수 있도록 함
+    }
+
+    // 중복 신고가 아닌 경우에만 모달 열기
     setSelectedReview(review);
     setReportReason('');
     
     overlay.open(({ isOpen, close, unmount }) => {
-  // 모달 내부에서 사용할 로컬 상태
-  let localReportReason = '';
-  let localIsSubmitting = false;
-  
-  const updateLocalReason = (value) => {
-    localReportReason = value;
-    setReportReason(value); // 외부 상태도 업데이트
-  };
-  
-  const handleLocalSubmit = async () => {
-    if (!localReportReason.trim()) {
-      Swal.fire({
-        title: get('MENU_NOTIFICATIONS'),
-        text: get('REPORT_REASON_REQUIRED_TEXT'),
-        icon: 'warning',
-        confirmButtonText: get('BUTTON_CONFIRM'),
-        confirmButtonColor: '#f59e0b'
-      });
-      return;
-    }
+      // 모달 내부에서 사용할 로컬 상태
+      let localReportReason = '';
+      let localIsSubmitting = false;
+      
+      const updateLocalReason = (value) => {
+        localReportReason = value;
+        setReportReason(value); // 외부 상태도 업데이트
+      };
+      
+      const handleLocalSubmit = async () => {
+        if (!localReportReason.trim()) {
+          Swal.fire({
+            title: get('MENU_NOTIFICATIONS'),
+            text: get('REPORT_REASON_REQUIRED_TEXT'),
+            icon: 'warning',
+            confirmButtonText: get('BUTTON_CONFIRM'),
+            confirmButtonColor: '#f59e0b'
+          });
+          return;
+        }
 
-    localIsSubmitting = true;
-    setIsSubmittingReport(true);
+        localIsSubmitting = true;
+        setIsSubmittingReport(true);
 
-    try {
-      // API 호출을 위한 payload 구성
-      const reportPayload = {
-        reporter_id: user.staff_id,
-        target_type: 'review',
-        target_id: review.review_id,
-        reason: localReportReason.trim(),
-        status: 'pending',
-        reporter_type: user.type || 'staff'
+        try {
+          // API 호출을 위한 payload 구성
+          const reportPayload = {
+            reporter_id: user.staff_id,
+            target_type: 'review',
+            target_id: review.review_id,
+            reason: localReportReason.trim(),
+            status: 'pending',
+            reporter_type: user.type || 'staff'
+          };
+
+          console.log('신고 제출 payload:', reportPayload);
+
+          // TODO: API 엔드포인트가 준비되면 아래 주석 해제
+          const response = await ApiClient.postForm('/api/insertReport', reportPayload);
+          console.log('신고 제출 응답:', response);
+
+          // 임시로 성공 메시지 표시
+          Swal.fire({
+            title: get('REPORT_SUBMITTED_TITLE'),
+            text: get('REPORT_SUBMITTED_TEXT'),
+            icon: 'success',
+            confirmButtonText: get('BUTTON_CONFIRM'),
+            confirmButtonColor: '#10b981'
+          });
+
+          unmount();
+          setSelectedReview(null);
+          setReportReason('');
+          setIsSubmittingReport(false);
+
+        } catch (error) {
+          console.error('신고 제출 실패:', error);
+          Swal.fire({
+           title: get('REPORT_SUBMIT_FAILED_TITLE'),
+            text: get('REPORT_SUBMIT_FAILED_TEXT'),
+            icon: 'error',
+            confirmButtonText: get('BUTTON_CONFIRM'),
+            confirmButtonColor: '#ef4444'
+          });
+        } finally {
+          localIsSubmitting = false;
+          setIsSubmittingReport(false);
+        }
       };
 
-      console.log('신고 제출 payload:', reportPayload);
-
-      // TODO: API 엔드포인트가 준비되면 아래 주석 해제
-      const response = await ApiClient.postForm('/api/insertReport', reportPayload);
-      console.log('신고 제출 응답:', response);
-
-      // 임시로 성공 메시지 표시
-      Swal.fire({
-        title: get('REPORT_SUBMITTED_TITLE'),
-        text: get('REPORT_SUBMITTED_TEXT'),
-        icon: 'success',
-        confirmButtonText: get('BUTTON_CONFIRM'),
-        confirmButtonColor: '#10b981'
-      });
-
-      unmount();
-      setSelectedReview(null);
-      setReportReason('');
-      setIsSubmittingReport(false);
-
-    } catch (error) {
-      console.error('신고 제출 실패:', error);
-      Swal.fire({
-        title: get('REPORT_SUBMIT_FAILED_TITLE'),
-        text: get('REPORT_SUBMIT_FAILED_TEXT'),
-        icon: 'error',
-        confirmButtonText: get('BUTTON_CONFIRM'),
-        confirmButtonColor: '#ef4444'
-      });
-    } finally {
-      localIsSubmitting = false;
-      setIsSubmittingReport(false);
-    }
-  };
-
-  return (
-    <div 
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 2
-      }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          unmount();
-        }
-      }}
-    >
-      <div 
-        style={{
-          position: 'relative',
-          maxWidth: '500px',
-          width: '90%',
-          backgroundColor: 'white',
-          borderRadius: '12px',
-          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
-        }}
-      >
-        {/* 닫기 버튼 */}
-        <button
-          onClick={() => unmount()}
+      return (
+        <div 
           style={{
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            background: 'none',
-            border: 'none',
-            fontSize: '24px',
-            cursor: 'pointer',
-            color: '#666',
-            zIndex: 1
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              unmount();
+            }
           }}
         >
-          ×
-        </button>
-
-        <div style={{ padding: '1rem' }}>
-          <div style={{ marginBottom: '1rem' }}>
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px', 
-              marginBottom: '0.5rem',
-              color: '#ef4444'
-            }}>
-              <AlertTriangle size={16} />
-              <span style={{ fontWeight: '600' }}>{get('REPORT_TARGET_REVIEW')}</span>
-            </div>
-            {review && (
-              <div style={{
-                background: '#f8fafc',
-                border: '1px solid #e5e7eb',
-                borderRadius: '6px',
-                padding: '0.75rem',
-                fontSize: '0.9rem',
-                color: '#374151'
-              }}>
-                <div style={{ marginBottom: '0.5rem' }}>
-                  <strong>{get('REVIEW_AUTHOR_LABEL')}</strong> {review.user_name || review.name}
-                </div>
-                <div style={{ marginBottom: '0.5rem' }}>
-                  <strong>{get('REVIEW_RATING_LABEL')}</strong> {renderStars(review.rating)}
-                </div>
-                <div>
-                  <strong>{get('REVIEW_CONTENT_LABEL')}</strong> "{review.content || review.review_content}"
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '0.5rem',
-              fontWeight: '600',
-              color: '#374151'
-            }}>
-              {get('REPORT_REASON_LABEL')}
-            </label>
-            <textarea
-              defaultValue=""
-              onChange={(e) => updateLocalReason(e.target.value)}
-              placeholder={get('REPORT_REASON_PLACEHOLDER')}
+          <div 
+            style={{
+              position: 'relative',
+              maxWidth: '500px',
+              width: '90%',
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
+            }}
+          >
+            {/* 닫기 버튼 */}
+            <button
+              onClick={() => unmount()}
               style={{
-                width: '100%',
-                minHeight: '120px',
-                padding: '0.75rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '6px',
-                fontSize: '0.9rem',
-                fontFamily: 'BMHanna, Comic Sans MS, cursive, sans-serif',
-                resize: 'vertical',
-                boxSizing: 'border-box'
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#666',
+                zIndex: 1
               }}
-            />
-          </div>
+            >
+              ×
+            </button>
 
-          <div style={{ 
-            display: 'flex', 
-            gap: '0.5rem', 
-            justifyContent: 'flex-end',
-            marginTop: '1.5rem'
-          }}>
-            <SketchBtn
-              variant="secondary"
-              size="small"
-              onClick={() => {
-                unmount();
-                setSelectedReview(null);
-                setReportReason('');
-                setIsSubmittingReport(false);
-              }}
-            >
-              {get('Common.Cancel')}
-            </SketchBtn>
-            <SketchBtn
-              variant="danger"
-              size="small"
-              onClick={handleLocalSubmit}
-            >
-              {localIsSubmitting ? get('BUTTON_SUBMITTING') : get('BUTTON_SUBMIT_REPORT')}
-            </SketchBtn>
+            <div style={{ padding: '1rem' }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px', 
+                  marginBottom: '0.5rem',
+                  color: '#ef4444'
+                }}>
+                  <AlertTriangle size={16} />
+                  <span style={{ fontWeight: '600' }}>{get('REPORT_TARGET_REVIEW')}</span>
+                </div>
+                {review && (
+                  <div style={{
+                    background: '#f8fafc',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '6px',
+                    padding: '0.75rem',
+                    fontSize: '0.9rem',
+                    color: '#374151'
+                  }}>
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      <strong>{get('REVIEW_AUTHOR_LABEL')}</strong> {review.user_name || review.name}
+                    </div>
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      <strong>{get('REVIEW_RATING_LABEL')}</strong> {renderStars(review.rating)}
+                    </div>
+                    <div>
+                      <strong>{get('REVIEW_CONTENT_LABEL')}</strong> "{review.content || review.review_content}"
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '0.5rem',
+                  fontWeight: '600',
+                  color: '#374151'
+                }}>
+                  {get('REPORT_REASON_LABEL')}
+                </label>
+                <textarea
+                  defaultValue=""
+                  onChange={(e) => updateLocalReason(e.target.value)}
+                  placeholder={get('REPORT_REASON_PLACEHOLDER')}
+                  style={{
+                    width: '100%',
+                    minHeight: '120px',
+                    padding: '0.75rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '0.9rem',
+                    fontFamily: 'BMHanna, Comic Sans MS, cursive, sans-serif',
+                    resize: 'vertical',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div style={{ 
+                display: 'flex', 
+                gap: '0.5rem', 
+                justifyContent: 'flex-end',
+                marginTop: '1.5rem'
+              }}>
+                <SketchBtn
+                  variant="secondary"
+                  size="small"
+                  onClick={() => {
+                    unmount();
+                    setSelectedReview(null);
+                    setReportReason('');
+                    setIsSubmittingReport(false);
+                  }}
+                >
+                  {get('Common.Cancel')}
+                </SketchBtn>
+                <SketchBtn
+                  variant="danger"
+                  size="small"
+                  onClick={handleLocalSubmit}
+                >
+                  {localIsSubmitting ? get('BUTTON_SUBMITTING') : get('BUTTON_SUBMIT_REPORT')}
+                </SketchBtn>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
       );
     });
   };

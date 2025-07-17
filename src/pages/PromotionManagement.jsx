@@ -232,6 +232,7 @@ const handleEndPromotion = async (promotionId) => {
         }
 
         .create-btn-row {
+          margin-top: 0.6rem;
           margin-bottom: 1rem;
         }
 

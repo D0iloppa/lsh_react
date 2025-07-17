@@ -683,7 +683,7 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
                       <div className="staff-name">{staff.staff_name}</div>
                       <div className="staff-time">{get('STAFF_DAYOFF_STATUS')}</div>
                     </div>
-                    <div>
+                    <div className='staff-btn-group'> 
                       <SketchBtn
                         size="small"
                         className="staff-assign-btn"

@@ -4,6 +4,7 @@ import { overlay } from 'overlay-kit';
 import SketchInput from '@components/SketchInput';
 import SketchDiv from '@components/SketchDiv';
 import FaceDetectionCamera from '@components/FaceDetectionCamera';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 export const ImageUploader = ({
   apiClient,
@@ -39,6 +40,18 @@ export const ImageUploader = ({
   const [uploadState, setUploadState] = useState({
     isUploading: false
   });
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+
+  useEffect(() => {
+    if (messages && Object.keys(messages).length > 0) {
+        console.log('✅ Messages loaded:', messages);
+        // setLanguage('en'); // 기본 언어 설정
+        console.log('Current language set to:', currentLang);
+        window.scrollTo(0, 0);
+      }
+  }, [ messages, currentLang ]);
+
 
   // 최초 로딩 시 initImage가 있으면 imageUrl에 반영
   useEffect(() => {
@@ -652,10 +665,10 @@ export const ImageUploader = ({
               {/* 정보 */}
               <div style={{ marginTop: '15px', textAlign: 'center' }}>
                 <p style={{ margin: '5px 0', fontSize: '14px', color: '#666' }}>
-                  파일명: {file.name}
+                  {get('PHOTO_INFO')}: {file.name}
                 </p>
                 <p style={{ margin: '5px 0', fontSize: '14px', color: '#666' }}>
-                  크기: {(file.size / 1024 / 1024).toFixed(2)} MB
+                  {get('PHOTO_INFO2')}: {(file.size / 1024 / 1024).toFixed(2)} MB
                 </p>
                 <p style={{ margin: '5px 0', fontSize: '14px', color: '#10b981' }}>
                   Content ID: {contentId}
@@ -702,7 +715,7 @@ export const ImageUploader = ({
                     fontSize: '14px',
                   }}
                 >
-                  닫기
+                  {get('Common.Close')}
                 </button>
               </div>
             </div>
@@ -957,7 +970,7 @@ export const ImageUploader = ({
                 onMouseLeave={(e) => e.currentTarget.style.opacity = 0}
               >
                 <span style={{ color: 'white', fontSize: '12px' }}>
-                  {usingCameraModule ? '얼굴 인식으로 교체' : '클릭하여 교체'}
+                  {usingCameraModule ? get('PHOTO_INFO3') : get('PHOTO_INFO4')}
                 </span>
               </div>
             </>
@@ -965,7 +978,7 @@ export const ImageUploader = ({
             <>
               {usingCameraModule ? <Camera size={24} /> : <ImageIcon size={24} />}
               <span style={{ fontSize: '12px', marginTop: '4px' }}>
-                {usingCameraModule ? '얼굴 인식 촬영' : '이미지 추가'}
+                {usingCameraModule ? get('PHOTO_INFO5') : get('PHOTO_INFO6')}
               </span>
             </>
           )}
@@ -1009,7 +1022,7 @@ export const ImageUploader = ({
           cursor: disabled ? 'not-allowed' : 'pointer',
           opacity: disabled ? 0.5 : 1
         }}
-        title={usingCameraModule ? "얼굴 인식 카메라로 촬영" : "이미지 업로드"}
+        title={usingCameraModule ? get('PHOTO_INFO5') : get('PHOTO_INFO7')}
       >
         {uploadState.isUploading ? (
           <Upload size={22} strokeWidth={1.6} className="animate-pulse" />

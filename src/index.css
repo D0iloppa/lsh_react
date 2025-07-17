@@ -100,21 +100,45 @@ body[data-lang="cn"] .center-section {
   font-family: var(--font-chinese) !important;
 }
 
+
+/* 베트남 버전 스타일 조정 */
+
 body[data-lang="vi"] * {
   font-family: var(--font-vi) !important;
+  /* font-size: 14px !important; */
 }
 
-/* 더 구체적으로 */
+/* 더 구체적으로 일부만 적용하고 싶을 경우 */
 body[data-lang="vi"] .settings-container,
 body[data-lang="vi"] .sketch-btn,
-body[data-lang="vi"] .page-title,
-body[data-lang="vi"] .center-section {
-  font-family: var(--font-vi) !important;
-}
+body[data-lang="vi"] .center-section {font-family: var(--font-vi) !important; font-size: 12px !important;}
+
+body[data-lang="vi"] .logo-container h1 {font-size: 22px !important;}
+body[data-lang="vi"] .brand-section {padding-bottom: 0px !important; margin-top: -5rem !important;}
+body[data-lang="vi"] .action-row button {text-align: start !important;}
+
+body[data-lang="vi"] .week-day {font-size: 0.9rem !important; letter-spacing: -0.5px !important;}
+body[data-lang="vi"] .week-onoff {padding-left: 2.5rem !important;}
+body[data-lang="vi"] .week-row{margin-left: 6px !important;}
+body[data-lang="vi"] .hours-label {min-width: 55px !important;}
+body[data-lang="vi"] .hours-label {padding-left: 1rem; margin-right: 0.5rem;}
+body[data-lang="vi"] .week-hours div:nth-of-type(2) {margin-left: 8.2rem !important;}
+body[data-lang="vi"] .to-label{margin-right: 7px !important;}
+body[data-lang="vi"] .review-action-btn, body[data-lang="vi"] .response-form-btn {letter-spacing: -1px;}
+body[data-lang="vi"] .reservation-date{margin-top: 0.2rem; font-size: 0.92rem; font-weight: 600; margin-bottom: 1.5rem; max-width: 200px;}
+body[data-lang="vi"] .chat-style {font-size: 0.5rem !important; padding: 0.2rem !important;}
+body[data-lang="vi"] .billboard-btn {letter-spacing: -1px;}
+body[data-lang="vi"] .reservation-status{letter-spacing: -1px; min-width: 230px;}
+body[data-lang="vi"] .reservation-actions button {letter-spacing: -1px;}
+body[data-lang="vi"] .staff-actions span{letter-spacing: -1px; font-size: 0.5rem;}
+body[data-lang="vi"] .staff-assign-btn{width: 90px;}
+body[data-lang="vi"] .form-actions {margin-bottom: 2rem !important;}
+
+body[data-lang="vi"] .venue-container .section-title button {width: 33% !important; letter-spacing: -1px;}
+body[data-lang="vi"] .search-poi-btn {    height: 43px !important; width: 85px !important; margin-top: 5px !important;}
+
 
 body {margin: 0;}
-
-
 .swal-zindex-10000 {
   z-index: 10000 !important;
 }

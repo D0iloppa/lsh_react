@@ -32,12 +32,14 @@ const addDays = (dateString, days) => {
 
 const formatDateForDisplay = (dateString) => {
   const date = new Date(dateString);
-  const options = { 
-    month: 'short', 
-    day: 'numeric',
-    weekday: 'short'
-  };
-  return date.toLocaleDateString('ko-KR', options);
+
+  const month = date.getMonth() + 1;
+  const day = String(date.getDate()).padStart(2, '0');
+
+  const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const weekday = weekdayNames[date.getDay()];
+
+  return `${month}/${day} (${weekday})`;
 };
 
 const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
@@ -1062,8 +1064,8 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
                     {filteredBookings.length === 0 && (
                       <div className="no-bookings-message">
                         {selectedDate === getToday() 
-                          ? (get('NO_BOOKINGS_MESSAGE') || '예약 내역이 없습니다.')
-                          : `${formatDateForDisplay(selectedDate)}에 예약 내역이 없습니다.`
+                          ? (get('BookingHis1.3') || '예약 내역이 없습니다.')
+                          : `${formatDateForDisplay(selectedDate)} ${get('BookingHis1.3')}`
                         }
                       </div>
                     )}
