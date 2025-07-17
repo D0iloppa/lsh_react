@@ -16,8 +16,10 @@ import LoadingScreen from '@components/LoadingScreen';
 import GlobalPopupManager from '@components/GlobalPopupManager';
 import Swal from 'sweetalert2';
 import ApiClient from '@utils/ApiClient';
+import { useLoginOverlay } from '@hooks/useLoginOverlay.jsx';
+import { overlay } from 'overlay-kit';
 
-const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAGES }) => {
+const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAGES, goBack }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [hotspots, setHotspots] = useState([]);
   const [originalHotspots, setOriginalHotspots] = useState([]);
@@ -35,7 +37,9 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   const { fcmToken } = useFcm();
   const [iauData, setIauData] = useState(null);
 
-
+    // 커스텀 훅 사용
+  const navigationProps = { navigateToPageWithData, PAGES, goBack };
+  const { openLoginOverlay } = useLoginOverlay(navigationProps);
 
   // 팝업 열기 핸들러
   const handleOpenPopup = () => {
@@ -233,16 +237,19 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
 
       let accessFlag = (user?.type == 'user') && user.user_id && user.user_id > 0;
 
-      if(!accessFlag){
-        Swal.fire(
-          get('SWAL_SIGNUP_REQUIRED_TITLE'), 
-          get('SWAL_SIGNUP_REQUIRED_TEXT'), 
-          'warning'
-        );
-        return;
+     if (!accessFlag) {
+        // 로그인 성공 후 이동할 페이지를 지정
+        openLoginOverlay(PAGES.PURCHASEPAGE, {});
+        // 팝업 닫기
+        onClose();
+      } else {
+        // 이미 로그인된 경우 바로 이동
+        navigateToPageWithData(PAGES.PURCHASEPAGE, {});
+        // 팝업 닫기
+        onClose();
       }
-
-      navigateToPageWithData(PAGES.PURCHASEPAGE);
+ 
+      
   
       // ApiClient.postForm('/api/trialCoupon',{
       //   user_id: user?.user_id

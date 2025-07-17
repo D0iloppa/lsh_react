@@ -69,9 +69,9 @@ export const useLoginOverlay = (navigationProps, onLoginSuccess = null) => {
                         delete window.loginTargetPage;
                         delete window.loginTargetData;
                     } else {
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 100);
+                        // setTimeout(() => {
+                        //     window.location.reload();
+                        // }, 100);
                     }
                 } catch (error) {
                     console.error('로그인 상태 업데이트 중 오류:', error);
