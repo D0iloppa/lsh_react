@@ -118,6 +118,7 @@ useEffect(() => {
       isRead: true,
       hasArrow: false
     },
+    /*
     {
       id: 4,
       icon: <CreditCard size={20} />,
@@ -125,6 +126,7 @@ useEffect(() => {
       isRead: true,
       hasArrow: false
     },
+    */
     {
       id: 5,
       icon: <Bell size={20} />,
