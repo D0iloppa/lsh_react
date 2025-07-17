@@ -162,7 +162,7 @@ const EVENT_CONDITIONS = {
 export const PopupProvider = ({ children }) => {
   const [state, dispatch] = useReducer(popupReducer, initialState);
 
-  const {isActiveUser} = useAuth();
+  const { user, isActiveUser} = useAuth();
 
   
 
@@ -273,6 +273,13 @@ export const PopupProvider = ({ children }) => {
       if(isActive){
          if(eventType == 'adViewCount'){
             console.log('티켓 구매자. 팝업 미호출');
+            return;
+         }
+      }
+
+      if(!user){
+         if(eventType == 'adViewCount'){
+            console.log('로그인 하지 않음');
             return;
          }
       }
