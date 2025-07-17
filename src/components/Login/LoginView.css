@@ -1,7 +1,7 @@
 /* LoginView.css - Updated for consistent fonts */
 
 .login-container {
-    min-height: 83vh;
+    min-height: 60vh;
     display: flex;
     align-items: center;
     justify-content: center;

@@ -142,7 +142,7 @@ const CocktailIcon = () => (
               </div>
               </div>
               
-              <h2 className="brand-subtitle">All Girlsbars Here</h2>
+              <h2 className="brand-subtitle">All TRENDY Venues Here</h2>
               
               <p className="brand-description">
                 {get('Welcome1.1')}

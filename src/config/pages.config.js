@@ -39,6 +39,9 @@ import ChattingList from '@pages/ChattingList';
 import Login from '@components/Login/LoginView';
 import RegisterView from '@components/Register/RegisterView';
 
+import Terms from '@components/Terms/TermsView';
+import Privacy from '@components/Privacy/PrivacyView';
+import PurchasePage from '@components/PurchasePage';
 
 // 페이지 상수
 export const PAGES = {
@@ -67,7 +70,10 @@ export const PAGES = {
     CHATTING: 'CHATTING',
     CHATTINGLIST: 'CHATTINGLIST',
     LOGIN: 'LOGIN',
-    REGISTER : 'REGISTER'
+    REGISTER : 'REGISTER',
+    TERMS : 'TERMS',
+    PRIVACY : 'PRIVACY',
+    PURCHASEPAGE: 'PURCHASEPAGE'
 };
 
 // 페이지 컴포넌트 매핑
@@ -97,7 +103,10 @@ export const PAGE_COMPONENTS = {
     [PAGES.CHATTING]: Chatting,
     [PAGES.CHATTINGLIST]: ChattingList,
     [PAGES.LOGIN]: Login,
-    [PAGES.REGISTER]: RegisterView
+    [PAGES.REGISTER]: RegisterView,
+    [PAGES.TERMS]: Terms,
+    [PAGES.PRIVACY]: Privacy,
+    [PAGES.PURCHASEPAGE]: PurchasePage
 };
 
 // 기본 페이지

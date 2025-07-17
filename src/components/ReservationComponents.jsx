@@ -814,6 +814,57 @@ export const PickupSelector = ({ value, onChange, messages = {} }) => {
   );
 };
 
+export const UseStaff = ({ value, onChange,messages = {} }) => {
+
+  return (
+    <div className="form-step"
+          style={{
+            marginTop:"20px",
+            marginBottom: "0"
+          }}
+    >
+      <div className="step-label" style={{display:'none'}}>
+        <span className="step-number">4</span>
+        {messages.pickupLabel || '픽업 서비스'}
+      </div>
+      <div className="usestaff-option">
+        <label 
+          className="usestaff-checkbox"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            cursor: 'pointer',
+            padding: '12px',
+            border: '2px solid #e5e7eb',
+            borderRadius: '8px',
+            backgroundColor: value ? '#fef3c7' : '#f9fafb',
+            borderColor: value ? '#f59e0b' : '#e5e7eb',
+            transition: 'all 0.2s ease',
+            fontSize: '14px',
+            fontFamily: 'inherit'
+          }}
+        >
+          <input
+            type="checkbox"
+            onChange={(e) => onChange(e.target.checked)}
+            checked={value}
+            style={{
+              width: '16px',
+              height: '16px',
+              cursor: 'pointer'
+            }}
+          />
+          <span>
+            {messages.staffLabel}
+          </span>
+        </label>
+        <div></div>
+      </div>
+    </div>
+  );
+};
+
 // 통합 예약 폼 컴포넌트 (Duration 모드 지원)
 export const ReservationForm = ({
   attendee,
@@ -836,11 +887,13 @@ export const ReservationForm = ({
   messages = {}, // 다국어 메시지 추가,
   pickupService,
   setPickupService,
+  useStaffService,
+  setUseStaffService,
   getTargetLabel = () => {}
 }) => {
 
 
-console.log(messages)
+console.log("messages", messages)
 
   return (
     <div className="form-section">
@@ -888,6 +941,16 @@ console.log(messages)
           messages={messages}
         />
       )}
+
+   {messages.rev_target !== 'staff' && (
+      <UseStaff 
+      value={useStaffService}
+        onChange={setUseStaffService}
+        messages={{
+          staffLabel: messages['staff_info'] || '옵션',
+        }}
+      />
+    )}
 
     <PickupSelector 
       value={pickupService}

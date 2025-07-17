@@ -12,18 +12,33 @@ import LoadingScreen from '@components/LoadingScreen';
 import Privacy_kr from './Privacy_kr';
 import Privacy_en from './Privacy_en';
 
+import usePageNavigation from '@hooks/pageHook';
+
 import './PrivacyView.css'
 
-export default function TermsView() {
+export default function TermsView ({ navigateToPageWithData, PAGES, goBackParams, ...otherProps }) {
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const location = useLocation();
   
   const urlParams = new URLSearchParams(location.search);
   const returnUrl = urlParams.get('returnUrl');
-  const agreementType = urlParams.get('agreementType');
-
+ 
   // 스크롤 상태 관리
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
+
+  useEffect(() => {
+  const bottomNav = document.querySelector('.bottom-navigation');
+  if (bottomNav) {
+    bottomNav.style.display = 'none';
+  }
+
+  return () => {
+    // 컴포넌트 언마운트 시 복원
+    if (bottomNav) {
+      bottomNav.style.display = '';
+    }
+  };
+}, []);
 
   useEffect(() => {
     if (messages && Object.keys(messages).length > 0) {
@@ -65,21 +80,32 @@ export default function TermsView() {
   const navigate = useNavigate();
 
   const handleBack = () => {
+
+    window.checkPriv = false;  
+    goBackParams({ 'privacy': 'declined'});
+    /*
     if (returnUrl && agreementType) {
       const separator = returnUrl.includes('?') ? '&' : '?';
       navigate(`${returnUrl}${separator}${agreementType}=declined`);
     } else {
       navigate(-1);
     }
+    */
+
   };
 
   const handleAgree = () => {
+    window.checkPriv = true;  
+      goBackParams({ 'privacy': 'agreed'});
+    /*
+    /*
     if (returnUrl && agreementType) {
       const separator = returnUrl.includes('?') ? '&' : '?';
       navigate(`${returnUrl}${separator}${agreementType}=agreed`);
     } else {
       navigate('/register');
     }
+      */
   };
 
   const isAgreementPage = returnUrl && agreementType;
@@ -97,7 +123,7 @@ export default function TermsView() {
 
         /* 약관 컨테이너에 스크롤 추가 */
         .terms {
-          max-height: 400px;
+          max-height: 345px;
           overflow-y: auto;
           padding: 20px;
         }
@@ -191,13 +217,26 @@ export default function TermsView() {
                 </SketchBtn>
               </>
             ) : (
-              <SketchBtn
-                onClick={handleBack}
-                variant="secondary"
-              >
-                <HatchPattern opacity={0.8} />
-                {get("btn.back.1")}
-              </SketchBtn>
+               <>
+                <SketchBtn
+                  onClick={handleBack}
+                  variant="secondary" 
+                  style={{marginBottom: '8px'}}
+                >
+                  <HatchPattern opacity={0.8} />
+                  {get('Btn.disagree')}
+                </SketchBtn>
+                
+                <SketchBtn
+                  onClick={hasScrolledToBottom ? handleAgree : undefined}
+                  variant="primary"
+                  className={!hasScrolledToBottom ? 'agree-button-disabled' : ''}
+                  disabled={!hasScrolledToBottom}
+                >
+                  <HatchPattern opacity={hasScrolledToBottom ? 0.8 : 0.3} />
+                  {hasScrolledToBottom ? get('Btn.agree') : get('Btn.readTermsToEnd')}
+                </SketchBtn>
+              </>
             )}
           </div>
 

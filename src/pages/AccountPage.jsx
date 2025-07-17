@@ -30,6 +30,26 @@ const AccountPage = ({
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [showChatButton, setShowChatButton] = useState(true);
 
+useEffect(() => {
+  const resetContentAreaScroll = () => {
+    // 진짜 스크롤 컨테이너인 .content-area를 리셋
+    const contentArea = document.querySelector('.content-area');
+    if (contentArea) {
+      contentArea.scrollTop = 0;
+      console.log('content-area 스크롤이 0으로 리셋됨');
+    }
+    
+    // window도 함께 (혹시 모르니)
+    window.scrollTo(0, 0);
+  };
+
+  resetContentAreaScroll();
+  
+  // DOM 렌더링 완료 후 한 번 더
+  setTimeout(resetContentAreaScroll, 100);
+  
+}, [user]);
+
   useEffect(() => {
       if (messages && Object.keys(messages).length > 0) {
         console.log('✅ Messages loaded:', messages);
@@ -315,8 +335,19 @@ const AccountPage = ({
               hasArrow={false}
               onClick={async () => {
                 console.log('logout')
-                await logout();
-                navigateToPage(PAGES.HOME);
+
+
+                 const result = await Swal.fire({
+                    title: get('LOGOUT_TITLE') || '로그아웃',
+                    text: get('LOGOUT_MSG') || '로그아웃 되었습니다.',
+                    icon: 'success',
+                    confirmButtonText: get('FORGOT_PASSWORD_SUCCESS_CONFIRM') || '확인'
+                  });
+
+                  if (result.isConfirmed) {
+                    await logout();
+                   navigateToPage(PAGES.HOME);
+                  }
               }}
               className="logout"
             />

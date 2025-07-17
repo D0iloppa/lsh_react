@@ -50,7 +50,9 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
   const [targetName, setTargetName] = useState('');
   const [pickupService, setPickupService] = useState(false);
+  const [useStaffService, setUseStaffService] = useState(false);
   
+
   // 체크박스 상태들
   const [agreements, setAgreements] = useState({
     allTerms: false,
@@ -450,6 +452,7 @@ const handleReserve = async () => {
       return; // 유효성 검사 실패 시 예약 진행하지 않음
     }
 
+    console.log("reservationData",reservationData);
     // Duration 방식의 예약 처리 로직
     const legacyData = {
       user,
@@ -461,6 +464,8 @@ const handleReserve = async () => {
       selectedTime: reservationData.startTime,
       duration: reservationData.duration,
       endTime: reservationData.endTime,
+      pickupService: pickupService,
+      useStaffService: useStaffService,
       memo: memo 
     };
     
@@ -517,7 +522,9 @@ const handleReserve = async () => {
       pickupInfo1:get('reservation.escort.info1'),
       pickupInfo2:get('reservation.escort.info2'),
       pickupInfo3:get('reservation.escort.info3'),
-      pickupInfo4:get('reservation.escort.info4')
+      pickupInfo4:get('reservation.escort.info4'),
+      staff_info:get('STAFF_MSG_1'),
+      rev_target:target
     };
   };
 
@@ -744,6 +751,8 @@ const handleReserve = async () => {
           messages={getReservationMessages()} // 다국어 메시지 전달
           pickupService = {pickupService}
           setPickupService = {setPickupService}
+          useStaffService = {useStaffService}
+          setUseStaffService = {setUseStaffService}
           getTargetLabel={getTargetLabel}
         />
         <div className='Important-info'>

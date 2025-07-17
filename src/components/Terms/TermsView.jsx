@@ -17,7 +17,7 @@ import Terms_cn from './Terms_cn';
 
 import './TermsView.css'
 
-export default function TermsView() {
+export default function TermsView ({ navigateToPageWithData, PAGES, goBackParams, ...otherProps }) {
   const navigate = useNavigate();
   const location = useLocation();
   const urlParams = new URLSearchParams(location.search);
@@ -28,25 +28,14 @@ export default function TermsView() {
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
 
   const handleBack = () => {
-    // 동의 페이지에서 온 경우와 일반 페이지에서 온 경우를 구분
-    if (returnUrl && agreementType) {
-      // Register 페이지에서 동의를 위해 온 경우 - 동의하지 않음 파라미터와 함께 돌아가기
-      const separator = returnUrl.includes('?') ? '&' : '?';
-      navigate(`${returnUrl}${separator}${agreementType}=declined`); // declined 추가
-    } else {
-      // 일반적인 뒤로가기
-      navigate(-1);
-    }
+    window.checkTerm = false; 
+    goBackParams();
   };
 
   const handleAgree = () => {
-    // 동의했다는 파라미터와 함께 돌아가기
-    if (returnUrl && agreementType) {
-      const separator = returnUrl.includes('?') ? '&' : '?';
-      navigate(`${returnUrl}${separator}${agreementType}=agreed`);
-    } else {
-      navigate('/register');
-    }
+
+    window.checkTerm = true; 
+    goBackParams();
   };
   
   // 동의 페이지로 온 경우인지 확인
@@ -54,6 +43,20 @@ export default function TermsView() {
 
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   
+  useEffect(() => {
+  const bottomNav = document.querySelector('.bottom-navigation');
+  if (bottomNav) {
+    bottomNav.style.display = 'none';
+  }
+
+  return () => {
+    // 컴포넌트 언마운트 시 복원
+    if (bottomNav) {
+      bottomNav.style.display = '';
+    }
+  };
+}, []);
+
   useEffect(() => {
     if (messages && Object.keys(messages).length > 0) {
       console.log('✅ Messages loaded:', messages);
@@ -105,7 +108,7 @@ export default function TermsView() {
 
         /* 약관 컨테이너에 스크롤 추가 */
         .terms {
-          max-height: 400px;
+          max-height: 345px;
           overflow-y: auto;
           padding: 20px;
         }
@@ -212,13 +215,26 @@ export default function TermsView() {
               </>
             ) : (
               // 일반 페이지에서 온 경우 - 기존 버튼
-              <SketchBtn
-                onClick={handleBack}
-                variant="secondary"
-              >
-                <HatchPattern opacity={0.8} />
-                {get("btn.back.1")}
-              </SketchBtn>
+                <>
+                <SketchBtn
+                  onClick={handleBack}
+                  variant="secondary" 
+                  style={{marginBottom: '8px'}}
+                >
+                  <HatchPattern opacity={0.8} />
+                  {get('Btn.disagree')}
+                </SketchBtn>
+                
+                <SketchBtn
+                  onClick={hasScrolledToBottom ? handleAgree : undefined}
+                  variant="primary"
+                  className={!hasScrolledToBottom ? 'agree-button-disabled' : ''}
+                  disabled={!hasScrolledToBottom}
+                >
+                  <HatchPattern opacity={hasScrolledToBottom ? 0.8 : 0.3} />
+                  {hasScrolledToBottom ? (get('Btn.agree')) : (get('Btn.readTermsToEnd'))}
+                </SketchBtn>
+              </>
             )}
           </div>
 

@@ -220,8 +220,15 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
         e.preventDefault();
         
         if (window.overlayRegisterHandler) {
-            // 오버레이 모드 - 전역 함수 실행
+            // 오버레이 모드 - 전역 함수 실행window.checkPriv = false;  
             console.log('오버레이 모드에서 Register 클릭');
+            window.checkPriv = false;  
+            window.checkTerm = false;  
+            window.email='';
+            window.pwd='';
+            window.repwd='';
+            window.nickname='';
+            
             window.overlayRegisterHandler();
         } else {
             // 일반 모드 - navigate 사용

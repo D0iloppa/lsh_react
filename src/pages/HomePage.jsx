@@ -33,6 +33,9 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   const { user, isActiveUser, iauMasking } = useAuth();
   const [favorites, setFavorits] = useState([]);
   const { fcmToken } = useFcm();
+  const [iauData, setIauData] = useState(null);
+
+
 
   // 팝업 열기 핸들러
   const handleOpenPopup = () => {
@@ -110,6 +113,9 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
         );
 
         const iau = await isActiveUser();
+        console.log('IAU:', iau);
+        
+        setIauData(iau);
 
         const transformed = data.map((item, index) => ({
           id: item.venue_id || index,
@@ -236,32 +242,33 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
         return;
       }
 
+      navigateToPageWithData(PAGES.PURCHASEPAGE);
   
-      ApiClient.postForm('/api/trialCoupon',{
-        user_id: user?.user_id
-      }).then(res => {
+      // ApiClient.postForm('/api/trialCoupon',{
+      //   user_id: user?.user_id
+      // }).then(res => {
 
-        const {success = false} = res;
+      //   const {success = false} = res;
         
-        if(success){
-          Swal.fire({
-            title: get('SWAL_DAILY_TICKET_SUCCESS_TITLE'),
-            text: get('SWAL_DAILY_TICKET_SUCCESS_TEXT'),
-            icon: 'success',
-            confirmButtonText: '확인'
-          }).then(() => {
-            // Swal 확인 버튼 클릭 후 페이지 새로고침
-            window.location.reload();
-          });
-        }
+      //   if(success){
+      //     Swal.fire({
+      //       title: get('SWAL_DAILY_TICKET_SUCCESS_TITLE'),
+      //       text: get('SWAL_DAILY_TICKET_SUCCESS_TEXT'),
+      //       icon: 'success',
+      //       confirmButtonText: '확인'
+      //     }).then(() => {
+      //       // Swal 확인 버튼 클릭 후 페이지 새로고침
+      //       window.location.reload();
+      //     });
+      //   }
 
-        console.log('✅ 체험권 발급 :', res);
-        // alert('체험권이 발급되었습니다!');
+      //   console.log('✅ 체험권 발급 :', res);
+      //   // alert('체험권이 발급되었습니다!');
         
-      }).catch(error => {
-        console.error('❌ 체험권 발급 실패:', error);
-        // alert('체험권 발급에 실패했습니다. 다시 시도해주세요.');
-      });
+      // }).catch(error => {
+      //   console.error('❌ 체험권 발급 실패:', error);
+      //   // alert('체험권 발급에 실패했습니다. 다시 시도해주세요.');
+      // });
   
       /*
       // 인앱 결제 요청
@@ -665,7 +672,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
                 </div>
 
                 {/* 일일권 구매 안내 표시 */}
-                {shouldShowDailyPass() && !isActiveUser && (
+                {shouldShowDailyPass() && iauData && !iauData.isActiveUser && (
                   <div className='daily-purchase' style={{
                     textAlign: 'center',
                     padding: '1rem',

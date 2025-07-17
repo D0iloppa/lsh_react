@@ -39,7 +39,8 @@ const INITIAL_AGREEMENTS = {
   terms: false
 };
 
-export default function RegisterView() {
+export default function RegisterView({ navigateToPageWithData, PAGES }) {
+
   const { messages, get, currentLang } = useMsg();
   const navigate = useNavigate();
   const location = useLocation();
@@ -249,6 +250,19 @@ export default function RegisterView() {
         };
       }
 
+   if (response.data.error) {
+
+          await Swal.fire({
+            title: get('REGISTER_ERROR_DUPLICATE') || '이미 사용 중인 이메일입니다',
+            icon: 'error',
+            confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+          });
+          setIsLoading(false);
+          return; // 현재 자리에 머무름
+        }
+
+
+
       return {
         success: true,
         message: response.data.message || get('REGISTER_SUCCESS') || '회원가입이 완료되었습니다! 로그인해주세요.',
@@ -319,11 +333,20 @@ export default function RegisterView() {
   }, [clearStorage]);
 
   const handleAgreementClick = useCallback((type) => {
-    const currentPath = '/register';
-    const targetPath = type === 'privacy' ? '/privacy' : '/terms';
+
+    window.email = formData.email;
+    window.pwd = formData.password;
+    window.repwd = formData.rePassword;
+    window.nickname = formData.nickname;
+ 
+    const targetPath = type === 'privacy' ? PAGES.PRIVACY : PAGES.TERMS;
+    navigateToPageWithData(targetPath);
+
+    //const currentPath = '/register';
+   // const targetPath = type === 'privacy' ? '/privacy' : '/terms';
     
-    navigate(`${targetPath}?returnUrl=${encodeURIComponent(currentPath)}&agreementType=${type}`);
-  }, [navigate]);
+   // navigate(`${targetPath}?returnUrl=${encodeURIComponent(currentPath)}&agreementType=${type}`);
+}, [formData, navigateToPageWithData, PAGES]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -352,7 +375,8 @@ export default function RegisterView() {
         clearStorage(); // Clear storage on success
         
         // Redirect to login page
-        navigate('/login');
+        navigateToPageWithData(PAGES.HOME);
+
       } else {
         if (result.errors && Object.keys(result.errors).length > 0) {
           setErrors(result.errors);
@@ -367,46 +391,49 @@ export default function RegisterView() {
     setIsLoading(false);
   };
 
-  // Effects
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    
-    // Load saved form data
-    const savedFormData = loadFormData();
-    setFormData(savedFormData);
+      // Effects
+    useEffect(() => {
+      window.scrollTo(0, 0);
 
-    // Process URL parameters for agreements
-    const urlParams = new URLSearchParams(location.search);
-    const privacyParam = urlParams.get('privacy');
-    const termsParam = urlParams.get('terms');
+      if (typeof window.checkPriv === 'undefined') window.checkPriv = false;
+      if (typeof window.checkTerm === 'undefined') window.checkTerm = false;
 
-    if (privacyParam || termsParam) {
-      const currentAgreements = loadAgreements();
-      let newPrivacy = currentAgreements.privacy;
-      let newTerms = currentAgreements.terms;
+      agreements.privacy=window.checkPriv;
+      agreements.terms=window.checkTerm;
 
-      if (privacyParam === 'agreed') {
-        newPrivacy = true;
-      } else if (privacyParam === 'declined') {
-        newPrivacy = false;
-      }
+      setAgreements({ privacy: window.checkPriv, terms: window.checkTerm });
+      saveAgreements(window.checkPriv, window.checkTerm);
+        const savedFormData = loadFormData();
 
-      if (termsParam === 'agreed') {
-        newTerms = true;
-      } else if (termsParam === 'declined') {
-        newTerms = false;
-      }
+      // ✅ 전역변수가 있으면 우선 적용
+      const restoredData = {
+        ...savedFormData,
+        email: window.email || savedFormData.email,
+        password: window.pwd || savedFormData.password,
+        rePassword: window.repwd || savedFormData.rePassword,
+        nickname: window.nickname || savedFormData.nickname,
+      };
+
+      setFormData(restoredData);
+      // 하단바 숨기기
+      const bottomNav = document.querySelector('.bottom-navigation');
+      if (bottomNav) bottomNav.style.display = 'none';
+      return () => {
+        if (bottomNav) bottomNav.style.display = '';
+      };
+  
+      // 저장된 form 데이터 불러오기
+      //const savedFormData = loadFormData();
+      //setFormData(savedFormData);
+
+      // ✅ 전역변수 기준으로 agreements 상태 설정
+      const newPrivacy = typeof window.checkPriv === 'boolean' ? window.checkPriv : false;
+      const newTerms = typeof window.checkTerm === 'boolean' ? window.checkTerm : false;
 
       setAgreements({ privacy: newPrivacy, terms: newTerms });
       saveAgreements(newPrivacy, newTerms);
+    }, []);
 
-      // Clean URL
-      window.history.replaceState({}, '', window.location.pathname);
-    } else {
-      // Load saved agreements
-      setAgreements(loadAgreements());
-    }
-  }, [location.search, loadFormData, loadAgreements, saveAgreements]);
 
   // Show loading if messages not loaded
   if (!messages || Object.keys(messages).length === 0) {
@@ -414,8 +441,7 @@ export default function RegisterView() {
   }
 
   return (
-    <div className="register-container max-w-md mx-auto bg-white border-gray-800 p-6" 
-         style={{ paddingBottom: '10px' }}>
+    <div className="register-container max-w-md mx-auto bg-white border-gray-800 p-6" >
       
       <SketchHeader 
         title={get('Menu1.1')}
@@ -428,7 +454,7 @@ export default function RegisterView() {
         fontSize: '0.875rem', 
         color: '#6b7280', 
         textAlign: 'start', 
-        marginBottom: '5px',
+        marginBottom: '15px',
         marginTop: '5px',
         marginLeft: '5px',
         lineHeight: '1.4',
@@ -622,7 +648,7 @@ export default function RegisterView() {
             fontSize: '13px', 
             marginBottom: '3px',
             fontFamily: "'BMHanna', 'Comic Sans MS', cursive, sans-serif",
-            display: 'block'
+            display: 'none'
           }}>
             {get('title.text.10')}
           </label>

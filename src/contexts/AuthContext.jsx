@@ -63,7 +63,6 @@ export const AuthProvider = ({ children }) => {
 
   // 로그아웃 함수
   const logout = async () => {
-
       try {
         const response = await ApiClient.postForm('/api/logout', {
           user: 'logout'

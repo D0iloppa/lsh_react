@@ -33,7 +33,7 @@ const InitFooter = ({
     
   return (
     <>
-      <footer className={`init-footer ${className}`} {...props}>
+      <footer className={`init-footer ${className}`} {...props} style={{display:'none'}}>
         <HatchPattern opacity={hatchOpacity} />
         <div className="footer-content">
           <a 

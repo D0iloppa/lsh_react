@@ -21,6 +21,26 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [roomType, setRoomType] = useState('');
 
+useEffect(() => {
+  const resetContentAreaScroll = () => {
+    // 진짜 스크롤 컨테이너인 .content-area를 리셋
+    const contentArea = document.querySelector('.content-area');
+    if (contentArea) {
+      contentArea.scrollTop = 0;
+      console.log('content-area 스크롤이 0으로 리셋됨');
+    }
+    
+    // window도 함께 (혹시 모르니)
+    window.scrollTo(0, 0);
+  };
+
+  resetContentAreaScroll();
+  
+  // DOM 렌더링 완료 후 한 번 더
+  setTimeout(resetContentAreaScroll, 100);
+  
+}, [user]);
+
     useEffect(() => {
       const { chatRoomType = 'user' } = otherProps;
       

@@ -81,7 +81,8 @@ console.log("user", user)
         memo,
         venueToItem,
         targetName,
-        pickupService
+        pickupService,
+        useStaffService
       } = reserve_data;
 
       // API 요청을 위한 payload 준비
@@ -97,7 +98,8 @@ console.log("user", user)
         note: memo || '',
         mngCode:0,
         use_escort: pickupService ? 1 : 0,
-        venueToItem:true, pickupService:pickupService
+        use_staff: useStaffService ? 1 : 0,
+        venueToItem:true, pickupService:pickupService,useStaffService:useStaffService
       };
 
       setReservationPayload(api_payload);
@@ -113,7 +115,8 @@ console.log("user", user)
         duration: duration ? `${duration}${get('Reservation.HourUnit') || '시간'}` : '',
         attendee: `${attendee}${get('Reservation.PersonUnit') || '명'}`,
         memo: memo || '',
-        pickupService: pickupService
+        pickupService: pickupService,
+        useStaffService: useStaffService
       };
 
       setDisplayData(display_data);
@@ -260,7 +263,8 @@ console.log("user", user)
       confirmButton: get('btn.confirmRes.1') || '예약 확정',
       noMemo: get('BookingSum.NoMemo') || '메모 없음',
       confirmingButton: get('Reservation.Confirming') || '예약 확정 중...',
-      escortLabel:get('reservation.escort.1')
+      escortLabel:get('reservation.escort.1'),
+      useStaffLabel:get('STAFF_MSG_1')
     };
   };
 
@@ -474,6 +478,14 @@ console.log("user", user)
                   {<span className="">{messages_summary.escortLabel}</span>}
                 </div>
               </div>
+
+              <div className="summary-item" style={{display:(displayData.useStaffService)? '' : 'none'}}>
+                <span className="summary-label"></span>
+                <div className="summary-value">
+                  {<span className="">{messages_summary.useStaffLabel}</span>}
+                </div>
+              </div>
+
               
               {/* 메모 */}
               <div className="summary-item">

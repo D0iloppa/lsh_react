@@ -1,7 +1,7 @@
 // src/layout/MainApp.jsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@contexts/AuthContext';
-import { Home, Search, Calendar, User, Map, ChevronUp, Star, History, MessagesSquare } from 'lucide-react';
+import { Home, Search, Calendar, User, Map, ChevronUp, Star,Icon, History, MessagesSquare } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useLoginOverlay } from '@hooks/useLoginOverlay.jsx';
@@ -9,6 +9,7 @@ import { useLoginOverlay } from '@hooks/useLoginOverlay.jsx';
 import { PAGE_COMPONENTS, DEFAULT_PAGE } from '../config/pages.config';
 import HatchPattern from '@components/HatchPattern';
 import LoadingScreen from '@components/LoadingScreen';
+import ApiClient from '@utils/ApiClient';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -41,8 +42,48 @@ const MainApp = () => {
     const [ activeUser, setActiveUser] = useState({});
     const [loginId, setLoginId] = useState('');
     const [pageRefreshKey, setPageRefreshKey] = useState({});
+    const [unreadChatCount, setUnreadChatCount] = useState(0);
 
     console.log('welcome!', user);
+
+    // 채팅 개수 가져오기
+    const fetchUnreadChatCount = async () => {
+                if (!user?.user_id) return;
+        
+                try {
+                const response = await ApiClient.get('/api/getUnreadCountChat_mng', {
+                    params: {
+                    participant_type: 'user',
+                    participant_user_id: user.user_id
+                    }
+                });
+        
+                console.log("count", response)
+    
+                // response가 직접 숫자로 온다면
+                const count = parseInt(response) || 0;
+                setUnreadChatCount(count);
+                
+                } catch (error) {
+                console.error('읽지 않은 채팅 개수 조회 실패:', error);
+                setUnreadChatCount(0);
+                }
+            };
+        
+            // 초기 로드 및 주기적 업데이트
+            useEffect(() => {
+                fetchUnreadChatCount();
+                
+                const interval = setInterval(fetchUnreadChatCount, 3000);
+                
+                return () => clearInterval(interval);
+            }, [user]);
+        
+            // 채팅 페이지 이동 시 개수 초기화 함수
+            const resetChatCount = () => {
+                //setUnreadChatCount(0);
+            };
+
 
     // user 상태 변화 감지 및 처리
     useEffect(() => {
@@ -81,6 +122,7 @@ const MainApp = () => {
         navigateToEvents,    
         navigateToProfile,   
         goBack,
+        goBackParams,
         PAGES
     } = usePageNavigation();
 
@@ -239,6 +281,7 @@ const MainApp = () => {
         navigateToPage,
         navigateToPageWithData,
         goBack,
+        goBackParams,
         PAGES,
         showAdWithCallback
     };
@@ -311,7 +354,7 @@ const MainApp = () => {
                 <div className="nav-container">
                     {<HatchPattern opacity={0.3} />}
                     {navigationItems.map(({ id, icon: Icon, label, data = false, needLogin = false }) => (
-                        <button
+                       <button
                             key={id}
                             onClick={() => {
 
@@ -331,7 +374,15 @@ const MainApp = () => {
                             }}
                             className={`nav-item ${currentPage === id ? 'active' : ''}`}
                         >
-                            <Icon className="nav-icon" />
+                            <div className="nav-icon-container">
+                                <Icon className="nav-icon" />
+                                {/* 채팅 버튼에만 뱃지 추가 */}
+                                {id === PAGES.CHATTINGLIST && unreadChatCount > 0 && (
+                                    <span className="chat-badge">
+                                        {unreadChatCount > 99 ? '99+' : unreadChatCount}
+                                    </span>
+                                )}
+                            </div>
                             <span className="nav-label">{label}</span>
                         </button>
                     ))}

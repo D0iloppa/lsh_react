@@ -86,7 +86,7 @@ export const useLoginOverlay = (navigationProps, onLoginSuccess = null) => {
                                 .go-home-button {
                                     display: none !important;
                                 }
-                                .login-container{min-height: 72vh;}
+                                .login-container{min-height: 60vh;}
                             `}</style>
                             <div 
                                 style={{

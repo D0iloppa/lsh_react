@@ -6,10 +6,10 @@ import SketchBtn from '@components/SketchBtn';
 import SketchMenuBtn from '@components/SketchMenuBtn';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
-
+import {ChevronRight} from 'lucide-react';
 import SketchHeader from '@components/SketchHeader';
 
-import { Star, Edit3, User } from 'lucide-react';
+import { Star, Edit3, User, Sparkles } from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '../contexts/AuthContext';
 import LoadingScreen from '@components/LoadingScreen';
@@ -23,7 +23,7 @@ const Profile = ({
   goBack,
   ...otherProps
 }) => {
-  const { user, isLoggedIn } = useAuth();
+  const { user, isActiveUser, isLoggedIn } = useAuth();
   const [userInfo, setUserInfo] = useState({});
   const [userReviews, setUserReviews] = useState([]);
   const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
@@ -48,6 +48,9 @@ const Profile = ({
       } catch (error) {
         console.error('유저 정보 불러오기 실패:', error);
       }
+
+      const iau = await isActiveUser();
+      console.log('IAU:', iau.isActiveUser);
     };
 
     const fetchUserReviews = async () => {
@@ -443,6 +446,7 @@ const deleteReview = async (reviewId) => {
           margin: 0;
           font-style: italic;
         }
+          .daily-stats {margin-top: 1.5rem;     box-shadow: 4px 4px 0px #49dde4;}
       `}</style>
 
       <div className="account-container">
@@ -486,6 +490,10 @@ const deleteReview = async (reviewId) => {
               <span className="stat-label">{get('Menu1.8')}</span>
             </div>
           </div>
+
+          <SketchBtn className='daily-stats' variant="event" onClick={() => navigateToPageWithData(PAGES.PURCHASEPAGE)}>
+            {get('reservation.daily_pass.purchase_button2')} <Sparkles size={16} color='#448e8d'/>
+          </SketchBtn>
           </SketchDiv>
 
           <SketchDiv className="reviews-section">

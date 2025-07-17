@@ -61,7 +61,7 @@ const PopupModal = ({ popup, onClose }) => {
     }
 
 
-    ApiClient.postForm('/api/trialCoupon',{
+    ApiClient.postForm('/api/buyCoupon',{
       user_id: user?.user_id
     }).then(res => {
 

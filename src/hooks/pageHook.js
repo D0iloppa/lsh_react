@@ -132,6 +132,30 @@ const usePageNavigation = () => {
         }
     };
 
+    const goBackParams = (param = null) => {
+        if (pageHistory.length > 1) {
+            const newHistory = pageHistory.slice(0, -1);
+            const previousPage = newHistory[newHistory.length - 1];
+
+            setCurrentPage(previousPage);
+            setPageHistory(newHistory);
+
+            // 현재 페이지 데이터 제거
+            setPageDataStack(prev =>
+            prev.filter(entry => entry.page !== currentPage)
+            );
+
+            // 👉 파라미터를 전달하려면 여기에 처리 로직 추가
+            if (param) {
+            // 예: pageDataStack에 param을 저장하거나 context로 전달
+            setPageDataStack(prev => [
+                ...prev,
+                { page: previousPage, data: param }
+            ]);
+            }
+        }
+        };
+
     // 빠른 네비게이션 함수들
     const navigateToMap = (data = {}) => {
         if (Object.keys(data).length > 0) {
@@ -176,6 +200,7 @@ const usePageNavigation = () => {
         navigateToEvents,
         navigateToProfile,
         goBack,
+        goBackParams,
         PAGES
     };
 };
