@@ -227,6 +227,9 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   //     return get('VENUE_ERROR_CLOSE_TIME_AFTER_OPEN');
   //   }
   // }
+
+
+  return '';
   
     if (form.open_time && time) {
       const openHour = parseInt(form.open_time.split(':')[0]);

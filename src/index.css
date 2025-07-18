@@ -9,7 +9,7 @@
     padding: 8px 14px !important;        /* 패딩 줄임 */
     min-height: 36px !important;         /* 높이 줄임 */
     font-size: 13px !important;          /* 폰트도 살짝 줄임 */
-    margin-bottom: 6rem !important;       /* 토스트 간격도 줄임 */
+    
   }
 
   div:where(.swal2-container).swal2-center>.swal2-popup{
