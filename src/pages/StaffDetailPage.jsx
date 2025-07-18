@@ -27,7 +27,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
 
   const handleReserve = () => {
 
-    console.log(girl);
+    
     navigateToPageWithData(PAGES.RESERVATION, {
       target: 'staff',
       id: girl.staff_id || 123,
@@ -61,6 +61,9 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
 
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    console.log(girl);
+    
      if (messages && Object.keys(messages).length > 0) {
       console.log('✅ Messages loaded:', messages);
       // setLanguage('en'); // 기본 언어 설정
@@ -147,6 +150,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
           margin-top: 0.75rem;
           font-size: 0.95rem;
           color: #4b5563;
+          margin-bottom: 0.75rem;
         }
 
         .booking-form-section {
@@ -209,19 +213,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
           </div>
         </div>
 
-        <div className="booking-form-section">
-          <SketchBtn
-            className="full-width" variant = 'event'
-            onClick={handleReserve}
-          >
-            {get('btn.reserve.1')}
-            <HatchPattern opacity={0.8} />
-          </SketchBtn>
-        </div>
-         <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+        p
       </div>
     </>
   );

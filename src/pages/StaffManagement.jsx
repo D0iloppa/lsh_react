@@ -161,12 +161,17 @@ const transformStaffData = (apiData) => {
     
     return {
       id: item.staff_id,
+      birth_year:item.birth_year,
       name: item.name || 'Unknown Staff',
       rating: item.avg_rating || 0,
       img: item.image_url || '',
       staff_id: item.staff_id,
+      login_id: item.login_id,
+      contact: item.contact,
       venue_id: item.venue_id,
       created_at: item.created_at,
+      image_url:item.image_url,
+      description:item.description,
       // 여러 가능성을 체크해서 status 설정
       status: item.status || 
               (item.is_active ? 'active' : 'on_leave') || 
@@ -180,6 +185,76 @@ const transformStaffData = (apiData) => {
 // 스태프 추가 버튼 클릭 핸들러
 const handleAddStaff = () => {
  navigateToPage(PAGES.CREATE_STAFF)
+};
+
+// 스태프 정보 보기 핸들러
+const handleViewStaff = (staff) => {
+  console.log('View staff info:', staff);
+  navigateToPageWithData(PAGES.STAFFDETAIL, staff );
+};
+
+// 스태프 수정 핸들러
+const handleEditStaff = (staff) => {
+  console.log('Edit staff:', staff);
+  
+  // TODO: 스태프 수정 페이지로 이동
+  navigateToPageWithData(PAGES.EDIT_STAFF,  {staff} );
+};
+
+// 스태프 삭제 핸들러
+const handleDeleteStaff = async (staff) => {
+  console.log('Delete staff:', staff);
+  
+  // 삭제 확인 다이얼로그
+  const result = await Swal.fire({
+    title: get('STAFF_DELETE_CONFIRM_TITLE'),
+    text: get('STAFF_DELETE_CONFIRM_TEXT').replace('{name}', staff.name),
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: get('STAFF_DELETE_BUTTON'),
+    cancelButtonText: get('STAFF_CANCEL_BUTTON'),
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#6b7280'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      // TODO: 실제 삭제 API 호출
+      // const response = await ApiClient.postForm('/api/deleteStaff', {
+      //   staff_id: staff.staff_id,
+      //   venue_id: user.venue_id
+      // });
+
+      await ApiClient.get('/api/staffDelete', {
+        params: { staff_id: staff.staff_id }
+      });
+
+      
+      console.log('Staff deleted successfully');
+      
+      // 성공 메시지 표시
+      Swal.fire({
+        title: get('SWAL_SUCCESS_TITLE'),
+        text: get('STAFF_DELETE_SUCCESS'),
+        icon: 'success',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON'),
+        confirmButtonColor: '#10b981'
+      });
+      
+      // 목록 새로고침
+      await loadStaffList();
+    } catch (error) {
+      console.error('Failed to delete staff:', error);
+      
+      Swal.fire({
+        title: get('SWAL_ERROR_TITLE'),
+        text: get('STAFF_DELETE_ERROR'),
+        icon: 'error',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON'),
+        confirmButtonColor: '#ef4444'
+      });
+    }
+  }
 };
 
 // 스태프 목록 로드 함수
@@ -209,7 +284,13 @@ const loadStaffList = async () => {
     }
     
     if (apiData && apiData.length >= 0) {
-      const transformedData = transformStaffData(apiData);
+
+      const _availList = apiData;
+
+      // status가 "deleted"인 항목들 제외
+      const filteredList = _availList.filter(staff => staff.status !== 'deleted');
+
+      const transformedData = transformStaffData(filteredList);
       // created_at 기준으로 정렬 (오래된 순서대로 = 등록 순서)
       const sortedData = transformedData.sort((a, b) => a.created_at - b.created_at);
       setStaffList(transformedData);
@@ -372,14 +453,99 @@ const loadStaffList = async () => {
                         {renderStars(staff.rating)}
                       </div>
                     </div>
-                    <div className="staff-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <ToggleRadio 
-                      checked={staff.status === 'active'}
-                      onChange={(newState) => handleStaffToggle(staff, newState)}
-                      disabled={loading}
-                    />
-                    <span style={{ color: staff.status === 'active' ? 'green' : 'red' }}>{staff.status === 'active' ? get('SCHEDULE_MODAL_ON') : get('SCHEDULE_MODAL_LEAVE')}</span>
-                  </div>
+                    
+                    {/* 스태프 액션 버튼들 - 상단에 배치 */}
+                    <div style={{ 
+                      position: 'absolute', 
+                      top: '8px', 
+                      right: '8px', 
+                      display: 'flex', 
+                      gap: '4px' 
+                    }}>
+                      
+                      <button
+                        onClick={() => handleViewStaff(staff)}
+                        style={{
+                          padding: '4px 8px',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '6px',
+                          background: 'transparent',
+                          color: '#6b7280',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontFamily: 'inherit',
+                          fontWeight: '500'
+                        }}
+                        title={get('STAFF_VIEW_BUTTON') || '정보'}
+                      >
+                        {get('STAFF_VIEW_BUTTON') || '정보'}
+                      </button>
+
+
+                      <button
+                        onClick={() => handleEditStaff(staff)}
+                        style={{
+                          padding: '4px 8px',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '6px',
+                          background: 'transparent',
+                          color: '#6b7280',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontFamily: 'inherit',
+                          fontWeight: '500'
+                        }}
+                        title={get('STAFF_EDIT_BUTTON') || '수정'}
+                      >
+                        {get('STAFF_EDIT_BUTTON') || '수정'}
+                      </button>
+                      
+                      <button
+                        onClick={() => handleDeleteStaff(staff)}
+                        style={{
+                          padding: '4px 8px',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '6px',
+                          background: 'transparent',
+                          color: '#ef4444',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontFamily: 'inherit',
+                          fontWeight: '500'
+                        }}
+                        title={get('STAFF_DELETE_BUTTON') || '삭제'}
+                      >
+                        {get('STAFF_DELETE_BUTTON') || '삭제'}
+                      </button>
+                      
+                    </div>
+                    
+                    {/* 근무 토글 버튼 - 아래로 내림 */}
+                    <div className="staff-actions" style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px', 
+                      marginTop: '4px',
+                      position: 'absolute',
+                      bottom: '25px',
+                      right: '8px'
+                    }}>
+                      <ToggleRadio 
+                        checked={staff.status === 'active'}
+                        onChange={(newState) => handleStaffToggle(staff, newState)}
+                        disabled={loading}
+                      />
+                      <span style={{ color: staff.status === 'active' ? 'green' : 'red' }}>{staff.status === 'active' ? get('SCHEDULE_MODAL_ON') : get('SCHEDULE_MODAL_LEAVE')}</span>
+                    </div>
                   </SketchDiv>
                 ))
               )}

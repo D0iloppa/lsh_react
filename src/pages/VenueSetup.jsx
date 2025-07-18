@@ -51,6 +51,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   const [mode, setMode] = useState(otherProps.mode || 'create');
   const [venueId, setVenueId] = useState(otherProps.venue_id || null);
   const [form, setForm] = useState(defaultForm);
+  const [imageCount, setImageCount] = useState(0);
 
   // ref로 폼 값 관리
   const formRef = useRef({
@@ -791,7 +792,18 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         
         {/* 이미지 업로드 */}
         <div className="section-title" style={{lineHeight: '2', display: 'flex', justifyContent: 'space-between'}}>
-          {get('VENUE_UPLOAD_IMAGES')} <SketchBtn  onClick={() => handleDetail(venueId)} variant="secondary" size='small' style={{width: '30%'}}>
+           <div>
+    {get('VENUE_UPLOAD_IMAGES')} 
+    <div style={{
+      fontSize: '0.8rem', 
+      color: '#666', 
+      marginLeft: '0.5rem',
+      fontWeight: 'normal'
+    }}>
+      ({get('PHOTO_INFO6')} : {imageCount + 1}{get('text.cnt.1')} )
+    </div>
+  </div>
+          <SketchBtn  onClick={() => handleDetail(venueId)} variant="secondary" size='small' style={{width: '30%', height: '40px'}}>
             <HatchPattern opacity={0.6} /> <Search size={12}/> {get('VIEW_SEARCH')}</SketchBtn></div>
         <div className="img-row">
           {/* 
@@ -869,6 +881,9 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
                   const dbContentId = (data || []).map(item => item.content_id);
 
                   const imgList = [...dbImages];
+
+                   // 이미지 갯수 업데이트
+                  setImageCount(imgList.length);
                   
                   return {images: imgList, contentId: dbContentId};
                 },
@@ -881,7 +896,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
                     setGalleryImages(prev => [...prev, accessUrl]);
                     setGalleryImagesContentId(prev => [...prev, content_id]);
                     setGalleryImagesMap(prev => [...prev, { url: accessUrl, contentId: content_id }]);
-
+                    setImageCount(prev => prev + 1);
 
                      // venue 수정 데이터 준비
                      await ApiClient.postForm('/api/uploadVenueGallery', {
@@ -909,7 +924,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
 
 
-
+                  setImageCount(prev => prev - 1);
 
 
                   // galleryImages에서 삭제된 이미지 제거

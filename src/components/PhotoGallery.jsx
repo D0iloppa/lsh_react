@@ -172,33 +172,43 @@ const PhotoGallery = ({
             }}
           >
             <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '16px 20px',
+              borderBottom: '1px solid #eee',
+              background: '#f8f9fa',
+            }}
+          >
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#333' }}>
+              Gallery
+              <span style={{
+                fontSize: '14px',
+                color: '#666',
+                fontWeight: 'normal',
+                marginLeft: '8px'
+              }}>
+                ({overlayImages.length}{get('text.cnt.1')})
+              </span>
+            </h3>
+            <button
               style={{
+                background: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '8px 16px',
+                fontSize: '14px',
+                cursor: 'pointer',
                 display: 'flex',
-                justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: '16px 20px',
-                borderBottom: '1px solid #eee',
-                background: '#f8f9fa',
+                gap: '6px',
+              }}
+              onClick={() => {
+                document.getElementById('photo-gallery-upload-input')?.click();
               }}
             >
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#333' }}>Gallery</h3>
-              <button
-                style={{
-                  background: '#10b981',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  padding: '8px 16px',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
-                onClick={() => {
-                  document.getElementById('photo-gallery-upload-input')?.click();
-                }}
-              >
                 <Upload size={16} /> {get('PHOTO_INFO8')}
               </button>
               <input

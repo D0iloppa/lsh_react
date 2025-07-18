@@ -50,6 +50,9 @@ import NotificationCenter from '@pages/NotificationCenter';
 import ManagerSettings from '@pages/ManagerSettings';
 import VenueSetup from '@pages/VenueSetup';
 import DiscoverPageVenue from '@pages/DiscoverPageVenue';
+import EditStaff from '@pages/EditStaff';
+
+
 //////////////////////////
 // Staff Pages
 import StaffHome from '@pages/StaffHome';
@@ -98,6 +101,7 @@ export const PAGES = {
     STAFF_MANAGEMENT: 'STAFF_MANAGEMENT',
     ANALYTICS: 'ANALYTICS',
     CREATE_STAFF: 'CREATE_STAFF',
+    EDIT_STAFF: 'EDIT_STAFF',
     STAFF_SCHEDULE: 'STAFF_SCHEDULE',
     STAFF_SCHEDULE_CREATE: 'STAFF_SCHEDULE_CREATE',
     PROMOTION_MANAGEMENT: 'PROMOTION_MANAGEMENT',
@@ -151,6 +155,7 @@ export const PAGE_COMPONENTS = {
     [PAGES.STAFF_MANAGEMENT]: StaffManagement,
     [PAGES.ANALYTICS]: ManagerDashboard, // 임시로 대시보드 사용
     [PAGES.CREATE_STAFF]: CreateStaff,
+    [PAGES.EDIT_STAFF]: EditStaff,
     [PAGES.STAFF_SCHEDULE]: StaffSchedule,
     [PAGES.STAFF_SCHEDULE_CREATE]: StaffWorkScheduleCreate,
     [PAGES.PROMOTION_MANAGEMENT]: PromotionManagement,
