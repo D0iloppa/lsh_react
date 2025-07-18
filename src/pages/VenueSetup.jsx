@@ -956,12 +956,10 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
               }}
             />  
             </div>
+        </div>
 
-
-
-
-
-
+        <div style={{padding:'10px'}}>
+          {get('PHOTO_GAL_DESCRIPTION_1')}
         </div>
         
         <div className="section-title required-field">{get('VENUE_INFORMATION')}</div>

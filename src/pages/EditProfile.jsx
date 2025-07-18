@@ -328,9 +328,11 @@ if (isLoadingData) {
             />  
             </div>
 
-
           </div>
           
+          <div style={{padding:'10px'}}>
+              {get('PHOTO_GAL_DESCRIPTION_1')}
+            </div>
 
 
         </div>
