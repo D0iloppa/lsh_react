@@ -40,6 +40,7 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
     birth_year: '',
     languages: '',
     intro: '',
+    profile_content_id:'',
   });
 
   useEffect(() => {
@@ -66,11 +67,12 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
             nationality: response.nationality || '',
             languages: response.languages || '',
             intro: response.description || response.intro || '',
+            profile_content_id: response.profile_content_id || '',
           });
 
           if (response.profile_image) {
             setUploadedImages([{
-              contentId: response.profile_image,
+              contentId: response.profile_content_id,
               previewUrl: response.profile_image_url || `/api/getImage?content_id=${response.profile_image}`,
               name: 'profile_image.jpg',
               size: 0,
@@ -110,19 +112,12 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
       const imageContentId = uploadedImages.length > 0 
         ? parseInt(uploadedImages[0].contentId, 10) 
         : 0;
-
-      const payload = {
-        staff_id: user?.staff_id || user?.id,
-        nickname: form.nickname,
-        birth_year: form.birth_year,
-        languages: form.languages,
-        description: form.intro,
-        profile_content_id: imageContentId,
-      };
-
+    
+      console.log("uploadedImages", uploadedImages);
       console.log('imageContentId', imageContentId);
+      console.log('imageContentId', staffInfo.profile_content_id);
 
-      if ( imageContentId  == 0 ) {
+      if ( imageContentId === 0 &&  staffInfo.profile_content_id === 0 ) {
 
         Swal.fire({
           title: get('PROFILE_IMAGE_TITLE'),
@@ -131,7 +126,20 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
         });
 
         return;
-      }
+      } 
+
+      const profileContentIdToUse = imageContentId !== 0 
+          ? imageContentId 
+          : staffInfo.profile_content_id;
+
+        const payload = {
+          staff_id: user?.staff_id || user?.id,
+          nickname: form.nickname,
+          birth_year: form.birth_year,
+          languages: form.languages,
+          description: form.intro,
+          profile_content_id: profileContentIdToUse,
+        };
 
       const response = await ApiClient.postForm('/api/updateStaff', payload);
 
@@ -139,7 +147,7 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
         if (galleryImagesContentId.length > 0) {
           for (const contentId of galleryImagesContentId) {
             try {
-              await ApiClient.postForm('/api/uploadStaffGallery', {
+              await ApiClient.postForm('/api/uploadStaffProfile', {
                 staff_id: user?.staff_id || user?.id,
                 content_id: contentId
               });

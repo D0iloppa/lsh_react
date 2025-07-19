@@ -206,18 +206,17 @@ const AppContent = () => {
 
 function App() {
   return (
-    <OverlayProvider>
-      {/* 기존 Provider들 */}
-      <FcmProvider>
-        <AuthProvider>
-          <MsgProvider>
-            <PopupProvider>
-              <AppContent />
-            </PopupProvider>
-          </MsgProvider>
-        </AuthProvider>
-      </FcmProvider>
-    </OverlayProvider>
+    <MsgProvider>
+      <OverlayProvider>
+        <FcmProvider>
+          <AuthProvider>
+              <PopupProvider>
+                <AppContent />
+              </PopupProvider>
+          </AuthProvider>
+        </FcmProvider>
+      </OverlayProvider>
+    </MsgProvider>
   );
 }
 

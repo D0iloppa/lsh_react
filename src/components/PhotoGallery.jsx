@@ -338,8 +338,30 @@ const PhotoGallery = ({
                 img_url: overlayImages[fullscreenIndex],
                 content_id: contentId
               }).then((response) => {
-                setOverlayImages(prev => prev.filter((_, idx) => idx !== fullscreenIndex));
+                console.log('삭제됨;;');
+
+                // overlay 상태 업데이트
+                setOverlayImages(prev => {
+                  const newImages = prev.filter((_, idx) => idx !== fullscreenIndex);
+                  
+                  // 이미지가 없으면 overlay 닫기
+                  if (newImages.length === 0) {
+                    console.log('모든 이미지 삭제됨, overlay 닫기');
+                    unmount();
+                    return [];
+                  }
+                  
+                  return newImages;
+                });
+                
                 setOverlayContentId(prev => prev.filter((_, idx) => idx !== fullscreenIndex));
+                
+                // fullscreenIndex 조정 (이미지가 남아있는 경우에만)
+                if (overlayImages.length > 1) {
+                  if (fullscreenIndex >= overlayImages.length - 1) {
+                    setFullscreenIndex(Math.max(0, overlayImages.length - 2));
+                  }
+                }
               });
             }
           });

@@ -1014,26 +1014,31 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
                   }
                 },
                 onDeleted:async ({img_url, content_id}) => {
-
-
-
-
                   const response = await ApiClient.postForm('/api/contentDelete', {
                     target:'venue',
                     content_id: content_id
                   });
 
-
                   const { success = false } = response;
 
-
-
+                  console.log('dddd', response);
 
                   setImageCount(prev => prev - 1);
 
-
                   // galleryImages에서 삭제된 이미지 제거
-                  setGalleryImages(prev => prev.filter(img => img !== img_url));
+                  setGalleryImages(prev => {
+                    const newImages = prev.filter(img => img !== img_url);
+                    
+                    // 이미지가 없으면 overlay 닫기
+                    if (newImages.length === 0) {
+                      console.log('모든 이미지 삭제됨, overlay 닫기');
+                      // overlay를 닫는 방법이 필요합니다
+                      // 현재 overlay 상태를 확인하고 닫기
+                      return [];
+                    }
+                    
+                    return newImages;
+                  });
                   
                   // galleryImagesMap에서 해당 항목 제거하고 contentId 배열 업데이트
                   setGalleryImagesMap(prev => {
@@ -1041,7 +1046,6 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
                     setGalleryImagesContentId(filtered.map(item => item.content_id));
                     return filtered;
                   });
-
                 }
               }}
               appendedImages={galleryImages}
