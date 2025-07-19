@@ -144,7 +144,7 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
           allContentIds.push(staffInfo.profile_content_id);
         }
 
-        // ✅ 중간 로그 출력 + 값 갱신
+        
         console.log('갤러리 전체 데이터:', staffGalleryDataRef.current);
 
         // 필요 시 중간에 갤러리 content_id를 따로 추출해 갱신
@@ -160,6 +160,13 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
         // 2. 갤러리 이미지 content_id 추가
         if (galleryIdsFromRef.length > 0) {
           allContentIds.push(...galleryIdsFromRef);
+        }
+
+
+
+        // 2. 갤러리 이미지 content_id 추가
+        if (galleryImagesContentId.length > 0) {
+          allContentIds.push(...galleryImagesContentId);
         }
 
         console.log("✅ 전체 content_id 목록 (메인 -> 갤러리):", allContentIds);
