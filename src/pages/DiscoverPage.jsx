@@ -34,6 +34,18 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   };*/
   const { user, isActiveUser, iauMasking } = useAuth();
 
+    // 텍스트 줄바꿈 처리 함수
+    const formatTextWithLineBreaks = (text) => {
+      if (!text) return '';
+      
+      return text.split('\n').map((line, index) => (
+        <React.Fragment key={index}>
+          {line}
+          {index < text.split('\n').length - 1 && <br />}
+        </React.Fragment>
+      ));
+    };
+
     // 커스텀 훅 사용
   const navigationProps = { navigateToPageWithData, PAGES, goBack };
   const { openLoginOverlay } = useLoginOverlay(navigationProps);
@@ -913,8 +925,8 @@ const openMenuOverlay = (menuList) => {
             <div className="club-location">{venueInfo?.address || venueInfo?.location || 'in Vietnam'}</div>
            
             <div className="description">
-              {venueInfo?.description ||
-                get('DiscoverPage1.5')}
+              {formatTextWithLineBreaks(venueInfo?.description ||
+                get('DiscoverPage1.5'))}
             </div>
 
             <div className="phone" style={{ marginBottom: '5px' }}>

@@ -311,7 +311,6 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           <div className="staff-age">
             {girl.birth_year ? `Age ${getAgeFromBirthYear(girl.birth_year)}` : 'Age N/A'}
           </div>
-          <div className="staff-specialty">{get('StaffDetail1.1')}</div>
           <div className="staff-description">
             {girl.description || 'No description available.'}
           </div>
