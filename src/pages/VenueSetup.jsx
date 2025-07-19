@@ -889,7 +889,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       marginLeft: '0.5rem',
       fontWeight: 'normal'
     }}>
-      ({get('PHOTO_INFO6')} : {imageCount + 1}{get('text.cnt.1')} )
+      ({get('PHOTO_INFO6')} : {uploadedImages.length + imageCount}{get('text.cnt.1')})
     </div>
   </div>
           <SketchBtn  onClick={() => handleDetail(venueId)} variant="secondary" size='small' style={{width: '30%', height: '40px'}}>
