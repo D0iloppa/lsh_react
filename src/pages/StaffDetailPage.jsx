@@ -184,7 +184,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
               const hasMultipleImages = images.length > 1;
               
               // 이미지가 1개면 같은 이미지를 3-4번 복제
-              const slidesToShow = hasMultipleImages ? images : Array(4).fill(images[0]);
+              const slidesToShow = images.length > 1 ? images : [images[0]];
               
               return slidesToShow.map((imageUrl, index) => (
                 <div key={index} className="profile-slide">
