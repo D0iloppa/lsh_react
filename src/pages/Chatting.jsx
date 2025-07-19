@@ -869,9 +869,17 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   }, [room_sn, user_id, user.type, nickname, venue_id, scrollToBottom, sendTo, receiverId, roomTitle]);
 
   const insertChattingData = useCallback(async (params) => {
+
+    const safeParams = {
+      ...params,
+      receiver_id: params.receiver_id || receiverId
+    };
+
+    console.log(safeParams, receiverId);
+
     const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
     try {
-      const response = await axios.post(`${API_HOST}/api/insertChattingData`, params);
+      const response = await axios.post(`${API_HOST}/api/insertChattingData`, safeParams);
       console.log('✅ 채팅 서버 응답:', response.data);
 
       const {chat_sn, room_sn, room_mode} = response.data;
@@ -881,13 +889,15 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     } catch (error) {
       console.error('❌ 채팅 전송 실패:', error);
     }
-  }, []);
+  }, [receiverId]);
 
   const handleUploadComplete = useCallback((content_id, file) => {
     console.log('이미지 전송 ^_T', room_sn, content_id, sendTo, receiverId);
 
     const {type} = user;
     let login_id = (type=='staff') ? user.staff_id : user.manager_id;
+
+    
 
     insertChattingData({
       room_sn,
@@ -901,7 +911,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       creator_type: user.type,
       last_message_preview: '사진',
       venue_id,
-      send_to: user.type,
+      send_to: memoizedProps.send_to || sendTo,
       receiver_id: receiverId
     });
 

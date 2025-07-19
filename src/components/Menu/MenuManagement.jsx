@@ -15,12 +15,14 @@ const MenuManagement = ({
   onMenuUpdate,
   onClose,
   user,
-  get
+  get,
+  lazyInsertMenu: initialLazyInsertMenu = [] // 이전 lazyInsertMenu 데이터
 }) => {
   const [menuList, setMenuList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showGallery, setShowGallery] = useState(true);
   const [fullscreenIndex, setFullscreenIndex] = useState(null);
+  const [lazyInsertMenu, setLazyInsertMenu] = useState(initialLazyInsertMenu); // 초기값으로 설정
   const touchStartX = useRef(null);
   const mouseStartX = useRef(null);
 
@@ -44,19 +46,34 @@ const MenuManagement = ({
         const uploadResponse = await ApiClient.uploadImage(file);
         
         if (uploadResponse.success && uploadResponse.content_id) {
-          // 2. 업로드된 content_id로 메뉴 등록
-          const menuResponse = await ApiClient.insertVenueMenu(venueId, uploadResponse.content_id);
+          // accessUrl을 우선 사용하고, 없으면 기존 필드 사용
+          const imageUrl = uploadResponse.accessUrl || uploadResponse.image_url || uploadResponse.url;
           
-          if (menuResponse.success) {
+          // venueId가 있고 유효한 경우에만 메뉴 등록
+          if (venueId && venueId > 0) {
+            // 2. 업로드된 content_id로 메뉴 등록
+            const menuResponse = await ApiClient.insertVenueMenu(venueId, uploadResponse.content_id);
+            
+            if (menuResponse.success) {
+              return {
+                success: true,
+                content_id: uploadResponse.content_id,
+                image_url: imageUrl,
+                item_id: menuResponse.item_id,
+                message: '메뉴판 이미지가 성공적으로 업로드되었습니다.'
+              };
+            } else {
+              throw new Error('메뉴 등록에 실패했습니다.');
+            }
+          } else {
+            // venueId가 없는 경우 임시 저장
             return {
               success: true,
               content_id: uploadResponse.content_id,
-              image_url: uploadResponse.image_url || uploadResponse.url,
-              item_id: menuResponse.item_id,
-              message: '메뉴판 이미지가 성공적으로 업로드되었습니다.'
+              image_url: imageUrl,
+              isTemporary: true,
+              message: '메뉴판 이미지가 임시로 저장되었습니다. 매장 등록 후 자동으로 등록됩니다.'
             };
-          } else {
-            throw new Error('메뉴 등록에 실패했습니다.');
           }
         } else {
           throw new Error('이미지 업로드에 실패했습니다.');
@@ -114,13 +131,51 @@ const MenuManagement = ({
     }
   }, [venueId, fetchMenuImages]);
 
+  // 이전 lazyInsertMenu 데이터를 UI에 표시
+  useEffect(() => {
+    if (initialLazyInsertMenu && initialLazyInsertMenu.length > 0) {
+      const tempMenuList = initialLazyInsertMenu.map((menu, index) => ({
+        item_id: `temp_${Date.now()}_${index}`, // 고유한 임시 ID
+        url: menu.image_url,
+        isTemporary: true
+      }));
+      
+      // 기존 메뉴 리스트에 임시 메뉴들 추가
+      setMenuList(prev => {
+        // 이미 임시 메뉴가 있는지 확인하여 중복 방지
+        const existingTempMenus = prev.filter(menu => menu.isTemporary);
+        if (existingTempMenus.length === 0) {
+          return [...prev, ...tempMenuList];
+        }
+        return prev;
+      });
+    }
+  }, [initialLazyInsertMenu]);
+
   // 메뉴판 이미지 업로드
   const handleUploadMenuImage = async (file) => {
     try {
       const response = await menuImageApi.uploadMenuImage(file);
       if (response.success) {
-        // 업로드 성공 후 리스트 갱신
-        await fetchMenuImages();
+        if (response.isTemporary) {
+          // 임시 메뉴인 경우 lazyInsertMenu에 추가
+          setLazyInsertMenu(prev => [...prev, {
+            content_id: response.content_id,
+            image_url: response.image_url,
+            uploaded_at: new Date().toISOString()
+          }]);
+          
+          // 임시 메뉴 목록에 추가하여 UI에 표시
+          setMenuList(prev => [...prev, {
+            item_id: `temp_${Date.now()}`, // 임시 ID
+            url: response.image_url, // 올바른 image_url 사용
+            isTemporary: true
+          }]);
+        } else {
+          // 정상 등록된 경우 리스트 갱신
+          await fetchMenuImages();
+        }
+        
         onMenuUpdate?.();
         Swal.fire({
           title: get('MENU_UPLOAD_COMPLETE'),
@@ -154,17 +209,38 @@ const MenuManagement = ({
 
     if (result.isConfirmed) {
       try {
-        const response = await menuImageApi.deleteMenuImage(itemId);
-        if (response.success) {
-          // 삭제 성공 후 리스트 갱신
-          await fetchMenuImages();
-          onMenuUpdate?.();
+        // 임시 메뉴인지 확인
+        const isTemporary = itemId.startsWith('temp_');
+        
+        if (isTemporary) {
+          // 임시 메뉴 삭제
+          setMenuList(prev => prev.filter(menu => menu.item_id !== itemId));
+          // lazyInsertMenu에서도 제거 (content_id로 찾기)
+          const menuToRemove = menuList.find(menu => menu.item_id === itemId);
+          if (menuToRemove && menuToRemove.url) {
+            setLazyInsertMenu(prev => prev.filter(menu => menu.image_url !== menuToRemove.url));
+          }
+          
           Swal.fire({
             title: get('MENU_DELETE_COMPLETE'),
-            text: response.message,
+            text: '임시 메뉴가 삭제되었습니다.',
             icon: 'success',
             timer: 1500
           });
+        } else {
+          // 실제 메뉴 삭제
+          const response = await menuImageApi.deleteMenuImage(itemId);
+          if (response.success) {
+            // 삭제 성공 후 리스트 갱신
+            await fetchMenuImages();
+            onMenuUpdate?.();
+            Swal.fire({
+              title: get('MENU_DELETE_COMPLETE'),
+              text: response.message,
+              icon: 'success',
+              timer: 1500
+            });
+          }
         }
       } catch (error) {
         console.error('메뉴판 이미지 삭제 실패:', error);
@@ -207,7 +283,8 @@ const MenuManagement = ({
   // 갤러리 닫기
   const handleCloseGallery = () => {
     setShowGallery(false);
-    onClose?.();
+    // lazyInsertMenu 데이터를 onClose 콜백으로 전달
+    onClose?.(lazyInsertMenu);
   };
 
   if (!showGallery) {
@@ -344,6 +421,22 @@ const MenuManagement = ({
                         e.target.style.display = 'none';
                       }}
                     />
+                    {/* 임시 메뉴 표시 */}
+                    {menu.isTemporary && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '8px',
+                        left: '8px',
+                        background: 'rgba(255, 193, 7, 0.9)',
+                        color: '#000',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        fontSize: '10px',
+                        fontWeight: 'bold'
+                      }}>
+                        임시
+                      </div>
+                    )}
                   </div>
                 )) : null}
               </div>

@@ -328,8 +328,9 @@ const isTodayOrFuture = (dateString) => {
   return dateString >= today;
 };
 
-    const handleCreateSchedule = () => {
-      // 선택된 날짜 기준으로 해당 주의 일요일 시작일 계산
+const handleCreateSchedule = () => {
+      // 기존 로직: 선택된 날짜 기준으로 해당 주의 일요일 시작일 계산
+      /*
       const selectedDateObj = new Date(selectedDate);
       const dayOfWeek = selectedDateObj.getDay();
       const startOfWeek = new Date(selectedDateObj);
@@ -357,7 +358,35 @@ const isTodayOrFuture = (dateString) => {
           end_time: null,
           // 필요한 다른 기본값들...
         });
-  }
+      }
+      */
+
+      // 새로운 로직: 선택된 날짜부터 7일간의 데이터 생성
+      const selectedDateObj = new Date(selectedDate);
+      const startDate = selectedDateObj.toISOString().split('T')[0];
+
+      // 선택된 날짜부터 7일 전체 배열 생성
+      const weekScheduleData = [];
+      for (let i = 0; i < 7; i++) {
+        const currentDate = new Date(selectedDateObj);
+        currentDate.setDate(selectedDateObj.getDate() + i);
+        const dateString = currentDate.toISOString().split('T')[0];
+        
+        // 해당 날짜의 기존 스케줄 찾기
+        const existingSchedule = schedules.find(schedule => {
+          const scheduleDate = schedule.work_date || new Date(schedule.date).toLocaleDateString('en-CA');
+          return scheduleDate === dateString;
+        });
+        
+        // 기존 스케줄이 있으면 그것을 사용하고, 없으면 기본 구조 생성
+        weekScheduleData.push(existingSchedule || {
+          work_date: dateString,
+          status: null,
+          start_time: null,
+          end_time: null,
+          // 필요한 다른 기본값들...
+        });
+    }
 
       console.log("selected date:", selectedDate);
       console.log("startDate:", startDate);

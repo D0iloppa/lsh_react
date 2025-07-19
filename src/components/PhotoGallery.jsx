@@ -9,7 +9,8 @@ const PhotoGallery = ({
   appendedImages = [],
   onAppendedImagesChange,
   onDeleted,
-  venue_id = 0
+  venue_id = 0,
+  lazyGalleryData = [] // lazyGalleryData props 추가
 }) => {
   if (
     !photoGalleryMode ||
@@ -36,6 +37,7 @@ const PhotoGallery = ({
 
       console.log('images', images);
       console.log('contentId', contentId);
+      console.log('lazyGalleryData in PhotoGallery:', lazyGalleryData);
 
       setImages(Array.isArray(images) ? images : []);
       setContentId(contentId);
@@ -69,22 +71,15 @@ const PhotoGallery = ({
     return () => {
       mounted = false;
     };
-  }, [photoGalleryMode, appendedImages]);
+  }, [photoGalleryMode, appendedImages, lazyGalleryData]);
 
   const thumbnails = images.slice(0, 4);
   const emptyCount = 4 - thumbnails.length;
 
   const openGalleryOverlay = () => {
 
+    /*
     if(venue_id < 1){
-      /*
-      Swal.fire({
-        title: get('SWAL_VENUE_REG1'),
-        text: get('SWAL_VENUE_REG2'),
-        icon: 'warning',
-        confirmButtonText: get('INQUIRY_CONFIRM')
-      });
-      */
 
       Swal.fire({
         title: get('SWAL_VENUE_REG1'),
@@ -93,10 +88,11 @@ const PhotoGallery = ({
         confirmButtonText: get('INQUIRY_CONFIRM'),
         showCancelButton: false,
         allowOutsideClick: true
-    });
+      });
 
       return;
     }
+      */
 
     overlay.open(({ isOpen, close, unmount }) => {
 

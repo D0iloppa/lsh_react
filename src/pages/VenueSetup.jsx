@@ -76,6 +76,10 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   const [showMenuManagement, setShowMenuManagement] = useState(false);
   const [menuVenueId, setMenuVenueId] = useState(null);
 
+  const [lazyGalleryData, setLazyGalleryData] = useState([]); // 포토 갤러리
+  const [lazyMenuData, setLazyMenuData] = useState([]); // 메뉴 관리 모달에서 추가된 메뉴 데이터를 저장할 상태
+  
+
   const navigate = useNavigate();
 
   const location = useLocation();
@@ -154,8 +158,11 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
 
   const handleBack = () => {
+
+    //goBack();
+
   if (fromManagerTuto) {
-    navigate('/managerTuto');
+    navigate('/manager');
   } else {
     goBack();
   }
@@ -215,38 +222,38 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 };
 
   const validateCloseTime = (time) => {
-  if (!time.trim()) {
-    return get('VENUE_ERROR_CLOSE_TIME_REQUIRED');
-  }
-  const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-  if (!timeRegex.test(time)) {
-    return get('VENUE_ERROR_TIME_FORMAT');
-  }
-  // if (form.open_time && time) {
-  //   // ... 시간 비교 로직 ...
-  //   if (closeTotalMinutes <= openTotalMinutes) {
-  //     return get('VENUE_ERROR_CLOSE_TIME_AFTER_OPEN');
-  //   }
-  // }
-
-
-  return '';
-  
-    if (form.open_time && time) {
-      const openHour = parseInt(form.open_time.split(':')[0]);
-      const openMinute = parseInt(form.open_time.split(':')[1]);
-      const closeHour = parseInt(time.split(':')[0]);
-      const closeMinute = parseInt(time.split(':')[1]);
-      
-      const openTotalMinutes = openHour * 60 + openMinute;
-      const closeTotalMinutes = closeHour * 60 + closeMinute;
-      
-      if (closeTotalMinutes <= openTotalMinutes) {
-        return get('VENUE_ERROR_CLOSE_TIME_AFTER_OPEN');
-      }
+    if (!time.trim()) {
+      return get('VENUE_ERROR_CLOSE_TIME_REQUIRED');
     }
-  return '';
-};
+    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    if (!timeRegex.test(time)) {
+      return get('VENUE_ERROR_TIME_FORMAT');
+    }
+    // if (form.open_time && time) {
+    //   // ... 시간 비교 로직 ...
+    //   if (closeTotalMinutes <= openTotalMinutes) {
+    //     return get('VENUE_ERROR_CLOSE_TIME_AFTER_OPEN');
+    //   }
+    // }
+
+
+    return '';
+    
+      if (form.open_time && time) {
+        const openHour = parseInt(form.open_time.split(':')[0]);
+        const openMinute = parseInt(form.open_time.split(':')[1]);
+        const closeHour = parseInt(time.split(':')[0]);
+        const closeMinute = parseInt(time.split(':')[1]);
+        
+        const openTotalMinutes = openHour * 60 + openMinute;
+        const closeTotalMinutes = closeHour * 60 + closeMinute;
+        
+        if (closeTotalMinutes <= openTotalMinutes) {
+          return get('VENUE_ERROR_CLOSE_TIME_AFTER_OPEN');
+        }
+      }
+    return '';
+  };
 
   // 시간을 HH:MM:SS 형식으로 변환하는 함수
   const formatTimeToSeconds = (timeString) => {
@@ -357,6 +364,32 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     if (venue_id) {
       // venue_id를 받았으면 user의 venue_id 업데이트
       updateVenueId(venue_id);
+      
+      // lazyGalleryData와 lazyMenuData 확인 및 출력
+      console.log('=== Venue ID 발급 후 Lazy Data 확인 ===');
+      console.log('발급된 venue_id:', venue_id);
+      console.log('lazyGalleryData:', lazyGalleryData);
+      console.log('lazyMenuData:', lazyMenuData);
+      console.log('lazyGalleryData 길이:', lazyGalleryData?.length || 0);
+      console.log('lazyMenuData 길이:', lazyMenuData?.length || 0);
+      console.log('=====================================');
+      
+      // lazyMenuData가 있으면 메뉴 등록
+      if (lazyMenuData && lazyMenuData.length > 0) {
+        try {
+          await Promise.all(
+            lazyMenuData.map(async (menu) => {
+              await ApiClient.insertVenueMenu(venue_id, menu.content_id);
+            })
+          );
+          console.log(`${lazyMenuData.length}개의 임시 메뉴가 성공적으로 등록되었습니다.`);
+          // lazyMenuData 초기화
+          setLazyMenuData([]);
+        } catch (error) {
+          console.error('임시 메뉴 등록 실패:', error);
+          // 메뉴 등록 실패해도 venue 등록은 성공으로 처리
+        }
+      }
     }
     
     // 성공 응답 체크 (API 응답 구조에 따라 조정)
@@ -495,6 +528,50 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       if (venue_id) {
         // venue_id를 받았으면 user의 venue_id 업데이트
         updateVenueId(venue_id);
+        
+        // lazyGalleryData와 lazyMenuData 확인 및 출력
+        console.log('=== Venue Update 후 Lazy Data 확인 ===');
+        console.log('업데이트된 venue_id:', venue_id);
+        console.log('lazyGalleryData:', lazyGalleryData);
+        console.log('lazyMenuData:', lazyMenuData);
+        console.log('=====================================');
+
+        // lazyMenuData가 있으면 메뉴 등록
+        if (lazyMenuData && lazyMenuData.length > 0) {
+          try {
+            await Promise.all(
+              lazyMenuData.map(async (menu) => {
+                await ApiClient.insertVenueMenu(venue_id, menu.content_id);
+              })
+            );
+            console.log(`${lazyMenuData.length}개의 임시 메뉴가 성공적으로 등록되었습니다.`);
+            // lazyMenuData 초기화
+            setLazyMenuData([]);
+          } catch (error) {
+            console.error('임시 메뉴 등록 실패:', error);
+            // 메뉴 등록 실패해도 venue 등록은 성공으로 처리
+          }
+        }
+
+        // lazyGalleryData가 있으면 갤러리 이미지 등록
+        if (lazyGalleryData && lazyGalleryData.length > 0) {
+          try {
+            await Promise.all(
+              lazyGalleryData.map(async (gallery) => {
+                await ApiClient.postForm('/api/uploadVenueGallery', {
+                  venue_id: venue_id,
+                  content_id: gallery.content_id
+                });
+              })
+            );
+            console.log(`${lazyGalleryData.length}개의 임시 갤러리 이미지가 성공적으로 등록되었습니다.`);
+            // lazyGalleryData 초기화
+            setLazyGalleryData([]);
+          } catch (error) {
+            console.error('임시 갤러리 이미지 등록 실패:', error);
+            // 갤러리 등록 실패해도 venue 등록은 성공으로 처리
+          }
+        }
       }
       
       await Swal.fire({
@@ -519,6 +596,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
 
   const handleMenu = (venueId) => {
+    /*
     if (venueId == null || venueId == -1) {
       Swal.fire({
         title: get('SWAL_VENUE_REG1'),
@@ -528,7 +606,8 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       });
       return;
     }
-    
+    */
+   
     // 메뉴 관리 모달 열기
     setMenuVenueId(venueId);
     setShowMenuManagement(true);
@@ -582,6 +661,11 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       } else if (mode === 'edit') {
         await updateVenue();
       }
+
+      // 성공하고 나서
+      handleBack();
+
+
     } catch (error) {
       console.error('Venue setup failed:', error);
       let errorMessage = get('VENUE_ERROR_SAVE_FAILED');
@@ -660,12 +744,17 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           onMenuUpdate={() => {
             // 메뉴 업데이트 완료
           }}
-          onClose={() => {
+          onClose={(lazyInsertMenu) => {
             setShowMenuManagement(false);
             setMenuVenueId(null);
+            // lazyInsertMenu 리스트를 상태로 저장
+            if (lazyInsertMenu && lazyInsertMenu.length > 0) {
+              setLazyMenuData(lazyInsertMenu);
+            }
           }}
           user={user}
           get={get}
+          lazyInsertMenu={lazyMenuData} // 이전 lazyMenuData 전달
         />
       )}
 
@@ -866,6 +955,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
             <div style={{}}>
             <PhotoGallery
               venue_id = {user.venue_id}
+              lazyGalleryData={lazyGalleryData}
               photoGalleryMode={{
                 fetchList: async () => {
                   const response = await ApiClient.postForm('/api/getVenueGallery', {
@@ -874,39 +964,54 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
                   const { data = [] } = response;
 
-
-
-                  // 기존 DB 이미지 + 새로 추가된 이미지들 합치기
+                  // 기존 DB 이미지
                   const dbImages = (data || []).map(item => item.url);
                   const dbContentId = (data || []).map(item => item.content_id);
 
-                  const imgList = [...dbImages];
+                  // lazyGalleryData의 이미지들 추가
+                  const lazyImages = lazyGalleryData.map(item => item.image_url);
+                  const lazyContentIds = lazyGalleryData.map(item => item.content_id);
 
-                   // 이미지 갯수 업데이트
+                  // DB 이미지 + lazy 이미지 합치기
+                  const imgList = [...dbImages, ...lazyImages];
+                  const contentIdList = [...dbContentId, ...lazyContentIds];
+
+                  // 이미지 갯수 업데이트
                   setImageCount(imgList.length);
                   
-                  return {images: imgList, contentId: dbContentId};
+                  return {images: imgList, contentId: contentIdList};
                 },
                 onUpload: async (file) => {
                   const response = await ApiClient.uploadImage(file);
                   const { content_id = false, accessUrl } = response;
 
                   if (content_id) {
-                    // 임시로 galleryImages에 추가 (DB 저장 전까지)
-                    setGalleryImages(prev => [...prev, accessUrl]);
-                    setGalleryImagesContentId(prev => [...prev, content_id]);
-                    setGalleryImagesMap(prev => [...prev, { url: accessUrl, contentId: content_id }]);
-                    setImageCount(prev => prev + 1);
+                    // venue_id가 있으면 바로 DB에 저장
+                    if (user?.venue_id) {
+                      // 임시로 galleryImages에 추가 (DB 저장 전까지)
+                      setGalleryImages(prev => [...prev, accessUrl]);
+                      setGalleryImagesContentId(prev => [...prev, content_id]);
+                      setGalleryImagesMap(prev => [...prev, { url: accessUrl, contentId: content_id }]);
+                      setImageCount(prev => prev + 1);
 
-                     // venue 수정 데이터 준비
-                     await ApiClient.postForm('/api/uploadVenueGallery', {
-                      venue_id: user?.venue_id,
-                      content_id: content_id
-                    });
-
+                      // venue 수정 데이터 준비
+                      await ApiClient.postForm('/api/uploadVenueGallery', {
+                        venue_id: user?.venue_id,
+                        content_id: content_id
+                      });
+                    } else {
+                      // venue_id가 없으면 lazyGalleryData에 저장
+                      setLazyGalleryData(prev => [...prev, {
+                        content_id: content_id,
+                        image_url: accessUrl,
+                        uploaded_at: new Date().toISOString()
+                      }]);
+                      
+                      // UI에 표시하기 위해 galleryImages에도 추가
+                      setGalleryImages(prev => [...prev, accessUrl]);
+                      setImageCount(prev => prev + 1);
+                    }
                   }
-
-
                 },
                 onDeleted:async ({img_url, content_id}) => {
 

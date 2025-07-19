@@ -263,7 +263,9 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
         <div className="week-title">{get('schedule.weekly.title')}</div>
         <div>
           {weekData.map((dayData, index) => {
-              const day = days[index];
+              const day = new Date(dayData.work_date).toLocaleDateString(currentLang || 'en-US', {
+                weekday: 'long'
+              });
               const isPast = isPastDate(dayData.work_date);
 
              // status와 시간 값만으로 on 상태 계산

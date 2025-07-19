@@ -19,6 +19,12 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
   const { user, isLoggedIn } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
+  // 디버깅을 위한 렌더링 카운터
+  const renderCount = React.useRef(0);
+  renderCount.current += 1;
+  
+  console.log('🔄 EditProfile 렌더링 #', renderCount.current);
+
   const [staffInfo, setStaffInfo] = useState({});
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -26,6 +32,9 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryImagesContentId, setGalleryImagesContentId] = useState([]);
   const [galleryImagesMap, setGalleryImagesMap] = useState([]); // {url, contentId} 형태로 관리
+  const [galleryData, setGalleryData] = useState([]); // 갤러리 데이터 상태 추가
+
+  const [lazyGalleryData, setLazyGalleryData] = useState([]); // 포토 갤러리
   
 
   const [form, setForm] = useState({
@@ -41,59 +50,62 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
       console.log('Current language set to:', currentLang);
       window.scrollTo(0, 0);
     }
-  }, [messages, currentLang]);
+  }, []); // 빈 의존성 배열로 변경 - 컴포넌트 마운트 시에만 실행
 
   useEffect(() => {
-    fetchStaffData();
-  }, []);
-
-  const fetchStaffData = async () => {
-    try {
-      setIsLoadingData(true);
-      
-      // 스태프 정보 가져오기
-      const response = await ApiClient.get('/api/getVenueStaff', {
-        params: { staff_id: user?.staff_id || user?.id }
-      });
-
-      console.log('Staff data:', response);
-      
-      if (response) {
-        setStaffInfo(response);
-        setForm({
-          nickname: response.nickname || response.name || '',
-          birth_year: response.birth_year || '',
-          nationality: response.nationality || '',
-          languages: response.languages || '',
-          intro: response.description || response.intro || '',
+    const fetchStaffData = async () => {
+      try {
+        setIsLoadingData(true);
+        
+        // 스태프 정보 가져오기
+        const response = await ApiClient.get('/api/getVenueStaff', {
+          params: { staff_id: user?.staff_id || user?.id }
         });
 
-        // 기존 이미지가 있다면 uploadedImages에 추가
-        if (response.profile_image) {
-          setUploadedImages([{
-            contentId: response.profile_image,
-            previewUrl: response.profile_image_url || `/api/getImage?content_id=${response.profile_image}`,
-            name: 'profile_image.jpg',
-            size: 0,
-            isExisting: true // 기존 이미지 표시
-          }]);
+        console.log('Staff data:', response);
+        
+        if (response) {
+          setStaffInfo(response);
+          setForm({
+            nickname: response.nickname || response.name || '',
+            birth_year: response.birth_year || '',
+            nationality: response.nationality || '',
+            languages: response.languages || '',
+            intro: response.description || response.intro || '',
+          });
+
+          // 기존 이미지가 있다면 uploadedImages에 추가
+          if (response.profile_image) {
+            setUploadedImages([{
+              contentId: response.profile_image,
+              previewUrl: response.profile_image_url || `/api/getImage?content_id=${response.profile_image}`,
+              name: 'profile_image.jpg',
+              size: 0,
+              isExisting: true // 기존 이미지 표시
+            }]);
+          }
         }
+      } catch (error) {
+        console.error('Failed to fetch staff data:', error);
+        // 에러 시 user 객체에서 기본값 설정
+        if (user) {
+          setForm({
+            nickname: user.nickname || user.name || '',
+            birth_year: user.birth_year || '',
+            languages: user.languages || '',
+            intro: user.description || user.intro || '',
+          });
+        }
+      } finally {
+        setIsLoadingData(false);
       }
-    } catch (error) {
-      console.error('Failed to fetch staff data:', error);
-      // 에러 시 user 객체에서 기본값 설정
-      if (user) {
-        setForm({
-          nickname: user.nickname || user.name || '',
-          birth_year: user.birth_year || '',
-          languages: user.languages || '',
-          intro: user.description || user.intro || '',
-        });
-      }
-    } finally {
-      setIsLoadingData(false);
+    };
+
+    // user가 있을 때만 실행
+    if (user && (user.staff_id || user.id)) {
+      fetchStaffData();
     }
-  };
+  }, []); // 빈 의존성 배열 - 컴포넌트 마운트 시에만 실행
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -295,9 +307,9 @@ if (isLoadingData) {
 
                   console.log('data', data);
 
-                  // 기존 DB 이미지 + 새로 추가된 이미지들 합치기
+                  // DB 이미지만 반환 (galleryImages는 별도로 관리)
                   const dbImages = (data || []).map(item => item.url);
-                  return [...galleryImages, ...dbImages];
+                  return dbImages;
                 },
                 onUpload: async (file) => {
                   const response = await ApiClient.uploadImage(file);
