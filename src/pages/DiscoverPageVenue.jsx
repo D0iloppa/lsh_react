@@ -918,6 +918,7 @@ const openMenuOverlay = (menuList) => {
           transform: translateY(0);
           transition: transform 0.3s ease-in-out;
           box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+          display:none;
         }
 
         .reservation-footer.hidden {
@@ -997,7 +998,6 @@ const openMenuOverlay = (menuList) => {
 
           <div className='sum-info text-start'>
             <div className="club-location">{venueInfo?.address || venueInfo?.location || 'in Vietnam'}</div>
-            <div className="top-venues-text">{venueInfo?.description || get('DiscoverPage1.4')}</div>
 
             <div className="description">
               {venueInfo?.description ||

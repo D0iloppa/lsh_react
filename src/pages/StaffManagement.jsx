@@ -159,6 +159,15 @@ const transformStaffData = (apiData) => {
     console.log('Available fields:', Object.keys(item));
     console.log('Status field value:', item.status);
     
+    // image_url과 images를 합쳐서 images 배열 생성
+    const combinedImages = [];
+    if (item.image_url) {
+      combinedImages.push(item.image_url);
+    }
+    if (item.images && Array.isArray(item.images)) {
+      combinedImages.push(...item.images);
+    }
+    
     return {
       id: item.staff_id,
       birth_year:item.birth_year,
@@ -171,6 +180,7 @@ const transformStaffData = (apiData) => {
       venue_id: item.venue_id,
       created_at: item.created_at,
       image_url:item.image_url,
+      images: combinedImages, // image_url과 images를 합친 배열
       description:item.description,
       // 여러 가능성을 체크해서 status 설정
       status: item.status || 

@@ -140,6 +140,7 @@ body[data-lang="vi"] .terms {  max-height: 345px !important;}
 body[data-lang="vi"] .privacy-container .text-center h1{font-size: 24px !important;}
 body[data-lang="vi"] .scroll-indicator{width: 213px; bottom: 180px !important; text-align: center;}
 
+
 body {margin: 0;}
 .swal-zindex-10000 {
   z-index: 10000 !important;

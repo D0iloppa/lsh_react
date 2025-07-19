@@ -62,7 +62,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   useEffect(() => {
     window.scrollTo(0, 0);
 
-    console.log(girl);
+    console.log('profile', girl);
     
      if (messages && Object.keys(messages).length > 0) {
       console.log('✅ Messages loaded:', messages);
