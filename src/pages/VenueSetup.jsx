@@ -1193,7 +1193,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
             onBlur={handleBlur}
             placeholder={get('VENUE_INTRO_PLACEHOLDER')}
             as="textarea"
-            rows={2}
+            rows={8}
             error={errors.description}
           />
         </div>

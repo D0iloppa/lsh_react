@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
@@ -12,17 +12,15 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
 import ImageUploader from '@components/ImageUploader';
-import PhotoGallery from '@components/PhotoGallery';
+import PhotoGallery from '@components/PhotoGallery_staff';
 
 const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
 
   const { user, isLoggedIn } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
-  // 디버깅을 위한 렌더링 카운터
   const renderCount = React.useRef(0);
   renderCount.current += 1;
-  
   console.log('🔄 EditProfile 렌더링 #', renderCount.current);
 
   const [staffInfo, setStaffInfo] = useState({});
@@ -31,11 +29,11 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
   const [uploadedImages, setUploadedImages] = useState([]);
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryImagesContentId, setGalleryImagesContentId] = useState([]);
-  const [galleryImagesMap, setGalleryImagesMap] = useState([]); // {url, contentId} 형태로 관리
-  const [galleryData, setGalleryData] = useState([]); // 갤러리 데이터 상태 추가
-
-  const [lazyGalleryData, setLazyGalleryData] = useState([]); // 포토 갤러리
-  
+  const [galleryImagesMap, setGalleryImagesMap] = useState([]);
+  const [galleryData, setGalleryData] = useState([]);
+  const [lazyGalleryData, setLazyGalleryData] = useState([]);
+  const [dbGalleryImages, setDbGalleryImages] = useState([]); // DB 이미지 URL 배열
+  const [dbGalleryContentIds, setDbGalleryContentIds] = useState([]); // DB 이미지 contentId 배열
 
   const [form, setForm] = useState({
     nickname: '',
@@ -50,20 +48,16 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
       console.log('Current language set to:', currentLang);
       window.scrollTo(0, 0);
     }
-  }, []); // 빈 의존성 배열로 변경 - 컴포넌트 마운트 시에만 실행
+  }, []);
 
   useEffect(() => {
     const fetchStaffData = async () => {
       try {
         setIsLoadingData(true);
-        
-        // 스태프 정보 가져오기
         const response = await ApiClient.get('/api/getVenueStaff', {
           params: { staff_id: user?.staff_id || user?.id }
         });
-
         console.log('Staff data:', response);
-        
         if (response) {
           setStaffInfo(response);
           setForm({
@@ -74,20 +68,18 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
             intro: response.description || response.intro || '',
           });
 
-          // 기존 이미지가 있다면 uploadedImages에 추가
           if (response.profile_image) {
             setUploadedImages([{
               contentId: response.profile_image,
               previewUrl: response.profile_image_url || `/api/getImage?content_id=${response.profile_image}`,
               name: 'profile_image.jpg',
               size: 0,
-              isExisting: true // 기존 이미지 표시
+              isExisting: true
             }]);
           }
         }
       } catch (error) {
         console.error('Failed to fetch staff data:', error);
-        // 에러 시 user 객체에서 기본값 설정
         if (user) {
           setForm({
             nickname: user.nickname || user.name || '',
@@ -101,11 +93,10 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
       }
     };
 
-    // user가 있을 때만 실행
     if (user && (user.staff_id || user.id)) {
       fetchStaffData();
     }
-  }, []); // 빈 의존성 배열 - 컴포넌트 마운트 시에만 실행
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -113,12 +104,12 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
   };
 
   const handleSave = async () => {
-  try {
-    setIsSaving(true);
-    
-    const imageContentId = uploadedImages.length > 0 
-      ? parseInt(uploadedImages[0].contentId, 10) 
-      : 0;
+    try {
+      setIsSaving(true);
+
+      const imageContentId = uploadedImages.length > 0 
+        ? parseInt(uploadedImages[0].contentId, 10) 
+        : 0;
 
       const payload = {
         staff_id: user?.staff_id || user?.id,
@@ -126,77 +117,96 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
         birth_year: form.birth_year,
         languages: form.languages,
         description: form.intro,
-        profile_content_id: imageContentId, // 단일 long 값 (0 또는 실제 ID)
+        profile_content_id: imageContentId,
       };
 
       console.log('payload', payload);
 
-    const response = await ApiClient.postForm('/api/updateStaff', payload);
+      const response = await ApiClient.postForm('/api/updateStaff', payload);
 
-    if (response.success) {
-      // 성공 후 갤러리 이미지들 DB에 저장
-      if (galleryImagesContentId.length > 0) {
-        for (const contentId of galleryImagesContentId) {
-          try {
-            await ApiClient.postForm('/api/uploadStaffGallery', {
-              staff_id: user?.staff_id || user?.id,
-              content_id: contentId
-            });
-          } catch (error) {
-            console.error('Gallery image upload failed:', error);
+      if (response.success) {
+        if (galleryImagesContentId.length > 0) {
+          for (const contentId of galleryImagesContentId) {
+            try {
+              await ApiClient.postForm('/api/uploadStaffGallery', {
+                staff_id: user?.staff_id || user?.id,
+                content_id: contentId
+              });
+            } catch (error) {
+              console.error('Gallery image upload failed:', error);
+            }
           }
         }
+
+        setGalleryImages([]);
+        setGalleryImagesContentId([]);
+
+        Swal.fire({
+          title: get('PROFILE_UPDATE_SUCCESS_TITLE'),
+          text: get('PROFILE_UPDATE_SUCCESS_MESSAGE'),
+          icon: 'success',
+          timer: 1500
+        });
+
+        setStaffInfo(prev => ({
+          ...prev,
+          ...form,
+          profile_content_id: imageContentId
+        }));
+      } else {
+        Swal.fire({
+          title: get('PROFILE_UPDATE_ERROR_TITLE'),
+          text: response.message || get('PROFILE_UPDATE_ERROR_MESSAGE'),
+          icon: 'error'
+        });
       }
-      
-      // galleryImages 초기화
-      setGalleryImages([]);
-      setGalleryImagesContentId([]);
-      
-      Swal.fire({
-        title: get('PROFILE_UPDATE_SUCCESS_TITLE'),
-        text: get('PROFILE_UPDATE_SUCCESS_MESSAGE'),
-        icon: 'success',
-        timer: 1500
-      });
-      
-      // 업데이트된 데이터로 staffInfo 갱신
-      setStaffInfo(prev => ({
-        ...prev,
-        ...form,
-        profile_content_id: imageContentId
-      }));
-    } else {
+    } catch (error) {
+      console.error('Profile update error:', error);
       Swal.fire({
         title: get('PROFILE_UPDATE_ERROR_TITLE'),
-        text: response.message || get('PROFILE_UPDATE_ERROR_MESSAGE'),
+        text: get('PROFILE_UPDATE_ERROR_MESSAGE'),
         icon: 'error'
       });
+    } finally {
+      setIsSaving(false);
     }
-  } catch (error) {
-    console.error('Profile update error:', error);
-    Swal.fire({
-      title: get('PROFILE_UPDATE_ERROR_TITLE'),
-      text: get('PROFILE_UPDATE_ERROR_MESSAGE'),
-      icon: 'error'
-    });
-  } finally {
-    setIsSaving(false);
-  }
-};
+  };
 
-if (isLoadingData) {
-  return (
-    <div className="editprofile-container">
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <div>{get('LOADING_PROFILE_DATA')}</div>
+  const fetchStaffGallery = useCallback(async () => {
+    const response = await ApiClient.postForm('/api/getStaffGallery', {
+      staff_id: user?.staff_id || user?.id
+    });
+
+    const { data = [] } = response;
+    console.log('data', data);
+
+    // DB 이미지와 contentId를 별도 상태에 저장
+    const images = (data || []).map(item => item.url);
+    const contentIds = (data || []).map(item => item.content_id || item.id);
+    
+    setDbGalleryImages(images);
+    setDbGalleryContentIds(contentIds);
+    
+    console.log('DB Gallery images:', images);
+    console.log('DB Gallery contentIds:', contentIds);
+    
+    // PhotoGallery 컴포넌트에는 이미지 URL만 반환
+    return images;
+  }, [user]);
+
+  if (isLoadingData) {
+    return (
+      <div className="editprofile-container">
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <div>{get('LOADING_PROFILE_DATA')}</div>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   return (
     <>
-      <style jsx="true">{`
+     <style jsx="true">{`
         .editprofile-container {
           margin-top: 1rem;
           padding: 1rem;
@@ -268,13 +278,8 @@ if (isLoadingData) {
         }
       `}</style>
 
-       <SketchHeader
-        title={
-          <>
-            <User size={20} style={{marginRight:'7px',marginBottom:'-3px'}}/>
-            {get('EDIT_PROFILE_TITLE')}
-          </>
-        }
+      <SketchHeader
+        title={<><User size={20} style={{marginRight:'7px',marginBottom:'-3px'}}/>{get('EDIT_PROFILE_TITLE')}</>}
         showBack={true}
         onBack={goBack}
       />
@@ -294,59 +299,66 @@ if (isLoadingData) {
               showPreview={false}
               initialImageUrl={staffInfo?.image_url || staffInfo?.profile_image}
             />
-
-          <div style={{}}>
-            <PhotoGallery
-              photoGalleryMode={{
-                fetchList: async () => {
-                  const response = await ApiClient.postForm('/api/getStaffGallery', {
-                    staff_id: user?.staff_id || user?.id
-                  });
-
-                  const { data = [] } = response;
-
-                  console.log('data', data);
-
-                  // DB 이미지만 반환 (galleryImages는 별도로 관리)
-                  const dbImages = (data || []).map(item => item.url);
-                  return dbImages;
-                },
-                onUpload: async (file) => {
-                  const response = await ApiClient.uploadImage(file);
-                  const { content_id = false, accessUrl } = response;
-
-                  if (content_id) {
-                    // 임시로 galleryImages에 추가 (DB 저장 전까지)
-                    setGalleryImages(prev => [...prev, accessUrl]);
-                    setGalleryImagesContentId(prev => [...prev, content_id]);
-                    setGalleryImagesMap(prev => [...prev, { url: accessUrl, contentId: content_id }]);
+            <div style={{}}>
+              <PhotoGallery
+                photoGalleryMode={{
+                  fetchList: fetchStaffGallery,
+                  onUpload: async (file) => {
+                    const response = await ApiClient.uploadImage(file);
+                    const { content_id = false, accessUrl } = response;
+                    if (content_id) {
+                      setGalleryImages(prev => [...prev, accessUrl]);
+                      setGalleryImagesContentId(prev => [...prev, content_id]);
+                      setGalleryImagesMap(prev => [...prev, { url: accessUrl, contentId: content_id }]);
+                    }
                   }
-                }
-              }}
-              appendedImages={galleryImages}
-              onAppendedImagesChange={setGalleryImages}
-              onDeleted={(deletedImageUrl) => {
-                console.log('deletedImageUrl', deletedImageUrl, galleryImages);
-                // galleryImages에서 삭제된 이미지 제거
-                setGalleryImages(prev => prev.filter(img => img !== deletedImageUrl));
-                
-                // galleryImagesMap에서 해당 항목 제거하고 contentId 배열 업데이트
-                setGalleryImagesMap(prev => {
-                  const filtered = prev.filter(item => item.url !== deletedImageUrl);
-                  setGalleryImagesContentId(filtered.map(item => item.contentId));
-                  return filtered;
-                });
-              }}
-            />  
+                }}
+                appendedImages={galleryImages}
+                onAppendedImagesChange={setGalleryImages}
+                onDeleted={(deletedImageUrl) => {
+                  console.log('삭제 요청:', deletedImageUrl);
+                  
+                  // DB 이미지인지 확인
+                  const dbImageIndex = dbGalleryImages.indexOf(deletedImageUrl);
+                  const isDbImage = dbImageIndex !== -1;
+                  
+                  if (isDbImage) {
+                    // DB 이미지인 경우
+                    const contentId = dbGalleryContentIds[dbImageIndex];
+                    console.log('DB 이미지 삭제:', { deletedImageUrl, contentId });
+                    
+                    if (contentId) {
+                      ApiClient.postForm('/api/contentDelete', {
+                        staff_id: user?.staff_id || user?.id,
+                        target:'staff',
+                        content_id: contentId
+                      }).then(response => {
+                        console.log('DB 삭제 성공:', response);
+                        // DB에서 삭제 성공 후 로컬 상태 업데이트
+                        setDbGalleryImages(prev => prev.filter((_, idx) => idx !== dbImageIndex));
+                        setDbGalleryContentIds(prev => prev.filter((_, idx) => idx !== dbImageIndex));
+                      }).catch(error => {
+                        console.error('DB 삭제 실패:', error);
+                      });
+                    }
+                  } else {
+                    // 새로 업로드된 이미지인 경우
+                    console.log('새 이미지 삭제:', deletedImageUrl);
+                    const imageInfo = galleryImagesMap.find(item => item.url === deletedImageUrl);
+                    if (imageInfo) {
+                      // galleryImagesContentId에서도 제거
+                      setGalleryImagesContentId(prev => prev.filter(id => id !== imageInfo.contentId));
+                    }
+                  }
+                  
+                  // 로컬 상태에서 제거
+                  setGalleryImages(prev => prev.filter(img => img !== deletedImageUrl));
+                  setGalleryImagesMap(prev => prev.filter(item => item.url !== deletedImageUrl));
+                }}
+              />
             </div>
-
           </div>
-          
-          <div style={{padding:'10px'}}>
-              {get('PHOTO_GAL_DESCRIPTION_1')}
-            </div>
-
-
+          <div style={{padding:'10px'}}>{get('PHOTO_GAL_DESCRIPTION_1')}</div>
         </div>
 
         <div className="input-row">
@@ -385,7 +397,7 @@ if (isLoadingData) {
             onChange={handleChange}
             placeholder={get('SELF_INTRO_PLACEHOLDER')}
             as="textarea"
-            rows={4}
+            rows={8}
           />
         </div>
         <div className="save-btn-row">
@@ -405,4 +417,4 @@ if (isLoadingData) {
   );
 };
 
-export default EditProfile; 
+export default EditProfile;
