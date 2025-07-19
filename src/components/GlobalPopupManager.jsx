@@ -7,8 +7,9 @@ import HatchPattern from '@components/HatchPattern';
 import { Pencil, Star } from 'lucide-react';
 import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
 
-const GlobalPopupManager = () => {
+const GlobalPopupManager = ({navigateToPageWithData, PAGES}) => {
   const { activePopups, closePopup } = usePopup();
 
   return (
@@ -18,16 +19,19 @@ const GlobalPopupManager = () => {
           key={popup.id}
           popup={popup}
           onClose={() => closePopup(popup.id)}
+          navigateToPageWithData={navigateToPageWithData}  // 추가
+          PAGES={PAGES}  // 추가
         />
       ))}
     </>
   );
 };
 
-const PopupModal = ({ popup, onClose }) => {
+const PopupModal = ({ popup, onClose, navigateToPageWithData, PAGES }) => {
   const { get } = useMsg();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('today'); // 'premium' | 'today'
+  const navigate = useNavigate();
 
   // 오늘 하루 열지 않음 체크박스 핸들러
   const handleTodayClose = (e) => {
@@ -46,43 +50,48 @@ const PopupModal = ({ popup, onClose }) => {
 
   // 오늘의 체험권 구매 기본 함수
   const defaultTodayTrial = () => {
-    // alert('🎯 오늘의 체험권 구매 시작');
+
+    console.log('PAGES', PAGES)
+
+
+    navigate('/purchase');
+    //alert('🎯 오늘의 체험권 구매 시작');
 
     
-    let accessFlag = (user?.type == 'user') && user.user_id && user.user_id > 0;
+    // let accessFlag = (user?.type == 'user') && user.user_id && user.user_id > 0;
 
-    if(!accessFlag){
-      Swal.fire(
-        get('SWAL_SIGNUP_REQUIRED_TITLE'), 
-        get('SWAL_SIGNUP_REQUIRED_TEXT'), 
-        'warning'
-      );
-      return;
-    }
+    // if(!accessFlag){
+    //   Swal.fire(
+    //     get('SWAL_SIGNUP_REQUIRED_TITLE'), 
+    //     get('SWAL_SIGNUP_REQUIRED_TEXT'), 
+    //     'warning'
+    //   );
+    // return
+    // }
 
 
-    ApiClient.postForm('/api/buyCoupon',{
-      user_id: user?.user_id
-    }).then(res => {
+    // ApiClient.postForm('/api/buyCoupon',{
+    //   user_id: user?.user_id
+    // }).then(res => {
 
-      const {success = false} = res;
+    //   const {success = false} = res;
       
-      if(success){
-        Swal.fire({
-          title: get('SWAL_DAILY_TICKET_SUCCESS_TITLE'),
-          text: get('SWAL_DAILY_TICKET_SUCCESS_TEXT'),
-          icon: 'success',
-          confirmButtonText: '확인'
-        }).then(() => {
-          // Swal 확인 버튼 클릭 후 페이지 새로고침
-          window.location.reload();
-        });
-      }
+    //   if(success){
+    //     Swal.fire({
+    //       title: get('SWAL_DAILY_TICKET_SUCCESS_TITLE'),
+    //       text: get('SWAL_DAILY_TICKET_SUCCESS_TEXT'),
+    //       icon: 'success',
+    //       confirmButtonText: '확인'
+    //     }).then(() => {
+    //       // Swal 확인 버튼 클릭 후 페이지 새로고침
+    //       window.location.reload();
+    //     });
+    //   }
       
-    }).catch(error => {
-      console.error('❌ 체험권 발급 실패:', error);
-      // alert('체험권 발급에 실패했습니다. 다시 시도해주세요.');
-    });
+    // }).catch(error => {
+    //   console.error('❌ 체험권 발급 실패:', error);
+    //   // alert('체험권 발급에 실패했습니다. 다시 시도해주세요.');
+    // });
 
     /*
     // 인앱 결제 요청

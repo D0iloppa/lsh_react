@@ -25,14 +25,12 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
   const [sortRating, setSortRating] = useState('RATING_ALL');
   const [sortPrice, setSortPrice] = useState('PRICE_ALL');
   const [sortStaff, setSortStaff] = useState('STAFF_ALL');
-  const [isReservationOnly, setIsReservationOnly] = useState(false); // ✅ 추가
+  const [isReservationOnly, setIsReservationOnly] = useState(false);
   const [staffLanguageFilter, setStaffLanguageFilter] = useState('ALL');
-
 
   const inputRef = useRef(null);
   const { messages, isLoading, get, currentLang } = useMsg();
   const { iauMasking, isActiveUser } = useAuth();
-
 
   const handleBack = () =>{
     navigateToPage(PAGES.HOME);
@@ -52,12 +50,12 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
 
       const iau = await isActiveUser();
       
-      
       // 구독 정보 확인 및 주소 마스킹 적용
       const processedVenueList = venueList.map(item => ({
         ...item,
         phone: iauMasking(iau, item.phone || ''),
-        address: iauMasking(iau, item.address || '')
+        address: iauMasking(iau, item.address || ''),
+        isActiveUser: iau?.isActiveUser || false // 마스킹 컴포넌트에서 사용
       }));
       
       setOriginalPlaces(processedVenueList);
@@ -80,14 +78,12 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
     else if (sortStaff === 'STAFF_5') filtered = filtered.filter((v) => v.staff_cnt >= 5);
     else if (sortStaff === 'STAFF_3') filtered = filtered.filter((v) => v.staff_cnt >= 3);
 
-
     if (staffLanguageFilter !== 'ALL') {
     filtered = filtered.filter((v) =>
       typeof v.staff_languages === 'string' && v.staff_languages.includes(staffLanguageFilter)
     );
   }
 
-    // ✅ 예약 가능 여부 필터
     if (isReservationOnly) {
       filtered = filtered.filter((v) => v.is_reservation === true);
     }
@@ -100,12 +96,45 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
 
   useEffect(() => {
     applyFilters(originalPlaces);
-  }, [categoryFilter, sortRating, sortPrice, sortStaff, isReservationOnly, staffLanguageFilter]); // ✅ 반영
+  }, [categoryFilter, sortRating, sortPrice, sortStaff, isReservationOnly, staffLanguageFilter]);
 
   const handleSearch = () => {
     fetchPlaces(searchQuery);
     if (onSearch) onSearch(searchQuery);
     if (inputRef.current) inputRef.current.blur();
+  };
+
+  // 마스킹된 콘텐츠 렌더링 함수
+  const renderMaskedContent = (content, isActive) => {
+    // content가 문자열이 아니거나 비어있으면 그대로 반환
+    if (!content || typeof content !== 'string') {
+      return content;
+    }
+
+    if (isActive) {
+      return content; // 활성 사용자는 전체 내용 표시
+    }
+
+    // 비활성 사용자는 마스킹된 내용 표시
+    const visiblePart = content.substring(0, Math.floor(content.length * 0.4));
+    
+    return (
+      <div className="masked-content-wrapper">
+        <span className="visible-text">{visiblePart}</span>
+        <div className="masked-section">
+          <span className="masked-dots">***</span>
+          <button 
+            className="daily-pass-btn"
+            onClick={(e) => {
+              e.stopPropagation(); // 부모 클릭 이벤트 방지
+              navigateToPageWithData(PAGES.PURCHASEPAGE);
+            }}
+          >
+            {get('purchase.daily_pass.btn')}
+          </button>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -206,6 +235,142 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
         .hidden-header {
           display: none !important;
         }
+
+        /* 마스킹 콘텐츠 스타일 */
+        .masked-content-wrapper {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 8px;
+          width: 100%;
+          min-height: 24px;
+          max-width: 100%;
+          overflow: hidden;
+        }
+        
+        .visible-text {
+          color: inherit;
+          font-weight: 500;
+          flex-shrink: 0;
+        }
+        
+        .masked-section {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          position: relative;
+          padding: 2px 8px;
+          border-radius: 6px;
+          min-width: 140px;
+          height: 24px;
+          overflow: visible;
+          flex-shrink: 0;
+        }
+        
+        .masked-section::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(
+            45deg,
+            transparent,
+            rgba(255, 255, 255, 0.6),
+            transparent
+          );
+          animation: shimmer 2.5s infinite;
+          z-index: 1;
+          pointer-events: none;
+          border-radius: 6px;
+        }
+        
+        @keyframes shimmer {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(200%);
+          }
+        }
+        
+        .masked-dots {
+          color: #c9980e;
+          font-weight: bold;
+          font-size: 12px;
+          letter-spacing: 1px;
+          position: relative;
+          z-index: 2;
+        }
+        
+        .daily-pass-btn {
+          color: #c9980e;
+          background: rgba(255, 255, 255, 0.8);
+          border: 1px solid rgba(201, 152, 14, 0.4);
+          border-radius: 4px;
+          padding: 2px 6px;
+          font-size: 9px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          white-space: nowrap;
+          position: relative;
+          z-index: 2;
+          height: 18px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 80px;
+        }
+        
+        .daily-pass-btn:hover {
+          background: rgba(255, 255, 255, 0.9);
+          transform: translateY(-1px);
+          box-shadow: 0 2px 4px rgba(201, 152, 14, 0.3);
+        }
+        
+        .daily-pass-btn:active {
+          transform: translateY(0);
+        }
+        
+        /* 모바일 최적화 */
+        @media (max-width: 480px) {
+          .masked-content-wrapper {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+          }
+          
+          .masked-section {
+            width: 100%;
+            min-width: 120px;
+            justify-content: space-between;
+          }
+          
+          .daily-pass-btn {
+            font-size: 8px;
+            padding: 2px 4px;
+            min-width: 70px;
+            height: 16px;
+          }
+        }
+        
+        /* 더 넓은 화면에서의 최적화 */
+        @media (min-width: 481px) {
+          .masked-section {
+            min-width: 160px;
+            padding: 3px 10px;
+            height: 26px;
+          }
+          
+          .daily-pass-btn {
+            font-size: 10px;
+            padding: 3px 8px;
+            min-width: 90px;
+            height: 20px;
+          }
+        }
       `}</style>
 
 <div style={{ display: 'none' }}>
@@ -216,7 +381,6 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
     rightButtons={[]}
   />
 </div>
-
 
       <div className="map-container">
         <div className="map-container-area">
@@ -230,8 +394,8 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
                   setShowVenueList(true);
                 }}
                 onMapClick={() => {
-                 setShowVenueList(false);   // 오버레이 닫기
-                setMarkerSelectedVenue(null); // 💥 마커 선택도 제거 (이게 중요!)
+                 setShowVenueList(false);
+                setMarkerSelectedVenue(null);
                 setSelectedVenue(null);
                 }}
               />
@@ -273,8 +437,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
                 </select>
               </div>
 
-               {/* ✅ 예약 체크박스 */}
-                <label className="checkbox-label">
+               <label className="checkbox-label">
                   <input
                     type="checkbox"
                     checked={isReservationOnly}
@@ -309,14 +472,13 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
                       onClick={() => navigateToPageWithData(PAGES.DISCOVER, { venueId: venue.venue_id })}
                       style={{
                         display: 'flex',
-                        gap: '1rem',
+                        gap: '0.5rem',
                         alignItems: 'center',
-                        height:'170px',
                         marginBottom: index === array.length - 1 && array.length > 1 ? '5vh' : '1rem',
                         position: 'relative',
                       }}
                     >
-                      <div style={{ flex: '0 0 130px', height: '130px', borderRadius: '10px', overflow: 'hidden' }}>
+                      <div style={{ flex: '0 0 100px', height: '100px', borderRadius: '10px', overflow: 'hidden' }}>
                         <img
                           src={venue.image_url}
                           alt={venue.name}
@@ -325,8 +487,12 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
                       </div>
                       <div style={{ flex: '1' }}>
                         <div className="venue-name">{venue.name}</div>
-                        <div className="venue-details">📜 {venue.address}</div>
-                        <div className="venue-details">📞 {venue.phone}</div>
+                        <div className="venue-details">
+                          📜 {renderMaskedContent(venue.address, venue.isActiveUser)}
+                        </div>
+                        <div className="venue-details">
+                          📞 {renderMaskedContent(venue.phone, venue.isActiveUser)}
+                        </div>
                         <div className="venue-details">👥 {venue.staff_cnt} / ⭐{venue.rating}/5</div>
                       </div>
                       <div

@@ -911,8 +911,7 @@ const openMenuOverlay = (menuList) => {
 
           <div className='sum-info text-start'>
             <div className="club-location">{venueInfo?.address || venueInfo?.location || 'in Vietnam'}</div>
-            <div className="top-venues-text">{venueInfo?.description || get('DiscoverPage1.4')}</div>
-
+           
             <div className="description">
               {venueInfo?.description ||
                 get('DiscoverPage1.5')}

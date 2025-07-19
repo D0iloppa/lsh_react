@@ -16,6 +16,9 @@ import LoadingScreen from '@components/LoadingScreen';
 import Swal from 'sweetalert2';
 import ApiClient from '@utils/ApiClient';
 
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const SettingsPage = ({ 
   navigateToPageWithData, 
   PAGES,
@@ -63,6 +66,7 @@ const SettingsPage = ({
   }
 }, [currentLang]);
 
+
   // useEffect 의존성 최적화 - 설정 데이터 로딩
   useEffect(() => {
     const fetchSetting = async () => {
@@ -102,6 +106,19 @@ const SettingsPage = ({
       fetchSetting();
     }
   }, [user?.user_id, API_HOST]);
+
+
+  const handleEventAlertsChange = (newValue) => {
+    setEventAlerts(newValue);
+    
+    // 토글 변경 시 즉시 토스트 표시
+    if (newValue) {
+      toast.info('이벤트 알림 활성화 모드');
+    } else {
+      toast.info('이벤트 알림 비활성화 모드');
+    }
+  };
+
 
   // 비밀번호 상태를 메모이제이션으로 최적화
   const passwordState = useMemo(() => ({
@@ -521,7 +538,7 @@ const SettingsPage = ({
               /></div>
               <ToggleSwitch  
                 checked={eventAlerts}
-                onChange={setEventAlerts}
+                onChange={handleEventAlertsChange}
                 label={get('Setting1.6')}
               />
             </div>
@@ -660,6 +677,22 @@ const SettingsPage = ({
                    />
         </div>
       </div>
+
+      <ToastContainer
+      position="top-center"
+      autoClose={2000}
+      hideProgressBar={true}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+       style={{
+    top: '65px',   // 100px → 60px로 줄여서 더 아래로
+    zIndex: 9999
+  }}
+    />
     </>
   );
 };

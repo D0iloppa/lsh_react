@@ -239,12 +239,13 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
 
      if (!accessFlag) {
         // 로그인 성공 후 이동할 페이지를 지정
-        openLoginOverlay(PAGES.PURCHASEPAGE, {});
+        openLoginOverlay();
+        // navigate('/purchase');
         // 팝업 닫기
         onClose();
       } else {
         // 이미 로그인된 경우 바로 이동
-        navigateToPageWithData(PAGES.PURCHASEPAGE, {});
+         navigate('/purchase');
         // 팝업 닫기
         onClose();
       }

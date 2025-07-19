@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star, ArrowLeft, Check, Zap } from 'lucide-react';
 import HatchPattern from '@components/HatchPattern';
@@ -9,11 +9,33 @@ import Swal from 'sweetalert2';
 import { CreditCard} from 'lucide-react';
 import SketchHeader from '@components/SketchHeader';
 
+
 const PurchasePage = ({  goBack}) => {
   const navigate = useNavigate();
   const { user, isActiveUser } = useAuth();
   const { get } = useMsg();
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+  const resetContentAreaScroll = () => {
+    // 진짜 스크롤 컨테이너인 .content-area를 리셋
+    const contentArea = document.querySelector('.content-area');
+    if (contentArea) {
+      contentArea.scrollTop = 0;
+      console.log('content-area 스크롤이 0으로 리셋됨');
+    }
+    
+    // window도 함께 (혹시 모르니)
+    window.scrollTo(0, 0);
+  };
+
+  resetContentAreaScroll();
+  
+  // DOM 렌더링 완료 후 한 번 더
+  setTimeout(resetContentAreaScroll, 100);
+  
+}, [user]);
+
 
   // 일일권 구매 함수
   const handleDailyPurchase = async () => {
@@ -59,6 +81,11 @@ const PurchasePage = ({  goBack}) => {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+    const handleBack = () => {
+    navigate(-1); // 브라우저 히스토리 뒤로가기
+    //navigate('/main'); // 메인으로 직접 이동
   };
 
   // 일일권 혜택 목록
@@ -182,7 +209,7 @@ const PurchasePage = ({  goBack}) => {
           font-size: 1.2rem;
           font-weight: bold;
           color: #333;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1rem;
           text-align: center;
           display: flex;
           align-items: center;
@@ -194,8 +221,10 @@ const PurchasePage = ({  goBack}) => {
           background: #f8fafc;
           border: 1px solid #e5e7eb;
           border-radius: 12px;
-          padding: 1.5rem;
+          padding: 1rem;
           margin-bottom: 1rem;
+          height: 136px;
+          overflow-y: auto;
         }
 
         .benefit-item {
@@ -257,7 +286,7 @@ const PurchasePage = ({  goBack}) => {
           background: #f1f5f9;
           border: 1px solid #cbd5e1;
           border-radius: 8px;
-          padding: 1rem;
+          padding: 0.5rem;
           margin-top: 1rem;
           font-size: 0.85rem;
           color: #64748b;
@@ -286,15 +315,15 @@ const PurchasePage = ({  goBack}) => {
 
         @media (max-width: 640px) {
           .purchase-container {
-            padding: 1rem 0.5rem;
+            padding: 0rem 0.5rem;
           }
 
           .card-header {
-            padding: 1.5rem 1rem 1rem;
+            padding: 1rem 1rem 1rem;
           }
 
           .card-body {
-            padding: 1.5rem 1rem;
+            padding: 1rem 1rem;
           }
 
           .price {
@@ -313,7 +342,7 @@ const PurchasePage = ({  goBack}) => {
              <SketchHeader
                  title='일일권 구매 안내'
                  showBack={true}
-              onBack={goBack}
+              onBack={handleBack}
                  rightButtons={[]}
                />
 

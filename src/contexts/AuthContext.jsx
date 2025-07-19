@@ -134,7 +134,7 @@ const iauMasking = (iau, text, onPurchaseClick) => {
             className="daily-pass-btn"
             onClick={onPurchaseClick}
           >
-            일일권 구매 시 노출
+           {get('purchase.daily_pass.btn')}
           </button>
         </span>
         

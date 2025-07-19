@@ -1,7 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+.Toastify__toast {
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+    border-radius: 12px !important;      /* 조금 더 작게 */
+    padding: 8px 14px !important;        /* 패딩 줄임 */
+    min-height: 36px !important;         /* 높이 줄임 */
+    font-size: 13px !important;          /* 폰트도 살짝 줄임 */
+   
+  }
 
  div:where(.swal2-container).swal2-center>.swal2-popup{
     font-size: 9px;
@@ -101,3 +109,8 @@ body[data-lang="vi"] .page-title,
 body[data-lang="vi"] .center-section {
   font-family: var(--font-vi) !important;
 }
+
+
+body[data-lang="vi"] .popup-footer .popup-btn{letter-spacing: -1px;}
+body[data-lang="vi"] .scroll-up-btn {bottom: 115px !important;}
+body[data-lang="vi"] .bottom-map-section{bottom: 115px !important}

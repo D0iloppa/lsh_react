@@ -14,7 +14,7 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '../contexts/AuthContext';
 import LoadingScreen from '@components/LoadingScreen';
 import ApiClient from '@utils/ApiClient';
-
+import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 const Profile = ({
@@ -29,6 +29,7 @@ const Profile = ({
   const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [iauData, setIauData] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -75,15 +76,15 @@ const Profile = ({
   if (iauData?.isActiveUser) {
     // 이미 활성화됨 알림
     Swal.fire({
-      title: '이미 활성화됨',
-      text: '이미 일일권을 보유하고 있습니다.',
+      title: get('reservation.daily_pass.purchase_button3'),
+      text: get('SWAL_LAREADY_PURCHASE'),
       icon: 'info'
     });
     return; // 페이지 이동 차단
   }
   
   // 구매 페이지로 이동
-  navigateToPageWithData(PAGES.PURCHASEPAGE);
+   navigate('/purchase');
 };
 
   const handleBack = () => {
@@ -515,7 +516,7 @@ const deleteReview = async (reviewId) => {
             {iauData?.isActiveUser ? (
               <>
                 <Check size={16} style={{ marginRight: '0.5rem' }} />
-                구매완료
+                {get('reservation.daily_pass.purchase_button3')}
               </>
             ) : (
               <>

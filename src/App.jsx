@@ -31,6 +31,7 @@ import MainApp from '@layout/MainApp';
 import Cocktail from '@components/CocktailIcon';
 import HatchPattern from '@components/HatchPattern';
 
+import PurchasePage from '@components/PurchasePage';
 
 
 
@@ -104,6 +105,13 @@ const AppRoutes = () => {
 
       {/* Privacy 페이지 */}
       <Route path="/privacy" element={<PrivacyView />} />
+
+      <Route
+        path="/purchase"
+        element={
+          <PurchasePage />
+        }
+      />
 
       {/* 404 페이지 */}
       <Route path="*" element={<div>404 Not Found</div>} />
