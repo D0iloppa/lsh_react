@@ -182,7 +182,7 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
         }
         .week-onoff {
           width: 1.0rem;
-          padding-left: 2rem;
+          padding-left: 1rem;
         }
         .week-hours {
           display: contents;

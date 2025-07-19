@@ -120,7 +120,18 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
         profile_content_id: imageContentId,
       };
 
-      console.log('payload', payload);
+      console.log('imageContentId', imageContentId);
+
+      if ( imageContentId  == 0 ) {
+
+        Swal.fire({
+          title: get('PROFILE_IMAGE_TITLE'),
+          text: get('NOT_PHOTO_MAIN'),
+          icon: 'error'
+        });
+
+        return;
+      }
 
       const response = await ApiClient.postForm('/api/updateStaff', payload);
 

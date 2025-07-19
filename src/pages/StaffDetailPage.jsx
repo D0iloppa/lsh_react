@@ -212,8 +212,6 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
             {girl.description || 'No description available.'}
           </div>
         </div>
-
-        p
       </div>
     </>
   );

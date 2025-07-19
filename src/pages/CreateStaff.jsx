@@ -52,10 +52,10 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
       const {registerInfo = false} = res;
       if(registerInfo){
         Swal.fire({
-          title: 'Staff created',
-          text: 'Staff created successfully',
+          title: get('SWAL_STAFF_REG'),
+          text: get('SWAL_STAFF_REG_SUCESS'),
           icon: 'success',
-          confirmButtonText: 'OK'
+          confirmButtonText: get('btn.back.1')
         }).then((result) => {
           if (result.isConfirmed || result.isDismissed) {
             goBack();
@@ -63,10 +63,10 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
         });
       }else{
         Swal.fire({
-          title: 'Failed to create staff',
-          text: 'Please try again',
+          title: get('SWAL_STAFF_REG_ERROR'),
+          text: get('SCHEDULE_SAVE_ERROR_MESSAGE'),
           icon: 'error',
-          confirmButtonText: 'OK'
+          confirmButtonText: get('btn.back.1')
         });
       }
 
