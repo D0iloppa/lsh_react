@@ -17,6 +17,7 @@ import MenuManagement, { useMenuManagement } from '@components/Menu/MenuManageme
 import Swal from 'sweetalert2';
 import ImageUploader from '@components/ImageUploader';
 import PhotoGallery from '@components/PhotoGallery';
+import LoadingScreen from '@components/LoadingScreen';
 
 const defaultForm = {
   name: '',
@@ -78,7 +79,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
   const [lazyGalleryData, setLazyGalleryData] = useState([]); // 포토 갤러리
   const [lazyMenuData, setLazyMenuData] = useState([]); // 메뉴 관리 모달에서 추가된 메뉴 데이터를 저장할 상태
-  
+  const [isUploading, setIsUploading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -981,38 +982,45 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
                   
                   return {images: imgList, contentId: contentIdList};
                 },
-                onUpload: async (file) => {
-                  const response = await ApiClient.uploadImage(file);
-                  const { content_id = false, accessUrl } = response;
+               onUpload: async (file) => {
+                    try {
+                      setIsUploading(true);
 
-                  if (content_id) {
-                    // venue_id가 있으면 바로 DB에 저장
-                    if (user?.venue_id) {
-                      // 임시로 galleryImages에 추가 (DB 저장 전까지)
-                      setGalleryImages(prev => [...prev, accessUrl]);
-                      setGalleryImagesContentId(prev => [...prev, content_id]);
-                      setGalleryImagesMap(prev => [...prev, { url: accessUrl, contentId: content_id }]);
-                      setImageCount(prev => prev + 1);
+                      const response = await ApiClient.uploadImage(file);
+                      const { content_id = false, accessUrl } = response;
 
-                      // venue 수정 데이터 준비
-                      await ApiClient.postForm('/api/uploadVenueGallery', {
-                        venue_id: user?.venue_id,
-                        content_id: content_id
-                      });
-                    } else {
-                      // venue_id가 없으면 lazyGalleryData에 저장
-                      setLazyGalleryData(prev => [...prev, {
-                        content_id: content_id,
-                        image_url: accessUrl,
-                        uploaded_at: new Date().toISOString()
-                      }]);
-                      
-                      // UI에 표시하기 위해 galleryImages에도 추가
-                      setGalleryImages(prev => [...prev, accessUrl]);
-                      setImageCount(prev => prev + 1);
+                      if (content_id) {
+                        if (user?.venue_id) {
+                          // DB에 저장 전, 프론트 UI에 임시 표시
+                          setGalleryImages(prev => [...prev, accessUrl]);
+                          setGalleryImagesContentId(prev => [...prev, content_id]);
+                          setGalleryImagesMap(prev => [...prev, { url: accessUrl, contentId: content_id }]);
+                          setImageCount(prev => prev + 1);
+
+                          // 백엔드에 저장
+                          await ApiClient.postForm('/api/uploadVenueGallery', {
+                            venue_id: user?.venue_id,
+                            content_id: content_id
+                          });
+                        } else {
+                          // venue_id가 없을 경우 lazy 저장
+                          setLazyGalleryData(prev => [...prev, {
+                            content_id: content_id,
+                            image_url: accessUrl,
+                            uploaded_at: new Date().toISOString()
+                          }]);
+
+                          setGalleryImages(prev => [...prev, accessUrl]);
+                          setImageCount(prev => prev + 1);
+                        }
+                      }
+                    } catch (error) {
+                      console.error('Upload failed:', error);
+                      // 실패 시 사용자에게 알림 추가해도 좋습니다.
+                    } finally {
+                      setIsUploading(false);
                     }
-                  }
-                },
+                  },
                 onDeleted:async ({img_url, content_id}) => {
                   const response = await ApiClient.postForm('/api/contentDelete', {
                     target:'venue',
@@ -1220,7 +1228,13 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         </div>
       </div>
 
-
+            {isUploading && (
+            <LoadingScreen
+              variant="cocktail"
+              isVisible={true}
+              subText="Uploading..."
+            />
+          )}
     </>
   );
 };

@@ -100,6 +100,10 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
     }
   }, []);
 
+  const allContentIdsRef = React.useRef([]);
+
+  const staffGalleryDataRef = React.useRef([]);
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
@@ -109,15 +113,15 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
     try {
       setIsSaving(true);
 
-      const imageContentId = uploadedImages.length > 0 
-        ? parseInt(uploadedImages[0].contentId, 10) 
-        : 0;
-    
-      console.log("uploadedImages", uploadedImages);
-      console.log('imageContentId', imageContentId);
-      console.log('imageContentId', staffInfo.profile_content_id);
+      const allContentIds = [];
 
-      if ( imageContentId === 0 &&  staffInfo.profile_content_id === 0 ) {
+        const imageContentId = uploadedImages.length > 0 
+          ? parseInt(uploadedImages[0].contentId, 10) 
+          : 0;
+
+
+          
+      if ( imageContentId === 0 && staffInfo.profile_content_id == 0  ) {
 
         Swal.fire({
           title: get('PROFILE_IMAGE_TITLE'),
@@ -127,6 +131,43 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
 
         return;
       } 
+
+      console.log('갤러리 전체 데이터:', staffGalleryDataRef.current);
+
+
+
+
+        // 1. 메인 이미지 content_id 추가
+        if (imageContentId !== 0) {
+          allContentIds.push(imageContentId);
+        } else if (staffInfo.profile_content_id) {
+          allContentIds.push(staffInfo.profile_content_id);
+        }
+
+        // ✅ 중간 로그 출력 + 값 갱신
+        console.log('갤러리 전체 데이터:', staffGalleryDataRef.current);
+
+        // 필요 시 중간에 갤러리 content_id를 따로 추출해 갱신
+        const galleryIdsFromRef = (staffGalleryDataRef.current || [])
+          .map(item => item.content_id)
+          .filter(id => id !== undefined && id !== null);
+
+        // 기존 배열과 중복되지 않도록 추가
+       // let galleryImagesContentId = [...new Set([...galleryImagesContentId, ...galleryIdsFromRef])];
+
+
+        
+        // 2. 갤러리 이미지 content_id 추가
+        if (galleryIdsFromRef.length > 0) {
+          allContentIds.push(...galleryIdsFromRef);
+        }
+
+        console.log("✅ 전체 content_id 목록 (메인 -> 갤러리):", allContentIds);
+
+
+        const contentIdString = allContentIds.join(',');
+      
+
 
       const profileContentIdToUse = imageContentId !== 0 
           ? imageContentId 
@@ -139,12 +180,13 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
           languages: form.languages,
           description: form.intro,
           profile_content_id: profileContentIdToUse,
+          contentIdString:contentIdString,
         };
 
-      const response = await ApiClient.postForm('/api/updateStaff', payload);
+      const response = await ApiClient.postForm('/api/updateStaffV2', payload);
 
       if (response.success) {
-        if (galleryImagesContentId.length > 0) {
+       /* if (galleryImagesContentId.length > 0) {
           for (const contentId of galleryImagesContentId) {
             try {
               await ApiClient.postForm('/api/uploadStaffProfile', {
@@ -156,6 +198,7 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
             }
           }
         }
+        */
 
         setGalleryImages([]);
         setGalleryImagesContentId([]);
@@ -192,27 +235,27 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
   };
 
   const fetchStaffGallery = useCallback(async () => {
-    const response = await ApiClient.postForm('/api/getStaffGallery', {
-      staff_id: user?.staff_id || user?.id
-    });
+  const response = await ApiClient.postForm('/api/getStaffGallery', {
+    staff_id: user?.staff_id || user?.id
+  });
 
-    const { data = [] } = response;
-    console.log('data', data);
+  const { data = [] } = response;
+  console.log('📥 /api/getStaffGallery 응답:', data);
 
-    // DB 이미지와 contentId를 별도 상태에 저장
-    const images = (data || []).map(item => item.url);
-    const contentIds = (data || []).map(item => item.content_id || item.id);
-    
-    setDbGalleryImages(images);
-    setDbGalleryContentIds(contentIds);
-    
-    console.log('DB Gallery images:', images);
-    console.log('DB Gallery contentIds:', contentIds);
-    
-    // PhotoGallery 컴포넌트에는 이미지 URL만 반환
-    return images;
-  }, [user]);
+  // 👉 전역처럼 사용하기 위해 useRef에 저장
+  staffGalleryDataRef.current = data;
 
+  // DB 이미지와 contentId 분리 저장
+  const images = data.map(item => item.url);
+  const contentIds = data.map(item => item.content_id || item.id);
+
+  setDbGalleryImages(images);
+  setDbGalleryContentIds(contentIds);
+
+  console.log('📌 staffGalleryDataRef:', staffGalleryDataRef.current);
+
+  return images;
+}, [user]);
   if (isLoadingData) {
     return (
       <div className="editprofile-container">

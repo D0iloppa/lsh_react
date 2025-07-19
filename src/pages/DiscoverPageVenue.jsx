@@ -39,6 +39,18 @@ const DiscoverPageVenue = ({ navigateToPageWithData, PAGES, goBack, showAdWithCa
   };*/
   const { user } = useAuth(); // isActiveUser, iauMasking 제거
 
+  // 텍스트 줄바꿈 처리 함수
+  const formatTextWithLineBreaks = (text) => {
+    if (!text) return '';
+    
+    return text.split('\n').map((line, index) => (
+      <React.Fragment key={index}>
+        {line}
+        {index < text.split('\n').length - 1 && <br />}
+      </React.Fragment>
+    ));
+  };
+
   const openLoginOverlay = () => {
           // 여기서 unmount를 전역에 저장
             window.overlayUnmount = unmount;
@@ -1000,8 +1012,8 @@ const openMenuOverlay = (menuList) => {
             <div className="club-location">{venueInfo?.address || venueInfo?.location || 'in Vietnam'}</div>
 
             <div className="description">
-              {venueInfo?.description ||
-                get('DiscoverPage1.5')}
+              {formatTextWithLineBreaks(venueInfo?.description ||
+                get('DiscoverPage1.5'))}
             </div>
 
             <div className="phone" style={{ marginBottom: '5px' }}>

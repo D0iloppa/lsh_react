@@ -338,7 +338,7 @@ const PhotoGallery = ({
                 img_url: overlayImages[fullscreenIndex],
                 content_id: contentId
               }).then((response) => {
-                console.log('삭제됨;;');
+                console.log('삭제됨');
 
                 // overlay 상태 업데이트
                 setOverlayImages(prev => {
