@@ -2,6 +2,8 @@
 import React, { createContext, useContext, useState } from 'react';
 import { loginPost, validateForm } from '@components/Login/login'; // ← 로그인 로직 재활용
 
+import { useMsg } from './MsgContext';
+
 import ApiClient from '@utils/ApiClient';
 
 const AuthContext = createContext();
@@ -17,6 +19,8 @@ export const AuthProvider = ({ children }) => {
   });
 
   const [loading, setLoading] = useState(false);
+
+  const { get } = useMsg();
 
   // 로그인 함수 (Login 컴포넌트 로직 재활용)
     const login = async (params={}) => {
@@ -134,7 +138,7 @@ const iauMasking = (iau, text, onPurchaseClick) => {
             className="daily-pass-btn"
             onClick={onPurchaseClick}
           >
-           {get('purchase.daily_pass.btn')}
+            {get('purchase.daily_pass.btn')}
           </button>
         </span>
         

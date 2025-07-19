@@ -776,17 +776,17 @@ function App() {
   // App.jsx 또는 main.jsx
 
 return (
-  <OverlayProvider>
-    <FcmProvider>
-      <AuthProvider>
-        <MsgProvider>
-          <PopupProvider>
-              <AppContent />
-          </PopupProvider>
-        </MsgProvider>
-      </AuthProvider>
-    </FcmProvider>
-  </OverlayProvider>
+  <MsgProvider>
+    <OverlayProvider>
+      <FcmProvider>
+        <AuthProvider>
+            <PopupProvider>
+                <AppContent />
+            </PopupProvider>
+        </AuthProvider>
+      </FcmProvider>
+    </OverlayProvider>
+  </MsgProvider>
 );
 
 }
