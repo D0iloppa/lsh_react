@@ -404,6 +404,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       if (response.data && response.data.length > 0) {
         const newMessages = await Promise.all(response.data.map(async (item, index) => {
           let reservationData = null;
+
+          console.log("1111", "12314");
           if (item.link_type === 'reservation' && item.link_target) {
             reservationData = await getReservationInfo(item.link_target);
           }
@@ -520,35 +522,73 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   // 예약 정보 캐시
   const reservationCache = {};
 
+  
+  function calculateActualEndTime(startTime, durationHours) {
+  if (!startTime || !durationHours) return '';
+
+  const [hoursStr = '00', minutesStr = '00', secondsStr = '00'] = startTime.split(':');
+  const hours = parseInt(hoursStr, 10);
+  const minutes = parseInt(minutesStr, 10);
+  const seconds = parseInt(secondsStr, 10);
+
+  const totalStartMinutes = hours * 60 + minutes;
+  const totalEndMinutes = totalStartMinutes + (durationHours * 60);
+
+  const endHours = Math.floor(totalEndMinutes / 60);
+  const endMinutes = totalEndMinutes % 60;
+  const isNextDay = endHours >= 24;
+  const displayHours = endHours % 24;
+
+  const result = `${displayHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  return isNextDay ? `${result}+1` : result;
+}
+
+
+
+
   // 예약 정보를 가져오는 함수 (캐싱 적용)
   const getReservationInfo = useCallback(async (reservationId) => {
     if (reservationCache[reservationId]) {
       return reservationCache[reservationId];
     }
     try {
-      const res = await ApiClient.get('/api/getReservationList_mng', {
-        params: { venue_id: venue_id }
+
+      const {type} = user;
+      let login_id = user.user_id;
+
+      const response = await ApiClient.get('/api/bookingHistory', {
+        params: { user_id: login_id }
       });
-      if(res && res.length > 0){
-        let reservation = res.find(item => item.reservation_id === parseInt(reservationId));
-        if(reservation){
-          reservation.res_start_time = reservation.res_start_time.slice(0, 5);
-          const endTime = new Date(`2000-01-01T${reservation.res_end_time}`);
-          endTime.setHours(endTime.getHours() + 1);
-          reservation.res_end_time = endTime.toTimeString().slice(0, 5);
-          reservation.target_name = reservation.client_name;
-          reservationCache[reservationId] = reservation;
-          return reservation;
+      const resTmp = response.data; // ⬅️ 여기서 배열을 추출
+      const targetReservation = resTmp.find(item => item.reservation_id === reservationId);
+
+      if( targetReservation != null ){
+          targetReservation.res_start_time = targetReservation.time;
+          const endTime = calculateActualEndTime(targetReservation.end_time || targetReservation.time, 1);
+          targetReservation.res_end_time = endTime;
+          targetReservation.target_name = targetReservation.venue_name;
+          reservationCache[reservationId] = targetReservation;
+
+          
+
+        console.log('1111-00', targetReservation);
+
+
+          return targetReservation;
         }
-      }
+
       return null;
     } catch (error) {
+
+       console.log('1111-01', error);
       return null;
     }
   }, [venue_id]);
 
   // 예약 링크 템플릿 컴포넌트
   const ReservationLinkTemplate = React.memo(({ reservationData, reservationId }) => {
+
+    console.log("1111", reservationData);
     if (!reservationData) {
       return (
         <div style={{
@@ -769,6 +809,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       // 예약 정보 미리 포함
       const newMessages = await Promise.all(response.data.map(async (item, index) => {
         let reservationData = null;
+
+        
         if (item.link_type === 'reservation' && item.link_target) {
           reservationData = await getReservationInfo(item.link_target);
         }
@@ -1191,7 +1233,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
               이전 메시지를 불러오는 중...
             </div>
           )}
-          
+
           {chat_messages.map((msg) => (
             <ChatMessage key={msg.chat_sn} msg={msg} setModalImage={setModalImage} />
           ))}
