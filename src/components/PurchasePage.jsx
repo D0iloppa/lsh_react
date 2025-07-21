@@ -39,6 +39,7 @@ const PurchasePage = ({  goBack}) => {
 
   // 일일권 구매 함수
   const handleDailyPurchase = async () => {
+
     if (!user?.user_id || user.type !== 'user') {
       Swal.fire({
         title: get('SWAL_SIGNUP_REQUIRED_TITLE'),
@@ -49,38 +50,56 @@ const PurchasePage = ({  goBack}) => {
       return;
     }
 
+    
+    // 인앱 결제 요청
+    const payload = JSON.stringify({ action: 'buyItem' });
+
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.buyItem) {
+      // iOS WebView
+      console.log('📱 iOS 인앱 결제 요청');
+      window.webkit.messageHandlers.buyItem.postMessage(null);
+    } else if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+      // Android WebView
+      console.log('🤖 Android 인앱 결제 요청');
+      window.ReactNativeWebView.postMessage(payload);
+    } else {
+      console.warn('⚠️ 웹뷰 환경이 아님 - 인앱 결제 불가');
+      alert('인앱 결제가 지원되지 않는 환경입니다.');
+    }
+      
+
     setIsProcessing(true);
 
-    try {
-      const response = await ApiClient.postForm('/api/buyCoupon', {
-        user_id: user.user_id
-      });
+    // try {
+    //   const response = await ApiClient.postForm('/api/buyCoupon', {
+    //     user_id: user.user_id
+    //   });
 
-      const { success = false } = response;
+    //   const { success = false } = response;
 
-      if (success) {
-        Swal.fire({
-          title: get('SWAL_DAILY_TICKET_SUCCESS_TITLE'),
-          text: get('SWAL_DAILY_TICKET_SUCCESS_TEXT'),
-          icon: 'success',
-          confirmButtonText: '확인'
-        }).then(() => {
-          navigate('/main');
-        });
-      } else {
-        throw new Error('구매 실패');
-      }
-    } catch (error) {
-      console.error('❌ 일일권 구매 실패:', error);
-      Swal.fire({
-        title: '구매 실패',
-        text: '일일권 구매에 실패했습니다. 다시 시도해주세요.',
-        icon: 'error',
-        confirmButtonText: '확인'
-      });
-    } finally {
-      setIsProcessing(false);
-    }
+    //   if (success) {
+    //     Swal.fire({
+    //       title: get('SWAL_DAILY_TICKET_SUCCESS_TITLE'),
+    //       text: get('SWAL_DAILY_TICKET_SUCCESS_TEXT'),
+    //       icon: 'success',
+    //       confirmButtonText: '확인'
+    //     }).then(() => {
+    //       navigate('/main');
+    //     });
+    //   } else {
+    //     throw new Error('구매 실패');
+    //   }
+    // } catch (error) {
+    //   console.error('❌ 일일권 구매 실패:', error);
+    //   Swal.fire({
+    //     title: '구매 실패',
+    //     text: '일일권 구매에 실패했습니다. 다시 시도해주세요.',
+    //     icon: 'error',
+    //     confirmButtonText: '확인'
+    //   });
+    // } finally {
+    //   setIsProcessing(false);
+    // }
   };
 
     const handleBack = () => {

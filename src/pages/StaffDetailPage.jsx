@@ -98,7 +98,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
       // 에러 시 기본적으로 예약 페이지로 이동
       navigateToPageWithData(PAGES.RESERVATION, {
         target: 'staff',
-        id: girl.staff_id || 123,
+        id: girl.staff_id,
         staff: girl
       });
     }

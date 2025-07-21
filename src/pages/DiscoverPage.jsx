@@ -853,6 +853,9 @@ const openMenuOverlay = (menuList) => {
         }
 
         .top-sum {margin-top: 25px; display: flex; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 8px; border-bottom: 1px solid #cecece;}
+
+        .rotation-image-container{ width: 100%;
+  height: 200px; }
       `}</style>
 
       <div className="discover-container">
