@@ -308,12 +308,18 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
       console.log('room_sn', room_sn);
     }
 
-    navigateToPageWithData(PAGES.CHATTING, { 
+    const payload = { 
       initType: 'booking',
       reservation_id: bk.reservation_id,
       room_sn: room_sn,
+      send_to: 'manager',
+      receiver_id: user.manager_id,
       ...bk
-    });
+    };
+
+    console.log('chatWithManager-payload', payload);
+
+    navigateToPageWithData(PAGES.CHATTING, payload );
   };
 
   const detailBooking = (bk) => {

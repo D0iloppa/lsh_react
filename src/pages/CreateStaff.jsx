@@ -50,7 +50,24 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
     }).then(res=>{
       console.log('res', res);
 
-      const {registerInfo = false} = res;
+      const {registerInfo = false, error = false} = res;
+
+      if (error) {
+
+        Swal.fire({
+          title: get('REGISTER_ERROR_DUPLICATE') || '이미 사용 중인 이메일입니다',
+          icon: 'error',
+          confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+        });
+        
+        return; // 현재 자리에 머무름
+
+      }
+
+
+
+
+
       if(registerInfo){
         Swal.fire({
           title: get('SWAL_STAFF_REG'),

@@ -80,6 +80,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   const [lazyGalleryData, setLazyGalleryData] = useState([]); // 포토 갤러리
   const [lazyMenuData, setLazyMenuData] = useState([]); // 메뉴 관리 모달에서 추가된 메뉴 데이터를 저장할 상태
   const [isUploading, setIsUploading] = useState(false);
+  const [topImgCount, setTopImgCount] = useState(0);
 
   const navigate = useNavigate();
 
@@ -100,14 +101,23 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           const venueData = await ApiClient.get('/api/getVenue', {
             params: { venue_id: venueId }
           });
-          
+
+         
+
           const updatedForm = {
             ...form,
             ...venueData,
             open_time: formatTimeForInput(venueData.open_time),
-            close_time: formatTimeForInput(venueData.close_time)
+            close_time: formatTimeForInput(venueData.close_time),
+            // top_img: Array.isArray(venueData.image_url) 
+            //   ? venueData.image_url 
+            //   : venueData.image_url ? [venueData.image_url] : []
           };
+
+          console.log("updatedForm", updatedForm)
           setForm(updatedForm);
+
+           setTopImgCount(venueData.image_url ? 1 : 0);
           
           // formRef도 함께 업데이트
           Object.assign(formRef.current, updatedForm);
@@ -119,7 +129,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     } else {
       // create 모드일 때는 form을 비움
       setForm(defaultForm);
-      
+       setTopImgCount(0);
       // formRef도 함께 초기화
       Object.assign(formRef.current, defaultForm);
     }
@@ -149,6 +159,8 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
   }, [uploadedImages]);
 
+
+  console.log("uploadedImages",uploadedImages.length)
 
 
   // handleInputChange - ref와 form 상태 모두 업데이트
@@ -701,6 +713,13 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     }
   };
 
+// const getImageCount = (topImg) => {
+//   if (Array.isArray(topImg)) {
+//     return topImg.length;
+//   }
+//   return topImg ? 1 : 0;
+// };
+
   const handleClickSearchPoi = async () => {
   try {
     const response = await ApiClient.get('/api/getPoi', {
@@ -890,7 +909,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       marginLeft: '0.5rem',
       fontWeight: 'normal'
     }}>
-      ({get('PHOTO_INFO6')} : {uploadedImages.length + imageCount}{get('text.cnt.1')})
+      ({get('PHOTO_INFO6')} : {topImgCount+imageCount}{get('text.cnt.1')})
     </div>
   </div>
           <SketchBtn  onClick={() => handleDetail(venueId)} variant="secondary" size='small' style={{width: '30%', height: '40px'}}>

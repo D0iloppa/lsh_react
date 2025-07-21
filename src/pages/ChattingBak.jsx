@@ -9,7 +9,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 
 // 예약 요약 카드 컴포넌트
-const ReservationCard = React.memo(({ data, onSend, onClose }) => (
+const ReservationCard = ({ data, onSend, onClose }) => (
   <div style={{
     background: '#f8fafc',
     border: '1px solid #e5e7eb',
@@ -29,7 +29,7 @@ const ReservationCard = React.memo(({ data, onSend, onClose }) => (
     <button onClick={onSend} style={{ background: '#10b981', color: 'white', border: 'none', borderRadius: 4, padding: '6px 12px', fontSize: 12, cursor: 'pointer', fontWeight: 500, marginRight: 8 }}>전송</button>
     <button onClick={() => { /* 상세보기 오버레이 */ }} style={{ background: '#3b82f6', color: 'white', border: 'none', borderRadius: 4, padding: '6px 12px', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}>상세보기</button>
   </div>
-));
+);
 
 // Float Bottom Button 컴포넌트
 const FloatBottomButton = React.memo(({ isVisible, onClick }) => {
@@ -42,7 +42,7 @@ const FloatBottomButton = React.memo(({ isVisible, onClick }) => {
         position: 'fixed',
         left: '50%',
         transform: 'translateX(-50%)',
-        bottom: '180px',
+        bottom: '180px', // 입력창 위에 오도록 조정
         width: '30px',
         height: '30px',
         borderRadius: '50%',
@@ -93,6 +93,7 @@ const ChatInput = React.memo(({ onSend, placeholder, onKeyDown, onRef }) => {
     onKeyDown?.(e);
   }, [handleSend, onKeyDown]);
   
+  // ref를 부모 컴포넌트에 전달
   useEffect(() => {
     if (onRef) {
       onRef({ handleSend, inputRef });
@@ -193,12 +194,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const chatBoxRef = useRef(null);
   const firstLoadRef = useRef(true);
   const chatInputRef = useRef(null);
-  const isScrollingRef = useRef(false);
-  const isLoadingRef = useRef(false); // 중복 호출 방지 플래그 추가
-  const scrollTimeoutRef = useRef(null); // 스크롤 디바운스용
+  const isScrollingRef = useRef(false); // 스크롤 중복 호출 방지 플래그
   const [modalImage, setModalImage] = useState(null);
-
-    const checkUser = useRef(false);
   
   // room_sn 초기화
   useEffect(() => {
@@ -226,17 +223,18 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     console.log('enter', sendToValue, receiverIdValue);
   }, [memoizedProps, room_sn, roomTitle, sendTo, receiverId]);
 
-  // ⭐ 인터벌을 시작하는 함수 - 최적화
+  // ⭐ 인터벌을 시작하는 함수
   const startPolling = useCallback(() => {
+    // 기존 인터벌이 있다면 먼저 정리
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
 
+    // 새 인터벌 시작
     intervalRef.current = setInterval(() => {
-      // room_sn이 있고, 로딩 중이 아닐 때만 실행
-      if (room_sn && !isLoadingRef.current) {
-        getChattingData(false, false);
+      if (room_sn) {
+        getChattingData(false, false); // 새 메시지만 가져오기
       }
     }, 500);
 
@@ -254,6 +252,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
   const registerReader = async (roomSn) => {
     try {
+      
       const response = await ApiClient.postForm('/api/registerReader', {
         target_table: user.type === 'manager' ? 'ManagerChat' : 'StaffChat',
         target_id: roomSn,
@@ -268,12 +267,44 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     }
   };
 
+  // room_sn이 변경될 때마다 채팅 데이터 다시 불러오기
+  useEffect(() => {
+    console.log('🔄 Room SN changed to:', room_sn);
+    
+    // 기존 폴링 정지
+    stopPolling();
+
+    if (room_sn) {
+      // room_sn이 새로 생성된 경우 상태 초기화
+      if (lastChatSnRef.current === null) {
+        console.log('🆕 New room created, resetting chat state');
+        setChatMessages([]);
+        setHasMoreOlder(true);
+        setIsInitialLoad(true);
+      }
+
+      registerReader(room_sn);
+      
+      // 초기 채팅 데이터 로딩 (최신 10개)
+      getChattingData(true, false).then(() => {
+        // 데이터 로딩 완료 후 폴링 시작
+        startPolling();
+      });
+    }
+
+    // cleanup 함수에서 인터벌 정리
+    return () => {
+      stopPolling();
+    };
+  }, [room_sn, stopPolling, startPolling]);
+
   // 스크롤 위치 감지
   const isUserAtBottom = useCallback(() => {
     if (!chatBoxRef.current) return false;
     const { scrollTop, scrollHeight, clientHeight } = chatBoxRef.current;
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
     
+    // 더 엄격한 기준: 10px 이내에 있을 때만 맨 아래로 간주
     const isAtBottom = distanceFromBottom < 10;
     console.log('📍 사용자 위치 확인:', {
       distanceFromBottom,
@@ -282,11 +313,12 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     return isAtBottom;
   }, []);
 
-  // 스크롤을 맨 밑으로 이동시키는 함수 - 개선된 버전
-  const scrollToBottom = useCallback((behavior = 'smooth', force = false) => {
-    console.log('🔄 scrollToBottom 호출됨:', behavior, 'force:', force);
+  // 스크롤을 맨 밑으로 이동시키는 함수
+  const scrollToBottom = useCallback((behavior = 'smooth') => {
+    console.log('🔄 scrollToBottom 호출됨:', behavior);
     
-    if (!force && isScrollingRef.current) {
+    // 이미 스크롤 중이면 중복 호출 방지
+    if (isScrollingRef.current) {
       console.log('⏸️ 이미 스크롤 중이므로 호출 무시');
       return;
     }
@@ -296,13 +328,11 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       return;
     }
     
+    // 스크롤 시작 플래그 설정
     isScrollingRef.current = true;
     
     const scrollToBottomImmediate = () => {
-      if (!chatBoxRef.current) {
-        isScrollingRef.current = false;
-        return;
-      }
+      if (!chatBoxRef.current) return;
       
       const { scrollHeight, clientHeight } = chatBoxRef.current;
       const maxScrollTop = scrollHeight - clientHeight;
@@ -317,46 +347,114 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       if (behavior === 'auto') {
         chatBoxRef.current.scrollTop = maxScrollTop;
         console.log('⚡ 즉시 스크롤 이동 완료');
+        // 즉시 스크롤 완료 시 플래그 해제 및 FloatButton 상태 업데이트
         setTimeout(() => {
           isScrollingRef.current = false;
+          // 스크롤 완료 후 FloatButton 상태 강제 업데이트
           setShowFloatButton(false);
-        }, 50); // 더 짧은 시간으로 변경
+        }, 1);
       } else {
         chatBoxRef.current.scrollTo({
           top: maxScrollTop,
           behavior: 'smooth'
         });
         console.log('🔄 부드러운 스크롤 이동 시작');
+        // 부드러운 스크롤 완료 후 플래그 해제 및 FloatButton 상태 업데이트
         setTimeout(() => {
           isScrollingRef.current = false;
+          // 스크롤 완료 후 FloatButton 상태 강제 업데이트
           setShowFloatButton(false);
-        }, 500); // smooth 스크롤 완료 대기 시간
+        }, 1);
       }
     };
     
-    // DOM 업데이트 완료 후 스크롤 실행
-    requestAnimationFrame(scrollToBottomImmediate);
+    // messageEndRef 방식 제거하고 직접 스크롤만 사용
+    setTimeout(scrollToBottomImmediate, 50);
   }, []);
 
-  // 스크롤 위치 유지를 위한 함수 추가
-  const maintainScrollPosition = useCallback(() => {
+  // 이전 메시지 로딩 함수
+  const loadOlderMessages = useCallback(async () => {
+    if (isLoadingOlder || !hasMoreOlder || chat_messages.length === 0) {
+      console.log('🚫 이전 메시지 로딩 차단:', { 
+        isLoadingOlder, 
+        hasMoreOlder, 
+        messageCount: chat_messages.length 
+      });
+      return;
+    }
+    
+    console.log('📚 이전 메시지 로딩 시작');
+    setIsLoadingOlder(true);
+    
+   
+  }, [room_sn, chat_messages, isLoadingOlder, hasMoreOlder, user.type]);
+
+  // 스크롤 이벤트 핸들러 - 이전 메시지 로딩 + Float Button 제어
+  const handleScroll = useCallback(() => {
     if (!chatBoxRef.current) return;
     
     const { scrollTop, scrollHeight, clientHeight } = chatBoxRef.current;
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
     
-    // 사용자가 맨 아래에 있지 않다면 스크롤 위치 유지
-    if (distanceFromBottom > 50) {
-      const savedScrollTop = scrollTop;
-      requestAnimationFrame(() => {
-        if (chatBoxRef.current) {
-          chatBoxRef.current.scrollTop = savedScrollTop;
-        }
-      });
-      return true; // 위치 유지됨
+    // 디버깅 로그 추가
+    /*
+    console.log('📜 스크롤 이벤트:', {
+      scrollTop,
+      scrollHeight,
+      clientHeight,
+      distanceFromBottom,
+      showFloatButton: showFloatButton,
+      isScrolling: isScrollingRef.current
+    });
+    */
+    
+    // 스크롤 중일 때는 FloatButton 상태 변경하지 않음
+    if (isScrollingRef.current) {
+      console.log('⏸️ 스크롤 중이므로 FloatButton 상태 변경 무시');
+      return;
     }
-    return false; // 맨 아래에 있음
-  }, []);
+    
+    // Float Button 표시/숨김 제어
+    if (distanceFromBottom > 300) {
+      console.log('🔘 Float Button 표시');
+      setShowFloatButton(true);
+    } else {
+      console.log('🔘 Float Button 숨김');
+      setShowFloatButton(false);
+    }
+    
+    // 이전 메시지 로딩 (기존 로직)
+    if (isLoadingOlder || !hasMoreOlder) return;
+    
+    // 스크롤이 맨 위에 가까우면 이전 메시지 로딩
+    if (scrollTop < 100) {
+      console.log('🔄 이전 메시지 로딩 시작');
+      loadOlderMessages();
+    }
+  }, [isLoadingOlder, hasMoreOlder, loadOlderMessages, showFloatButton]);
+
+  // 스크롤 이벤트 리스너 등록
+  useEffect(() => {
+    const chatBox = chatBoxRef.current;
+    if (chatBox) {
+      // console.log('📜 스크롤 이벤트 리스너 등록');
+      chatBox.addEventListener('scroll', handleScroll);
+      return () => {
+        // console.log('📜 스크롤 이벤트 리스너 제거');
+        chatBox.removeEventListener('scroll', handleScroll);
+      };
+    }
+  }, [handleScroll]);
+
+  useEffect(() => {
+    if (firstLoadRef.current) {
+      firstLoadRef.current = false;
+    } else if (isUserAtBottom()) {
+      setTimeout(() => {
+        messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 50);
+    }
+  }, [chat_messages, isUserAtBottom]);
 
   const formatTime = useCallback((date) => {
     return new Intl.DateTimeFormat('ko-KR', {
@@ -366,28 +464,18 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     }).format(date);
   }, []);
 
-  // 예약 정보 캐시 - 컴포넌트 외부로 이동
-  const reservationCacheRef = useRef({});
+  // 예약 정보 캐시
+  const reservationCache = {};
 
-  // 예약 정보를 가져오는 함수 - 안정화
+  // 예약 정보를 가져오는 함수 (캐싱 적용)
   const getReservationInfo = useCallback(async (reservationId) => {
-    console.log('🔍 getReservationInfo 호출:', reservationId);
-    
-    // 캐시 확인
-    if (reservationCacheRef.current[reservationId]) {
-      console.log('📋 캐시에서 예약 정보 반환:', reservationId);
-      return reservationCacheRef.current[reservationId];
+    if (reservationCache[reservationId]) {
+      return reservationCache[reservationId];
     }
-    
-    console.log('🌐 API에서 예약 정보 조회:', reservationId);
-    
     try {
       const res = await ApiClient.get('/api/getReservationList_mng', {
         params: { venue_id: venue_id }
       });
-      
-      console.log('📋 예약 목록 API 응답:', res?.length || 0, '개');
-      
       if(res && res.length > 0){
         let reservation = res.find(item => item.reservation_id === parseInt(reservationId));
         if(reservation){
@@ -396,55 +484,18 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           endTime.setHours(endTime.getHours() + 1);
           reservation.res_end_time = endTime.toTimeString().slice(0, 5);
           reservation.target_name = reservation.client_name;
-          
-          // 캐시에 저장
-          reservationCacheRef.current[reservationId] = reservation;
-          console.log('✅ 예약 정보 캐시 저장:', reservationId);
+          reservationCache[reservationId] = reservation;
           return reservation;
         }
       }
-      
-      console.log('❌ 예약 정보를 찾을 수 없음:', reservationId);
-      // 캐시에 null 저장하여 재호출 방지
-      reservationCacheRef.current[reservationId] = null;
       return null;
     } catch (error) {
-      console.error('❌ 예약 정보 조회 실패:', error);
-      // 에러 시에도 캐시에 저장하여 재호출 방지
-      reservationCacheRef.current[reservationId] = null;
       return null;
     }
   }, [venue_id]);
 
-  // 예약 링크 템플릿 컴포넌트 - 에러 처리 강화
+  // 예약 링크 템플릿 컴포넌트
   const ReservationLinkTemplate = React.memo(({ reservationData, reservationId }) => {
-    console.log('🏨 ReservationLinkTemplate 렌더링:', { reservationId, hasData: !!reservationData });
-    
-    // 로딩 상태 표시
-    if (reservationData === undefined) {
-      return (
-        <div style={{
-          background: '#f3f4f6',
-          border: '1px solid #d1d5db',
-          borderRadius: '8px',
-          padding: '12px',
-          margin: '8px 0',
-          maxWidth: '320px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          textAlign: 'center',
-          color: '#6b7280'
-        }}>
-          <div style={{ fontSize: 12 }}>
-            예약 정보를 불러오는 중...
-          </div>
-          <div style={{ fontSize: 10, marginTop: 4, color: '#9ca3af' }}>
-            예약 ID: {reservationId}
-          </div>
-        </div>
-      );
-    }
-    
-    // 데이터가 없는 경우
     if (!reservationData) {
       return (
         <div style={{
@@ -458,40 +509,22 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           textAlign: 'center',
           color: '#dc2626'
         }}>
-          <div style={{ fontSize: 12 }}>
-            예약 정보를 불러올 수 없습니다.
-          </div>
-          <div style={{ fontSize: 10, marginTop: 4, color: '#9ca3af' }}>
-            예약 ID: {reservationId}
-          </div>
+          예약 정보를 불러올 수 없습니다.
         </div>
       );
     }
-    
     const formatDate = (dateString) => {
-      if (!dateString) return 'N/A';
-      try {
-        const date = new Date(dateString);
-        const year = date.getFullYear();
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const day = date.getDate().toString().padStart(2, '0');
-        return `${year}.${month}.${day}`;
-      } catch (error) {
-        console.error('❌ 날짜 포맷 에러:', error);
-        return 'N/A';
-      }
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      return `${year}.${month}.${day}`;
     };
-    
     const formatTime = (timeString) => {
-      if (!timeString) return 'N/A';
-      try {
-        return timeString.slice(0, 5);
-      } catch (error) {
-        console.error('❌ 시간 포맷 에러:', error);
-        return 'N/A';
-      }
+      if (!timeString) return '';
+      return timeString.slice(0, 5);
     };
-    
     return (
       <div style={{
         background: '#f8fafc',
@@ -521,7 +554,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           </span>
         </div>
         <div style={{ fontSize: 14, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-          예약자: {reservationData.target_name || reservationData.client_name || 'N/A'}
+          예약자: {reservationData.target_name || 'N/A'}
         </div>
         <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 6 }}>
           예약일시: {formatDate(reservationData.reserved_at)} {formatTime(reservationData.res_start_time)} - {formatTime(reservationData.res_end_time)}
@@ -549,7 +582,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     }
   }, []);
 
-  // ChatMessage 컴포넌트 - 메모이제이션 최적화
+  // ChatMessage 컴포넌트
   const ChatMessage = React.memo(({ msg, setModalImage }) => {
     const isMine = msg.sender === 'me';
     const isTranslated = translationMap[msg.chat_sn];
@@ -637,11 +670,6 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         <div className="chat-time">{msg.time}</div>
       </div>
     );
-  }, (prevProps, nextProps) => {
-    // 실제로 변경된 props만 리렌더링
-    return prevProps.msg.chat_sn === nextProps.msg.chat_sn &&
-           prevProps.msg.text === nextProps.msg.text &&
-           prevProps.msg.image === nextProps.msg.image;
   });
 
   // 중복 제거 유틸
@@ -654,26 +682,22 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     });
   }
 
-  // 🎯 최적화된 getChattingData 함수 - 예약 정보 처리 개선
+  // 🎯 Lazy Loading을 위한 새로운 getChattingData 함수
   const getChattingData = useCallback(async (isInitial = false, loadOlder = false) => {
-    // 중복 호출 방지
-    if (isLoadingRef.current) {
-      console.log('🚫 이미 로딩 중이므로 호출 무시');
-      return;
-    }
-    
-    if (!room_sn) {
-      console.log('🚫 room_sn이 없어서 로딩 차단');
-      return;
-    }
-
-    isLoadingRef.current = true; // 로딩 시작
-    
     const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
     
     try {
+
+
+
+      if (!room_sn) {
+        console.log('🚫 room_sn이 없어서 로딩 차단');
+        return;
+      }
+
+
       const params = { 
-        room_sn: room_sn,
+        room_sn:room_sn,
         limit: 10,
         direction: loadOlder ? 'older' : 'newer',
         account_type: user.type
@@ -692,175 +716,13 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         }
       }
 
-      console.log('📡 채팅 데이터 요청:', params);
+
       const response = await axios.get(`${API_HOST}/api/getChattingData_v2`, {
         params
       });
 
-      console.log('📨 채팅 데이터 응답:', response.data?.length || 0, '개');
 
-      // 메시지 기본 정보 먼저 생성 (예약 정보 제외)
-      const basicMessages = response.data.map((item, index) => ({
-        id: index + 1,
-        sender: item.sender_type === user.type ? 'me' : 'other',
-        text: item.chat_msg || '',
-        image: item.image_url || null,
-        chat_sn: item.chat_sn,
-        sender_type: item.sender_type,
-        time: formatTime(new Date(item.send_dt)),
-        link_type: item.link_type,
-        link_target: item.link_target,
-        sender_name: item.sender_name,
-        reservationData: null, // 초기에는 null
-      }));
-
-      console.log('📋 기본 메시지 생성 완료:', basicMessages.length, '개');
-
-      // 예약 정보가 필요한 메시지들만 별도로 처리
-      const reservationMessages = basicMessages.filter(msg => 
-        msg.link_type === 'reservation' && msg.link_target
-      );
-
-      console.log('🏨 예약 정보 처리 필요:', reservationMessages.length, '개');
-
-      // 예약 정보 비동기 로딩 (에러 발생 시에도 계속 진행)
-      if (reservationMessages.length > 0) {
-        // Promise.allSettled 사용하여 일부 실패해도 계속 진행
-        const reservationResults = await Promise.allSettled(
-          reservationMessages.map(async (msg) => {
-            try {
-              console.log('🔍 예약 정보 조회 시작:', msg.link_target);
-              const reservationData = await getReservationInfo(msg.link_target);
-              console.log('✅ 예약 정보 조회 완료:', msg.link_target, !!reservationData);
-              return { chat_sn: msg.chat_sn, reservationData };
-            } catch (error) {
-              console.error('❌ 예약 정보 조회 실패:', msg.link_target, error);
-              return { chat_sn: msg.chat_sn, reservationData: null };
-            }
-          })
-        );
-
-        // 성공한 예약 정보들을 메시지에 적용
-        reservationResults.forEach((result, index) => {
-          if (result.status === 'fulfilled' && result.value) {
-            const { chat_sn, reservationData } = result.value;
-            const messageIndex = basicMessages.findIndex(msg => msg.chat_sn === chat_sn);
-            if (messageIndex !== -1) {
-              basicMessages[messageIndex].reservationData = reservationData;
-            }
-          }
-        });
-
-        console.log('🏨 예약 정보 적용 완료');
-      }
-
-      const newMessages = basicMessages;
-
-      if (isInitial) {
-        // 초기 로딩: 최신 메시지 10개 (내림차순으로 정렬하여 최신이 맨 아래에 오도록)
-        const sortedMessages = [...newMessages].sort((a, b) => b.chat_sn - a.chat_sn).reverse();
-        console.log('🎯 초기 로딩 - 정렬된 메시지:', sortedMessages.map(m => ({ chat_sn: m.chat_sn, text: m.text })));
-        setChatMessages(dedupeMessages(sortedMessages));
-        if (sortedMessages.length > 0) {
-          const lastMessage = sortedMessages[sortedMessages.length - 1];
-          lastChatSnRef.current = lastMessage.chat_sn;
-          // 초기 로딩 시에만 스크롤 (부드럽게 하지 않고 즉시)
-          setTimeout(() => {
-            scrollToBottom('auto', true);
-          }, 100);
-        }
-        setIsInitialLoad(false);
-      } else if (loadOlder) {
-        // 이전 메시지 로딩: 앞에 추가 (스크롤 위치 유지)
-        console.log('📚 이전 메시지 로딩:', newMessages.map(m => ({ chat_sn: m.chat_sn, text: m.text })));
-        
-        // 현재 스크롤 위치 저장
-        const currentScrollTop = chatBoxRef.current?.scrollTop || 0;
-        const currentScrollHeight = chatBoxRef.current?.scrollHeight || 0;
-        
-        setChatMessages(prev => {
-          const updated = dedupeMessages([...newMessages, ...prev]);
-          
-          // 메시지 추가 후 스크롤 위치 복원
-          requestAnimationFrame(() => {
-            if (chatBoxRef.current) {
-              const newScrollHeight = chatBoxRef.current.scrollHeight;
-              const heightDiff = newScrollHeight - currentScrollHeight;
-              chatBoxRef.current.scrollTop = currentScrollTop + heightDiff;
-            }
-          });
-          
-          return updated;
-        });
-      } else {
-        // 새 메시지 로딩: 뒤에 추가
-        const newChatMessages = newMessages.filter(msg => msg.chat_sn > lastChatSnRef.current);
-
-        if (newChatMessages.length > 0) {
-          console.log('🆕 새 메시지 로딩:', newChatMessages.map(m => ({ chat_sn: m.chat_sn, text: m.text })));
-          
-          // 사용자가 맨 아래에 있는지 미리 확인
-          const wasAtBottom = isUserAtBottom();
-          
-          setChatMessages(prev => {
-            const updated = dedupeMessages([...prev, ...newChatMessages]);
-            
-            // 메시지 추가 후 스크롤 처리
-            if (wasAtBottom) {
-              // 사용자가 맨 아래에 있었다면 새 메시지로 자동 스크롤
-              requestAnimationFrame(() => {
-                scrollToBottom(newChatMessages[0].sender_type === user.type ? 'auto' : 'smooth');
-              });
-            }
-            // 맨 아래에 있지 않았다면 스크롤하지 않음
-            
-            return updated;
-          });
-          
-          const lastMessage = newChatMessages[newChatMessages.length - 1];
-          lastChatSnRef.current = lastMessage.chat_sn;
-        }
-      }
-    } catch (error) {
-      console.error('❌ 채팅 데이터 불러오기 실패:', error);
-    } finally {
-      isLoadingRef.current = false; // 로딩 완료
-    }
-  }, [room_sn, user.type, formatTime, scrollToBottom, isUserAtBottom]); // getReservationInfo 의존성 제거
-
-  // 이전 메시지 로딩 함수 - 의존성 배열 수정
-  const loadOlderMessages = useCallback(async () => {
-    if (!room_sn) {
-      console.log('🚫 room_sn이 없어서 로딩 차단');
-      return;
-    }
-    
-    if (isLoadingOlder || !hasMoreOlder || chat_messages.length === 0) {
-      console.log('🚫 이전 메시지 로딩 차단:', { 
-        isLoadingOlder, 
-        hasMoreOlder, 
-        messageCount: chat_messages.length 
-      });
-      return;
-    }
-    
-    console.log('📚 이전 메시지 로딩 시작');
-    setIsLoadingOlder(true);
-    
-    try {
-      const oldestMessage = chat_messages[0];
-      const params = {
-        room_sn: room_sn, // 최신 room_sn 사용
-        limit: 13,
-        direction: 'older',
-        before_chat_sn: oldestMessage.chat_sn,
-        account_type: user.type
-      };
-
-      const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
-      const response = await axios.get(`${API_HOST}/api/getChattingData_v2`, { params });
-      
-      // 예약 정보 포함한 메시지 처리
+      // 예약 정보 미리 포함
       const newMessages = await Promise.all(response.data.map(async (item, index) => {
         let reservationData = null;
         if (item.link_type === 'reservation' && item.link_target) {
@@ -881,134 +743,69 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         };
       }));
 
-      if (newMessages.length === 0) {
-        setHasMoreOlder(false);
-      } else {
+
+      console.log("CheckData-1", isInitial);
+      console.log("CheckData-2", loadOlder);
+
+      if (isInitial) {
+        // 초기 로딩: 최신 메시지 10개 (내림차순으로 정렬하여 최신이 맨 아래에 오도록)
+        const sortedMessages = [...newMessages].sort((a, b) => b.chat_sn - a.chat_sn).reverse();
+        console.log('🎯 초기 로딩 - 정렬된 메시지:', sortedMessages.map(m => ({ chat_sn: m.chat_sn, text: m.text })));
+        setChatMessages(dedupeMessages(sortedMessages));
+        if (sortedMessages.length > 0) {
+          const lastMessage = sortedMessages[sortedMessages.length - 1];
+          lastChatSnRef.current = lastMessage.chat_sn;
+          setTimeout(() => {
+            scrollToBottom('auto');
+          }, 300);
+        }
+        setIsInitialLoad(false);
+      } else if (loadOlder) {
+        // 이전 메시지 로딩: 앞에 추가
+        console.log('📚 이전 메시지 로딩:', newMessages.map(m => ({ chat_sn: m.chat_sn, text: m.text })));
         setChatMessages(prev => dedupeMessages([...newMessages, ...prev]));
+      } else {
+        // 새 메시지 로딩: 뒤에 추가
+        const newChatMessages = newMessages.filter(msg => msg.chat_sn > lastChatSnRef.current);
+
+        if (newChatMessages.length > 0) {
+
+          console.log('🆕 새 메시지 로딩:', newChatMessages.map(m => ({ chat_sn: m.chat_sn, text: m.text })));
+          setChatMessages(prev => dedupeMessages([...prev, ...newChatMessages]));
+          const lastMessage = newChatMessages[newChatMessages.length - 1];
+          
+          // 자동 스크롤 조건 수정: 사용자가 맨 아래에 있을 때만 자동 스크롤
+          const shouldScroll = lastMessage.sender_type === 'manager' || isUserAtBottom();
+          console.log('🔄 자동 스크롤 조건:', {
+            sender_type: lastMessage.sender_type,
+            isUserAtBottom: isUserAtBottom(),
+            shouldScroll
+          });
+          
+          if (shouldScroll) {
+            setTimeout(() => {
+              scrollToBottom(lastMessage.sender_type === 'manager' ? 'auto' : 'smooth');
+            }, 200);
+          } else {
+            console.log('⏸️ 사용자가 스크롤을 위로 올린 상태이므로 자동 스크롤하지 않음');
+          }
+          lastChatSnRef.current = lastMessage.chat_sn;
+        }
       }
     } catch (error) {
-      console.error('❌ 이전 메시지 로딩 실패:', error);
-    } finally {
-      setIsLoadingOlder(false);
+      console.error('❌ 채팅 데이터 불러오기 실패:', error);
     }
-  }, [room_sn, chat_messages, isLoadingOlder, hasMoreOlder, user.type, formatTime, getReservationInfo]); // room_sn 추가!
+  }, [room_sn, user.type, formatTime, scrollToBottom, isUserAtBottom, getReservationInfo, chat_messages]);
 
-  // 스크롤 이벤트 핸들러 - 디바운스 처리로 최적화
-  const handleScroll = useCallback(() => {
-    if (!chatBoxRef.current) return;
-    
-    // 디바운스 처리
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-    
-    scrollTimeoutRef.current = setTimeout(() => {
-      if (!chatBoxRef.current) return;
-      
-      const { scrollTop, scrollHeight, clientHeight } = chatBoxRef.current;
-      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-      
-      // 스크롤 중일 때는 FloatButton 상태 변경하지 않음
-      if (isScrollingRef.current) {
-        console.log('⏸️ 스크롤 중이므로 FloatButton 상태 변경 무시');
-        return;
-      }
-      
-      // Float Button 표시/숨김 제어
-      if (distanceFromBottom > 300) {
-        console.log('🔘 Float Button 표시');
-        setShowFloatButton(true);
-      } else {
-        console.log('🔘 Float Button 숨김');
-        setShowFloatButton(false);
-      }
-      
-      // 이전 메시지 로딩 (중복 방지 조건 추가)
-      if (!isLoadingOlder && hasMoreOlder && !isLoadingRef.current && scrollTop < 100) {
-        console.log('🔄 이전 메시지 로딩 시작');
-        loadOlderMessages();
-      }
-    }, 100); // 100ms 디바운스
-  }, [isLoadingOlder, hasMoreOlder, loadOlderMessages, showFloatButton]);
-
-  // 스크롤 이벤트 리스너 등록
-  useEffect(() => {
-    const chatBox = chatBoxRef.current;
-    if (chatBox) {
-      chatBox.addEventListener('scroll', handleScroll);
-      return () => {
-        chatBox.removeEventListener('scroll', handleScroll);
-      };
-    }
-  }, [handleScroll]);
-
-  // room_sn 변경 시 상태 초기화 최적화
-  useEffect(() => {
-    console.log('🔄 Room SN changed to:', room_sn);
-    
-    // 기존 폴링 정지
-    stopPolling();
-    
-    // 로딩 플래그 초기화
-    isLoadingRef.current = false;
-
-    if (room_sn) {
-      // 상태 초기화
-      setChatMessages([]);
-      setHasMoreOlder(true);
-      setIsInitialLoad(true);
-      lastChatSnRef.current = null;
-
-      registerReader(room_sn);
-      
-      // 초기 채팅 데이터 로딩
-      getChattingData(true, false).then(() => {
-        // 데이터 로딩 완료 후 폴링 시작
-        startPolling();
-      });
-    }
-
-    return () => {
-      stopPolling();
-      // 타이머 정리
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, [room_sn]); // 다른 의존성 제거하여 불필요한 재실행 방지
-
-  // 메시지가 업데이트될 때 불필요한 스크롤 방지
-  useEffect(() => {
-    // 초기 로딩이나 새 메시지가 추가된 경우가 아니라면 스크롤하지 않음
-    if (firstLoadRef.current) {
-      firstLoadRef.current = false;
-      return;
-    }
-    
-    // 메시지 업데이트로 인한 불필요한 스크롤 방지
-    // 이 useEffect는 제거하거나 조건을 더 엄격하게 설정
-  }, []); // 의존성 배열을 비워서 불필요한 실행 방지
-
+  // 최적화된 메시지 전송 핸들러
   const handleMessageSend = useCallback(async (message) => {
     const {type} = user;
     let login_id = (type=='staff') ? user.staff_id : user.manager_id;
     let receiver_id = (type=='staff') ? user.manager_id : user.staff_id;
     let send_to =  (type=='staff') ? 'manager' : 'staff'
      
-    send_to = memoizedProps.send_to || sendTo;
-
-    console.log("1111-000", send_to);
-    if ( checkUser.current ) {
-      send_to='user';
-
-       console.log("1111-0000-1", send_to);
-    }
-
-    console.log("1111-00", checkUser);
-
-    console.log("1111-0", send_to);
-    console.log("1111-1", memoizedProps.send_to);
-    console.log("1111-2", sendTo);
+    console.log("user", user);
+    //alert(receiver_id);
 
     const chatData = {
       room_sn,
@@ -1023,18 +820,18 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       last_message_preview: message,
       venue_id,
       send_to: send_to,
-      receiver_id: receiverId
+      receiver_id: receiver_id
     };
 
-    // 메시지 전송 즉시 스크롤 (사용자가 직접 보낸 메시지이므로)
-    requestAnimationFrame(() => {
-      scrollToBottom('auto', true);
-    });
+    setTimeout(() => {
+      scrollToBottom('auto');
+    }, 150);
 
     await insertChattingData(chatData);
-  }, [room_sn, user, nickname, venue_id, scrollToBottom, roomTitle]);
+  }, [room_sn, user_id, user.type, nickname, venue_id, scrollToBottom, sendTo, receiverId, roomTitle]);
 
   const insertChattingData = useCallback(async (params) => {
+
     const safeParams = {
       ...params,
       receiver_id: params.receiver_id || receiverId
@@ -1047,14 +844,14 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       const response = await axios.post(`${API_HOST}/api/insertChattingData`, safeParams);
       console.log('✅ 채팅 서버 응답:', response.data);
 
-      const {chat_sn, room_sn: newRoomSn} = response.data;
-      if(chat_sn && newRoomSn){
-        setRoomSn(newRoomSn);
+      const {chat_sn, room_sn, room_mode} = response.data;
+      if(chat_sn && room_sn){
+        setRoomSn(room_sn);
       }
     } catch (error) {
       console.error('❌ 채팅 전송 실패:', error);
     }
-  }, [receiverId]);
+  }, [receiverId, room_sn]);
 
   const handleUploadComplete = useCallback((content_id, file) => {
     console.log('이미지 전송 ^_T', room_sn, content_id, sendTo, receiverId);
@@ -1063,6 +860,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     let login_id = (type=='staff') ? user.staff_id : user.manager_id;
 
     
+
     insertChattingData({
       room_sn,
       chat_msg: '',
@@ -1082,7 +880,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     setTimeout(() => {
       scrollToBottom('auto');
     }, 300);
-  }, [room_sn, user, nickname, venue_id, insertChattingData, scrollToBottom, sendTo, receiverId, memoizedProps.send_to]);
+  }, [room_sn, user_id, nickname, venue_id, insertChattingData, scrollToBottom, sendTo, receiverId]);
 
   const handleUploadError = useCallback((error) => {
     console.error('이미지 업로드 실패:', error);
@@ -1091,7 +889,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       icon: 'error',
       confirmButtonText: get('SWAL_CONFIRM_BUTTON')
     });
-  }, [get]);
+  }, []);
 
   // 예약 관련 함수들
   const generateInitChatItem = useCallback(() => {
@@ -1128,12 +926,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     }
   }, [initType, otherProps]);
 
-  const hasSentReservationRef = useRef(false);
-
   useEffect(() => {
-    if (reservationCardData && sendTo && receiverId && !hasSentReservationRef.current) {
-      hasSentReservationRef.current = true; // ✅ 1회만 전송
-      checkUser.current = true
+    if (reservationCardData && sendTo && receiverId) {
       handleReservationSend();
     }
   }, [reservationCardData, sendTo, receiverId]);
@@ -1143,9 +937,6 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
     const {type} = user;
     let login_id = (type=='staff') ? user.staff_id : user.manager_id;
-
-    
-    console.log("1111=1", user.type);
 
     const chatData = {
       room_sn: room_sn || 0,
@@ -1161,10 +952,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       venue_id,
       link_type: 'reservation',
       link_target: reservationCardData?.reservation_id || params.reservation_id,
-      send_to: memoizedProps.send_to || sendTo,
+      send_to: user.type,
       receiver_id: receiverId
-      //send_to: user.type,
-      //receiver_id: receiverId
     };
 
     console.log('Sending chatData:', chatData);
@@ -1196,7 +985,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       console.error('sendChat error:', error);
       startPolling();
     }
-  }, [user, room_sn, nickname, venue_id, reservationCardData, stopPolling, getChattingData, startPolling, receiverId]);
+  }, [user, room_sn, nickname, venue_id, reservationCardData, stopPolling, getChattingData, startPolling]);
 
   const handleCloseReservationCard = useCallback(() => {
     setShowReservationCard(false);
@@ -1207,26 +996,27 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     if (initType === 'booking' && !showReservationCard && !reservationCardData) {
       generateInitChatItem();
     }
-  }, [initType, showReservationCard, reservationCardData, generateInitChatItem]);
+  }, [initType]);
 
-  useEffect(() => {
-    // 탈퇴한 사용자 체크
-    if (otherProps?.account_status === 'deleted') {
-      
-      // SweetAlert 표시
-      Swal.fire({
-        title: get('SWAL_ACCOUNT_STATUS1'),
-        text: get('SWAL_ACCOUNT_STATUS2'),
-        icon: 'warning',
-        confirmButtonText: get('BUTTON_CONFIRM')
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // 확인 버튼 클릭 시 이전 페이지로 돌아가기
-          goBack();
-        }
-      });
-    }
-  }, [otherProps?.account_status, get, goBack]); // account_status 변경 시만 실행
+  
+useEffect(() => {
+  // 탈퇴한 사용자 체크
+  if (otherProps?.account_status === 'deleted') {
+    
+    // SweetAlert 표시
+    Swal.fire({
+      title: get('SWAL_ACCOUNT_STATUS1'),
+      text: get('SWAL_ACCOUNT_STATUS2'),
+      icon: 'warning',
+      confirmButtonText: get('BUTTON_CONFIRM')
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // 확인 버튼 클릭 시 이전 페이지로 돌아가기
+        goBack();
+      }
+    });
+  }
+}, [otherProps?.account_status]); // account_status 변경 시만 실행
 
   return (
     <>
@@ -1306,6 +1096,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           color: inherit !important;
           border-bottom-right-radius: 0 !important;
         }
+
+
 
         .chat-message.other {
           background-color: #e5e7eb;
