@@ -389,6 +389,7 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
           margin: 0 auto;
           background: #fff;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+          padding: 1rem;
         }
         .month-row {
           display: flex;

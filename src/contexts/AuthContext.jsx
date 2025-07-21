@@ -138,8 +138,16 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
 
       try {
+
+
+        const {type:account_type} = user;
+
+        let account_id = (account_type == 'manager') ? user.manager_id : user.staff_id;
+
         const response = await ApiClient.postForm('/api/logout', {
-          user: 'logout'
+          user: 'logout',
+          account_type: account_type,
+          account_id: account_id
         });
 
         console.log(response);

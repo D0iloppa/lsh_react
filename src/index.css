@@ -142,7 +142,7 @@ body[data-lang="vi"] .scroll-indicator{width: 213px; bottom: 180px !important; t
 body[data-lang="vi"] .admin-staff{margin-top: 2.5rem;}
 body[data-lang="vi"] .image-upload-title button{letter-spacing: -1px !important; width: 110px !important;}
 body[data-lang="vi"] .account-status{letter-spacing: -1px;}
-
+body[data-lang="vi"] .staff-reservation-btn{width: auto !important;}
 
 body {margin: 0;}
 .swal-zindex-10000 {

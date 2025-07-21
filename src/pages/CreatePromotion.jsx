@@ -178,6 +178,7 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
           background: #fff;
           min-height: 100vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+          padding: 1rem;
         }
         .form-label {
           font-size: 1rem;

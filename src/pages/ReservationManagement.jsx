@@ -582,6 +582,7 @@ const chatWithUser = async(r) => {
           background: #fff;
           min-height: 101vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+          padding: 1rem;
         }
         .status-filter-row {
           display: flex;

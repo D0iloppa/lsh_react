@@ -333,6 +333,7 @@ const loadStaffList = async () => {
           background: #fff;
           min-height: 100vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+          padding: 1rem;
         }
         .add-btn-row {
           display: flex;

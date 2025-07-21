@@ -493,9 +493,9 @@ const handleSubmitResponse = async (reviewId) => {
           min-height: 100vh;
           padding-bottom: 1rem;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+          padding:1rem;
         }
         .filter-row {
-          padding: 0.5rem 1rem;
           display: flex;
           align-items: center;
           justify-content: space-between;

@@ -1150,7 +1150,7 @@ const openMenuOverlay = (menuList) => {
 
                   <SketchBtn disabled
                     type="text"
-                    className="sketch-button"
+                    className="sketch-button staff-reservation-btn"
                     size='small'
                     variant='primary'
                     style={{ width: '130px', marginBottom: '20px' }}
