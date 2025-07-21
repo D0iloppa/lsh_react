@@ -11,6 +11,7 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import { useFcm } from '@contexts/FcmContext';
 import Swal from 'sweetalert2';
+import LoadingScreen from '@components/LoadingScreen';
 
 const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
 
@@ -93,7 +94,7 @@ useEffect(() => {
 
   const fetchStaffDashboardData = async () => {
   try {
-    setIsLoadingData(true);
+    //setIsLoadingData(true);
     
     // venue_id와 staff_id가 있는지 확인
     if (!user?.venue_id || !user?.staff_id) {
@@ -244,7 +245,7 @@ useEffect(() => {
       }
     }));
   } finally {
-    setIsLoadingData(false);
+    //setIsLoadingData(false);
   }
 };
 
@@ -345,15 +346,15 @@ console.log(PAGES)
 
 
 
-  if (isLoadingData) {
-    return (
-      <div className="staffhome-container">
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <div>Loading...</div>
-        </div>
-      </div>
-    );
-  }
+  // if (isLoadingData) {
+  //   return (
+  //     <div className="staffhome-container">
+  //       <div style={{ textAlign: 'center', padding: '2rem' }}>
+  //         <div>Loading...</div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <>
@@ -630,6 +631,12 @@ console.log(PAGES)
             </div>
           </div>
         </div>
+
+        <LoadingScreen
+            variant="cocktail"
+            subText="Loading..."
+            isVisible={isLoading}
+          />
     </>
   );
 };

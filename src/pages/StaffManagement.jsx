@@ -373,6 +373,7 @@ const loadStaffList = async () => {
         }
         .staff-info {
           flex: 1;
+          margin-top: 2rem;
         }
         .staff-name {
           font-size: 1.02rem;

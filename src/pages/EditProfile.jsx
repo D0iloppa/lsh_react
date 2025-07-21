@@ -5,7 +5,8 @@ import SketchDiv from '@components/SketchDiv';
 import SketchInput from '@components/SketchInput';
 import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
-import { User } from 'lucide-react';
+import { User, Search } from 'lucide-react';
+import LoadingScreen from '@components/LoadingScreen';
 
 import { useAuth } from '@contexts/AuthContext';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
@@ -42,6 +43,30 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
     intro: '',
     profile_content_id:'',
   });
+
+
+
+  const handleDetail = async () => {
+    // venueId가 있으면 상세 페이지로 이동
+
+    const res = await ApiClient.get('/api/getVenueStaffList', {
+      params: { venue_id: user.venue_id },
+    });
+
+    const staffList = res || [];
+    console.log("staffList", staffList)
+
+    // user.staff_id와 동일한 데이터 찾기
+    const currentStaff = staffList.find(staff => staff.staff_id === user.staff_id);
+    console.log("currentStaff", currentStaff);
+
+    // 찾은 데이터가 있으면 그것을 사용하고, 없으면 기존 staffInfo 사용
+    const staffDataToPass = currentStaff || staffInfo;
+    console.log("staffDataToPass", staffDataToPass);
+
+    navigateToPageWithData(PAGES.STAFFDETAIL, staffDataToPass);
+  }
+
 
   useEffect(() => {
     if (messages && Object.keys(messages).length > 0) {
@@ -263,15 +288,15 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
 
   return images;
 }, [user]);
-  if (isLoadingData) {
-    return (
-      <div className="editprofile-container">
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <div>{get('LOADING_PROFILE_DATA')}</div>
-        </div>
-      </div>
-    );
-  }
+  // if (isLoadingData) {
+  //   return (
+  //     <div className="editprofile-container">
+  //       <div style={{ textAlign: 'center', padding: '2rem' }}>
+  //         <div>{get('LOADING_PROFILE_DATA')}</div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <>
@@ -344,6 +369,26 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
           font-size: 1rem;
           font-weight: 500;
           margin-bottom: 0.5rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          width: 100%;
+          gap: 1rem;
+        }
+        .image-upload-title > div:first-child {
+          flex: 1;
+          font-weight: 600;
+        }
+        .image-upload-title > div:last-child {
+          flex-shrink: 0;
+          min-width: 80px;
+        }
+        .image-upload-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-around;
+          gap: 1rem;
+          margin: 1rem 0;
         }
       `}</style>
 
@@ -354,8 +399,16 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
       />
       <div className="editprofile-container">
         <div className="image-upload-section">
-          <div className="image-upload-title">{get('PROFILE_IMAGE_TITLE')}</div>
-          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-around'}}>
+          <div className="image-upload-title">
+            <div>
+              {get('PROFILE_IMAGE_TITLE')}
+            </div>
+            <div>
+              <SketchBtn  onClick={() => handleDetail()} variant="secondary" size='small' style={{width: '100px', height: '40px', fontSize: '0.9rem', whiteSpace: 'nowrap'}}>
+              <HatchPattern opacity={0.6} /> <Search size={12}/> {get('VIEW_SEARCH')}</SketchBtn>
+            </div>
+          </div>
+          <div className="image-upload-content">
             <ImageUploader
               apiClient={ApiClient}
               usingCameraModule={false}
@@ -482,6 +535,11 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
           </SketchBtn>
         </div>
       </div>
+       <LoadingScreen
+            variant="cocktail"
+            subText="Loading..."
+            isVisible={isLoading}
+          />
     </>
   );
 };

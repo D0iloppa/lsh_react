@@ -5,6 +5,7 @@ import SketchDiv from '@components/SketchDiv';
 import SketchInput from '@components/SketchInput';
 import '@components/SketchComponents.css';
 import HatchPattern from '@components/HatchPattern';
+import LoadingScreen from '@components/LoadingScreen';
 
 import { MessageCircle, Mail, Calendar, Settings, Clock, MapPin, User, Plus, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -510,6 +511,11 @@ const handleSaveNewPassword = async () => {
         </div>
           <div className='staff-delete' onClick={handleDelete}>{get('DELETE_ACCOUNT')}</div>
       </div>
+       <LoadingScreen
+            variant="cocktail"
+            subText="Loading..."
+            isVisible={isLoading}
+          />
     </>
   );
 };

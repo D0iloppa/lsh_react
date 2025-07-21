@@ -8,6 +8,7 @@ import HatchPattern from '@components/HatchPattern';
 import CocktailIcon from '@components/CocktailIcon';
 import SketchDiv from '@components/SketchDiv';
 import { useFcm } from '@contexts/FcmContext';
+import LoadingScreen from '@components/LoadingScreen';
 
 import '@components/SketchComponents.css';
 
@@ -453,6 +454,12 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
           ))}
         </div>
       </div>
+
+       <LoadingScreen
+            variant="cocktail"
+            subText="Loading..."
+            isVisible={isLoading}
+          />
     </>
   );
 }

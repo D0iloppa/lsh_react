@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
 import { overlay } from 'overlay-kit';
+import LoadingScreen from '@components/LoadingScreen';
 
 const StaffReviewHistory = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
   const [ratingFilter, setRatingFilter] = useState('All');
@@ -826,6 +827,12 @@ const handleSubmitResponse = async (reviewId) => {
           )}
         </div>
       </div>
+
+       <LoadingScreen
+            variant="cocktail"
+            subText="Loading..."
+            isVisible={isLoading}
+          />
     </>
   );
 };

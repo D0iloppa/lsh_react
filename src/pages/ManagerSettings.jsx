@@ -8,6 +8,7 @@ import HatchPattern from '@components/HatchPattern';
 import { MessageCircle, Mail, User, Settings } from 'lucide-react';
 import Swal from 'sweetalert2';
 import 'react-toastify/dist/ReactToastify.css';
+import LoadingScreen from '@components/LoadingScreen';
 
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
@@ -669,6 +670,11 @@ const handleChangePassword = async () => {
 
         <div className='staff-delete' onClick={handleDelete}>{get('DELETE_ACCOUNT')}</div>
       </div>
+       <LoadingScreen
+            variant="cocktail"
+            subText="Loading..."
+            isVisible={isLoading}
+          />
     </>
   );
 };

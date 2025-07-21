@@ -10,6 +10,7 @@ import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
 
 import ImageUploader from '@components/ImageUploader';
+import LoadingScreen from '@components/LoadingScreen';
 
 import Swal from 'sweetalert2';
 import { toast, ToastContainer } from 'react-toastify';
@@ -235,7 +236,7 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
             onChange={handleChange}
             placeholder={get('PROMOTION_DESC_PLACEHOLDER')}
             as="textarea"
-            rows={2}
+            rows={8}
           />
         </div>
         <div className="form-label" style={{marginBottom: '0.3rem'}}>
@@ -367,6 +368,11 @@ const CreatePromotion = ({ navigateToPageWithData, PAGES, goBack, pageData, ...o
             }
           </SketchBtn>
         </div>
+        <LoadingScreen
+                    variant="cocktail"
+                    subText="Loading..."
+                    isVisible={isLoading}
+                  />
 
         <ToastContainer
           position="bottom-center"

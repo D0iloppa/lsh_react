@@ -228,8 +228,8 @@ const PhotoGallery = ({
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
-                gridTemplateRows: 'repeat(4, 1fr)',
-                gap: '10px 5px', // row-gap, column-gap
+                //gridTemplateRows: 'repeat(4, 1fr)',
+                //gap: '10px 5px', // row-gap, column-gap
                 padding: '20px',
                 //height: 'calc(400px - 80px)',
                 overflowY: 'auto',
@@ -246,7 +246,7 @@ const PhotoGallery = ({
                     border: '1px solid #e9ecef',
                     background: 'white',
                     position: 'relative',
-                    aspectRatio: '1/1',
+                    //aspectRatio: '1/1',
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -324,11 +324,13 @@ const PhotoGallery = ({
         if(contentId){
           // z-index 5000 추가
           Swal.fire({
-            title: '삭제하시겠습니까?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
+             title: get('SWAL_GALLERY_DELETE'),
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: get('STAFF_DELETE_BUTTON'),   // 확인 버튼 텍스트
+              cancelButtonText: get('Common.Cancel'),     // 취소 버튼 텍스트
             customClass: {
               popup: 'swal-zindex-10000'
             }
@@ -453,7 +455,7 @@ const PhotoGallery = ({
     });
   };
 
-  if (loading) return <div style={{ color: '#888', fontSize: 13 }}>이미지 불러오는 중...</div>;
+  if (loading) return <div style={{ color: '#888', fontSize: 13 }}>{get('GALLERY_IMG_LOADING')}</div>;
 
   return (
     <div

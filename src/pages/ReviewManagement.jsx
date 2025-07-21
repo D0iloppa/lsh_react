@@ -12,6 +12,7 @@ import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
 import { overlay } from 'overlay-kit';
 import axios from 'axios';
+import LoadingScreen from '@components/LoadingScreen';
 
 const mockReviews = [
   {
@@ -852,7 +853,7 @@ const handleSubmitResponse = async (reviewId) => {
                         display: 'inline-block'
                       }}
                     >
-                      번역
+                      {get('Translation')}
                     </button>
                   )}
 
@@ -940,6 +941,12 @@ const handleSubmitResponse = async (reviewId) => {
             )}
           </div>
         </div>
+
+         <LoadingScreen
+            variant="cocktail"
+            subText="Loading..."
+            isVisible={isLoading}
+          />
       </>
     );
   };

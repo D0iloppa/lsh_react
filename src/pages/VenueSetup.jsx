@@ -1199,7 +1199,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         <div className="input-row">
             <div className="time-label">{get('VENUE_INTRO_PLACEHOLDER')}</div>
           <SketchInput
-            name="description" 
+            name="description"
             value={form.description || ''}
             onChange={(e) => handleInputChange('description', e.target.value)}
             onBlur={handleBlur}

@@ -278,12 +278,13 @@ const registerReader = async (reservationId) => {
 
 const formatDateForDisplay = (dateString) => {
   const date = new Date(dateString);
-  const options = { 
-    month: 'short', 
-    day: 'numeric',
-    weekday: 'short'
-  };
-  return date.toLocaleDateString('ko-KR', options);
+
+  const month = date.getMonth() + 1; // 월은 0부터 시작
+  const day = date.getDate();
+
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'short' });
+
+  return `${month}/${day} (${weekday})`;
 };
 
 const addDays = (dateString, days) => {
@@ -782,15 +783,15 @@ const chatWithUser = async(r) => {
 
             .reservation-count {
                 z-index: 999;
-                top: -15px;
+                top: -14px;
                 left: 15px;
                 position: relative;
                 background: #ef4444;
                 color: white;
                 border-radius: 50%;
                 font-size: 0.9rem;
-                width: 1rem;
-                height: 1rem;
+                width: 1.2rem;
+                height: 1.2rem;
                 justify-content: center;
                 margin-top: 1px;
                 font-weight: 600;
@@ -830,7 +831,7 @@ const chatWithUser = async(r) => {
             }
 
             .calendar-accordion.open {
-              max-height: 205px;
+              max-height: 209px;
             }
 
             .calendar-content {
@@ -1059,7 +1060,7 @@ const chatWithUser = async(r) => {
           </div>
         </div>
          <div className="assign-title">
-          {get('Mng.menu.2.1')} ({filtered.length}건)
+          {get('Mng.menu.2.1')} ({filtered.length}){get('text.cnt.1')}
         </div>
         {loading ? (
           <div className="loading-message">{get('LOADING_RESERVATIONS')}</div>

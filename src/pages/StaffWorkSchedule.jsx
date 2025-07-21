@@ -29,12 +29,13 @@ const addDays = (dateString, days) => {
 
 const formatDateForDisplay = (dateString) => {
   const date = new Date(dateString);
-  const options = { 
-    month: 'short', 
-    day: 'numeric',
-    weekday: 'short'
-  };
-  return date.toLocaleDateString('ko-KR', options);
+
+  const month = date.getMonth() + 1; // 월은 0부터 시작
+  const day = date.getDate();
+
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'short' });
+
+  return `${month}/${day} (${weekday})`;
 };
 
 const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
@@ -43,6 +44,7 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
   
   const [schedules, setSchedules] = useState([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [isLoadingVenue, setIsLoadingVenue] = useState(true);
   const [triggerRefresh, setTriggerRefresh] = useState(false);
 
   // 달력 관련 상태 추가
@@ -52,6 +54,12 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
   const [calendarYear, setCalendarYear] = useState(dayjs().year());
   const [mondayStart, setMondayStart] = useState(false); // 내부에서만 제어
   const [currentWeek, setCurrentWeek] = useState(0); // 0: 현재주, -1: 이전주, 1: 다음주
+
+
+  // venue Info
+  const [venueData, setVenueData] = useState({});
+
+
   const calendarScrollRef = useRef(null);
   const today = dayjs();
 
@@ -127,6 +135,28 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
     setSelectedDate(getToday());
   };
 
+
+  useEffect(() => {
+    const fetchVenueData = async () => {
+      try {
+        setIsLoadingVenue(true);
+        if (user?.venue_id) {
+          const vd = await ApiClient.get('/api/getVenue', {
+            params: { venue_id: user.venue_id }
+          });
+          console.log('Venue data fetched:', vd);
+          setVenueData(vd);
+        }
+      } catch (error) {
+        console.error('Failed to fetch venue data:', error);
+      } finally {
+        setIsLoadingVenue(false);
+      }
+    };
+
+    fetchVenueData();
+  }, [user?.venue_id]);
+
   // 선택된 날짜를 찾아서 스크롤 위치 조정
   useEffect(() => {
     if (showCalendar && calendarScrollRef.current && calendarCells.length > 0) {
@@ -169,12 +199,18 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
     if (messages && Object.keys(messages).length > 0) {
       window.scrollTo(0, 0);
     }
-    fetchSchedules();
-  }, [messages, currentLang]);
+    // venueData가 로드된 후에만 스케줄을 가져옴
+    if (venueData && Object.keys(venueData).length > 0) {
+      fetchSchedules();
+    }
+  }, [messages, currentLang, venueData]);
 
   useEffect(() => {
-    fetchSchedules();
-  }, [user, currentLang, messages, triggerRefresh]);
+    // venueData가 로드된 후에만 스케줄을 가져옴
+    if (venueData && Object.keys(venueData).length > 0) {
+      fetchSchedules();
+    }
+  }, [user, currentLang, messages, triggerRefresh, venueData]);
 
   // 주차 계산 함수
   const getWeekDates = (weekOffset = 0, mondayStart = false) => {
@@ -395,6 +431,7 @@ const handleCreateSchedule = () => {
       navigateToPageWithData(PAGES.STAFF_SCHEDULE_CREATE, { 
         mode: 'create', 
         staff_id: user?.staff_id || user?.id,
+        venueData: venueData,
         start_date: selectedDate,
         scheduleData: weekScheduleData // 7일 전체 데이터
       });                       
@@ -759,9 +796,12 @@ const weekDates = getWeekDates(currentWeek, mondayStart);
       console.log('room_sn', room_sn);
     }
 
+
     navigateToPageWithData(PAGES.CHATTING, { 
       name : get('CHAT_ONE_ON_ONE_TITLE'),
       room_sn: room_sn,
+      send_to:'manager',
+      receiver_id: user.manager_id,
     });
   };
 
@@ -1408,7 +1448,7 @@ const weekDates = getWeekDates(currentWeek, mondayStart);
         }
 
         .calendar-accordion.open {
-          max-height: 205px;
+          max-height: 209px;
         }
 
         .calendar-content {
@@ -1668,6 +1708,36 @@ const weekDates = getWeekDates(currentWeek, mondayStart);
         onBack={goBack}
       />
       
+      {/* venueData 로딩 중일 때 표시 */}
+      {isLoadingVenue && (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '200px',
+          fontSize: '1.1rem',
+          color: '#666'
+        }}>
+          매장 정보를 불러오는 중... / Loading venue information...
+        </div>
+      )}
+      
+      {/* venueData가 로드되지 않았을 때 에러 표시 */}
+      {!isLoadingVenue && (!venueData || Object.keys(venueData).length === 0) && (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '200px',
+          fontSize: '1.1rem',
+          color: '#e74c3c'
+        }}>
+          매장 정보를 불러올 수 없습니다. / Failed to load venue information.
+        </div>
+      )}
+      
+      {/* venueData가 로드된 후에만 메인 컨텐츠 표시 */}
+      {!isLoadingVenue && venueData && Object.keys(venueData).length > 0 && (
       <div className="workschedule-container">
         {/* 날짜 필터 섹션 추가 */}
         <div className="date-filter-section">
@@ -1942,6 +2012,7 @@ const weekDates = getWeekDates(currentWeek, mondayStart);
           </SketchBtn>
         </div>
       </div>
+      )}
     </>
   );
 };

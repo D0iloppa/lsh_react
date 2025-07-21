@@ -218,10 +218,11 @@ const ManagerAccount = ({
               className={`logout`}
             />
         </div>
-                <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+                 <LoadingScreen
+            variant="cocktail"
+            subText="Loading..."
+            isVisible={isLoading}
+          />
         
 
       </div>

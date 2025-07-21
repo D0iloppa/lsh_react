@@ -8,6 +8,7 @@ import ApiClient from '@utils/ApiClient';
 import { useAuth } from '../contexts/AuthContext';
 import { Bell, CalendarCheck, MessageCircle, Popsicle, Martini } from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import LoadingScreen from '@components/LoadingScreen';
 
 const mockNotifications = [
   {
@@ -343,6 +344,11 @@ useEffect(() => {
           </div>
         )}
       </div>
+       <LoadingScreen
+            variant="cocktail"
+            subText="Loading..."
+            isVisible={isLoading}
+          />
     </>
   );
 };

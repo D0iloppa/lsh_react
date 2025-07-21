@@ -674,15 +674,15 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
 
         .reservation-count {
           z-index: 999;
-          top: -15px;
+          top: -14px;
           left: 15px;
           position: relative;
           background: #ef4444;
           color: white;
           border-radius: 50%;
           font-size: 0.9rem;
-          width: 1rem;
-          height: 1rem;
+          width: 1.2rem;
+          height: 1.2rem;
           justify-content: center;
           margin-top: 1px;
           font-weight: 600;

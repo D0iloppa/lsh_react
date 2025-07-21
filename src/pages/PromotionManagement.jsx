@@ -14,6 +14,7 @@ import { Filter, Star, Edit, Tag } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import LoadingScreen from '@components/LoadingScreen';
 
 const mockPromotions = [
   {

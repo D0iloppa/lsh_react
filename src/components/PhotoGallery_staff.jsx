@@ -364,11 +364,13 @@ const PhotoGallery = ({
         console.log('삭제 시도:', { imageUrl, contentId, fullscreenIndex });
 
         Swal.fire({
-          title: '삭제하시겠습니까?',
+          title: get('SWAL_GALLERY_DELETE'),
           icon: 'warning',
           showCancelButton: true,
           confirmButtonColor: '#3085d6',
           cancelButtonColor: '#d33',
+          confirmButtonText: get('STAFF_DELETE_BUTTON'),   // 확인 버튼 텍스트
+          cancelButtonText: get('Common.Cancel'),     // 취소 버튼 텍스트
           customClass: {
             popup: 'swal-zindex-10000'
           }

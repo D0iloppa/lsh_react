@@ -422,10 +422,11 @@ const BookingHistoryPage = ({
                         <HatchPattern opacity={0.4} />
                         {get('Profile1.1')}
                       </SketchBtn>
-                                      <LoadingScreen 
-        isVisible={isLoading} 
-        // loadingText="Loading" 
-/>
+                                       <LoadingScreen
+            variant="cocktail"
+            subText="Loading..."
+            isVisible={isLoading}
+          />
                     </div>
                   </div>
                 </div>

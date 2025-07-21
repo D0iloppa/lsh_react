@@ -6,6 +6,7 @@ import SketchDiv from '@components/SketchDiv';
 import SketchInput from '@components/SketchInput';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import '@components/SketchComponents.css';
+import LoadingScreen from '@components/LoadingScreen';
 
 import Swal from 'sweetalert2';
 
@@ -213,6 +214,11 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
             </div>
           </SketchDiv>
         </div>
+         <LoadingScreen
+            variant="cocktail"
+            subText="Loading..."
+            isVisible={isLoading}
+          />
     </>
   );
 };

@@ -20,6 +20,7 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [weekData, setWeekData] = useState([]);
   const [scheduleData, setScheduleData] = useState([]);
+  const [venueData, setVenueData] = useState({});
   const [weekInfo, setWeekInfo] = useState({
     monday_start: false,
     week_offset: 0,
@@ -27,20 +28,59 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
     week_dates: []
   });
 
+
+  const normalizeHour = (hourString) => {
+
+    
+    if (!hourString || typeof hourString !== 'string') {
+      return '';
+    }
+    
+    // "12:34:00" 형식에서 시간 부분만 추출
+    const timeMatch = hourString.match(/^(\d{1,2}):\d{2}:\d{2}$/);
+    if (timeMatch) {
+      const hour = timeMatch[1];
+      // 시간을 2자리로 패딩하고 ":00:00" 추가
+      return `${hour.padStart(2, '0')}:00:00`;
+    }
+    
+    // 다른 형식의 시간 문자열도 처리 (예: "12:34")
+    const simpleTimeMatch = hourString.match(/^(\d{1,2}):\d{2}$/);
+    if (simpleTimeMatch) {
+      const hour = simpleTimeMatch[1];
+      return `${hour.padStart(2, '0')}:00:00`;
+    }
+    
+    return '';
+  }
+
   useEffect(() => {
     window.scrollTo(0, 0);
     if (messages && Object.keys(messages).length > 0) {
       window.scrollTo(0, 0);
     }
 
-    const {mode, staff_id, start_date, scheduleData: initialScheduleData} = otherProps;
+    const {mode, staff_id, start_date, scheduleData: initialScheduleData, venueData:vd} = otherProps;
 
+    console.log('staff-work-vd', vd);
     console.log('pageData', mode, staff_id, start_date, initialScheduleData);
 
     // scheduleData가 있으면 초기 데이터로 설정
     if (initialScheduleData && Array.isArray(initialScheduleData)) {
-      setScheduleData(initialScheduleData);
-      setWeekData(initialScheduleData); // 원본 데이터를 그대로 사용
+
+
+      console.log('todo', initialScheduleData);
+
+       // venueData의 시간을 기본값으로 사용하여 데이터 보완
+       const enhancedScheduleData = initialScheduleData.map(item => ({
+        ...item,
+        start_time: item.start_time || normalizeHour(vd?.open_time) || '',
+        end_time: item.end_time || normalizeHour(vd?.close_time) || ''
+      }));
+
+
+      setScheduleData(enhancedScheduleData);
+      setWeekData(enhancedScheduleData); // 원본 데이터를 그대로 사용
       setIsLoadingData(false);
     } else {
       // scheduleData가 없으면 빈 배열로 초기화
@@ -48,6 +88,8 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
       setWeekData([]);
       setIsLoadingData(false);
     }
+
+    setVenueData(vd);
   }, [messages, currentLang, pageData]);
 
   // 날짜 포맷팅
@@ -137,6 +179,11 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
     const today = new Date().toISOString().split('T')[0];
     return dateString >= today;
   };
+
+
+  
+
+
 
   return (
     <>
@@ -324,9 +371,20 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
                   <div className="week-hours">
                     <div style={{marginLeft:'0.6rem', display:'flex',alignItems:'center'}}>
                       <span className="hours-label">{get('schedule.hours.label')}</span>
-                      <select 
-                        value={dayData?.start_time || ''} 
-                         onChange={e => {
+                        <select 
+                            value={(() => {
+                            console.log('=== 디버그 정보 ===');
+                            console.log('dayData:', dayData);
+                            console.log('dayData.start_time:', dayData?.start_time);
+                            console.log('venueData:', venueData);
+                            console.log('venueData.open_time:', venueData?.open_time);
+                            console.log('normalizeHour 결과:', normalizeHour(venueData?.open_time));
+                            const result = dayData?.start_time || normalizeHour(venueData?.open_time);
+                            console.log('최종 value:', result);
+                            console.log('==================');
+                            return result;
+                          })()}
+                          onChange={e => {
                           // 과거 날짜는 수정 불가
                           if (isPast) {
                             Swal.fire({
@@ -354,7 +412,7 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
                     <div style={{marginLeft:'6.2rem', display:'flex',alignItems:'center'}}>
                       <span className="to-label">{get('schedule.time.to')}</span>
                       <select 
-                          value={dayData?.end_time || ''} 
+                          value={dayData?.end_time || normalizeHour(venueData?.close_time)} 
                           onChange={e => {
                             // 과거 날짜는 수정 불가
                             if (isPast) {
