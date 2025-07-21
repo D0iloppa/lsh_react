@@ -192,19 +192,6 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           title={
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span>{get('Menu1.2')}</span>
-              {!isLoadingAvailCnt && (
-                <span
-                  style={{
-                    backgroundColor: availCnt > 0 ? 'rgb(11, 199, 97)' : 'rgb(107, 107, 107)',
-                    color: 'white',
-                    padding: '2px 6px',
-                    borderRadius: '3px',
-                    fontSize: '10px',
-                  }}
-                >
-                  {availCnt > 0 ? get('DiscoverPage1.1.able') : get('DiscoverPage1.1.disable')}
-                </span>
-              )}
             </div>
           }
           showBack={true}
@@ -249,21 +236,6 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           <div className="staff-description">
             {girl.description || 'No description available.'}
           </div>
-        </div>
-
-        <div className="booking-form-section">
-          <SketchBtn
-            className="sketch-button enter-button"
-            variant="event"
-            style={{ display: 'block' }}
-            disabled={availCnt <= 0}
-            onClick={handleReserve}
-          >
-            <HatchPattern opacity={0.8} />
-            {availCnt > 0
-              ? get('DiscoverPage1.1') || '예약하기'
-              : get('DiscoverPage1.1.disable') || '예약 마감'}
-          </SketchBtn>
         </div>
 
         <LoadingScreen
