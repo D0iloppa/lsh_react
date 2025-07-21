@@ -33,21 +33,26 @@ import HatchPattern from '@components/HatchPattern';
 
 import PurchasePage from '@components/PurchasePage';
 
-
+import Swal from 'sweetalert2';
 
 
 const AppRoutes = () => {
-  const { isLoggedIn } = useAuth();
+  const { deviceLogin, isLoggedIn } = useAuth();
   const { currentLang, messages } = useMsg();
 
+
     useEffect(() => {
-    // body에 현재 언어 속성 추가
-    document.body.setAttribute('data-lang', currentLang);
-    
-    // 또는 클래스 방식
-    document.body.classList.remove('lang-en', 'lang-ko', 'lang-ja', 'lang-zh', 'lang-cn');
-    document.body.classList.add(`lang-${currentLang}`);
-  }, [currentLang]);
+      deviceLogin();
+    }, [deviceLogin]);
+
+    useEffect(() => {
+      // body에 현재 언어 속성 추가
+      document.body.setAttribute('data-lang', currentLang);
+      
+      // 또는 클래스 방식
+      document.body.classList.remove('lang-en', 'lang-ko', 'lang-ja', 'lang-zh', 'lang-cn');
+      document.body.classList.add(`lang-${currentLang}`);
+    }, [currentLang]);
 
   const navigate = useNavigate();
 
@@ -636,18 +641,6 @@ const AppContent = () => {
       delete window.receiveFcmToken;
     };
   }, [setFcmToken]);
-
-
-   useEffect(() => {
-    // 최초 1회 호출
-    console.log("✅ 최초 로딩됨 - 초기화 작업 수행");
-    initSomething();
-  }, []);
-
-  const initSomething = () => {
-    // 원하는 초기화 작업
-    console.log("🎯 초기화 함수 실행됨!");
-    // 예: API 호출, 상태 초기화, 로그 기록 등
 
   return (
     <Router basename={import.meta.env.BASE_URL}>

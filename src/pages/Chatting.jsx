@@ -1177,6 +1177,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           color: #6b7280;
           font-size: 0.875rem;
         }
+
+        .content-area{padding-bottom: 10px;}
       `}</style>
 
       <div className="chat-container">

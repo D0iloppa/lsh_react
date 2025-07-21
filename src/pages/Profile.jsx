@@ -484,7 +484,7 @@ const deleteReview = async (reviewId) => {
             </div>
               <div className="profile-details">
                 <h2>{userInfo?.nickname || get('PROFILE_NO_NICKNAME')}</h2>
-                <p>{userInfo?.email || get('PROFILE_NO_EMAIL')}</p>
+                {/*<p>{userInfo?.email || get('PROFILE_NO_EMAIL')}</p>*/}
                 <p>{userInfo?.created_at
                   ? `${get('PROFILE_MEMBER_SINCE')} ${new Date(userInfo.created_at).toLocaleString('en-US', {
                       year: 'numeric',

@@ -173,7 +173,8 @@ useEffect(() => {
       try {
         await ApiClient.get('/api/userDelete', {
           params: { 
-            user_id: user?.user_id
+            user_id: user?.user_id,
+            action: 'force'
           }
         });
 
@@ -330,6 +331,7 @@ useEffect(() => {
               />
             ))}
 
+            {/*
             <SketchMenuBtn
               key="logout"
               icon={<LogOut size={20} />}
@@ -353,6 +355,7 @@ useEffect(() => {
               }}
               className="logout"
             />
+            */}
 
             <div className="delete-container">
               <div className="staff-delete" onClick={handleDelete}>

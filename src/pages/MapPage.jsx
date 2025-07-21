@@ -238,7 +238,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
 
         /* 마스킹 콘텐츠 스타일 */
         .masked-content-wrapper {
-          display: flex;
+          display: flex !important;
           flex-wrap: wrap;
           align-items: center;
           gap: 8px;

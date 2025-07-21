@@ -114,6 +114,6 @@ body[data-lang="vi"] .center-section {
 body[data-lang="vi"] .popup-footer .popup-btn{letter-spacing: -1px;}
 body[data-lang="vi"] .scroll-up-btn {bottom: 115px !important;}
 body[data-lang="vi"] .bottom-map-section{bottom: 115px !important}
-body[data-lang="vi"] .is-reservation{height: 18px !important}
 body[data-lang="vi"] .daily-stats{letter-spacing: -1px;}
 body[data-lang="vi"] .reservation-footer-content button.sketch-button:nth-of-type(2){letter-spacing: -1px; width: 95px !important; height: 41px !important; margin-top: 7px !important; margin-left: -49px !important;}
+body[data-lang="vi"] .is-reservation {right: -110px !important; font-size: 0.7rem; height: auto !important;}
