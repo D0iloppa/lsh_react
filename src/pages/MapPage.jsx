@@ -10,7 +10,7 @@ import SketchHeader from '@components/SketchHeaderMain'
 
 import { useMsg } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
-import { Users, Star, Heart, ArrowRight, Clock, MapPin, CreditCard } from 'lucide-react';
+import { Users, Star, Heart, ArrowRight, Clock, MapPin, CreditCard, Phone } from 'lucide-react';
 
 const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithData, PAGES, goBack, onSearch = () => {}, initialKeyword = '' }) => {
   const [searchQuery, setSearchQuery] = useState(initialKeyword);
@@ -244,8 +244,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
           gap: 8px;
           width: 100%;
           min-height: 24px;
-          max-width: 100%;
-          overflow: hidden;
+         
         }
         
         .visible-text {
@@ -274,13 +273,13 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
           left: 0;
           width: 100%;
           height: 100%;
-          background: linear-gradient(
-            45deg,
-            transparent,
-            rgba(255, 255, 255, 0.6),
-            transparent
-          );
-          animation: shimmer 2.5s infinite;
+          // background: linear-gradient(
+          //   45deg,
+          //   transparent,
+          //   rgba(255, 255, 255, 0.6),
+          //   transparent
+          // );
+          // animation: shimmer 2.5s infinite;
           z-index: 1;
           pointer-events: none;
           border-radius: 6px;
@@ -306,7 +305,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
         
         .daily-pass-btn {
           color: #c9980e;
-          background: rgba(255, 255, 255, 0.8);
+          background: rgba(255, 222, 75, 0.8);
           border: 1px solid rgba(201, 152, 14, 0.4);
           border-radius: 4px;
           padding: 2px 6px;
@@ -322,10 +321,11 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
           align-items: center;
           justify-content: center;
           min-width: 80px;
+              margin-left: 0.2rem;
         }
         
         .daily-pass-btn:hover {
-          background: rgba(255, 255, 255, 0.9);
+          // background: rgba(255, 255, 255, 0.9);
           transform: translateY(-1px);
           box-shadow: 0 2px 4px rgba(201, 152, 14, 0.3);
         }
@@ -488,12 +488,15 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
                       <div style={{ flex: '1' }}>
                         <div className="venue-name">{venue.name}</div>
                         <div className="venue-details">
-                          📜 {renderMaskedContent(venue.address, venue.isActiveUser)}
+                          <MapPin size={12}/> {renderMaskedContent(venue.address, venue.isActiveUser)}
                         </div>
                         <div className="venue-details">
-                          📞 {renderMaskedContent(venue.phone, venue.isActiveUser)}
+                          <Phone size={12} style={{ marginRight: '4px' }} />
+                          {venue.phone
+                            ? renderMaskedContent(venue.phone, venue.isActiveUser)
+                            : '-'}
                         </div>
-                        <div className="venue-details">👥 {venue.staff_cnt} / ⭐{venue.rating}/5</div>
+                        <div className="venue-details"><Users size={12}/> {venue.staff_cnt} / <Star size={12}/>{venue.rating}/5</div>
                       </div>
                       <div
                         style={{

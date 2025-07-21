@@ -171,14 +171,14 @@ const iauMasking = (iau, text, onPurchaseClick) => {
             left: 0;
             width: 100%;
             height: 50%;
-            background: linear-gradient(
-              45deg,
-              transparent,
-              rgba(255, 255, 255, 0.4),
-              transparent
-            );
+            // background: linear-gradient(
+            //   45deg,
+            //   transparent,
+            //   rgba(255, 255, 255, 0.4),
+            //   transparent
+            // );
             transform: rotate(45deg);
-            animation: shimmer 2.5s infinite;
+            // animation: shimmer 2.5s infinite;
             z-index: 1;
           }
           
@@ -200,6 +200,7 @@ const iauMasking = (iau, text, onPurchaseClick) => {
           
           .daily-pass-btn {
             color: #c9980e;
+            background: rgba(255, 222, 75, 0.8);
             border: none;
             border-radius: 6px;
             padding: 4px 10px;
@@ -210,12 +211,13 @@ const iauMasking = (iau, text, onPurchaseClick) => {
             white-space: nowrap;
             position: relative;
             z-index: 2;
-            background: rgba(255, 255, 255, 0.2) url('/cdn/ticket.png') center/cover no-repeat;
+            // background: rgba(255, 255, 255, 0.2) url('/cdn/ticket.png') center/cover no-repeat;
+            margin-left: 0.2rem;
           }
           
-          .daily-pass-btn:hover {
-            background: rgba(255, 255, 255, 0.3) url('/cdn/ticket.png') center/cover no-repeat;
-          }
+          // .daily-pass-btn:hover {
+          //   background: rgba(255, 255, 255, 0.3) url('/cdn/ticket.png') center/cover no-repeat;
+          // }
           
           .daily-pass-btn:active {
             transform: translateY(0);

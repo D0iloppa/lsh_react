@@ -142,7 +142,7 @@ const PopupModal = ({ popup, onClose, navigateToPageWithData, PAGES }) => {
 
   // 오늘 하루 탭 콘텐츠
   const getTodayContent = () => ({
-    title: get('Popup.Today.Title') || '오늘 하루, 프리미엄 혜택을 모두 누려보세요! 단, 단 하루 $9.9로!',
+    title: get('Popup.Today.Title') || '오늘 하루, 프리미엄 혜택을 모두 누려보세요! 단, 단 하루 $9.99로!',
     //description: get('Popup.Today.Description') || '정회원 가입 없이도 간편하게 프리미엄 일일권을 구매하고 모든 서비스를 체험해 보세요.',
     features: [
       get('Popup.Today.Benefit1'),
@@ -163,7 +163,7 @@ const PopupModal = ({ popup, onClose, navigateToPageWithData, PAGES }) => {
         onClick: onClose
       }
     ],
-    notice: get('Popup.Today.Notice') || '본 혜택은 오늘 하루에만 제공되는 한정 혜택입니다. * 가격: $9.9 / 1일 이용권'
+    notice: get('Popup.Today.Notice') || '본 혜택은 오늘 하루에만 제공되는 한정 혜택입니다. * 가격: $9.99 / 1일 이용권'
   });
 
   // 탭별 콘텐츠 가져오기

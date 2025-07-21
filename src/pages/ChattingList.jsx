@@ -169,7 +169,6 @@ useEffect(() => {
         .staff-list {
           display: flex;
           flex-direction: column;
-          gap: 0.7rem;
           padding: 1rem;
         }
         .staff-card {

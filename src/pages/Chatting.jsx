@@ -119,6 +119,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const nickname = user?.name;
   const venue_id = user?.venue_id;
 
+  console.log("user", user)
+
   const { initType = 'chat' } = otherProps;
 
   // otherProps의 핵심 값들을 메모이제이션
@@ -855,6 +857,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       send_to: 'manager',
       receiver_id: receiverId
     };
+
+    console.log("chatData", chatData)
 
     setTimeout(() => {
       scrollToBottom('auto');

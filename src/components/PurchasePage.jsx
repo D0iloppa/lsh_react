@@ -52,55 +52,106 @@ const PurchasePage = ({  goBack}) => {
 
     
     // 인앱 결제 요청
-    const payload = JSON.stringify({ action: 'buyItem' });
+    const payload = 'buyItem';
 
-    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.buyItem) {
-      // iOS WebView
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.native) {
+      // ✅ iOS WebView
       console.log('📱 iOS 인앱 결제 요청');
-      window.webkit.messageHandlers.buyItem.postMessage(null);
+
+    
+      window.webkit.messageHandlers.native.postMessage(payload);
+      
     } else if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-      // Android WebView
+      // ✅ Android WebView
       console.log('🤖 Android 인앱 결제 요청');
       window.ReactNativeWebView.postMessage(payload);
+
     } else {
       console.warn('⚠️ 웹뷰 환경이 아님 - 인앱 결제 불가');
-      alert('인앱 결제가 지원되지 않는 환경입니다.');
+      //alert('인앱 결제가 지원되지 않는 환경입니다.');
+
+      Swal.fire({
+          title: get('daily.pass.notice.title'),
+          text: get('in.app.purchase.not.supported'),
+          icon: 'success',
+          confirmButtonText: get('Common.Confirm')
+        })
     }
-      
 
-    setIsProcessing(true);
-
-    // try {
-    //   const response = await ApiClient.postForm('/api/buyCoupon', {
-    //     user_id: user.user_id
-    //   });
-
-    //   const { success = false } = response;
-
-    //   if (success) {
-    //     Swal.fire({
-    //       title: get('SWAL_DAILY_TICKET_SUCCESS_TITLE'),
-    //       text: get('SWAL_DAILY_TICKET_SUCCESS_TEXT'),
-    //       icon: 'success',
-    //       confirmButtonText: '확인'
-    //     }).then(() => {
-    //       navigate('/main');
-    //     });
-    //   } else {
-    //     throw new Error('구매 실패');
-    //   }
-    // } catch (error) {
-    //   console.error('❌ 일일권 구매 실패:', error);
-    //   Swal.fire({
-    //     title: '구매 실패',
-    //     text: '일일권 구매에 실패했습니다. 다시 시도해주세요.',
-    //     icon: 'error',
-    //     confirmButtonText: '확인'
-    //   });
-    // } finally {
-    //   setIsProcessing(false);
-    // }
+    
   };
+
+  useEffect(() => {
+  const handleMessage = async(event) => {
+
+    if (event.data === 'purchaseSuccess') {
+      console.log('✅ 결제 성공 메시지 수신');
+      // Swal.fire({
+      //   title: get('Menu1.7'),
+      //   text: get('daily.pass.payment.success.message'),
+      //   icon: 'success',
+      //   confirmButtonText: get('Common.Confirm')
+      // });
+
+      setIsProcessing(true);
+
+    try {
+      const response = await ApiClient.postForm('/api/buyCoupon', {
+        user_id: user.user_id
+      });
+
+      const { success = false } = response;
+
+      if (success) {
+        Swal.fire({
+          title: get('SWAL_DAILY_TICKET_SUCCESS_TITLE'),
+          text: get('SWAL_DAILY_TICKET_SUCCESS_TEXT'),
+          icon: 'success',
+          confirmButtonText: get('Common.Confirm')
+        }).then(() => {
+          navigate('/main');
+        });
+      } else {
+        throw new Error('구매 실패');
+      }
+    } catch (error) {
+      console.error('❌ 일일권 구매 실패:', error);
+      Swal.fire({
+        title: get('daily.pass.purchase.fail.title'),
+        text: get('daily.pass.purchase.fail.text'),
+        icon: 'error',
+        confirmButtonText: get('Common.Confirm')
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+
+    } else if (event.data === 'purchaseCancelled') {
+      Swal.fire({
+        title: get('daily.pass.payment.cancel.title'),
+        text: get('daily.pass.payment.cancel.text'),
+        icon: 'info',
+        confirmButtonText: get('Common.Confirm')
+      });
+      setIsProcessing(false);
+    } else {
+      Swal.fire({
+        title: get('daily.pass.payment.fail.title'),
+        text: get('daily.pass.payment.fail.text'),
+        icon: 'success',
+        confirmButtonText: get('Common.Confirm')
+      });
+      setIsProcessing(false);
+    }
+  };
+
+  window.addEventListener('message', handleMessage);
+
+  return () => {
+    window.removeEventListener('message', handleMessage);
+  };
+}, []);
+
 
     const handleBack = () => {
     navigate(-1); // 브라우저 히스토리 뒤로가기
@@ -109,12 +160,12 @@ const PurchasePage = ({  goBack}) => {
 
   // 일일권 혜택 목록
   const dailyBenefits = [
-    get('Popup.Today.Benefit1') || '무제한 매장 정보 열람',
-    get('Popup.Today.Benefit2') || '무제한 예약 기능',
-    get('Popup.Today.Benefit3') || '에스코트 리뷰 열람',
-    get('Popup.Today.Benefit4') || '광고 없는 깔끔한 화면',
-    get('Popup.Today.Benefit5') || '프리미엄 매장 우선 노출',
-    get('Popup.Today.Benefit6') || '24시간 고객 지원'
+    get('Popup.Today.Benefit1'),
+    get('Popup.Today.Benefit2'),
+    get('Popup.Today.Benefit3'),
+    get('Popup.Today.Benefit4'),
+    get('Popup.Today.Benefit5'),
+    get('Popup.Today.Benefit6')
   ];
 
   return (
@@ -376,12 +427,12 @@ const PurchasePage = ({  goBack}) => {
               <div className="shimmer"></div>
               <div className="plan-badge">
                 <Zap size={16} />
-                오늘 하루 이용권
+                {get('daily.pass.badge.title')}
               </div>
               
               <div className="price-section">
-                <h2 className="price">$9.9</h2>
-                <p className="price-period">/ 1일</p>
+                <h2 className="price">$9.99</h2>
+                <p className="price-period">{get('daily.pass.price.period')}</p>
               </div>
             </div>
 
@@ -389,7 +440,7 @@ const PurchasePage = ({  goBack}) => {
             <div className="card-body">
               <div className="benefits-title">
                 <Star size={20} fill="#fbbf24" color="#fbbf24" />
-                포함된 혜택
+                {get('daily.pass.benefits.title')}
                 <Star size={20} fill="#fbbf24" color="#fbbf24" />
               </div>
 
@@ -408,14 +459,14 @@ const PurchasePage = ({  goBack}) => {
                 onClick={handleDailyPurchase}
                 disabled={isProcessing}
               >
-                {isProcessing ? '처리 중...' : '지금 구매하기'}
+                {isProcessing ? get('daily.pass.processing') : get('daily.pass.purchase.button')}
               </button>
 
               {/* 안내 사항 */}
               <div className="notice-section">
-                <strong>안내사항:</strong><br />
-                • 일일권은 구매 시점부터 24시간 동안 유효합니다.<br />
-                • 모든 혜택은 즉시 적용됩니다.
+                <strong>{get('daily.pass.notice.title')}</strong><br />
+                • {get('daily.pass.notice.validity')}<br />
+                • {get('daily.pass.notice.immediate')}
               </div>
             </div>
           </div>
