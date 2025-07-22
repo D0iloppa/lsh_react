@@ -129,10 +129,14 @@ const AppRoutes = () => {
         element={
           isCompletedTuto() ? 
             <Navigate to="/" replace /> : 
-            <StaffTuto1 />
+            <StaffTuto1 
+              navigateToPageWithData={(page, data) => navigate(page, { state: data })}
+              PAGES={{ STAFF_EDIT_PROFILE: '/staffSetting' }}
+              user={user}
+            />
         } 
       />
-
+      
       <Route 
         path="/venueSetup" 
         element={

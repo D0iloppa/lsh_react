@@ -11,7 +11,7 @@ import LoadingScreen from '@components/LoadingScreen';
 import { AlertTriangle} from 'lucide-react';
 
 
-const StaffTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES}) => {
+const StaffTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES, user}) => {
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const navigate = useNavigate();
 
@@ -26,7 +26,9 @@ const StaffTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES}) => {
 
 
    const handleEnterVenueInfo = () => {
-      navigate('/staffSetting', { state: { from: 'staffTuto' } });
+
+    //navigateToPageWithData(PAGES.STAFF_EDIT_PROFILE, { staffId: user?.id });
+    navigate('/staffSetting', { state: { from: 'staffTuto' } });
   };
 
   const handleRemindLater = () => {
