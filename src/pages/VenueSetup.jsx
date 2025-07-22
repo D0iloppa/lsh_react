@@ -598,7 +598,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     setForm(updatedForm); // 폼 상태도 업데이트 (필요 시)
     
     // formRef도 함께 업데이트
-    Object.assign(formRef.current, updatedForm);
+    //Object.assign(formRef.current, updatedForm);
     
     // venue 수정 데이터 준비 (formRef에서 읽어오기)
     const venueData = {
@@ -637,6 +637,8 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     }
 
 
+
+    console.log('update!!', venueData, formRef.current);
 
     const updateResponse = await ApiClient.postForm('/api/venueEdit', venueData);
 
