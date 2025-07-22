@@ -32,13 +32,7 @@ const StaffApp = () => {
 
 
 
-    useEffect(() => {
-        window.scrollTo(0, 0);
-        if (messages && Object.keys(messages).length > 0) {
-                window.scrollTo(0, 0);
-              }
     
-      }, [messages, currentLang]);
 
     const {
         currentPage,
@@ -64,6 +58,22 @@ const StaffApp = () => {
         goBack,
         PAGES
     };
+
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+
+        if ( user.profile_content_id == 0 ) {
+            navigateToPageWithData(PAGES.STAFFTUTO1, { staffId: user?.id });
+        }
+        
+
+        if (messages && Object.keys(messages).length > 0) {
+                window.scrollTo(0, 0);
+              }
+    
+      }, [messages, currentLang]);
+
 
     const processedQueryRef = useRef(false);
     const lastProcessedQuery = useRef('');

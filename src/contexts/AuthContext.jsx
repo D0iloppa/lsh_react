@@ -35,6 +35,13 @@ export const AuthProvider = ({ children }) => {
 
 
   const [loading, setLoading] = useState(false);
+  const [isJustLoggedIn, setIsJustLoggedIn] = useState(true);
+
+
+  const clearJustLoggedInFlag = () =>{
+      setIsJustLoggedIn(false);
+  };
+
 
 
   // 사용자 정보 업데이트 함수
@@ -86,6 +93,7 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('accountType', params.account_type);
 
           setIsLoggedIn(true);
+          setIsJustLoggedIn(true);
           setUser(result.user);
           setLoginType(params.login_type);
           setAccountType(params.account_type);
@@ -201,7 +209,9 @@ export const AuthProvider = ({ children }) => {
     updateUserLang,
     updateUser,      // 추가
     updateVenueId,    // 추가
-    isCompletedTuto
+    isCompletedTuto,
+    isJustLoggedIn,
+    clearJustLoggedInFlag
   };
 
   return (

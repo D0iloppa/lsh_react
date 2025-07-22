@@ -27,12 +27,12 @@ const StaffTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES, user}) => {
 
    const handleEnterVenueInfo = () => {
 
-    //navigateToPageWithData(PAGES.STAFF_EDIT_PROFILE, { staffId: user?.id });
-    navigate('/staffSetting', { state: { from: 'staffTuto' } });
+    navigateToPageWithData(PAGES.STAFF_EDIT_PROFILE, { staffId: user?.id });
+    //navigate('/staffSetting', { state: { from: 'staffTuto' } });
   };
 
   const handleRemindLater = () => {
-    navigate('/');
+    navigateToPageWithData(PAGES.STAFF_HOME);
   };
 
   return (

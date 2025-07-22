@@ -94,6 +94,9 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     // 메뉴판 이미지 목록 조회
     getMenuImages: async () => {
       try {
+        
+        if(!venueId) return [];
+        
         const response = await ApiClient.getVenueMenuList(venueId);
         return response.menuList || [];
       } catch (error) {

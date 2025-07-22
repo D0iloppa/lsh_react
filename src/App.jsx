@@ -123,20 +123,6 @@ const AppRoutes = () => {
           isLoggedIn ? <VenueTuto1 /> : <Navigate to="/login" replace />
         } 
       />
-
-      <Route 
-        path="/staffTuto" 
-        element={
-          isCompletedTuto() ? 
-            <Navigate to="/" replace /> : 
-            <StaffTuto1 
-              navigateToPageWithData={(page, data) => navigate(page, { state: data })}
-              PAGES={{ STAFF_EDIT_PROFILE: '/staffSetting' }}
-              user={user}
-            />
-        } 
-      />
-      
       <Route 
         path="/venueSetup" 
         element={

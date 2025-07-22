@@ -12,6 +12,7 @@ import ApiClient from '@utils/ApiClient';
 import { useFcm } from '@contexts/FcmContext';
 import Swal from 'sweetalert2';
 import LoadingScreen from '@components/LoadingScreen';
+import { useLocation } from 'react-router-dom';
 
 const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
 
@@ -50,6 +51,10 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
     </div>
   );
 };
+
+const location = useLocation();
+const fromLogin = location.state?.fromLogin || false;
+
   
 const fetchNotificationCounts = async () => {
     try {

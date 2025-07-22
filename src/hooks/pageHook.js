@@ -103,23 +103,29 @@ const usePageNavigation = () => {
 
     // 뒤로가기
     const goBack = () => {
-
-      console.log('pageHistory', pageHistory);
-
-
         if (pageHistory.length > 1) {
-            const newHistory = pageHistory.slice(0, -1);
-            const previousPage = newHistory[newHistory.length - 1];
-            
+            let newHistory = pageHistory.slice(0, -1); // 일단 한 단계 뒤로
+            let previousPage = newHistory[newHistory.length - 1];
+
+            // 만약 뒤로 간 페이지가 StaffTuto1이면 한 번 더 뒤로
+            if (previousPage === 'STAFFTUTO1' && newHistory.length > 1) {
+                previousPage = newHistory[0]; // 첫 페이지로 설정
+                newHistory = [newHistory[0]]; // 히스토리도 첫 페이지만 남김
+            }
+
+            console.log('3333', previousPage);
+            console.log('3333', newHistory);
+
             setCurrentPage(previousPage);
             setPageHistory(newHistory);
-            
+
             // 현재 페이지 데이터 제거
-            setPageDataStack(prev => 
-                prev.filter(entry => entry.page !== currentPage)
+            setPageDataStack(prev =>
+            prev.filter(entry => entry.page !== currentPage)
             );
         }
     };
+
 
     // 빠른 네비게이션 함수들
     const navigateToMap = (data = {}) => {

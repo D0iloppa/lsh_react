@@ -40,6 +40,8 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
   // setStatus가 props로 전달된다고 가정 (없으면 주석처리)
   // const { setStatus } = props;
 
+  const [isJustLoggedIn, setIsJustLoggedIn] = useState(false);
+  
   const { login, user, loading, setLoginType: setAuthLoginType } = useAuth(); // ← AuthContext의 setLoginType 추가
   const navigate = useNavigate();
 
@@ -98,25 +100,25 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
         if (!venueId || venueId == 0 || venueId == null) {
           // venue_id가 null, 0, 또는 없으면 튜토리얼로 이동
 
-
-
-
-
-
-
-
-
-
-
-
           navigate('/managerTuto');
         } else {
           // venue_id가 있으면 메인으로 이동
           navigate('/manager');
         }
       } else if (accountType === 'staff') {
+        setIsJustLoggedIn(true);
+        navigate('/staff');
+        //navigate('/staff?navigateTo=STAFFTUTO1&&chatRoomType=staff');
+        //navigate('/staff?navigateTo=CHATTING&room_sn=48&name=DORIS&chatRoomType=staff');
 
-        navigate('/staffTuto');
+        
+        //navigate('/staff', { state: { isJustLoggedIn: true } });
+        //navigate('/staff?navigateTo=STAFF_EDIT_PROFILE&chatRoomType=staff');
+
+        //navigate(`();
+        //navigate('/manager?navigateTo=STAFFTUTO1&room_sn=48&name=DORIS&chatRoomType=manager');
+        //
+        //navigate('/staff', { state: { initial: true } });
 
         
       } else {

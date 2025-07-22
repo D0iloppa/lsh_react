@@ -32,6 +32,7 @@ import Chatting from '@pages/Chatting';
 import ChattingList from '@pages/ChattingList';
 
 
+
 //////////////////////////
 
 
@@ -68,7 +69,7 @@ import StaffSetting from '@pages/StaffSetting';
 import NotificationCenter_staff from '@pages/NotificationCenter_staff';
 import StaffChat from '@pages/ChattingStaff';
 
-
+import StaffTuto1 from '@components/Welcome/StaffTuto1';
 
 // 페이지 상수
 export const PAGES = {
@@ -124,7 +125,8 @@ export const PAGES = {
     STAFF_EDIT_PROFILE: 'STAFF_EDIT_PROFILE',
     NOTIFICATION_CENTER_STAFF: 'NOTIFICATION_CENTER_STAFF',
     DISCOVERVENUE: 'DiscoverPageVenue',
-    STAFFCHAT : 'StaffChat'
+    STAFFCHAT : 'StaffChat',
+    STAFFTUTO1:'STAFFTUTO1'
 };
 
 // 페이지 컴포넌트 매핑
@@ -176,7 +178,8 @@ export const PAGE_COMPONENTS = {
     [PAGES.CHATTINGLIST]: ChattingList,
     [PAGES.NOTIFICATION_CENTER_STAFF]: NotificationCenter_staff,
     [PAGES.DISCOVERVENUE]: DiscoverPageVenue,
-    [PAGES.STAFFCHAT] : StaffChat
+    [PAGES.STAFFCHAT] : StaffChat,
+    [PAGES.STAFFTUTO1] : StaffTuto1
 };
 
 // 기본 페이지
