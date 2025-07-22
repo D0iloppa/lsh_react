@@ -255,10 +255,10 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const registerReader = async (roomSn) => {
     try {
       const response = await ApiClient.postForm('/api/registerReader', {
-        target_table: user.type === 'manager' ? 'ManagerChat' : 'StaffChat',
+        target_table: 'StaffChat',
         target_id: roomSn,
         reader_type: user.type,
-        reader_id: user.type === 'manager' ? user.manager_id : user.staff_id
+        reader_id: user.staff_id
       });
 
       console.log('✅ registerReader 성공:', response);
@@ -756,6 +756,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
       const newMessages = basicMessages;
 
+      console.log("2222", isInitial);
       if (isInitial) {
         // 초기 로딩: 최신 메시지 10개 (내림차순으로 정렬하여 최신이 맨 아래에 오도록)
         const sortedMessages = [...newMessages].sort((a, b) => b.chat_sn - a.chat_sn).reverse();
@@ -954,9 +955,12 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
     if (room_sn) {
       // 상태 초기화
-      setRoomSn(room_sn);
       setChatMessages([]);
       setHasMoreOlder(true);
+
+      console.log('2222', 'room_sn초기화');
+      setRoomSn(room_sn);
+      
       setIsInitialLoad(true);
       lastChatSnRef.current = null;
 
@@ -992,9 +996,9 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
   const handleMessageSend = useCallback(async (message) => {
     const {type} = user;
-    let login_id = (type=='staff') ? user.staff_id : user.manager_id;
-    let receiver_id = (type=='staff') ? user.manager_id : user.staff_id;
-    let send_to =  (type=='staff') ? 'manager' : 'staff'
+    let login_id = user.staff_id;
+    let receiver_id = user.manager_id;
+    let send_to = 'manager';
      
     send_to = memoizedProps.send_to || sendTo;
 
@@ -1061,7 +1065,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     console.log('이미지 전송 ^_T', room_sn, content_id, sendTo, receiverId);
 
     const {type} = user;
-    let login_id = (type=='staff') ? user.staff_id : user.manager_id;
+    let login_id = user.staff_id;
 
     
     insertChattingData({
@@ -1143,7 +1147,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     console.log('reservationCardData send!', reservationCardData, params);
 
     const {type} = user;
-    let login_id = (type=='staff') ? user.staff_id : user.manager_id;
+    let login_id = user.staff_id;
 
     
     console.log("1111=1", user.type);

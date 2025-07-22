@@ -48,12 +48,25 @@ const StaffWorkSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ..
   const [triggerRefresh, setTriggerRefresh] = useState(false);
 
   // 달력 관련 상태 추가
-  const [selectedDate, setSelectedDate] = useState(getToday());
+  //const [selectedDate, setSelectedDate] = useState(getToday());
+
+  const [selectedDate, setSelectedDate] = useState(() => {
+  if (otherProps?.previous_cont) {
+    // previous_cont가 YYYY-MM-DD 형식인지 확인하고 반환
+    const isValid = dayjs(otherProps.previous_cont, 'YYYY-MM-DD', true).isValid();
+    return isValid ? otherProps.previous_cont : getToday();
+  }
+  return getToday();
+});
+
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(dayjs().month());
   const [calendarYear, setCalendarYear] = useState(dayjs().year());
   const [mondayStart, setMondayStart] = useState(false); // 내부에서만 제어
   const [currentWeek, setCurrentWeek] = useState(0); // 0: 현재주, -1: 이전주, 1: 다음주
+
+
+    const previous_cont = otherProps?.previous_cont || null;
 
 
   // venue Info
@@ -781,6 +794,7 @@ const getScheduleStatusByDate = (date) => {
 const weekDates = getWeekDates(currentWeek, mondayStart);
 
   const chatWithManager = async() => {
+    /*
     // 1. room_sn 조회
     const chatList = await ApiClient.get('/api/getChattingList', {
       params: {
@@ -795,11 +809,11 @@ const weekDates = getWeekDates(currentWeek, mondayStart);
       room_sn = chatList[0].room_sn;
       console.log('room_sn', room_sn);
     }
+    */
 
-
-    navigateToPageWithData(PAGES.CHATTING, { 
+    navigateToPageWithData(PAGES.STAFFCHAT, { 
       name : get('CHAT_ONE_ON_ONE_TITLE'),
-      room_sn: room_sn,
+      room_sn: null,
       send_to:'manager',
       receiver_id: user.manager_id,
     });
@@ -1949,6 +1963,7 @@ const weekDates = getWeekDates(currentWeek, mondayStart);
                   ) : (
                     // 일반 모드
                     <>
+                     {(schedule.status === 'available') && (
                       <div className="schedule-details">
                         {schedule.start_time && schedule.end_time && (
                           <div className="detail-row">
@@ -1958,14 +1973,14 @@ const weekDates = getWeekDates(currentWeek, mondayStart);
                             </span>
                           </div>
                         )}
-                        
+
                         {schedule.check_in && (
                           <div className="detail-row">
                             <CheckCircle className="detail-icon" />
                             <span>{get('WORK_SCHEDULE_CHECK_IN')}: {formatTimeToAMPM(schedule.check_in)}</span>
                           </div>
                         )}
-                        
+
                         {schedule.check_out && (
                           <div className="detail-row">
                             <XCircle className="detail-icon" />
@@ -1973,6 +1988,8 @@ const weekDates = getWeekDates(currentWeek, mondayStart);
                           </div>
                         )}
                       </div>
+                    )}
+
                       
                      <div className="schedule-actions">
                           {/* 과거 날짜가 아닐 때만 변경 버튼 표시 */}

@@ -167,6 +167,26 @@ export const AuthProvider = ({ children }) => {
       }
   };
 
+  const isCompletedTuto = () => {
+  // 로그인되지 않은 경우 false 반환
+  if (!isLoggedIn || !user) {
+    return false;
+  }
+
+  // account_type이 staff가 아닌 경우 false 반환
+  if (user.type !== 'staff' && user.account_type !== 'staff') {
+    return false;
+  }
+
+  // profile_content_id가 falsy인 경우 false 반환
+  if (!user.profile_content_id) {
+    return false;
+  }
+
+  // 모든 조건을 만족하는 경우 true 반환
+  return true;
+};
+
   const value = {
     isLoggedIn,
     user,
@@ -180,7 +200,8 @@ export const AuthProvider = ({ children }) => {
     setAccountType,
     updateUserLang,
     updateUser,      // 추가
-    updateVenueId    // 추가
+    updateVenueId,    // 추가
+    isCompletedTuto
   };
 
   return (

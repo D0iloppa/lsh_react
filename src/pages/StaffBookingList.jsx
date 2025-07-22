@@ -196,6 +196,20 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
         );
         console.log("API 데이터:", filtered);
         setBookings(filtered);
+
+        if (filtered.length > 0 && user?.staff_id) {
+          console.log('📋 스태프 예약에 대해 registerReader 호출 시작');
+          
+          for (const booking of filtered) {
+            const reservationId = booking.reservation_id || booking.id;
+            if (reservationId) {
+              await registerReader(reservationId);
+            }
+          }
+          
+          console.log('📋 모든 예약에 대한 registerReader 호출 완료');
+        }
+
       } else {
         console.log("데이터가 없습니다");
         setBookings([]);
@@ -208,6 +222,31 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
       setLoading(false);
     }
   };
+
+  const registerReader = async (reservationId) => {
+  try {
+    if (!user?.staff_id || !reservationId) {
+      console.warn('❌ Staff ID 또는 Reservation ID가 없어서 registerReader를 건너뜁니다.', {
+        staff_id: user?.staff_id,
+        reservationId
+      });
+      return;
+    }
+
+    const response = await ApiClient.postForm('/api/registerReader', {
+      target_table: 'StaffReservations',
+      target_id: reservationId,
+      reader_type: 'staff',
+      reader_id: user.staff_id
+    });
+
+    console.log('✅ registerReader 성공:', response);
+    
+  } catch (error) {
+    console.error('❌ registerReader 실패:', error);
+  }
+};
+
 
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
@@ -246,7 +285,7 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
         backgroundColor: '#fef3c7',
         border: '1px solid #f59e0b'
       };
-    case 'cancelled':
+    case 'canceled':
       return { 
         color: '#dc2626',
         backgroundColor: '#fee2e2',
@@ -319,7 +358,7 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
 
     console.log('chatWithManager-payload', payload);
 
-    navigateToPageWithData(PAGES.CHATTING, payload );
+    navigateToPageWithData(PAGES.STAFFCHAT, payload );
   };
 
   const detailBooking = (bk) => {

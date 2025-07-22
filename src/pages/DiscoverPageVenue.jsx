@@ -964,7 +964,6 @@ const openMenuOverlay = (menuList) => {
             {loading ? (
               <div className="club-name">Loading...</div>
             ) : venueInfo?.imgList && Array.isArray(venueInfo.imgList) && venueInfo.imgList.length > 0 ? (
-              // 1순위: imgList가 존재하고 빈 배열이 아닌 경우
               <RotationDiv
                 interval={500000000}
                 swipeThreshold={50}
@@ -972,17 +971,28 @@ const openMenuOverlay = (menuList) => {
                 pauseOnHover={true}
                 className="venue-rotation"
               >
-                {venueInfo.imgList.map((imageUrl, index) => (
-                  <div key={index} className="rotation-image-container">
-                    <img src={imageUrl} alt={`venue-${index}`} />
-                  </div>
-                ))}
+                {(() => {
+                  // 대표 이미지와 나머지 이미지 분리
+                  const mainImage = venueInfo?.image_url;
+                  const otherImages = venueInfo.imgList
+                    .filter(imageUrl => imageUrl !== mainImage)
+                    .reverse(); // 나머지 이미지들을 역순으로
+                  
+                  // 최종 배열: [대표이미지, ...역순된나머지이미지들]
+                  const finalImageList = mainImage 
+                    ? [mainImage, ...otherImages]
+                    : otherImages;
+                  
+                  return finalImageList.map((imageUrl, index) => (
+                    <div key={index} className="rotation-image-container">
+                      <img src={imageUrl} alt={`venue-${index}`} />
+                    </div>
+                  ));
+                })()}
               </RotationDiv>
             ) : venueInfo?.image_url ? (
-              // 2순위: imgList가 없으면 대표 이미지(image_url)
               <img src={venueInfo.image_url} alt="venue" />
             ) : (
-              // 3순위: 이미지가 없는 경우
               <div className="club-name">No Image</div>
             )}
           </div>
@@ -1107,7 +1117,7 @@ const openMenuOverlay = (menuList) => {
               const birthYear = parseInt(girl.birth_year, 10);
               const currentYear = new Date().getFullYear();
               const age = birthYear ? currentYear - birthYear : '?';
-              const displayName = `${girl.name} (${age})`;
+              const displayName = `${girl.name}`;
 
               console.log(`Girl ${index} - staff_id: ${girl.staff_id}, availCnt: ${availCnt}`);
 

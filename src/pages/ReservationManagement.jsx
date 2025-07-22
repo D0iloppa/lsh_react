@@ -1088,7 +1088,11 @@ const chatWithUser = async(r) => {
                       <Calendar size={15} style={{marginRight: '3px'}}/>
                       {r.date}
                     </div> */}
-                    <div className="reservation-time">{r.time}</div>
+                    <div className="reservation-status">
+                      {get('RESERVATION_STATUS_LABEL')} <span className={`status-badge status-${r.status}`}>
+                        {getStatusText(r.status)}
+                      </span>
+                    </div>
                   </div>
                   <div className="reservation-header">
                     <div className="reservation-contents"> 
@@ -1101,6 +1105,9 @@ const chatWithUser = async(r) => {
                           >
                             <MessageCircle size={14}/> {get('BUTTON_CHAT')}
                           </span>
+                        </div>
+                         <div>
+                          <Edit size={10}/> {get('Reservation.ReservationTimeLabel')} {r.time}
                         </div>
                          <div>
                           <Edit size={10}/> {get('RESERVATION_NO_SHOW_BUTTON')}: <span>{r.noShowCount} {get('text.cnt.1')}</span>
@@ -1140,11 +1147,7 @@ const chatWithUser = async(r) => {
                     ) : (
                       <div style={{width: '40%'}}></div> // 공간 유지를 위한 빈 div
                     )}
-                    <div className="reservation-status">
-                      {get('RESERVATION_STATUS_LABEL')} <span className={`status-badge status-${r.status}`}>
-                        {getStatusText(r.status)}
-                      </span>
-                    </div>
+                    
                   </div>
                   <div className="reservation-actions">
                     {/* actionMap을 기반으로 동적으로 버튼 생성 */}

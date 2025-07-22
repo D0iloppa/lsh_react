@@ -115,7 +115,10 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
           navigate('/manager');
         }
       } else if (accountType === 'staff') {
-        navigate('/staff');
+
+        navigate('/staffTuto');
+
+        
       } else {
         navigate('/manager'); // 기본값
       }
@@ -189,8 +192,8 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
               </div>
               
               <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px; font-weight: bold;">${get('INQUIRER_LABEL')}</label>
-                  <input id="swal-email" type="text" placeholder="${get('INQUIRER_PLACEHOLDER')}" 
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold;">${get('title.text.1')}</label>
+                  <input id="swal-email" type="text" placeholder="${get('VALIDATION_EMAIL_REQUIRED')}" 
                         style="width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
               </div>
               

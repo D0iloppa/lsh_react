@@ -7,6 +7,7 @@ import HatchPattern from '@components/HatchPattern';
 import '@components/SketchComponents.css';
 import { User, Search } from 'lucide-react';
 import LoadingScreen from '@components/LoadingScreen';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import { useAuth } from '@contexts/AuthContext';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
@@ -19,7 +20,8 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
 
   const { user, isLoggedIn } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
-
+  const navigate = useNavigate();
+  
   const renderCount = React.useRef(0);
   renderCount.current += 1;
   console.log('🔄 EditProfile 렌더링 #', renderCount.current);
@@ -58,10 +60,16 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
 
     // user.staff_id와 동일한 데이터 찾기
     const currentStaff = staffList.find(staff => staff.staff_id === user.staff_id);
-    console.log("currentStaff", currentStaff);
+    console.log("currentStaff", currentStaff, form);
 
     // 찾은 데이터가 있으면 그것을 사용하고, 없으면 기존 staffInfo 사용
     const staffDataToPass = currentStaff || staffInfo;
+    
+    staffDataToPass.description = form.intro;
+
+    // 
+
+
     console.log("staffDataToPass", staffDataToPass);
 
     navigateToPageWithData(PAGES.STAFFDETAIL, staffDataToPass);
@@ -288,6 +296,20 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
 
   return images;
 }, [user]);
+
+  const location = useLocation();
+  const fromStaffTuto = location.state?.from === 'staffTuto';
+
+  const handleBack = () => {
+
+    //goBack();
+
+  if (fromStaffTuto) {
+    navigate('/staff');
+  } else {
+    goBack();
+  }
+};
   // if (isLoadingData) {
   //   return (
   //     <div className="editprofile-container">
@@ -395,7 +417,7 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
       <SketchHeader
         title={<><User size={20} style={{marginRight:'7px',marginBottom:'-3px'}}/>{get('EDIT_PROFILE_TITLE')}</>}
         showBack={true}
-        onBack={goBack}
+        onBack={handleBack}
       />
       <div className="editprofile-container">
         <div className="image-upload-section">
@@ -426,12 +448,58 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
                 photoGalleryMode={{
                   fetchList: fetchStaffGallery,
                   onUpload: async (file) => {
-                    const response = await ApiClient.uploadImage(file);
-                    const { content_id = false, accessUrl } = response;
-                    if (content_id) {
-                      setGalleryImages(prev => [...prev, accessUrl]);
-                      setGalleryImagesContentId(prev => [...prev, content_id]);
-                      setGalleryImagesMap(prev => [...prev, { url: accessUrl, contentId: content_id }]);
+
+                    setIsLoadingData(true);
+
+                    try{
+
+                      const response = await ApiClient.uploadImage(file);
+                      const { content_id = false, accessUrl } = response;
+                      
+                      if (content_id) {
+                        setGalleryImages(prev => [...prev, accessUrl]);
+                        setGalleryImagesContentId(prev => [...prev, content_id]);
+                        setGalleryImagesMap(prev => [...prev, { url: accessUrl, contentId: content_id }]);
+                      }
+                      /*
+                       // 백엔드에 저장
+                       await ApiClient.postForm('/api/uploadVenueGallery', {
+                        venue_id: user?.venue_id,
+                        content_id: content_id
+                      });
+
+                          
+                        */
+
+
+                    const payload = {
+                      staff_id: user?.staff_id || user?.id,
+                      content_id: content_id,
+                    };
+
+                    const res = await ApiClient.postForm('/api/upsertStaffContent', payload);
+                    
+                    
+                    if (res.success) {
+                      // 업로드 성공 후 갤러리 데이터 새로고침
+                      await fetchStaffGallery();
+                      
+                      // 로컬 state 초기화
+                      setGalleryImages([]);
+                      setGalleryImagesContentId([]);
+                      setGalleryImagesMap([]);
+                    }
+
+
+
+
+
+
+
+                    }catch(error){
+
+                    }finally{
+                      setIsLoadingData(false);
                     }
                   }
                 }}
@@ -484,7 +552,7 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
         </div>
 
         <div className="input-row">
-          <div style={{marginBottom: '0.3rem'}}>{get('NICKNAME_LABEL')}</div>
+          <div style={{marginBottom: '0.3rem'}}>{get('STAFF_NAME_LABEL')}</div>
           <SketchInput
             name="nickname"
             value={form.nickname}
@@ -492,7 +560,7 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
             placeholder={get('NICKNAME_PLACEHOLDER')}
           />
         </div>
-        <div className="input-row">
+        <div className="input-row" style={{marginBottom: '0.3rem', display: 'none'}}>
           <div style={{marginBottom: '0.3rem'}}>{get('BIRTH_YEAR_LABEL')}</div>
           <SketchInput
             name="birth_year"
@@ -502,7 +570,7 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
             type="number"
           />
         </div>
-        <div className="input-row">
+        <div className="input-row" style={{marginBottom: '0.3rem', display: 'none'}}>
           <div style={{marginBottom: '0.3rem'}}>{get('LANGUAGES_LABEL')}</div>
           <SketchInput
             name="languages"
@@ -540,6 +608,16 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
             subText="Loading..."
             isVisible={isLoading}
           />
+
+
+        
+      {isLoadingData && (
+            <LoadingScreen
+              variant="cocktail"
+              isVisible={true}
+              subText="Uploading..."
+            />
+          )}
     </>
   );
 };

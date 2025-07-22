@@ -163,15 +163,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
           <div className="form-title">{get('STAFF_CREATE_FORM_TITLE')}</div>
           <SketchDiv className="form-box">
             <HatchPattern opacity={0.4} />
-            <div className="form-field">
-              <div className="form-label">{get('STAFF_NAME_LABEL')}</div>
-              <SketchInput
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder={get('STAFF_NAME_PLACEHOLDER')}
-              />
-            </div>
+            
             <div className="form-field">
               <div className="form-label">{get('STAFF_USERNAME_LABEL')}</div>
               <SketchInput
@@ -179,6 +171,15 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
                 value={form.username}
                 onChange={handleChange}
                 placeholder={get('STAFF_USERNAME_PLACEHOLDER')}
+              />
+            </div>
+            <div className="form-field">
+              <div className="form-label">{get('STAFF_NAME_LABEL')}</div>
+              <SketchInput
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder={get('STAFF_NAME_PLACEHOLDER')}
               />
             </div>
             <div className="form-field">
@@ -191,7 +192,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
                 type="password"
               />
             </div>
-            <div className="form-field">
+            <div className="form-field" style={{marginBottom: '0.3rem', display: 'none'}}>
               <div className="form-label">{get('STAFF_CONTACT_LABEL')}</div>
               <SketchInput
                 name="contact"

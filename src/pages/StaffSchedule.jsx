@@ -31,7 +31,7 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
 
   const calendarScrollRef = useRef(null);
   const today = dayjs();
-
+  
   // 현재 주를 맨 위에 배치하는 함수
   const reorderCalendarCellsForCurrentWeek = (cells, today) => {
     // 현재 날짜가 있는 인덱스 찾기
@@ -321,9 +321,17 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
         cancelButtonColor: '#d33'
       });
 
+
+
+      const formattedDate = selectedDate.format('YYYY-MM-DD');
+      console.log('📅 선택된 날짜:', formattedDate);
+
+
+
       if (result.isConfirmed) {
         const response = await ApiClient.postForm('/api/sendAlert', {
-          staff_id: staffId
+          staff_id: staffId,
+          start_date:formattedDate
         });
 
         console.log("response", response);

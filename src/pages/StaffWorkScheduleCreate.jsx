@@ -110,7 +110,7 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
   // 시간 옵션 생성
   const hourOptions = Array.from({ length: 24 }, (_, i) => {
     const hourStr = String(i).padStart(2, '0');
-    return { value: `${hourStr}:00:00`, label: `${i}` };
+    return { value: `${hourStr}:00:00`, label: `${hourStr}` }; // ← label도 2자리 문자열로
   });
 
   const handleSave = async () => {
@@ -175,13 +175,19 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
     return dateString < today;
   };
 
+  
+
   const isTodayOrFuture = (dateString) => {
     const today = new Date().toISOString().split('T')[0];
     return dateString >= today;
   };
 
 
-  
+  const isToday = (dateString) => {
+    const today = new Date().toISOString().split('T')[0];
+    return dateString === today;
+  };
+
 
 
 
@@ -227,6 +233,15 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
           color: #222;
           white-space: nowrap;
         }
+
+        .week-day.today {
+        color: #d72638;
+        font-weight: 700;
+        background-color: #fff3f3;
+        border-radius: 6px;
+        padding: 2px 6px;
+      }
+        
         .week-onoff {
           width: 1.0rem;
           padding-left: 1rem;
@@ -323,10 +338,10 @@ const StaffWorkScheduleCreate = ({ navigateToPageWithData, PAGES, goBack, pageDa
             
             return (
               <div key={`${dayData?.work_date || index}`} className={`week-row ${isPast ? 'past-row' : ''}`}>
-                <div className="week-day">
-                  <span>{day}</span>
-                  <span>({parseInt(dayData.work_date.split('-')[2])})</span>
-                  </div>
+                <div className={`week-day ${isToday(dayData.work_date) ? 'today' : ''}`}>
+                <span>{day}</span>
+                <span>({parseInt(dayData.work_date.split('-')[2])})</span>
+              </div>
                 <div className="week-onoff">
                   <select 
                     value={isOn ? 'on' : 'off'} 

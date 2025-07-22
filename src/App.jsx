@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
@@ -20,12 +20,16 @@ import StaffApp from '@layout/StaffApp';
 import Cocktail from '@components/CocktailIcon';
 import HatchPattern from '@components/HatchPattern';
 import VenueTuto1 from '@components/Welcome/VenueTuto1';
+import StaffTuto1 from '@components/Welcome/StaffTuto1';
 import VenueSetup from '@pages/VenueSetup';
-import { AlignStartVertical } from 'lucide-react';
+import EditProfile from '@pages/EditProfile';
+
+import { AlignStartVertical, TruckElectric } from 'lucide-react';
 
 const AppRoutes = () => {
-  const { isLoggedIn, user, loginType } = useAuth();
+  const { isLoggedIn, user, loginType, isCompletedTuto } = useAuth();
   const { currentLang, messages } = useMsg();
+
 
   useEffect(() => {
     // body에 현재 언어 속성 추가
@@ -36,6 +40,7 @@ const AppRoutes = () => {
     document.body.classList.remove('lang-en', 'lang-ko', 'lang-ja', 'lang-vi', 'lang-cn');
     document.body.classList.add(`lang-${currentLang}`);
   }, [currentLang]);
+
 
   const navigate = useNavigate();
 
@@ -120,9 +125,25 @@ const AppRoutes = () => {
       />
 
       <Route 
+        path="/staffTuto" 
+        element={
+          isCompletedTuto() ? 
+            <Navigate to="/" replace /> : 
+            <StaffTuto1 />
+        } 
+      />
+
+      <Route 
         path="/venueSetup" 
         element={
           isLoggedIn ? <VenueSetup /> : <Navigate to="/login" replace />
+        } 
+      />
+
+      <Route 
+        path="/staffSetting" 
+        element={
+          isLoggedIn ? <EditProfile /> : <Navigate to="/login" replace />
         } 
       />
 

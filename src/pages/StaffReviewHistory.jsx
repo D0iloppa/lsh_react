@@ -33,6 +33,28 @@ const StaffReviewHistory = ({ navigateToPageWithData, PAGES, goBack, pageData, .
   const venue_id = user.venue_id;
   const target_id = user.staff_id;
 
+
+  const registerReader = async (reviewId) => {
+        try {
+          if (!user?.staff_id || !reviewId) {
+            console.warn('staff ID 또는 Review ID가 없어서 registerReader를 건너뜁니다.');
+            return;
+          }
+
+          const response = await ApiClient.postForm('/api/registerReader', {
+            target_table: 'StaffReviews',
+            target_id: reviewId,           // 각 리뷰의 ID
+            reader_type: 'staff',
+            reader_id: user.staff_id
+          });
+
+          console.log('✅ registerReader 성공:', response);
+          
+        } catch (error) {
+          console.error('❌ registerReader 실패:', error);
+        }
+      };
+
   useEffect(() => {
       if (messages && Object.keys(messages).length > 0) {
         console.log('✅ Messages loaded:', messages);
@@ -80,14 +102,17 @@ const StaffReviewHistory = ({ navigateToPageWithData, PAGES, goBack, pageData, .
     }
 
     // 날짜순 정렬
-    filtered.sort((a, b) => {
+     filtered.sort((a, b) => {
       const dateA = new Date(a.created_at);
       const dateB = new Date(b.created_at);
       
       if (dateFilter === 'Newest') {
-        return dateB - dateA; // 최신순
+        return dateB - dateA; // 최신순 (오늘 리뷰들 중에서)
+      } else if (dateFilter === 'Oldest') {
+        return dateA - dateB; // 오래된순 (과거 리뷰들 중에서)
       } else {
-        return dateA - dateB; // 오래된순
+        // 🎯 'All'일 때는 최신순 유지 (원본 순서 또는 최신순)
+        return dateB - dateA; // 최신순으로 기본 정렬
       }
     });
 
@@ -116,6 +141,13 @@ const StaffReviewHistory = ({ navigateToPageWithData, PAGES, goBack, pageData, .
 
         // 원본 데이터 저장
         setOriginalReviews(staffReviews);
+
+         // 각 리뷰에 대해 registerReader 호출
+          if (staffReviews && staffReviews.length > 0) {
+            for (const review of staffReviews) {
+              await registerReader(review.review_id || review.id);
+            }
+          }
        
       } catch (error) {
         setOriginalReviews([]);

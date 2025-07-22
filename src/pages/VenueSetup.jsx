@@ -82,6 +82,87 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   const [isUploading, setIsUploading] = useState(false);
   const [topImgCount, setTopImgCount] = useState(0);
 
+  // 메뉴 갤러리 전용 상태 관리
+  const [menuGalleryImages, setMenuGalleryImages] = useState([]);
+  const [menuGalleryImagesContentId, setMenuGalleryImagesContentId] = useState([]);
+  const [menuGalleryImagesMap, setMenuGalleryImagesMap] = useState([]); // {url, contentId} 형태로 관리
+
+  // 메뉴 갤러리 API 함수들
+  const menuGalleryApi = {
+    // 메뉴판 이미지 목록 조회
+    getMenuImages: async () => {
+      try {
+        const response = await ApiClient.getVenueMenuList(venueId);
+        return response.menuList || [];
+      } catch (error) {
+        console.error('메뉴판 이미지 조회 API 오류:', error);
+        throw error;
+      }
+    },
+
+    // 메뉴판 이미지 업로드
+    uploadMenuImage: async (file) => {
+      try {
+        // 1. 먼저 이미지를 contentUpload API로 업로드
+        const uploadResponse = await ApiClient.uploadImage(file);
+        
+        if (uploadResponse.success && uploadResponse.content_id) {
+          // accessUrl을 우선 사용하고, 없으면 기존 필드 사용
+          const imageUrl = uploadResponse.accessUrl || uploadResponse.image_url || uploadResponse.url;
+          
+          // venueId가 있고 유효한 경우에만 메뉴 등록
+          if (venueId && venueId > 0) {
+            // 2. 업로드된 content_id로 메뉴 등록
+            const menuResponse = await ApiClient.insertVenueMenu(venueId, uploadResponse.content_id);
+            
+            if (menuResponse.success) {
+              return {
+                success: true,
+                content_id: uploadResponse.content_id,
+                image_url: imageUrl,
+                item_id: menuResponse.item_id,
+                message: '메뉴판 이미지가 성공적으로 업로드되었습니다.'
+              };
+            } else {
+              throw new Error('메뉴 등록에 실패했습니다.');
+            }
+          } else {
+            // venueId가 없는 경우 임시 저장
+            return {
+              success: true,
+              content_id: uploadResponse.content_id,
+              image_url: imageUrl,
+              isTemporary: true,
+              message: '메뉴판 이미지가 임시로 저장되었습니다. 매장 등록 후 자동으로 등록됩니다.'
+            };
+          }
+        } else {
+          throw new Error('이미지 업로드에 실패했습니다.');
+        }
+      } catch (error) {
+        console.error('메뉴판 이미지 업로드 API 오류:', error);
+        throw error;
+      }
+    },
+
+    // 메뉴판 이미지 삭제
+    deleteMenuImage: async (contentId) => {
+      try {
+        const response = await ApiClient.postForm('/api/contentDelete', {
+          target: 'menu',
+          content_id: contentId
+        });
+        return {
+          success: response.success || true,
+          message: response.message || '메뉴판 이미지가 성공적으로 삭제되었습니다.'
+        };
+      } catch (error) {
+        console.error('메뉴판 이미지 삭제 API 오류:', error);
+        throw error;
+      }
+    }
+  };
+
   const navigate = useNavigate();
 
   const location = useLocation();
@@ -1196,9 +1277,12 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         <div className="input-row">
           <div>
               <div className="time-label">
-                  {get('MENU')}
+                  {/*get('MENU')*/}
+                  {get('MENU_MANAGEMENT')}
               </div>
              
+             {
+              /*
               <SketchBtn
                 onClick={() => handleMenu(venueId)} 
                 variant="secondary" size='small'
@@ -1206,7 +1290,113 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
                 <HatchPattern opacity={0.6} /> 
                 <Settings size={12}/> {get('MENU_MANAGEMENT')}
               </SketchBtn>
+              */
+              }
             
+
+
+
+
+            <PhotoGallery
+              venue_id={user.venue_id}
+              lazyGalleryData={[]}
+              photoGalleryMode={{
+                  fetchList: async () => {
+                    try {
+                      const menuList = await menuGalleryApi.getMenuImages();
+                      console.log('🔍 fetchList - menuList:', menuList);
+
+                      if (!Array.isArray(menuList)) {
+                        console.error('🔍 menuList is not an array:', menuList);
+                        return {images: [], contentId: []};
+                      }
+
+                      const imgList = menuList.map(item => item.url);
+                      const contentIdList = menuList.map(item => item.content_id);
+                      console.log('🔍 fetchList - imgList:', imgList);
+                      console.log('🔍 fetchList - contentIdList:', contentIdList);
+
+                      return {images: imgList, contentId: contentIdList};
+                    } catch (error) {
+                      console.error('메뉴판 이미지 조회 실패:', error);
+                      return {images: [], contentId: []};
+                    }
+                  },
+                onUpload: async (file) => {
+                  try {
+                    setIsUploading(true);
+                    
+                    const response = await menuGalleryApi.uploadMenuImage(file);
+                    
+                    if (response.success) {
+                      // 업로드 성공 후 갤러리 데이터 새로고침
+                      const updatedMenuList = await menuGalleryApi.getMenuImages();
+                      
+                      // 메뉴 갤러리 전용 상태 업데이트
+                      const images = updatedMenuList.map(item => item.url);
+                      const contentIds = updatedMenuList.map(item => item.content_id);
+                      const imageMap = updatedMenuList.map(item => ({ 
+                        url: item.url, 
+                        contentId: item.content_id 
+                      }));
+                      
+                      setMenuGalleryImages(images);
+                      setMenuGalleryImagesContentId(contentIds);
+                      setMenuGalleryImagesMap(imageMap);
+                      
+                      // 이미지 카운트 업데이트
+                      setImageCount(updatedMenuList.length);
+                      
+                      console.log('메뉴판 이미지 업로드 성공:', response.message);
+                    }
+                    
+                    return response;
+                  } catch (error) {
+                    console.error('메뉴판 이미지 업로드 실패:', error);
+                    throw error;
+                  } finally {
+                    setIsUploading(false);
+                  }
+                },
+                onDeleted: async ({img_url, content_id}) => {
+                  try {
+                    console.log('삭제 요청:', { img_url, content_id });
+                    
+                    if (content_id) {
+                      const response = await menuGalleryApi.deleteMenuImage(content_id);
+                      
+                      if (response.success) {
+                        console.log('DB 삭제 성공:', response.message);
+                        
+                        // 삭제 성공 후 갤러리 데이터 새로고침
+                        const updatedMenuList = await menuGalleryApi.getMenuImages();
+                        
+                        // 메뉴 갤러리 전용 상태 업데이트
+                        const images = updatedMenuList.map(item => item.url);
+                        const contentIds = updatedMenuList.map(item => item.content_id);
+                        const imageMap = updatedMenuList.map(item => ({ 
+                          url: item.url, 
+                          contentId: item.content_id 
+                        }));
+                        
+                        setMenuGalleryImages(images);
+                        setMenuGalleryImagesContentId(contentIds);
+                        setMenuGalleryImagesMap(imageMap);
+                        
+                        // 이미지 카운트 업데이트
+                        setImageCount(updatedMenuList.length);
+                      }
+                    } else {
+                      console.error('삭제할 content_id가 없습니다.');
+                    }
+                  } catch (error) {
+                    console.error('메뉴판 이미지 삭제 실패:', error);
+                  }
+                }
+              }}
+              appendedImages={menuGalleryImages}
+              onAppendedImagesChange={setMenuGalleryImages}
+            /> 
 
 
           </div>

@@ -31,11 +31,54 @@ const StaffHome = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherPr
   });
   const [todaySchedule, setTodaySchedule] = useState(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
+    // 알림 뱃지 상태 추가
+    const [notificationCounts, setNotificationCounts] = useState({
+      reservations: 0,  // 새로운 예약 대기
+      reviews: 0       // 새로운 리뷰
+    });
   console.log('메시지 내용:', messages['Staff.home.btn1']); 
 
   console.log("todaySchedule", todaySchedule)
 
+// 뱃지 컴포넌트
+ const NotificationBadge = ({ count, isVisible = true }) => {
+  if (!isVisible || count <= 0) return null;
+  
+  return (
+    <div className={`notification-badge ${count > 99 ? 'large-count' : ''}`}>
+      {count > 99 ? '99+' : count}
+    </div>
+  );
+};
+  
+const fetchNotificationCounts = async () => {
+    try {
+      const venue_id = user?.venue_id;
+      if (!venue_id) return;
 
+      // API 호출 (실제 구현에 맞게 수정)
+       const response = await ApiClient.get('/api/getStaffUnreadCount', {
+         params: { 
+          venue_id, 
+          staff_id: user?.staff_id, 
+          participant_type: 'staff', 
+          participant_user_id: user?.staff_id
+         }
+       });
+
+      setNotificationCounts({
+        reservations: response.getUnreadCountReservation_staff || 0,
+        reviews: response.getUnreadCountReview_staff || 0,
+      });
+    } catch (error) {
+      console.error('알림 개수 조회 실패:', error);
+      
+      setNotificationCounts({
+        reservations: 0,
+        reviews: 0
+      });
+    }
+  };
 
 useEffect(() => {
 
@@ -77,9 +120,17 @@ useEffect(() => {
     if (user) {
       setStaffInfo(user);
       fetchStaffDashboardData();
+      fetchNotificationCounts();
     }
   }, [messages, currentLang, user]);
 
+    useEffect(() => {
+      const interval = setInterval(() => {
+        fetchNotificationCounts();
+      }, 10000);
+  
+      return () => clearInterval(interval);
+    }, [user?.venue_id]);
   
 
   // 환영 메시지 포맷 함수
@@ -344,7 +395,9 @@ console.log(PAGES)
       return 'primary';
     };
 
-
+  const formatMessage = (messageKey, count) => {
+    return get(messageKey).replace('{count}', count);
+  };
 
   // if (isLoadingData) {
   //   return (
@@ -431,22 +484,12 @@ console.log(PAGES)
         }
 
         .action-row-top, .action-row-bottom {
-            height: 61px;
+            // height: 61px;
             display: flex;
             justify-content: space-between;
         }
 
-        .action-btn {
-          flex: 1;
-          font-size: 1.05rem;
-          min-width: 0;
-          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
-          border: 1px solid #d1d5db;
-          display: flex;
-          align-items: center;
-          justify-content: start;
-          gap: 0.5rem; /* 아이콘과 텍스트 사이 간격 */
-        }
+       
         .empty-state {
           color: #6b7280;
           font-style: italic;
@@ -459,6 +502,49 @@ console.log(PAGES)
         .hourly-reservation:last-child {
           border-bottom: none;
         }
+
+         .action-btn {
+            width: 100%;
+            font-size: 1.05rem;
+            min-width: 0;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
+            border: 1px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: start;
+            gap: 0.5rem;
+          }
+
+          .action-btn-wrapper {
+            position: relative;
+            flex: 1;
+          }
+
+          .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            min-width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 10;
+            border: 1px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          }
+
+          .notification-badge.large-count {
+            min-width: 22px;
+            height: 18px;
+            border-radius: 9px;
+            font-size: 10px;
+          }
       `}</style>
           <div className="staffhome-container"> 
           <div className="welcome-box">
@@ -483,16 +569,13 @@ console.log(PAGES)
               <HatchPattern opacity={0.6} />
               <div className="section-title">
                 <Clock size={14} style={{marginRight: '5px', opacity: '0.5'}}/> 
-                {get('STAFF_TODAYS_RESERVATIONS')} ({dashboardInfo.todaysReservations || 0})
+                {get('STAFF_TODAYS_RESERVATIONS')} 
               </div>
               <div className="section-content">
                 {dashboardInfo.hourlyReservations?.length > 0 ? (
-                  dashboardInfo.hourlyReservations.map((reservation, index) => (
-                    <div key={index} className="hourly-reservation">
-                      {reservation.hour}hour: {get('Reservation.ReservationTitle')} {reservation.reservationCount}{get('text.cnt.1')}
-                      {reservation.canceledCount > 0 && `, 취소 ${reservation.canceledCount}건`}
+                  <div className="hourly-reservation">
+                      {formatMessage('DASHBOARD_RESERVATIONS_COUNT', dashboardInfo.todaysReservations)}
                     </div>
-                  ))
                 ) : (
                   <div style={{ color: '#6b7280', fontStyle: 'italic'}}>
                     {get('NO_BOOKINGS_MESSAGE')}
@@ -505,15 +588,14 @@ console.log(PAGES)
           <SketchDiv className="section-card" onClick={handleStaffSchedule}>
             <HatchPattern opacity={0.6} />
             <div className="section-title">
-              <Calendar size={14} opacity={0.5}/> {get('STAFF_UPCOMING_SHIFTS')} ({dashboardInfo.upcomingShifts.length})
+              <Calendar size={14} opacity={0.5}/> {get('STAFF_UPCOMING_SHIFTS')} 
             </div>
             <div className="section-content">
               {dashboardInfo.upcomingShifts.length > 0 ? (
-                dashboardInfo.upcomingShifts.map((shift, index) => (
-                  <div key={index}>
-                    {shift.date} - {shift.startTime} to {shift.endTime}
+                  <div>
+                     {formatMessage('DASHBOARD_WORK_COUNT', dashboardInfo.upcomingShifts.length)}
                   </div>
-                ))
+               
               ) : (
                 <div className="empty-state" >{get('STAFF_NO_UPCOMING_SHIFTS')}</div>
               )}
@@ -527,12 +609,12 @@ console.log(PAGES)
             >
               <HatchPattern opacity={0.6} />
               <div className="section-title">
-                <Bell size={14} opacity={0.5} /> {get('STAFF_UNREAD_NOTIFICATIONS')} ({dashboardInfo?.notifications?.unread_count ?? 0})
+                <Bell size={14} opacity={0.5} /> {get('STAFF_UNREAD_NOTIFICATIONS')}
               </div>
               <div className="section-content">
                 {(dashboardInfo?.notifications?.unread_count ?? 0) > 0 ? (
-                  <div>
-                    {get('btn.all.1')} {get('MENU_NOTIFICATIONS')}: {dashboardInfo?.notifications?.total_count ?? 0} {get('text.cnt.1')}
+                   <div>
+                     {formatMessage('DASHBOARD_ALERT_COUNT', dashboardInfo?.notifications?.unread_count ?? 0)}
                   </div>
                 ) : (
                   <div className="empty-state">{get('STAFF_NO_UNREAD_NOTIFICATIONS')}</div>
@@ -584,50 +666,74 @@ console.log(PAGES)
             </SketchDiv>
           </div>
 
+          
           <div className="action-grid">
             <div className="action-row action-row-top">
-              <SketchBtn 
-                size="medium" 
-                variant="secondary" 
-                className="action-btn" 
-                style={{border: '1px solid #d1d5db'}}
-                onClick={handleStaffSchedule}
-              >
-                <HatchPattern opacity={0.6} />
-                <ClipboardList size={24}/>{get('Staff.menu.1')}
-              </SketchBtn>
-              <SketchBtn 
-                size="medium" 
-                variant="secondary" 
-                className="action-btn" 
-                style={{border: '1px solid #d1d5db'}}
-                onClick={handleBookingList}
-              >
-                <HatchPattern opacity={0.6} />
-                <Calendar size={24}/> {get('MENU_RESERVATIONS')}
-              </SketchBtn>
+              <div className="action-btn-wrapper">
+                <SketchBtn 
+                  size="medium" 
+                  variant="secondary" 
+                  className="action-btn" 
+                  style={{border: '1px solid #d1d5db'}}
+                  onClick={handleStaffSchedule}
+                >
+                  <HatchPattern opacity={0.6} />
+                  <ClipboardList size={24}/>{get('Staff.menu.1')}
+                </SketchBtn>
+                {/* 스케줄은 뱃지 없음 */}
+              </div>
+              
+              <div className="action-btn-wrapper">
+                <SketchBtn 
+                  size="medium" 
+                  variant="secondary" 
+                  className="action-btn" 
+                  style={{border: '1px solid #d1d5db'}}
+                  onClick={handleBookingList}
+                >
+                  <HatchPattern opacity={0.6} />
+                  <Calendar size={24}/> {get('MENU_RESERVATIONS')}
+                </SketchBtn>
+                {/* 예약관리 뱃지 */}
+                <NotificationBadge 
+                  count={notificationCounts.reservations} 
+                  isVisible={notificationCounts.reservations > 0}
+                />
+              </div>
             </div>
+            
             <div className="action-row action-row-bottom">
-              <SketchBtn 
-                size="medium" 
-                variant="secondary" 
-                className="action-btn" 
-                style={{border: '1px solid #d1d5db'}}
-                onClick={handleNewReviews}
-              >
-                <HatchPattern opacity={0.6} />
-                <Star size={24}/> {get('Staff.home.btn3')}
-              </SketchBtn>
-              <SketchBtn 
-                size="medium" 
-                variant="secondary" 
-                className="action-btn" 
-                style={{border: '1px solid #d1d5db'}}
-                onClick={handleEditProfile}
-              >
-                <HatchPattern opacity={0.6} />
-                <User size={24}/> {get('Staff.setting.profile.title')}
-              </SketchBtn>
+              <div className="action-btn-wrapper">
+                <SketchBtn 
+                  size="medium" 
+                  variant="secondary" 
+                  className="action-btn" 
+                  style={{border: '1px solid #d1d5db'}}
+                  onClick={handleNewReviews}
+                >
+                  <HatchPattern opacity={0.6} />
+                  <Star size={24}/> {get('Staff.home.btn3')}
+                </SketchBtn>
+                {/* 리뷰 뱃지 */}
+                <NotificationBadge 
+                  count={notificationCounts.reviews} 
+                  isVisible={notificationCounts.reviews > 0}
+                />
+              </div>
+              
+              <div className="action-btn-wrapper">
+                <SketchBtn 
+                  size="medium" 
+                  variant="secondary" 
+                  className="action-btn" 
+                  style={{border: '1px solid #d1d5db'}}
+                  onClick={handleEditProfile}
+                >
+                  <HatchPattern opacity={0.6} />
+                  <User size={24}/> {get('Staff.setting.profile.title')}
+                </SketchBtn>
+                {/* 프로필 설정은 뱃지 없음 */}
+              </div>
             </div>
           </div>
         </div>

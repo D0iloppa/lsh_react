@@ -290,15 +290,15 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPageWithData, PAGES, onSe
                   <span className="venue-star"></span>
                   <h3 className="venue-name">{selectedVenue.name}</h3>
                 </div>
-                <div className="venue-details">
+                <span className="venue-details">
                   <span className="venue-people">🗺️ {selectedVenue.address}</span>
-                </div>
-                <div className="venue-details">
+                </span>
+                <span className="venue-details">
                   <span className="venue-people">📞 {selectedVenue.phone}</span>
-                </div>
-                <div className="venue-details">
+                </span>
+                <span className="venue-details">
                   <span className="venue-people">👥 {selectedVenue.staff_cnt} / ⭐{selectedVenue.rating}/5</span>
-                </div>
+                </span>
               </div>
             </SketchDiv>
           )}

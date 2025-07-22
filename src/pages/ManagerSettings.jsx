@@ -339,6 +339,8 @@ const handleChangePassword = async () => {
       account_type: user.type
     });
 
+    alert(password.current);
+
     if (!verifyResponse.success) {
       Swal.fire({
         title: get('SWAL_ERROR_TITLE'),
@@ -508,10 +510,10 @@ const handleChangePassword = async () => {
       <div className="settings-container">
         <div className="section-title">{get('SETTINGS_MANAGE_SHOP_DETAIL')}</div>
         
-        <div className='venue-onOff'>
+        {/* <div className='venue-onOff'>
           <div style={{lineHeight: '1.8'}}>{get('MANAGER_VENUE_SETTING')} </div>
           <VenueStatusButton />
-          </div>
+          </div> */}
              
         <SketchDiv className="section-box" style={{marginBottom:'1.2rem'}}>
           <SketchBtn 

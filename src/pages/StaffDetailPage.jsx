@@ -26,6 +26,19 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
   const { isActiveUser } = useAuth();
   const { showPopup, closePopup } = usePopup();
 
+
+      // 텍스트 줄바꿈 처리 함수
+    const formatTextWithLineBreaks = (text) => {
+      if (!text) return '';
+      
+      return text.split('\n').map((line, index) => (
+        <React.Fragment key={index}>
+          {line}
+          {index < text.split('\n').length - 1 && <br />}
+        </React.Fragment>
+      ));
+    };
+
   const getAgeFromBirthYear = (birthYear) => {
     const currentYear = new Date().getFullYear();
     return birthYear ? currentYear - parseInt(birthYear, 10) : null;
@@ -67,6 +80,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           setLoading(false);
         }
       } else {
+        console.log('local', otherProps);
         setGirl(otherProps);
       }
     };
@@ -84,7 +98,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
         params: { staff_id: otherProps.staff_id }
       });
 
-      console.log('사진 응답:', res);
+      //console.log('사진 응답:', res);
 
       const baseUrl = ''; // ⚠️ 실제 CDN 도메인으로 교체
       const photos = Array.isArray(res?.data) ? res.data : [];
@@ -155,10 +169,15 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           max-width: 300px;
         }
         .profile-image {
-          margin-top: 20px;
-          width: 100%;
-          border-radius: 1rem;
-        }
+            margin-top: 20px;
+            width: 100%;
+            max-height: 300px;
+            height: 350px; /* 추가: height도 고정해야 중앙정렬 가능 */
+            object-fit: contain; /* ✅ 이미지 비율 유지 + 여백 생기면 중앙 정렬 */
+            object-position: center center; /* ✅ 상하좌우 중앙 정렬 */
+            display: block;
+            border-radius: 1rem;
+          }
         .staff-info-section {
           text-align: center;
           margin-top: 1rem;
@@ -180,6 +199,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           margin-top: 0.75rem;
           font-size: 0.95rem;
           color: #4b5563;
+          min-height: 100px; /* ✅ 추가된 줄 */
         }
         .booking-form-section {
           margin-top: 2rem;
@@ -211,6 +231,8 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
               const validImages = images.filter(img => img && img.trim() !== '');
               const slides = validImages.length > 0 ? validImages : [null];
 
+              //console.log("validImages", validImages)
+
               return slides.map((imageUrl, index) => (
                 <div key={index} className="profile-slide">
                   <div className="dual-image-container">
@@ -230,11 +252,15 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
 
         <div className="staff-info-section">
           <div className="staff-name">{girl.name || 'Unknown Staff'}</div>
+          {/*
           <div className="staff-age">
             {girl.birth_year ? `Age ${getAgeFromBirthYear(girl.birth_year)}` : 'Age N/A'}
           </div>
+          */}
           <div className="staff-description">
-            {girl.description || 'No description available.'}
+            {/*girl.description || 'No description available.'*/}
+            {formatTextWithLineBreaks(girl?.description ||
+                get('DiscoverPage1.5'))}
           </div>
         </div>
 
