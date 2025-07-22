@@ -18,13 +18,15 @@ import PhotoGallery from '@components/PhotoGallery_staff';
 
 const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
 
+  const TMP_STAFF_DATA_KEY = 'TMP_STAFF_DATA';
+
   const { user, isLoggedIn } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const navigate = useNavigate();
   
   const renderCount = React.useRef(0);
   renderCount.current += 1;
-  console.log('🔄 EditProfile 렌더링 #', renderCount.current);
+  // console.log('🔄 EditProfile 렌더링 #', renderCount.current);
 
   const [staffInfo, setStaffInfo] = useState({});
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -65,10 +67,15 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
     // 찾은 데이터가 있으면 그것을 사용하고, 없으면 기존 staffInfo 사용
     const staffDataToPass = currentStaff || staffInfo;
     
-    staffDataToPass.description = form.intro;
+    const tempData = sessionStorage.getItem(TMP_STAFF_DATA_KEY);
+    if (tempData) {
+      const parsedTempData = JSON.parse(tempData);
 
-    // 
+      console.log('parsedTempData', parsedTempData );
 
+      staffDataToPass.description = parsedTempData.intro;
+      staffDataToPass.name = parsedTempData.nickname;
+    }
 
     console.log("staffDataToPass", staffDataToPass);
 
@@ -93,15 +100,40 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
         });
         console.log('Staff data:', response);
         if (response) {
-          setStaffInfo(response);
-          setForm({
+
+          let _formData = {
             nickname: response.nickname || response.name || '',
             birth_year: response.birth_year || '',
             nationality: response.nationality || '',
             languages: response.languages || '',
             intro: response.description || response.intro || '',
             profile_content_id: response.profile_content_id || '',
-          });
+          };
+
+          const tempData = sessionStorage.getItem(TMP_STAFF_DATA_KEY);
+          if (tempData) {
+            const parsedTempData = JSON.parse(tempData);
+            console.log('�� 세션스토리지에서 임시 데이터 발견:', parsedTempData);
+            
+            // DB데이터에 임시 데이터 오버라이딩
+            _formData = {
+              ..._formData,
+              ...parsedTempData
+            };
+            
+            // 세션스토리지 클리어
+            setTimeout(()=>{
+              sessionStorage.removeItem(TMP_STAFF_DATA_KEY);
+            },100);
+            console.log('��️ 세션스토리지 클리어 완료');
+            
+          }
+
+
+
+
+          setStaffInfo(response);
+          setForm(_formData);
 
           if (response.profile_image) {
             setUploadedImages([{
@@ -139,7 +171,14 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
   
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    setForm(prev => {
+      const updatedForm = { ...prev, [name]: value };
+
+      // 임시저장
+      sessionStorage.setItem(TMP_STAFF_DATA_KEY, JSON.stringify(updatedForm));
+      return updatedForm;
+    });
+
   };
 
   const handleSave = async () => {
@@ -303,6 +342,7 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
   const handleBack = () => {
 
     //goBack();
+    sessionStorage.removeItem(TMP_STAFF_DATA_KEY);
 
   if (fromStaffTuto) {
     navigate('/staff');

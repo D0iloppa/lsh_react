@@ -26,6 +26,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'r
 
 const DiscoverPageVenue = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ...otherProps }) => {
 
+
+  const TMP_VENUE_DATA_KEY = 'TMP_VENUE_DATA';
+
+
   const venueId = otherProps?.venueId || null;
   const [venueInfo, setVenueInfo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -287,8 +291,21 @@ useEffect(() => {
 
         console.log("response", response.data)
 
-        // 마스킹 제거 - 원본 데이터 그대로 사용
-        const venueInfo = response.data;
+        let venueInfo = response.data;
+
+        const tempData = sessionStorage.getItem(TMP_VENUE_DATA_KEY);
+
+        if (tempData) {
+          const parsedTempData = JSON.parse(tempData);
+
+          venueInfo = {
+            ...venueInfo,
+            ...parsedTempData
+          };
+        }
+
+        
+
         
         window.scrollTo(0, 0);
         setVenueInfo(venueInfo || null);

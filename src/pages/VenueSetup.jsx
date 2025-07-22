@@ -54,6 +54,8 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   const [form, setForm] = useState(defaultForm);
   const [imageCount, setImageCount] = useState(0);
 
+  const TMP_VENUE_DATA_KEY = 'TMP_VENUE_DATA';
+
   // ref로 폼 값 관리
   const formRef = useRef({
     name: '',
@@ -185,7 +187,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
          
 
-          const updatedForm = {
+          let updatedForm = {
             ...form,
             ...venueData,
             open_time: formatTimeForInput(venueData.open_time),
@@ -195,10 +197,38 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
             //   : venueData.image_url ? [venueData.image_url] : []
           };
 
+
+          const tempData = sessionStorage.getItem(TMP_VENUE_DATA_KEY);
+          if (tempData) {
+            const parsedTempData = JSON.parse(tempData);
+            console.log('�� 세션스토리지에서 임시 데이터 발견:', parsedTempData);
+            
+            // DB데이터에 임시 데이터 오버라이딩
+            updatedForm = {
+              ...updatedForm,
+              ...parsedTempData
+            };
+            
+            // 세션스토리지 클리어
+            setTimeout(()=>{
+              sessionStorage.removeItem(TMP_VENUE_DATA_KEY);
+            },100);
+            console.log('��️ 세션스토리지 클리어 완료');
+            
+          }
+
+
+
+
+
+
+
+
+
           console.log("updatedForm", updatedForm)
           setForm(updatedForm);
 
-           setTopImgCount(venueData.image_url ? 1 : 0);
+          setTopImgCount(venueData.image_url ? 1 : 0);
           
           // formRef도 함께 업데이트
           Object.assign(formRef.current, updatedForm);
@@ -222,9 +252,9 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
 
   // form이 변경될 때마다 ref도 업데이트
-  useEffect(() => {
-    Object.assign(formRef.current, form);
-  }, [form]);
+  // useEffect(() => {
+  //   Object.assign(formRef.current, form);
+  // }, [form]);
 
 
 
@@ -247,13 +277,28 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   // handleInputChange - ref와 form 상태 모두 업데이트
   const handleInputChange = (name, value) => {
     formRef.current[name] = value;
-    setForm(prev => ({ ...prev, [name]: value }));
+
+    // 세션스토리지는 유지 (임시저장용)
+    const updatedData = { ...formRef.current, [name]: value };
+    sessionStorage.setItem(TMP_VENUE_DATA_KEY, JSON.stringify(updatedData));
+
+    /*
+    setForm(prev => {
+      const updatedForm = { ...prev, [name]: value };
+      sessionStorage.setItem(TMP_VENUE_DATA_KEY, JSON.stringify(updatedForm));
+      return updatedForm;
+    });
+    */
+
+
   };
 
 
   const handleBack = () => {
 
     //goBack();
+
+    sessionStorage.removeItem(TMP_VENUE_DATA_KEY);
 
   if (fromManagerTuto) {
     navigate('/manager');
@@ -720,6 +765,13 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       return;
     }
 
+
+    const updatedData = { ...formRef.current};
+    sessionStorage.setItem(TMP_VENUE_DATA_KEY, JSON.stringify(updatedData));
+
+
+
+
     if(PAGES) {
       navigateToPageWithData(PAGES.DISCOVERVENUE, {venueId: venueId});
     } else {
@@ -1185,7 +1237,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           <div className="time-label">{get('title.text.14')}</div>
           <SketchInput
             name="name"
-            value={form.name} style={{width: '50%'}}
+            defaultValue={form.name} style={{width: '50%'}}
             onChange={(e) => handleInputChange('name', e.target.value)}
             onBlur={handleBlur}
             placeholder={get('VENUE_NAME_PLACEHOLDER')}
@@ -1198,7 +1250,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           <div className="time-label">{get('DiscoverPage1.6')}</div>
           <SketchInput
             name="address" 
-            value={form.address} 
+            defaultValue={form.address} 
             onChange={(e) => handleInputChange('address', e.target.value)}
             onBlur={handleBlur}
             placeholder={get('VENUE_ADDRESS_PLACEHOLDER')}
@@ -1238,7 +1290,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           <div className="time-label">{get('VENUE_PHONE_PLACEHOLDER')}</div>
           <SketchInput
             name="phone"
-            value={form.phone}
+            defaultValue={form.phone}
             onChange={(e) => handleInputChange('phone', e.target.value)}
             onBlur={handleBlur}
             placeholder={get('VENUE_PHONE_PLACEHOLDER')}
@@ -1252,7 +1304,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
             <SketchInput
               name="open_time" style={{width: '80%', height: '40px'}}
               type="time"
-              value={form.open_time}
+              defaultValue={form.open_time}
               onChange={(e) => handleInputChange('open_time', e.target.value)}
               onBlur={handleBlur}
               placeholder="09:00"
@@ -1264,7 +1316,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
             <SketchInput
               name="close_time" style={{width: '80%', height: '40px'}}
               type="time"
-              value={form.close_time}
+              defaultValue={form.close_time}
               onChange={(e) => handleInputChange('close_time', e.target.value)}
               onBlur={handleBlur}
               placeholder="22:00"
@@ -1409,7 +1461,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
             <div className="time-label">{get('VENUE_INTRO_PLACEHOLDER')}</div>
           <SketchInput
             name="description"
-            value={form.description || ''}
+            defaultValue={form.description || ''}
             onChange={(e) => handleInputChange('description', e.target.value)}
             onBlur={handleBlur}
             placeholder={get('VENUE_INTRO_PLACEHOLDER')}
