@@ -282,7 +282,8 @@ useEffect(() => {
 
               return {
                 ...girl,
-                displayName: `${girl.name} (${age})`,
+                //displayName: `${girl.name} (${age})`,
+                displayName: `${girl.name}`,
                 availCnt: availCnt
               };
             })
@@ -1049,7 +1050,8 @@ const openMenuOverlay = (menuList) => {
               const birthYear = parseInt(girl.birth_year, 10);
               const currentYear = new Date().getFullYear();
               const age = birthYear ? currentYear - birthYear : '?';
-              const displayName = `${girl.name} (${age})`;
+              //const displayName = `${girl.name} (${age})`;
+              const displayName = `${girl.name}`;
 
               console.log(`Girl ${index} - staff_id: ${girl.staff_id}, availCnt: ${availCnt}`);
 

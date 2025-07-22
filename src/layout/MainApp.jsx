@@ -1,7 +1,7 @@
 // src/layout/MainApp.jsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@contexts/AuthContext';
-import { Home, Search, Calendar, User, Map, ChevronUp, Star,Icon, History, MessagesSquare } from 'lucide-react';
+import { Home, Search, Calendar, User, Map, ChevronUp, Star,Icon, History, MessagesSquare, Settings } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useLoginOverlay } from '@hooks/useLoginOverlay.jsx';
@@ -338,7 +338,7 @@ const MainApp = () => {
             }   
         },
         { id: PAGES.BOOKINGHISTORY, icon: History, label: get('menu.reserve.history') ,needLogin:true},
-        { id: PAGES.ACCOUNT, icon: User, label: get('Menu1.4'), needLogin:true }
+        { id: PAGES.ACCOUNT, icon: Settings, label: get('MENU_SETTINGS'), needLogin:true }
     ];
 
     return (

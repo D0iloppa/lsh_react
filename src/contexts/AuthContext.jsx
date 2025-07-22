@@ -154,10 +154,10 @@ const iauMasking = (iau, text, onPurchaseClick) => {
           
           .masked-section {
             // top: 5px;
-            display: inline-block;
+            display: flex;
             // background: url('/cdn/ticket.png') center/cover no-repeat;
             //padding: 0px 15px 0px 7px;
-            margin-left: 8px;
+            //margin-left: 8px;
             position: relative;
             height: 23px;
             overflow: visible;

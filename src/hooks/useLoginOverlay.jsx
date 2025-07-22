@@ -6,9 +6,11 @@ import { BrowserRouter } from 'react-router-dom';
 import { MsgProvider } from '@contexts/MsgContext';
 import { AuthProvider } from '@contexts/AuthContext';
 import LoginComp from '@components/Login/LoginView';
+import { useMsg } from '@contexts/MsgContext';
 
 export const useLoginOverlay = (navigationProps, onLoginSuccess = null) => {
     const { updateLoginState } = useAuth();
+    const { currentLang } = useMsg();
     const { navigateToPage, navigateToPageWithData, PAGES } = navigationProps;
 
     const openLoginOverlay = useCallback((targetPage = null, targetData = null) => {
@@ -80,7 +82,7 @@ export const useLoginOverlay = (navigationProps, onLoginSuccess = null) => {
             
             return (
                 <BrowserRouter>
-                    <MsgProvider>
+                    <MsgProvider initialLanguage={currentLang}>
                         <AuthProvider>
                             <style>{`
                                 .go-home-button {
@@ -163,7 +165,7 @@ export const useLoginOverlay = (navigationProps, onLoginSuccess = null) => {
                 </BrowserRouter>
             );
         });
-    }, [updateLoginState, navigateToPage, navigateToPageWithData, PAGES.REGISTER, onLoginSuccess]);
+    }, [updateLoginState, navigateToPage, navigateToPageWithData, PAGES.REGISTER, onLoginSuccess, currentLang]);
 
     return { openLoginOverlay };
 }; 

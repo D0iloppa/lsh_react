@@ -311,7 +311,7 @@ useEffect(() => {
       <div className="page-wrapper">
         {/* 특별한 className을 추가하여 우선순위 높이기 */}
         <SketchHeader 
-          title={get('Menu1.4')} 
+          title={get('MENU_SETTINGS')} 
           showBack={true}
           onBack={goBack}
           sticky={true}

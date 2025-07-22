@@ -254,13 +254,13 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
         }
         
         .masked-section {
-          display: inline-flex;
+          //display: inline-flex;
           align-items: center;
-          gap: 6px;
+          //gap: 6px;
           position: relative;
-          padding: 2px 8px;
+         // padding: 2px 8px;
           border-radius: 6px;
-          min-width: 140px;
+          //min-width: 140px;
           height: 24px;
           overflow: visible;
           flex-shrink: 0;
@@ -341,12 +341,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
             align-items: flex-start;
             gap: 4px;
           }
-          
-          .masked-section {
-            width: 100%;
-            min-width: 120px;
-            justify-content: space-between;
-          }
+         
           
           .daily-pass-btn {
             font-size: 8px;
@@ -496,7 +491,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
                             ? renderMaskedContent(venue.phone, venue.isActiveUser)
                             : '-'}
                         </div>
-                        <div className="venue-details"><Users size={12}/> {venue.staff_cnt} / <Star size={12}/>{venue.rating}/5</div>
+                        <div className="venue-details"><Users size={12}/> {venue.staff_cnt}{get('text.cnt1')} <Star size={12} fill='yellow'/>{venue.rating}/5</div>
                       </div>
                       <div
                         style={{

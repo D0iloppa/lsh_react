@@ -284,7 +284,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         setHasMoreOlder(true);
         setIsInitialLoad(true);
       }
-
+      setRoomSn(room_sn);
       registerReader(room_sn);
       
       // 초기 채팅 데이터 로딩 (최신 10개)

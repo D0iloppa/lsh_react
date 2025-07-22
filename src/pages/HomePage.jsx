@@ -529,6 +529,8 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(59, 174, 228, 0.3);
         }
+            // .masked-content-wrapper{display: flex;}
+            // .visible-text{min-width: 100px;}
       `}</style>
 
       <div className="homepage-container">

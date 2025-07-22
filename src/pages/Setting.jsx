@@ -113,9 +113,9 @@ const SettingsPage = ({
     
     // 토글 변경 시 즉시 토스트 표시
     if (newValue) {
-      toast.info('이벤트 알림 활성화 모드');
+      toast.info(get('tost.event.alert.on'));
     } else {
-      toast.info('이벤트 알림 비활성화 모드');
+      toast.info(get('tost.event.alert.off'));
     }
   };
 
