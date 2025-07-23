@@ -755,7 +755,7 @@ const handleReserve = async () => {
           setUseStaffService = {setUseStaffService}
           getTargetLabel={getTargetLabel}
         />
-        <div className='Important-info'>
+        {/* <div className='Important-info'>
     <div style={{ marginBottom: '1rem', fontWeight: 'bold' }}>
       {get('Reservation.ImportantInfo')}
     </div>
@@ -765,7 +765,7 @@ const handleReserve = async () => {
           onAgreementChange={handleAgreementChange}
           showRequired={true}
         />
-    </div>
+    </div> */}
 
         <div className="reserve-section">
           <SketchBtn 

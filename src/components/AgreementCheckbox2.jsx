@@ -155,7 +155,7 @@ const AgreementCheckbox2 = ({
         {/* 정책 내용 */}
         <div className="policy-content">
             <div className="policy-title">
-                {get('Agreement.CancelRefundPolicy')}
+                - {get('Agreement.CancelRefundPolicy')}
             </div>
             
             <div className="policy-section">
@@ -165,9 +165,19 @@ const AgreementCheckbox2 = ({
                 <li>{get('Policy.Cancel.7Days')}</li>
                 <li>{get('Policy.Cancel.3to6Days')}</li>
                 <li>{get('Policy.Cancel.1to2Days')}</li>
-                <li style={{fontWeight: 'bold'}}>{get('Policy.Cancel.SameDay')}</li>
                 </ul>
             </div>
+              <div className="policy-title">
+                - {get('Reservation.ImportantInfo')}
+            </div>
+             <div className="policy-section">
+                <ul className="policy-list">
+                <li>1. {get('reservation.agreement.age.confirm')}</li>
+                <li>2. {get('reservation.agreement.personal.info')}</li>
+                <li>3. {get('reservation.agreement.third.party')}</li>
+                </ul>
+            </div>
+            <li style={{fontWeight: 'bold'}}>{get('Policy.Cancel.SameDay')}</li>
 
             {/* <div className="policy-section">
                 <div className="policy-subtitle">{get('Policy.Refund.Title')}</div>

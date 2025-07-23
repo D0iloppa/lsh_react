@@ -118,6 +118,7 @@ body[data-lang="vi"] .daily-stats{letter-spacing: -1px;}
 body[data-lang="vi"] .reservation-footer-content button.sketch-button:nth-of-type(2){letter-spacing: -1px; width: 95px !important; height: 41px !important; margin-top: 7px !important; margin-left: -49px !important;}
 body[data-lang="vi"] .is-reservation {right: -110px !important; font-size: 0.7rem; height: auto !important;}
 body[data-lang="vi"] .map-container .daily-pass-btn{ max-width: 190px; white-space: normal; text-align: left; white-space: normal; line-height: 1.2; vertical-align: top;} 
+body[data-lang="vi"] .daily-pass-btn {letter-spacing: -1px;}
 body[data-lang="vi"] .map-container .venue-details{display: flex; justify-content: flex-start; gap: 0.5rem; line-height: 0.5; margin-bottom: 0.8rem !important;} 
 body[data-lang="vi"] .password-section button{width: 35% !important;}
 body[data-lang="vi"] .attendee-select{height: 50px !important;}

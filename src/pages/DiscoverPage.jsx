@@ -766,8 +766,9 @@ const openMenuOverlay = (menuList) => {
         }
         .club-image-area img { width: 100%; height: 100%; object-fit: cover; }
         .club-name {
-          font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;
+          font-size: 1.5rem; font-weight: bold; 
           word-break: break-word; white-space: normal;
+          margin-bottom: 0.5rem;
         }
         .club-location { font-size: 0.9rem; color: #6b7280;  margin-bottom: 15px;}
         .top-venues-text { font-size: 1.2rem; font-weight: bold; margin-bottom: 8px;}
@@ -831,7 +832,7 @@ const openMenuOverlay = (menuList) => {
         }   
           .reservation-footer {
           position: fixed;
-          bottom: 88px;
+          bottom: 90px;
           left: 0;
           right: 0;
           background: white;
