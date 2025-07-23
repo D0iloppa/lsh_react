@@ -375,9 +375,10 @@ const loadStaffList = async () => {
         .staff-info {
           flex: 1;
           margin-top: 2rem;
+          max-width: 140px;
         }
         .staff-name {
-          font-size: 1.02rem;
+          font-size: 0.9rem;
           font-weight: 600;
           margin-bottom: 0.1rem;
         }
@@ -556,7 +557,7 @@ const loadStaffList = async () => {
                         onChange={(newState) => handleStaffToggle(staff, newState)}
                         disabled={loading}
                       />
-                      <span style={{ color: staff.status === 'active' ? 'green' : 'red' }}>{staff.status === 'active' ? get('SCHEDULE_MODAL_ON') : get('SCHEDULE_MODAL_LEAVE')}</span>
+                      <span style={{fontSize:'0.7rem', color: staff.status === 'active' ? 'green' : 'red' }}>{staff.status === 'active' ? get('SCHEDULE_MODAL_ON') : get('SCHEDULE_MODAL_LEAVE')}</span>
                     </div>
                   </SketchDiv>
                 ))

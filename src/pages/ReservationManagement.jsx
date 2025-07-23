@@ -1131,7 +1131,7 @@ const chatWithUser = async(r) => {
                         </div>
                         <div>
                           <Edit size={10}/> {get('RESERVATION_ESCORT_LABEL')} 
-                          (용감한 홍길동)
+                          ({r.escort_string})
                           <span className={`use_escort ${r.use_escort === 1 ? 'applied' : 'not_applied'}`}>
                             {r.use_escort === 1 ? get('ESCORT_APPLIED') : get('ESCORT_NOT_APPLIED')}
                             

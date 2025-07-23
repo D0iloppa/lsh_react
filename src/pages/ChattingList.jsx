@@ -89,7 +89,7 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
         account_status: item.account_status,
         room_sn: item.room_sn,
         name: item.room_name || '이름 없음',
-        lastMessage: item.last_message_preview || '메시지 없음',
+        lastMessage: item.last_message_preview || `[${get('CHAT_PHOTO_LABEL')}]`,
         lastTime: item.last_message_at
           ? new Date(item.last_message_at).toLocaleTimeString('ko-KR', {
               hour: '2-digit',
@@ -176,6 +176,8 @@ const ChattingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
     }
       */
   };
+
+
 
         
 
