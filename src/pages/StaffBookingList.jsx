@@ -333,6 +333,7 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
   const chatWithManager = async(bk) => {
     console.log('chatWithManager', bk);
 
+    /*
     const chatList = await ApiClient.get('/api/getChattingList', {
       params: {
         venue_id: user.venue_id,
@@ -346,6 +347,19 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
       room_sn = chatList[0].room_sn;
       console.log('room_sn', room_sn);
     }
+      */
+
+
+    const chatRoom = await ApiClient.postForm('/api/getChatRoom', {
+      
+      sender : user.staff_id,
+      sender_type: 'staff',
+
+      receiver_id: user.manager_id,
+      send_to:'manager'
+    });
+
+    const {room_sn = null} = chatRoom;
 
     const payload = { 
       initType: 'booking',
@@ -384,7 +398,8 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
       duration: durationHours ? `${durationHours}${get('Reservation.HourUnit')}` : '',
       attendee: `${bk.attendee}${get('Reservation.PersonUnit')}`,
       memo: bk.note || '',
-      no_show_count: `${bk.no_show_count}${get('text.cnt.1')}`
+      no_show_count: `${bk.no_show_count}${get('text.cnt.1')}`,
+      name: bk.name
     };
   
     const messages = {
@@ -880,7 +895,7 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
           border-radius: 12px;
           font-size: 0.8rem;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: -0.5px;
         }
            .reservation-status {
           font-size: 0.88rem;
@@ -1007,7 +1022,7 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
                           <SketchDiv key={bk.id || bk.reservation_id} className="booking-card">
                             <HatchPattern opacity={0.6} />
                             <div className="booking-header">
-                              <div className="booking-venue">{bk.venue || bk.target_name}</div>
+                              <div className="booking-venue">{bk.venue || bk.target_name}: {bk.name}</div>
                               <div className="reservation-status">
                              {get('RESERVATION_STATUS_LABEL')} <span className="booking-status" style={getStatusStyle(bk.status)}>{getStatusText(bk.status)}</span>
                              </div>
@@ -1063,7 +1078,7 @@ const StaffBookingList = ({ navigateToPageWithData, PAGES, goBack, pageData, ...
                           <SketchDiv key={bk.id || bk.reservation_id} className="booking-card">
                             <HatchPattern opacity={0.6} />
                             <div className="booking-header">
-                              <div className="booking-venue">{bk.venue || bk.target_name}</div>
+                              <div className="booking-venue">{bk.venue || bk.target_name}: {bk.name}</div>
                               <div className="reservation-status">
                                 {get('RESERVATION_STATUS_LABEL')} <span className="booking-status" style={getStatusStyle(bk.status)}>{getStatusText(bk.status)}</span>
                              </div>

@@ -260,7 +260,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           <div className="staff-description">
             {/*girl.description || 'No description available.'*/}
             {formatTextWithLineBreaks(girl?.description ||
-                get('DiscoverPage1.5'))}
+                'No description available.')}
           </div>
         </div>
 

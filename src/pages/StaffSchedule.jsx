@@ -100,6 +100,7 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
     console.log('chatWithStaff', staff);
 
     // 1. room_sn 조회
+    /*
     const chatList = await ApiClient.get('/api/getChattingList', {
       params: {
         venue_id: user.venue_id,
@@ -114,6 +115,22 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
       room_sn = chatList[0].room_sn;
       console.log('room_sn', room_sn);
     }
+      */
+
+
+    const chatRoom = await ApiClient.postForm('/api/getChatRoom', {
+      
+      sender : user.manager_id,
+      sender_type: 'manager',
+
+      receiver_id: staff.staff_id,
+      send_to:'staff'
+    });
+
+    const {room_sn = null} = chatRoom;
+
+
+
 
     navigateToPageWithData(PAGES.CHATTING, { 
       name : staff.staff_name,
@@ -672,7 +689,7 @@ const StaffSchedule = ({ navigateToPageWithData, PAGES, goBack, pageData, ...oth
                         onClick={() => chatWithStaff(staff)}
                       >
                       <span className='chat-style' >
-                          <MessageCircle size={14}/> chat
+                          <MessageCircle size={14}/> {get('BUTTON_CHAT')}
                       </span>
                       </SketchBtn>
                     </div>

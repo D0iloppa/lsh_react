@@ -52,7 +52,7 @@ const StaffSetting = ({ navigateToPageWithData, PAGES, goBack, pageData, ...othe
       }
     };
 
-    fetchStaffData();
+    // fetchStaffData();
 
     if (messages && Object.keys(messages).length > 0) {
       console.log('✅ Messages loaded:', messages);
@@ -382,6 +382,7 @@ const handleChangePassword = async () => {
           color: red;
           margin-top: 0.8rem;
           text-decoration: underline;
+          margin-bottom: 1rem;
         }
       `}</style>
       

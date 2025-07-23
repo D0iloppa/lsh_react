@@ -811,9 +811,22 @@ const weekDates = getWeekDates(currentWeek, mondayStart);
     }
     */
 
+    const chatRoom = await ApiClient.postForm('/api/getChatRoom', {
+      
+      sender : user.staff_id,
+      sender_type: 'staff',
+
+      receiver_id: user.manager_id,
+      send_to:'manager'
+    });
+
+    const {room_sn = null} = chatRoom;
+
+    console.log('chatRoomInfo', chatRoom);
+
     navigateToPageWithData(PAGES.STAFFCHAT, { 
       name : get('CHAT_ONE_ON_ONE_TITLE'),
-      room_sn: null,
+      room_sn: room_sn,
       send_to:'manager',
       receiver_id: user.manager_id,
     });

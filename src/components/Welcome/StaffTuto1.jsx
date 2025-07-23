@@ -114,7 +114,7 @@ const StaffTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES, user}) => {
             fontSize: '0.875rem',
             color: '#333'
           }}>
-            {get('SWAL_STAFF_REG')}
+            {get('Staff.setting.profile.title')}
           </div>
         </SketchBtn>
       </div>
@@ -138,7 +138,7 @@ const StaffTuto1 = ({ navigateToPageWithData, onNextScreen,  PAGES, user}) => {
 
       {/* 하단 설명 텍스트 */}
       <div style={{ textAlign: 'center' }}>
-        <p style={{ fontSize: '0.75rem', color: '#666' }}>
+        <p  className='tuto-bottom-text' style={{ fontSize: '0.75rem', color: '#666', marginBottom: '2rem' }}>
           * {get('TUTORIAL_EDIT_ANYTIME')}
         </p>
       </div>

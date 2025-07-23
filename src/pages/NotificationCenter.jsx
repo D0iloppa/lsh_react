@@ -101,7 +101,7 @@ const NotificationCenter = ({ navigateToPageWithData, PAGES, goBack, pageData, .
     const markNotificationsAsRead = async () => {
       try {
         // 스태프 알림 (notification_type: 5) 읽음 처리
-        await ApiClient.postForm('/api/updateNotifi', {
+         let result = await ApiClient.postForm('/api/updateNotifi', {
           notification_type: 4, 
           user_id: user?.manager_id
         });
