@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
-
+import { useAuth } from '../contexts/AuthContext';
 
 // 주간 테이블 CSS 스타일 (이 스타일을 부모 컴포넌트에 추가하세요)
 export const weeklyTableStyles = `
@@ -266,6 +266,39 @@ export const generateTimeSlots = (startHour = 0, endHour = 24) => {
   return timeSlots;
 };
 
+// 새로운 함수: 라벨과 값을 분리한 시간 슬롯 생성
+export const generateTimeSlotsWithLabels = (startHour = 19, endHour = 3) => {
+  const timeSlots = [];
+
+  // 19:00 ~ 23:00 (당일)
+  for (let hour = startHour; hour <= 23; hour++) {
+    const displayTime = hour.toString().padStart(2, '0') + ':00';
+    const actualTime = hour.toString().padStart(2, '0') + ':00';
+    
+    timeSlots.push({
+      label: displayTime,    // 표시용: 19:00, 20:00, 21:00, 22:00, 23:00
+      value: actualTime,     // 실제값: 19:00, 20:00, 21:00, 22:00, 23:00
+      isNextDay: false
+    });
+  }
+
+  // 00:00 ~ 03:00 (다음날)
+  for (let hour = 0; hour <= endHour; hour++) {
+    const displayTime = hour.toString().padStart(2, '0') + ':00';
+    const actualTime = (hour + 24).toString().padStart(2, '0') + ':00'; // 24:00, 25:00, 26:00, 27:00
+    
+    timeSlots.push({
+      label: displayTime,    // 표시용: 00:00, 01:00, 02:00, 03:00
+      value: actualTime,     // 실제값: 24:00, 25:00, 26:00, 27:00
+      isNextDay: true
+    });
+  }
+
+  console.log('timeSlots', timeSlots);
+
+  return timeSlots;
+};
+
 // Duration 관련 유틸리티 함수들
 const getEndTime = (startTime, duration) => {
   const [hour] = startTime.split(':').map(Number);
@@ -306,8 +339,14 @@ const DurationSelector = ({
   console.log(timeSlots, maxDuration, startTime);
 
   
-  // startTime 기준으로 timeSlots에서 인덱스 찾기
-  const startTimeIndex = timeSlots.findIndex(slot => slot === startTime);
+  // startTime 기준으로 timeSlots에서 인덱스 찾기 (새로운 형식 지원)
+  const startTimeIndex = timeSlots.findIndex(slot => {
+    if (typeof slot === 'string') {
+      return slot === startTime;
+    } else {
+      return slot.value === startTime;
+    }
+  });
   
   // 남아있는 슬롯 수 계산
   const remainingSlots = timeSlots.length - startTimeIndex;
@@ -544,7 +583,8 @@ export const DurationBasedTimeSelector = ({
     setDuration(selectedDuration);
   }, [selectedStartTime, selectedDuration]);
 
-  const handleTimeClick = (time) => {
+  const handleTimeClick = (timeSlot) => {
+    const time = typeof timeSlot === 'string' ? timeSlot : timeSlot.value;
     if (disabledTimes.includes(time)) return;
     
     // 새로운 시작 시간 선택시 기간 초기화
@@ -570,7 +610,8 @@ export const DurationBasedTimeSelector = ({
     });
   };
 
-  const getTimeSlotVariant = (time) => {
+  const getTimeSlotVariant = (timeSlot) => {
+    const time = typeof timeSlot === 'string' ? timeSlot : timeSlot.value;
     if (disabledTimes.includes(time)) return 'disabled';
     if (startTime === time) return 'accent';
     
@@ -603,24 +644,29 @@ export const DurationBasedTimeSelector = ({
         className="time-grid" 
         style={{ userSelect: 'none' }}
       >
-        {timeSlots.map((time, index) => (
-          <SketchBtn
-            key={index}
-            variant={getTimeSlotVariant(time)}
-            size="small"
-            onClick={() => handleTimeClick(time)}
-            disabled={disabledTimes.includes(time)}
-            style={{
-              opacity: disabledTimes.includes(time) ? 0.5 : 1,
-              position: 'relative'
-            }}
-          >
-            <HatchPattern 
-              opacity={startTime === time ? 0.6 : 0.4} 
-            />
-            {time}
-          </SketchBtn>
-        ))}
+        {timeSlots.map((timeSlot, index) => {
+          const time = typeof timeSlot === 'string' ? timeSlot : timeSlot.value;
+          const displayTime = typeof timeSlot === 'string' ? timeSlot : timeSlot.label;
+          
+          return (
+            <SketchBtn
+              key={index}
+              variant={getTimeSlotVariant(timeSlot)}
+              size="small"
+              onClick={() => handleTimeClick(timeSlot)}
+              disabled={disabledTimes.includes(time)}
+              style={{
+                opacity: disabledTimes.includes(time) ? 0.5 : 1,
+                position: 'relative'
+              }}
+            >
+              <HatchPattern 
+                opacity={startTime === time ? 0.6 : 0.4} 
+              />
+              {displayTime}
+            </SketchBtn>
+          );
+        })}
       </div>
 
       <DurationSelector
@@ -656,7 +702,11 @@ export const TimeSlotSelector = ({
   const currentSelectedTimes = Array.isArray(selectedTimes) ? selectedTimes : 
     selectedTimes ? [selectedTimes] : [];
 
-  const handleTimeSelect = (time, event) => {
+  const handleTimeSelect = (timeSlot, event) => {
+    // 새로운 형식 지원 (label/value 분리)
+    const time = typeof timeSlot === 'string' ? timeSlot : timeSlot.value;
+    const displayTime = typeof timeSlot === 'string' ? timeSlot : timeSlot.label;
+    
     if (disabledTimes.includes(time)) return;
 
     let newSelectedTimes;
@@ -678,7 +728,8 @@ export const TimeSlotSelector = ({
     }
   };
 
-  const getTimeSlotVariant = (time) => {
+  const getTimeSlotVariant = (timeSlot) => {
+    const time = typeof timeSlot === 'string' ? timeSlot : timeSlot.value;
     if (disabledTimes.includes(time)) return 'disabled';
     if (currentSelectedTimes.includes(time)) return 'accent';
     return 'secondary';
@@ -695,24 +746,29 @@ export const TimeSlotSelector = ({
         className="time-grid" 
         style={{ userSelect: 'none' }}
       >
-        {timeSlots.map((time, index) => (
-          <SketchBtn
-            key={index}
-            variant={getTimeSlotVariant(time)}
-            size="small"
-            onClick={() => handleTimeSelect(time)}
-            disabled={disabledTimes.includes(time)}
-            style={{
-              opacity: disabledTimes.includes(time) ? 0.5 : 1,
-              position: 'relative'
-            }}
-          >
-            <HatchPattern 
-              opacity={currentSelectedTimes.includes(time) ? 0.6 : 0.4} 
-            />
-            {time}
-          </SketchBtn>
-        ))}
+        {timeSlots.map((timeSlot, index) => {
+          const time = typeof timeSlot === 'string' ? timeSlot : timeSlot.value;
+          const displayTime = typeof timeSlot === 'string' ? timeSlot : timeSlot.label;
+          
+          return (
+            <SketchBtn
+              key={index}
+              variant={getTimeSlotVariant(timeSlot)}
+              size="small"
+              onClick={() => handleTimeSelect(timeSlot)}
+              disabled={disabledTimes.includes(time)}
+              style={{
+                opacity: disabledTimes.includes(time) ? 0.5 : 1,
+                position: 'relative'
+              }}
+            >
+              <HatchPattern 
+                opacity={currentSelectedTimes.includes(time) ? 0.6 : 0.4} 
+              />
+              {displayTime}
+            </SketchBtn>
+          );
+        })}
       </div>
     </div>
   );
@@ -763,7 +819,26 @@ export const MemoSelector = ({ value, onChange, messages = {} }) => {
   );
 };
 
-export const PickupSelector = ({ value, onChange, messages = {} }) => {
+export const PickupSelector = ({ value, onChange, messages = {}, onBookerChange }) => {
+
+  const {user} = useAuth();
+  
+  // booker 값을 별도 state로 관리 (초기값은 user.nickname)
+  const [bookerValue, setBookerValue] = useState(user?.nickname || '');
+
+  useEffect(()=>{
+
+    onBookerChange(bookerValue);
+    
+  }, []);
+  
+  // onChange 핸들러를 useCallback으로 최적화
+  const handleBookerChange = useCallback((e) => {
+    const newValue = e.target.value;
+    setBookerValue(newValue);
+    onBookerChange?.(newValue);
+  }, [onBookerChange]);
+
   return (
     <div className="form-step"
           style={{
@@ -812,11 +887,26 @@ export const PickupSelector = ({ value, onChange, messages = {} }) => {
         {value && (
 
           <SketchDiv className="reserve-info" style={{marginTop:'5px'}}>
-            <div className="summary-item">
+            <div className="summary-item" style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px'
+            }}>
               <span className="summary-label">{messages['bookerLabel']}</span>
-              <div>
-
-              </div>
+              <input
+                type="text"
+                value={bookerValue}
+                onChange={handleBookerChange}
+                placeholder={'Booker'}
+                style={{
+                  flex: 1,
+                  padding: '5px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  boxSizing: 'border-box'
+                }}
+              />
             </div>
           </SketchDiv>
 
@@ -987,6 +1077,7 @@ console.log("messages", messages)
     <PickupSelector 
       value={pickupService}
       onChange={setPickupService}
+      onBookerChange={onBookerChange}
       messages={{
         bookerLabel: messages['bookerLabel'],
         pickupLabel: messages['pickupLabel'] || '옵션',

@@ -27,6 +27,7 @@ const ReserveSummaryPage = ({
   const [displayData, setDisplayData] = useState({
     target: '',
     targetName: '',
+    bookerName: '',
     date: '',
     startTime: '',
     endTime: '',
@@ -38,7 +39,7 @@ const ReserveSummaryPage = ({
 
 
   const { user, isLoggedIn } = useAuth();
-console.log("user", user)
+  console.log("user", user)
 
 
   const [agreements, setAgreements] = useState({
@@ -71,6 +72,7 @@ console.log("user", user)
 
       const {
         user, 
+        bookerName,
         target, 
         target_id, 
         selectedDate, 
@@ -89,6 +91,7 @@ console.log("user", user)
       const api_payload = {
         client_id: user?.user_id || user?.id,
         target: target,
+        escort_string: bookerName,
         target_id: Number.parseInt(target_id),
         reserve_date: selectedDate,
         attendee: Number.parseInt(attendee),
@@ -109,6 +112,7 @@ console.log("user", user)
       const display_data = {
         target: target,
         targetName: targetName,
+        bookerName: bookerName,
         date: formatDate(selectedDate),
         startTime: selectedTime,
         endTime: endTime,
@@ -255,6 +259,7 @@ console.log("user", user)
   const getSummaryMessages = () => {
     return {
       pageTitle: get('BookingSum1.1') || '예약 확인',
+      bookerLabel: get('RESERVATION_CLIENT_LABEL') || 'Booker',
       targetLabel: get('BookingSum.Target') || '예약 대상',
       dateLabel: get('BookingSum1.2') || '날짜',
       timeLabel: get('BookingSum1.3') || '시간',
@@ -443,6 +448,12 @@ console.log("user", user)
               <div className="summary-item">
                 <span className="summary-label">{messages_summary.targetLabel}:</span>
                 <span className="summary-value">{displayData.targetName}</span>
+              </div>
+
+
+              <div className="summary-item">
+                <span className="summary-label">{messages_summary.bookerLabel}</span>
+                <span className="summary-value">{displayData.bookerName}</span>
               </div>
               
               {/* 날짜 */}

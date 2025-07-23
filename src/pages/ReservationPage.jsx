@@ -14,6 +14,7 @@ import LoadingScreen from '@components/LoadingScreen';
 import { 
   ReservationForm, 
   generateTimeSlots,
+  generateTimeSlotsWithLabels,
   weeklyTableStyles  // CSS 스타일
 } from '@components/ReservationComponents';
 
@@ -206,6 +207,8 @@ const isAllAgreed = () => {
     // 1. venue-info에 의한 timeSlot 설정
     let disabledTimes = [];
 
+    let venueTimeSlots = []; // 변수 선언을 상단으로 이동
+    
     if(venueInfo){
       let {open_time, close_time} = venueInfo;
       
@@ -216,7 +219,7 @@ const isAllAgreed = () => {
 
       console.log('🕐 Venue hours:', open_time, close_time);
 
-      const venueTimeSlots = generateTimeSlots(open_time, close_time);
+      venueTimeSlots = generateTimeSlotsWithLabels(open_time, close_time);
       setTimeSlots(venueTimeSlots); // timeSlots 상태 업데이트
     }
 
@@ -232,7 +235,7 @@ const isAllAgreed = () => {
         _open_time = _open_time.split(':')[0];
         _open_time = Number.parseInt(_open_time);
         
-        // 현재 시간까지 비활성화
+        // 현재 시간까지 비활성화 (새로운 형식 지원)
         for (let hour = _open_time; hour <= currentHour; hour++) {
           const timeString = hour.toString().padStart(2, '0') + ':00';
           disabledTimes.push(timeString);
@@ -264,43 +267,55 @@ const isAllAgreed = () => {
         console.log('📋 Available times from schedule list:', uniqueAvailableTimes);
         
         if (uniqueAvailableTimes.length > 0) {
-          // 전체 시간대 생성 (venue의 운영시간 기준으로 변경)
-          const allPossibleTimes = generateTimeSlots(
-            parseInt(venueInfo.open_time.split(':')[0]), 
-            parseInt(venueInfo.close_time.split(':')[0])
-          );
-          console.log('🕐 All possible times format:', allPossibleTimes.slice(0, 3)); // 형식 확인용
+          // 새로운 형식의 timeSlots에서 value 값들을 추출하여 비교
+          const timeSlotValues = venueTimeSlots.map(slot => slot.value);
+          console.log('🕐 Time slot values:', timeSlotValues);
           
           // 가능한 시간 리스트에 없는 시간들을 비활성화
-          allPossibleTimes.forEach(timeSlot => {
-            if (!uniqueAvailableTimes.includes(timeSlot)) {
-              disabledTimes.push(timeSlot);
+          timeSlotValues.forEach(timeSlotValue => {
+            // 24시 이상인 경우 00시 형식으로 변환하여 비교
+            let compareTime = timeSlotValue;
+            if (parseInt(timeSlotValue.split(':')[0]) >= 24) {
+              const hour = parseInt(timeSlotValue.split(':')[0]) - 24;
+              compareTime = hour.toString().padStart(2, '0') + ':00';
+            }
+            
+            if (!uniqueAvailableTimes.includes(compareTime)) {
+              disabledTimes.push(timeSlotValue);
             }
           });
           
           console.log('🚫 Times not in available list:', 
-            allPossibleTimes.filter(time => !uniqueAvailableTimes.includes(time))
+            timeSlotValues.filter(timeSlotValue => {
+              let compareTime = timeSlotValue;
+              if (parseInt(timeSlotValue.split(':')[0]) >= 24) {
+                const hour = parseInt(timeSlotValue.split(':')[0]) - 24;
+                compareTime = hour.toString().padStart(2, '0') + ':00';
+              }
+              return !uniqueAvailableTimes.includes(compareTime);
+            })
           );
           console.log('✅ Available times that match:', 
-            allPossibleTimes.filter(time => uniqueAvailableTimes.includes(time))
+            timeSlotValues.filter(timeSlotValue => {
+              let compareTime = timeSlotValue;
+              if (parseInt(timeSlotValue.split(':')[0]) >= 24) {
+                const hour = parseInt(timeSlotValue.split(':')[0]) - 24;
+                compareTime = hour.toString().padStart(2, '0') + ':00';
+              }
+              return uniqueAvailableTimes.includes(compareTime);
+            })
           );
         } else {
           console.warn('⚠️ No valid times found in schedule list for', fullDate);
           // 가능한 시간이 없으면 모든 시간 비활성화
-          const allTimes = generateTimeSlots(
-            parseInt(venueInfo.open_time.split(':')[0]), 
-            parseInt(venueInfo.close_time.split(':')[0])
-          );
-          disabledTimes.push(...allTimes);
+          const timeSlotValues = venueTimeSlots.map(slot => slot.value);
+          disabledTimes.push(...timeSlotValues);
         }
       } else {
         console.log('ℹ️ No schedule found for', fullDate);
         // 스케줄이 없으면 모든 시간 비활성화
-        const allTimes = generateTimeSlots(
-          parseInt(venueInfo.open_time.split(':')[0]), 
-          parseInt(venueInfo.close_time.split(':')[0])
-        );
-        disabledTimes.push(...allTimes);
+        const timeSlotValues = venueTimeSlots.map(slot => slot.value);
+        disabledTimes.push(...timeSlotValues);
       }
     
     } catch (error) {
@@ -453,11 +468,14 @@ const handleReserve = async () => {
       return; // 유효성 검사 실패 시 예약 진행하지 않음
     }
 
-    console.log("reservationData",reservationData);
+    
+
     // Duration 방식의 예약 처리 로직
     const legacyData = {
       user,
       user_id : user.user_id,
+      bookerName: bookerName,
+      targetName: getTargetLabel(),
       target: target,
       target_id: id,
       attendee,
