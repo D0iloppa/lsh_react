@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import { RotateCcw } from 'lucide-react'; // 회전 아이콘
 import Swal from 'sweetalert2';
-
 
 const PersonFinderBillboard = ({ onClose }) => {
   const [isDisplaying, setIsDisplaying] = useState(false);
@@ -10,18 +10,16 @@ const PersonFinderBillboard = ({ onClose }) => {
   const marqueeRef = useRef(null);
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
-      useEffect(() => {
-          if (messages && Object.keys(messages).length > 0) {
-            console.log('✅ Messages loaded:', messages);
-            // setLanguage('en'); // 기본 언어 설정
-            console.log('Current language set to:', currentLang);
-            window.scrollTo(0, 0);
-          }
-        }, [messages, currentLang]);
+  useEffect(() => {
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
+  }, [messages, currentLang]);
         
   const showDisplay = () => {
     if (!inputName.trim()) {
-       
       return;
     }
     
@@ -55,6 +53,34 @@ const PersonFinderBillboard = ({ onClose }) => {
     }
   };
 
+  // 화면 회전 요청 함수
+  const requestRotation = async () => {
+    try {
+      // Screen Orientation API 사용
+      if (screen.orientation && screen.orientation.lock) {
+        await screen.orientation.lock('landscape');
+        console.log('화면이 가로 모드로 고정되었습니다.');
+      } else {
+        // 지원하지 않는 경우 사용자에게 알림
+        await Swal.fire({
+          title: get('ROTATE_TITLE') || '화면 회전',
+          text: get('ROTATE_MESSAGE') || '수동으로 화면을 가로 모드로 회전해주세요.',
+          icon: 'info',
+          confirmButtonText: get('SWAL_CONFIRM_BUTTON') || '확인'
+        });
+      }
+    } catch (error) {
+      console.log('화면 회전 요청 실패:', error);
+      // 실패해도 사용자에게 수동 회전 안내
+      await Swal.fire({
+        title: get('ROTATE_TITLE') || '화면 회전',
+        text: get('ROTATE_MANUAL_MESSAGE') || '수동으로 화면을 가로 모드로 회전해주세요.',
+        icon: 'info',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON') || '확인'
+      });
+    }
+  };
+
   return (
     <>
       <style jsx>{`
@@ -80,6 +106,39 @@ const PersonFinderBillboard = ({ onClose }) => {
         .input-screen {
           background-color: #111;
           color: white;
+          position: relative;
+        }
+
+        .header-section {
+          position: relative;
+          width: 100%;
+          max-width: 400px;
+          text-align: center;
+          margin-bottom: 30px;
+        }
+
+        .rotate-button {
+          position: absolute;
+          top: 0;
+          right: 0;
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          color: white;
+          padding: 8px;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          transition: all 0.3s ease;
+        }
+
+        .rotate-button:hover {
+          background: rgba(255, 255, 255, 0.2);
+          border-color: rgba(255, 255, 255, 0.5);
+          transform: rotate(90deg);
         }
 
         .name-input {
@@ -161,12 +220,22 @@ const PersonFinderBillboard = ({ onClose }) => {
 
         @media (max-width: 768px) {
           .marquee-text {
-            font-size: 13rem;
+            font-size: 8rem;
           }
           
           .name-input {
             width: 250px;
             font-size: 18px;
+          }
+
+          .header-section {
+            max-width: 300px;
+          }
+        }
+
+        @media (orientation: landscape) {
+          .marquee-text {
+            font-size: 10rem;
           }
         }
       `}</style>
@@ -175,9 +244,18 @@ const PersonFinderBillboard = ({ onClose }) => {
         {!isDisplaying ? (
           // 입력 화면
           <div className="input-screen">
-            <h2 style={{ marginBottom: '30px', color: 'white' }}>
-              {get('BILLBOARD_TITLE')}
-            </h2>
+            <div className="header-section">
+              <h2 style={{ margin: 0, color: 'white' }}>
+                {get('BILLBOARD_TITLE')}
+              </h2>
+              {/* <button 
+                className="rotate-button"
+                onClick={requestRotation}
+                title={get('ROTATE_TOOLTIP') || '화면을 가로 모드로 회전'}
+              >
+                <RotateCcw size={20} />
+              </button> */}
+            </div>
             <input
               type="text"
               className="name-input"
@@ -216,6 +294,19 @@ const PersonFinderBillboard = ({ onClose }) => {
               style={{ right: '170px' }}
             >
               {get('BILLBOARD_CLOSE_BUTTON')}
+            </button>
+            <button 
+              className="rotate-button"
+              onClick={requestRotation}
+              title={get('ROTATE_TOOLTIP') || '화면을 가로 모드로 회전'}
+              style={{ 
+                position: 'absolute',
+                top: '20px',
+                right: '320px',
+                zIndex: 10
+              }}
+            >
+              <RotateCcw size={20} />
             </button>
             <div className="marquee-container">
               <div 

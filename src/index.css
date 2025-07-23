@@ -147,7 +147,7 @@ body[data-lang="vi"] .tuto-bottom-text {letter-spacing: -0.5px; margin-bottom: 2
 body[data-lang="vi"] .calendar-accordion.open{max-height: 242px !important;}
 body[data-lang="vi"] .calendar-2weeks{height: 8rem !important;}
 body[data-lang="vi"] .reservation-count{top: -22px !important;}
-body[data-lang="vi"] .reservation-list button {width: 46% !important;}
+body[data-lang="vi"] .reservation-list button {width: 50% !important;}
 
 body {margin: 0;}
 .swal-zindex-10000 {

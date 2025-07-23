@@ -124,6 +124,7 @@ const transformReservationData = (apiData) => {
       client_name: item.client_name,
       client_id: item.client_id,
       use_escort: item.use_escort,
+      escort_string: item.escort_string,
       use_staff: item.use_staff,
       note: item.note,
       attendee: item.attendee,
