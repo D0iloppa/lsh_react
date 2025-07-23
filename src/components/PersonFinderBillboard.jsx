@@ -7,6 +7,7 @@ const PersonFinderBillboard = ({ onClose }) => {
   const [isDisplaying, setIsDisplaying] = useState(false);
   const [name, setName] = useState('');
   const [inputName, setInputName] = useState('');
+  const [isRotated, setIsRotated] = useState(false);
   const marqueeRef = useRef(null);
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
@@ -54,31 +55,8 @@ const PersonFinderBillboard = ({ onClose }) => {
   };
 
   // 화면 회전 요청 함수
-  const requestRotation = async () => {
-    try {
-      // Screen Orientation API 사용
-      if (screen.orientation && screen.orientation.lock) {
-        await screen.orientation.lock('landscape');
-        console.log('화면이 가로 모드로 고정되었습니다.');
-      } else {
-        // 지원하지 않는 경우 사용자에게 알림
-        await Swal.fire({
-          title: get('ROTATE_TITLE') || '화면 회전',
-          text: get('ROTATE_MESSAGE') || '수동으로 화면을 가로 모드로 회전해주세요.',
-          icon: 'info',
-          confirmButtonText: get('SWAL_CONFIRM_BUTTON') || '확인'
-        });
-      }
-    } catch (error) {
-      console.log('화면 회전 요청 실패:', error);
-      // 실패해도 사용자에게 수동 회전 안내
-      await Swal.fire({
-        title: get('ROTATE_TITLE') || '화면 회전',
-        text: get('ROTATE_MANUAL_MESSAGE') || '수동으로 화면을 가로 모드로 회전해주세요.',
-        icon: 'info',
-        confirmButtonText: get('SWAL_CONFIRM_BUTTON') || '확인'
-      });
-    }
+  const requestRotation = () => {
+    setIsRotated(!isRotated); // 회전 상태 토글
   };
 
   return (
@@ -92,6 +70,16 @@ const PersonFinderBillboard = ({ onClose }) => {
           height: 100vh;
           z-index: 9999;
           font-family: Arial, sans-serif;
+          transition: transform 0.5s ease;
+        }
+
+        .billboard-overlay.rotated {
+          transform: rotate(90deg);
+          transform-origin: center center;
+          width: 100vh;
+          height: 100vw;
+          top: calc((100vh - 100vw) / 2);
+          left: calc((100vw - 100vh) / 2);
         }
 
         .input-screen, .display-screen {
@@ -178,12 +166,22 @@ const PersonFinderBillboard = ({ onClose }) => {
           transform: translateY(-50%);
         }
 
+        .rotated .marquee-container {
+          height: 300px;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+
         .marquee-text {
           white-space: nowrap;
           font-size: 120px;
           font-weight: bold;
           color: #0f0;
           position: absolute;
+        }
+
+        .rotated .marquee-text {
+          font-size: 180px;
         }
 
         @keyframes marquee {
@@ -218,9 +216,19 @@ const PersonFinderBillboard = ({ onClose }) => {
           background: darkred;
         }
 
+        .rotated .close-btn {
+          font-size: 16px;
+          padding: 8px 16px;
+        }
+
+        .rotated .rotate-button {
+          top: 15px !important;
+          right: 300px !important;
+        }
+
         @media (max-width: 768px) {
           .marquee-text {
-            font-size: 8rem;
+            font-size: 10rem;
           }
           
           .name-input {
@@ -231,6 +239,20 @@ const PersonFinderBillboard = ({ onClose }) => {
           .header-section {
             max-width: 300px;
           }
+
+          .rotated .marquee-text {
+            font-size: 10rem;
+          }
+
+          .close-btn {
+            font-size: 14px;
+            padding: 6px 12px;
+            top: 15px;
+          }
+
+          .rotated .close-btn:nth-of-type(2) {
+            right: 120px;
+          }
         }
 
         @media (orientation: landscape) {
@@ -238,9 +260,19 @@ const PersonFinderBillboard = ({ onClose }) => {
             font-size: 10rem;
           }
         }
+
+        @media (max-width: 768px) and (orientation: portrait) {
+          .rotated .marquee-text {
+            font-size: 8rem;
+          }
+
+          .rotated .marquee-container {
+            height: 550px;
+          }
+        }
       `}</style>
 
-      <div className="billboard-overlay">
+      <div className={`billboard-overlay ${isRotated ? 'rotated' : ''}`}>
         {!isDisplaying ? (
           // 입력 화면
           <div className="input-screen">

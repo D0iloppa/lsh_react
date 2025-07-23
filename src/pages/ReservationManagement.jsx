@@ -152,6 +152,9 @@ const ReservationManagement = ({ navigateToPageWithData, PAGES, goBack, pageData
   const calendarScrollRef = useRef(null);
   const today = dayjs();
 
+  const [billboardName, setBillboardName] = useState('');
+
+
   // actionMap과 mngCodeMap 상태 추가
   const [actionMap, setActionMap] = useState({});
   const [mngCodeMap, setMngCodeMap] = useState({});
@@ -1157,8 +1160,11 @@ const chatWithUser = async(r) => {
                         size="small"
                         variant="primary" 
                         style={{width: '30%', background: 'linear-gradient(135deg, rgb(255 111 241 / 0%), rgb(255 225 249))'}}
-                        onClick={() => setShowBillboard(true)} 
-                      >
+                        onClick={() => {
+                            setBillboardName(r.escort_string);  // ← 이름 설정
+                            setShowBillboard(true);           // ← 전광판 열기
+                          }}
+                        >
                         {get('BILLBOARD_OPEN_BUTTON')}
                       </SketchBtn>
                     ) : (
@@ -1212,7 +1218,10 @@ const chatWithUser = async(r) => {
         )}
       </div>
       {showBillboard && (
-        <PersonFinderBillboard onClose={() => setShowBillboard(false)} />
+        <PersonFinderBillboard 
+          onClose={() => setShowBillboard(false)} 
+          initialName={billboardName}         // ← 전달
+        />
       )}
     </>
   );

@@ -144,9 +144,9 @@ body[data-lang="vi"] .image-upload-title button{letter-spacing: -1px !important;
 body[data-lang="vi"] .account-status{letter-spacing: -1px;}
 body[data-lang="vi"] .staff-reservation-btn{width: auto !important;}
 body[data-lang="vi"] .tuto-bottom-text {letter-spacing: -0.5px; margin-bottom: 2rem;}
-body[data-lang="vi"] .calendar-accordion.open{max-height: 242px !important;}
-body[data-lang="vi"] .calendar-2weeks{height: 8rem !important;}
-body[data-lang="vi"] .reservation-count{top: -22px !important;}
+body[data-lang="vi"] .workschedule-container .calendar-accordion.open{max-height: 242px !important;}
+body[data-lang="vi"] .workschedule-container .calendar-2weeks{height: 8rem !important;}
+body[data-lang="vi"] .workschedule-container .reservation-count{top: -22px !important;}
 body[data-lang="vi"] .reservation-list button {width: 50% !important;}
 
 body {margin: 0;}
