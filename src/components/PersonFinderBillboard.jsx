@@ -263,11 +263,11 @@ const PersonFinderBillboard = ({ onClose }) => {
 
         @media (max-width: 768px) and (orientation: portrait) {
           .rotated .marquee-text {
-            font-size: 8rem;
+            font-size: 10rem;
           }
 
           .rotated .marquee-container {
-            height: 550px;
+            height: 580px;
           }
         }
       `}</style>
@@ -333,7 +333,7 @@ const PersonFinderBillboard = ({ onClose }) => {
               title={get('ROTATE_TOOLTIP') || '화면을 가로 모드로 회전'}
               style={{ 
                 position: 'absolute',
-                top: '20px',
+                top: '13px',
                 right: '320px',
                 zIndex: 10
               }}
