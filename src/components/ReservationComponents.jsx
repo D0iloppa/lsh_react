@@ -808,6 +808,24 @@ export const PickupSelector = ({ value, onChange, messages = {} }) => {
           </span>
         </label>
         <div></div>
+
+        {value && (
+          <input
+            type="text"
+            value={'용감한 개발자'}
+            placeholder={'messages.escortPlaceholder' || '요청사항을 입력해주세요'}
+            style={{
+              marginTop: '8px',
+              width: '100%',
+              padding: '10px',
+              border: '1px solid #d1d5db',
+              borderRadius: '6px',
+              fontSize: '14px',
+              boxSizing: 'border-box'
+            }}
+          />
+        )}
+
         {value && (
           <div style={{ 
             marginTop: '8px', 
