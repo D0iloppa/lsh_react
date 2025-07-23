@@ -35,6 +35,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   const [attendee, setAttendee] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [memo, setMemo] = useState(''); // 메모 상태 추가
+  const [bookerName, setBookerName] = useState('');
   
   // Duration 기반 예약 데이터
   const [reservationData, setReservationData] = useState({
@@ -482,6 +483,8 @@ const handleReserve = async () => {
   // Duration 컴포넌트에서 사용할 다국어 메시지 정리
   const getReservationMessages = () => {
     return {
+
+      bookerLabel: get('RESERVATION_CLIENT_LABEL') || 'Booker',
       // AttendeeSelector 메시지들
       attendeeLabel: get('Reservation.AttendeeLabel') || 'Attendee',
       selectPeople: get('Reservation.SelectPeople') || 'Select number of people',
@@ -744,6 +747,7 @@ const handleReserve = async () => {
           onTimeSelect={handleTimeSelect} // Duration 핸들러 사용
           memo={memo} // 메모 값 전달
           onMemoChange={setMemo} // 메모 변경 핸들러 전달
+          onBookerChange={setBookerName} // booker 변경 핸들러
           disabledDates={[]}
           disabledTimes={disabledTimes}
           useDurationMode={true} // Duration 모드 활성화

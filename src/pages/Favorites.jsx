@@ -86,8 +86,8 @@ const FavoritesPage = ({
 
   const handleBook = (venue) => {
     console.log('Book clicked:', venue);
-    navigateToPageWithData && navigateToPageWithData(PAGES.RESERVATION, {
-      selectedVenue: venue
+    navigateToPageWithData && navigateToPageWithData(PAGES.DISCOVER, {
+      venueId:venue.target_id
     });
   };
 

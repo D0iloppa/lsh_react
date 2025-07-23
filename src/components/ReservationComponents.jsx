@@ -810,20 +810,16 @@ export const PickupSelector = ({ value, onChange, messages = {} }) => {
         <div></div>
 
         {value && (
-          <input
-            type="text"
-            value={'용감한 개발자'}
-            placeholder={'messages.escortPlaceholder' || '요청사항을 입력해주세요'}
-            style={{
-              marginTop: '8px',
-              width: '100%',
-              padding: '10px',
-              border: '1px solid #d1d5db',
-              borderRadius: '6px',
-              fontSize: '14px',
-              boxSizing: 'border-box'
-            }}
-          />
+
+          <SketchDiv className="reserve-info" style={{marginTop:'5px'}}>
+            <div className="summary-item">
+              <span className="summary-label">{messages['bookerLabel']}</span>
+              <div>
+
+              </div>
+            </div>
+          </SketchDiv>
+
         )}
 
         {value && (
@@ -913,6 +909,7 @@ export const ReservationForm = ({
   onTimeSelect,
   memo, // 메모 값 추가
   onMemoChange, // 메모 변경 핸들러 추가
+  onBookerChange,
   disabledDates = [],
   disabledTimes = [],
   timeSelectionMode = 'single',
@@ -991,6 +988,7 @@ console.log("messages", messages)
       value={pickupService}
       onChange={setPickupService}
       messages={{
+        bookerLabel: messages['bookerLabel'],
         pickupLabel: messages['pickupLabel'] || '옵션',
         pickupOption: messages['pickupOption'] || '픽업 서비스 이용',
         pickupInfo: messages['pickupInfo'],
