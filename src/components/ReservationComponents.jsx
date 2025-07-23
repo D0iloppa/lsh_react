@@ -292,6 +292,7 @@ const canSelectDuration = (startTime, duration, disabledTimes) => {
 // 
 // 시간 선택 컴포넌트
 const DurationSelector = ({ 
+  timeSlots,
   startTime, 
   maxDuration, 
   selectedDuration, 
@@ -301,10 +302,25 @@ const DurationSelector = ({
 }) => {
   if (!startTime) return null;
 
+
+  console.log(timeSlots, maxDuration, startTime);
+
+  
+  // startTime 기준으로 timeSlots에서 인덱스 찾기
+  const startTimeIndex = timeSlots.findIndex(slot => slot === startTime);
+  
+  // 남아있는 슬롯 수 계산
+  const remainingSlots = timeSlots.length - startTimeIndex;
+  
+  // maxDuration과 남은 슬롯 수 중 최소값 선택
+  const availableDuration = Math.min(maxDuration, remainingSlots);
+  
   const durations = [];
-  for (let i = 1; i <= maxDuration; i++) {
+  for (let i = 1; i <= availableDuration; i++) {
     durations.push(i);
   }
+
+  
 
   return (
     <div className="duration-selector">
@@ -609,6 +625,7 @@ export const DurationBasedTimeSelector = ({
 
       <DurationSelector
         startTime={startTime}
+        timeSlots={timeSlots}
         maxDuration={maxDuration}
         selectedDuration={duration}
         onDurationChange={handleDurationChange}
