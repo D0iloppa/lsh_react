@@ -22,6 +22,7 @@ const roleOptions = [
 const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
 
   const { user } = useAuth();
+  const [errors, setErrors] = useState({});
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [venue, setVenue] = useState(-1);
   const [form, setForm] = useState({
@@ -35,9 +36,35 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
+
+      // 입력 시 해당 필드의 에러 메시지 제거
+      if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  // 폼 검증 함수
+  const validateForm = () => {
+    const newErrors = {};
+
+    // 비밀번호 검증
+    if (!form.password.trim()) {
+      newErrors.password = get('VALIDATION_PASSWORD_REQUIRED');
+    } else if (form.password.length < 6) {
+      newErrors.password = get('VALIDATION_PASSWORD_MIN_LENGTH');
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleAddStaff = async () => {
+
+    // 폼 검증
+    if (!validateForm()) {
+      return; // 검증 실패 시 등록 중단
+    }
+
     ApiClient.postForm('/api/register', {
       login_type: 'id',
       account_type:'staff',
@@ -153,6 +180,12 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
           justify-content: flex-end;
           margin-top: 1.1rem;
         }
+          .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            margin-bottom: 0.5rem;
+          }
       `}</style>
           <div className="create-container">
           <SketchHeader
@@ -190,6 +223,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
                 onChange={handleChange}
                 placeholder={get('STAFF_PASSWORD_PLACEHOLDER')}
                 type="password"
+                error={errors.password}
               />
             </div>
             <div className="form-field" style={{marginBottom: '0.3rem', display: 'none'}}>

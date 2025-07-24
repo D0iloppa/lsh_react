@@ -22,6 +22,7 @@ const roleOptions = [
 const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
 
   const { user } = useAuth();
+  const [errors, setErrors] = useState({});
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [venue, setVenue] = useState(-1);
   const [form, setForm] = useState({
@@ -37,6 +38,23 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
   });
 
   const handlePasswordReset = async() => {
+     if (!password.confirm.trim()) {
+        setErrors(prev => ({ 
+          ...prev, 
+          confirm: get('VALIDATION_PASSWORD_REQUIRED')
+        }));
+        return;
+      }
+      if (password.confirm.length < 6) {
+        setErrors(prev => ({ 
+          ...prev, 
+          confirm: get('VALIDATION_PASSWORD_MIN_LENGTH')
+        }));
+        return;
+      }
+
+      setErrors(prev => ({ ...prev, confirm: '' }));
+      
     try {
       const response = await ApiClient.postForm('/api/UpdatePassword', {
         login_type: 'id',
@@ -80,6 +98,11 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPassword(prev => ({ ...prev, [name]: value }));
+
+      if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+
   };
 
   // pageData에서 스태프 정보 불러오기
@@ -216,6 +239,12 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
           justify-content: flex-end;
           margin-top: 1.1rem;
         }
+          .error-message {
+          color: #dc2626;
+          font-size: 0.875rem;
+          margin-top: 0.25rem;
+          margin-bottom: 0.5rem;
+        }
       `}</style>
           <div className="create-container">
           <SketchHeader
@@ -276,6 +305,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
                     placeholder={get('SETTINGS_NEW_PASSWORD_PLACEHOLDER')}
                     type="password" 
                     style={{height:'40px', fontFamily: 'none'}}
+                    error={errors.confirm}
                   />
                 </div>
                 <div>
