@@ -1208,32 +1208,7 @@ const openMenuOverlay = (menuList) => {
                         });
 
                         if (result.isConfirmed) {
-                          ApiClient.postForm('/api/buyCoupon',{
-                                user_id: user?.user_id
-                              }).then(res => {
-                          
-                                const {success = false} = res;
-                                
-                                if(success){
-                                  Swal.fire({
-                                    title: get('SWAL_DAILY_TICKET_SUCCESS_TITLE'),
-                                    text: get('SWAL_DAILY_TICKET_SUCCESS_TEXT'),
-                                    icon: 'success',
-                                    confirmButtonText: '확인'
-                                  }).then(() => {
-                                    
-                                    // Swal 확인 버튼 클릭 후 페이지 새로고침
-                                    navigateToPageWithData(PAGES.RESERVATION, {
-                                      target: 'venue',
-                                      id: venueId || 1,
-                                    });
-                                  });
-                                }
-                                
-                              }).catch(error => {
-                                console.error('❌ 체험권 발급 실패:', error);
-                                // alert('체험권 발급에 실패했습니다. 다시 시도해주세요.');
-                              });
+                            navigateToPageWithData(PAGES.PURCHASEPAGE);
                         }
                       }
                     } catch (error) {

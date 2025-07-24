@@ -159,13 +159,13 @@ useEffect(() => {
 
   const handleDelete = async () => {
     const result = await Swal.fire({
-      title: '정말 계정 탈퇴를 하시겠습니까?',
-      text: '이 작업은 되돌릴 수 없습니다.',
+      title: get('account_page_delete_swal_title'),
+      text: get('account_page_delete_swal_text'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
-      confirmButtonText: '네, 탈퇴하겠습니다',
+      confirmButtonText: get('account_page_delete_swal_confirm'),
       cancelButtonText: get('Reservation.CancelButton')
     });
 
@@ -359,7 +359,7 @@ useEffect(() => {
 
             <div className="delete-container">
               <div className="staff-delete" onClick={handleDelete}>
-                {get('DELETE_ACCOUNT')}
+                {get('account_page_delete_btn')}
               </div>
             </div>
           </div>

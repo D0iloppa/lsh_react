@@ -210,7 +210,7 @@ export const PopupProvider = ({ children }) => {
     // 앱 시작 시 localStorage에서 팝업 관련 데이터 클리어
     localStorage.removeItem('lastPopupTime');
     console.log('🔄 앱 시작: 팝업 시간 데이터 초기화');
-  }, []);
+  }, [isActiveUser]);
 
 
   
