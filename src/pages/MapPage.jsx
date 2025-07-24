@@ -189,6 +189,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
           transform: translateX(-50%);
           width: calc(100% - 2rem);
           z-index: 35;
+          display: none;
         }
         .venues-count {
           background: #f9fafb;

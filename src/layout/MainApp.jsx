@@ -175,7 +175,7 @@ const MainApp = () => {
 
     // 광고 호출 함수 (useCallback으로 메모이제이션)
     // 광고 호출 주기 설정 (N회마다 광고 호출)
-    const AD_CALL_INTERVAL = 5;
+    const AD_CALL_INTERVAL = 10;
 
     const showAdWithCallback = useCallback(async (onAdComplete, fallbackAction, timeoutMs = 4000) => {
         // 세션스토리지에서 광고 호출 횟수 관리
@@ -259,12 +259,13 @@ const MainApp = () => {
 
         console.log(`${adCallCount}회차 - 광고 호출 실행`);
 
+
         try {
             // 광고 응답 대기 타이머 (기본 4초)
             const fallbackTimer = setTimeout(() => {
                 console.warn('광고 응답 없음 - fallback 실행');
                 // 광고 실패 시에도 카운터 리셋
-                sessionStorage.setItem(adCallCountKey, '0');
+                sessionStorage.setItem(adCallCountKey, '1');
                 fallbackAction();
             }, timeoutMs);
 
@@ -274,7 +275,7 @@ const MainApp = () => {
                     clearTimeout(fallbackTimer);
                     window.removeEventListener('message', handleAdComplete);
                     // 광고 성공 시 카운터 리셋
-                    sessionStorage.setItem(adCallCountKey, '0');
+                    sessionStorage.setItem(adCallCountKey, '1');
                     console.log('광고 완료 - 카운터 리셋');
                     onAdComplete();
                 }
@@ -295,14 +296,14 @@ const MainApp = () => {
                 console.warn('웹뷰 환경이 아님 - 바로 fallback 실행');
                 clearTimeout(fallbackTimer);
                 // 웹뷰 환경이 아닐 때도 카운터 리셋
-                sessionStorage.setItem(adCallCountKey, '0');
+                sessionStorage.setItem(adCallCountKey, '1');
                 fallbackAction();
             }
         } catch (error) {
             console.error('광고 호출 중 예외 발생:', error);
             alert(JSON.stringify(error));
             // 예외 발생 시에도 카운터 리셋
-            sessionStorage.setItem(adCallCountKey, '0');
+            sessionStorage.setItem(adCallCountKey, '1');
             fallbackAction();
         }
     }, []); 

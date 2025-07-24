@@ -117,20 +117,25 @@ const usePageNavigation = () => {
 
     // 뒤로가기
     const goBack = () => {
+    if (pageHistory.length > 1) {
+        let newHistory = pageHistory.slice(0, -1);
+        let previousPage = newHistory[newHistory.length - 1];
 
-        if (pageHistory.length > 1) {
-            const newHistory = pageHistory.slice(0, -1);
-            const previousPage = newHistory[newHistory.length - 1];
-            
-            setCurrentPage(previousPage);
-            setPageHistory(newHistory);
-            
-            // 현재 페이지 데이터 제거
-            setPageDataStack(prev => 
-                prev.filter(entry => entry.page !== currentPage)
-            );
+        // 이전 페이지가 현재 페이지와 같으면 한 번 더 뒤로
+        if (previousPage === currentPage && newHistory.length > 1) {
+            newHistory = newHistory.slice(0, -1);
+            previousPage = newHistory[newHistory.length - 1];
         }
-    };
+
+        setCurrentPage(previousPage);
+        setPageHistory(newHistory);
+
+        // 현재 페이지 데이터 제거
+        setPageDataStack(prev => 
+            prev.filter(entry => entry.page !== currentPage)
+        );
+    }
+};
 
     const goBackParams = (param = null) => {
         if (pageHistory.length > 1) {
