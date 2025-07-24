@@ -1041,14 +1041,14 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         <div className="section-title" style={{lineHeight: '2', display: 'flex', justifyContent: 'space-between'}}>
            <div>
     {get('VENUE_UPLOAD_IMAGES')} 
-    <div style={{
+    {/* <div style={{
       fontSize: '0.8rem', 
       color: '#666', 
       marginLeft: '0.5rem',
       fontWeight: 'normal'
     }}>
       ({get('PHOTO_INFO6')} : {topImgCount+imageCount}{get('text.cnt.1')})
-    </div>
+    </div> */}
   </div>
           <SketchBtn  onClick={() => handleDetail(venueId)} variant="secondary" size='small' style={{width: '30%', height: '40px'}}>
             <HatchPattern opacity={0.6} /> <Search size={12}/> {get('VIEW_SEARCH')}</SketchBtn></div>
@@ -1241,7 +1241,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         <div className="input-row">
           <div className="time-label">{get('title.text.14')}</div>
           <SketchInput
-            name="name"
+            name="name" 
             defaultValue={form.name} style={{width: '50%'}}
             onChange={(e) => handleInputChange('name', e.target.value)}
             onBlur={handleBlur}
@@ -1254,7 +1254,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         <div style={{ flex: 8 }}>
           <div className="time-label">{get('DiscoverPage1.6')}</div>
           <SketchInput
-            name="address" 
+            name="address"  style={{marginBottom: '0'}}
             defaultValue={form.address} 
             onChange={(e) => handleInputChange('address', e.target.value)}
             onBlur={handleBlur}
