@@ -186,6 +186,8 @@ const MainApp = () => {
         
         console.log(`광고 호출 횟수: ${adCallCount}`);
 
+        let _isActive = false;
+
         if (Object.keys(activeUser).length === 0) {
             // 빈 객체인 경우
             console.log('need to init');
@@ -197,6 +199,8 @@ const MainApp = () => {
                     isActive,
                     lastChecked: new Date().toISOString()
                 });
+
+                _isActive = isActive;
                 
                 console.log('사용자 상태 초기화 완료:', { isActive, lastChecked: new Date().toISOString() });
                 
@@ -226,6 +230,8 @@ const MainApp = () => {
                         isActive,
                         lastChecked: new Date().toISOString()
                     });
+
+                    _isActive = isActive;
                     
                     console.log('사용자 상태 재검증 완료:', { isActive, lastChecked: new Date().toISOString() });
                     
@@ -244,7 +250,12 @@ const MainApp = () => {
 
         console.log('showAdWithCallback', activeUser);
 
-        if(activeUser.isActive) {
+        
+
+        if(_isActive) {
+
+
+
             console.warn('active user');
             onAdComplete();
             return;
