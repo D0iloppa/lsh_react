@@ -275,6 +275,19 @@ const ReserveSummaryPage = ({
 
   const messages_summary = getSummaryMessages();
 
+  const convertTo12HourFormat = (time24) => {
+    const [hours, minutes] = time24.split(':').map(Number);
+    const adjustedHours = hours % 24;
+    
+    
+    
+    const displayHours = adjustedHours.toString().padStart(2, '0');
+
+    //adjustedHours === 0 ? 12 : (adjustedHours > 12 ? adjustedHours - 12 : adjustedHours);
+
+    return `${displayHours}:${minutes.toString().padStart(2, '0')}`;
+  };
+
   return (
     <>
       <style jsx="true">{`
@@ -467,7 +480,7 @@ const ReserveSummaryPage = ({
                 <span className="summary-label">{messages_summary.timeLabel}:</span>
                 <div className="time-range">
                   <span className="summary-value">
-                    {displayData.startTime} - {displayData.endTime}
+                    {convertTo12HourFormat(displayData.startTime)} - {convertTo12HourFormat(displayData.endTime)}
                   </span>
                   {displayData.duration && (
                     <span className="duration-info">({displayData.duration})</span>

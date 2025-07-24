@@ -211,13 +211,15 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
           box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
         }
         .venue-list-scroll {
-          height: 100%;
+          height: 230px;
           overflow-y: auto;
           padding: 1rem;
         }
+          
         .venue-list-item {
-          margin-bottom: 1rem;
-          padding: 0.75rem;
+          height: 180px;
+          margin-bottom: 1rem !important;
+          padding: 0.5rem;
           border: 1px solid #e5e7eb;
           border-radius: 6px;
           background: #f9fafb;
@@ -366,6 +368,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
             height: 20px;
           }
         }
+
       `}</style>
 
 <div style={{ display: 'none' }}>
@@ -469,11 +472,11 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
                         display: 'flex',
                         gap: '0.5rem',
                         alignItems: 'center',
-                        marginBottom: index === array.length - 1 && array.length > 1 ? '5vh' : '1rem',
+                        // marginBottom: index === array.length - 1 && array.length > 1 ? '0' : '1rem',
                         position: 'relative',
                       }}
                     >
-                      <div style={{ flex: '0 0 100px', height: '100px', borderRadius: '10px', overflow: 'hidden' }}>
+                      <div style={{ flex: '0 0 130px', height: '130px', borderRadius: '10px', overflow: 'hidden' }}>
                         <img
                           src={venue.image_url}
                           alt={venue.name}

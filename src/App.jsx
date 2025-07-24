@@ -674,7 +674,7 @@ function App() {
       const style = document.createElement('style');
       style.textContent = `
         * {
-          touch-action: manipulation !important;
+          
         }
         
         img, canvas, video {

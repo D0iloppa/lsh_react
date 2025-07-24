@@ -31,6 +31,18 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
     return birthYear ? currentYear - parseInt(birthYear, 10) : null;
   };
 
+    // 텍스트 줄바꿈 처리 함수
+    const formatTextWithLineBreaks = (text) => {
+      if (!text) return '';
+      
+      return text.split('\n').map((line, index) => (
+        <React.Fragment key={index}>
+          {line}
+          {index < text.split('\n').length - 1 && <br />}
+        </React.Fragment>
+      ));
+    };
+
   const handleBack = () => {
     goBack();
   };
@@ -219,11 +231,19 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           width: 100%;
           max-width: 300px;
         }
+
+        .rotation-div{height: 300px;}
+
         .profile-image {
-          margin-top: 20px;
-          width: 100%;
-          border-radius: 1rem;
-        }
+            margin-top: 20px;
+            width: 100%;
+            max-height: 300px;
+            height: 350px; /* 추가: height도 고정해야 중앙정렬 가능 */
+            object-fit: contain; /* ✅ 이미지 비율 유지 + 여백 생기면 중앙 정렬 */
+            object-position: center center; /* ✅ 상하좌우 중앙 정렬 */
+            display: block;
+            border-radius: 1rem;
+          }
         .staff-info-section {
           text-align: center;
           margin-top: 1rem;
@@ -314,7 +334,9 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           </div>
           */}
           <div className="staff-description">
-            {girl.description || 'No description available.'}
+            { 
+              formatTextWithLineBreaks(girl.description || 'No description available.')
+            }
           </div>
         </div>
 

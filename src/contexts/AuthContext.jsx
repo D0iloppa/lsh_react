@@ -270,12 +270,14 @@ const updateLoginState = (userData) => {
 
 const getUUID = () => {
 
+  /*
   Swal.fire({
     title: 'UUID 요청!',
     text: `디바이스 UUID`,
     icon: 'success',
     confirmButtonText: '확인',
   });
+  */
 
 
   const payload = 'getUUID';
@@ -307,21 +309,25 @@ const deviceLogin = async () => {
         console.log('받은 UUID:', uuid);
 
         // UUID를 SweetAlert로 표시
+        /*
         Swal.fire({
           title: 'UUID 수신 완료!',
           text: `디바이스 UUID: ${uuid}`,
           icon: 'success',
           confirmButtonText: '확인',
         });
+        */
         
         if (!uuid) {
           console.error('UUID를 받지 못했습니다.');
+          /*
           Swal.fire({
             title: 'UUID 오류',
             text: '디바이스 UUID를 받지 못했습니다.',
             icon: 'error',
             confirmButtonText: '확인'
           });
+          */
           resolve({ success: false, error: 'UUID not received' });
           return;
         }
@@ -358,12 +364,14 @@ const deviceLogin = async () => {
 
         if (error) {
           console.error('디바이스 로그인 실패:', errCode || errMsg);
+          /*
           Swal.fire({
             title: '로그인 실패',
             text: errCode || errMsg || '디바이스 로그인에 실패했습니다.',
             icon: 'error',
             confirmButtonText: '확인'
           });
+          */
           resolve({ success: false, error: errCode || errMsg });
           return;
         }

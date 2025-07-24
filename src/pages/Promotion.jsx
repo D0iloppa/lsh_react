@@ -67,12 +67,15 @@ const PromotionsPage = ({
 
   const handleBookNow = (promotion) => {
 
-
-    navigateToPageWithData && navigateToPageWithData(PAGES.RESERVATION, {
-      target: promotion.target_type,
-      id: (promotion.target_type == 'venue') ? promotion.venue_id : promotion.target_id,
-      staff: (promotion.target_type == 'staff') ? { name : promotion.venue_name}  : {}
+     navigateToPageWithData && navigateToPageWithData(PAGES.DISCOVER, {
+      venueId:promotion.venue_id
     });
+
+    // navigateToPageWithData && navigateToPageWithData(PAGES.RESERVATION, {
+    //   target: promotion.target_type,
+    //   id: (promotion.target_type == 'venue') ? promotion.venue_id : promotion.target_id,
+    //   staff: (promotion.target_type == 'staff') ? { name : promotion.venue_name}  : {}
+    // });
   };
 
   const handleShare = (promotion) => {
@@ -400,7 +403,7 @@ const PromotionsPage = ({
                             size="medium"
                             onClick={() => handleBookNow(promotion)}
                           >
-                            {get('btn.booking.2')}
+                            {get('COMMON_VIEW_DETAILS')}
                           </SketchBtn>
                         </div>
                         <button
@@ -424,10 +427,10 @@ const PromotionsPage = ({
               </SketchDiv>
             )}
               <LoadingScreen 
-                        variant="cocktail"
-                        loadingText="Loading..."
-                        isVisible={isLoading} 
-                      />
+                variant="cocktail"
+                loadingText="Loading..."
+                isVisible={isLoading} 
+              />
           </div>
         </div>
       </div>

@@ -74,12 +74,12 @@ const Profile = ({
 
   const handleDailyPassClick = () => {
   if (iauData?.isActiveUser) {
-    // 이미 활성화됨 알림
-    Swal.fire({
-      title: get('reservation.daily_pass.purchase_button3'),
-      text: get('SWAL_LAREADY_PURCHASE'),
-      icon: 'info'
-    });
+    // // 이미 활성화됨 알림
+    // Swal.fire({
+    //   title: get('reservation.daily_pass.purchase_button3'),
+    //   text: get('SWAL_LAREADY_PURCHASE'),
+    //   icon: 'info'
+    // });
     return; // 페이지 이동 차단
   }
   

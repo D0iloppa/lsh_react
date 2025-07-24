@@ -10,11 +10,13 @@ import { CreditCard} from 'lucide-react';
 import SketchHeader from '@components/SketchHeader';
 
 
-const PurchasePage = ({  goBack}) => {
+const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage}) => {
   const navigate = useNavigate();
   const { user, isActiveUser } = useAuth();
   const { get } = useMsg();
   const [isProcessing, setIsProcessing] = useState(false);
+
+console.log('PAGES', PAGES)
 
   useEffect(() => {
   const resetContentAreaScroll = () => {
@@ -154,8 +156,8 @@ const PurchasePage = ({  goBack}) => {
 
 
     const handleBack = () => {
-    navigate(-1); // 브라우저 히스토리 뒤로가기
-    //navigate('/main'); // 메인으로 직접 이동
+    //navigate(-1); // 브라우저 히스토리 뒤로가기
+    navigate('/main'); // 메인으로 직접 이동
   };
 
   // 일일권 혜택 목록
@@ -293,7 +295,7 @@ const PurchasePage = ({  goBack}) => {
           border-radius: 12px;
           padding: 1rem;
           margin-bottom: 1rem;
-          height: 136px;
+          height: 250px;
           overflow-y: auto;
         }
 
@@ -305,6 +307,7 @@ const PurchasePage = ({  goBack}) => {
           font-size: 0.95rem;
           line-height: 1.5;
           color: #374151;
+          // letter-spacing: -1px;
         }
 
         .benefit-item:last-child {

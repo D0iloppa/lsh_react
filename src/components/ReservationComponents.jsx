@@ -302,7 +302,13 @@ export const generateTimeSlotsWithLabels = (startHour = 19, endHour = 3) => {
 // Duration 관련 유틸리티 함수들
 const getEndTime = (startTime, duration) => {
   const [hour] = startTime.split(':').map(Number);
-  const endHour = hour + duration;
+  const endHour = (hour + duration);
+  return `${endHour.toString().padStart(2, '0')}:00`;
+};
+
+const getEndTimeDisplay = (startTime, duration) => {
+  const [hour] = startTime.split(':').map(Number);
+  const endHour = (hour + duration) % 24;
   return `${endHour.toString().padStart(2, '0')}:00`;
 };
 
@@ -359,6 +365,19 @@ const DurationSelector = ({
     durations.push(i);
   }
 
+  const convertTo12HourFormat = (time24) => {
+    const [hours, minutes] = time24.split(':').map(Number);
+    const adjustedHours = hours % 24;
+    
+    
+    
+    const displayHours = adjustedHours.toString().padStart(2, '0');
+
+    //adjustedHours === 0 ? 12 : (adjustedHours > 12 ? adjustedHours - 12 : adjustedHours);
+
+    return `${displayHours}:${minutes.toString().padStart(2, '0')}`;
+  };
+
   
 
   return (
@@ -384,7 +403,7 @@ const DurationSelector = ({
       </div>
       {selectedDuration && (
         <div className="duration-info">
-          {messages.reservationTimeLabel || '예약 시간'}: {startTime} - {getEndTime(startTime, selectedDuration)}
+          {messages.reservationTimeLabel || '예약 시간'}: {convertTo12HourFormat(startTime)} - {getEndTimeDisplay(startTime, selectedDuration)}
         </div>
       )}
     </div>
@@ -628,6 +647,19 @@ export const DurationBasedTimeSelector = ({
     return 'secondary';
   };
 
+  const convertTo12HourFormat = (time24) => {
+    const [hours, minutes] = time24.split(':').map(Number);
+    const adjustedHours = hours % 24;
+    
+    
+    
+    const displayHours = adjustedHours.toString().padStart(2, '0');
+
+    //adjustedHours === 0 ? 12 : (adjustedHours > 12 ? adjustedHours - 12 : adjustedHours);
+
+    return `${displayHours}:${minutes.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className="form-step-3">
       <div className="step-label">
@@ -635,7 +667,7 @@ export const DurationBasedTimeSelector = ({
         {messages.timeAndDurationLabel || '시간 및 이용시간 선택'}
         {startTime && duration && (
           <div style={{ marginLeft: '10px', fontSize: '12px', color: '#3b82f6' }}>
-            {startTime} - {getEndTime(startTime, duration)} ({duration}{messages.hourUnit || '시간'})
+            {convertTo12HourFormat(startTime)} - {getEndTimeDisplay(startTime, duration)} ({duration}{messages.hourUnit || '시간'})
           </div>
         )}
       </div>
@@ -710,6 +742,9 @@ export const TimeSlotSelector = ({
     if (disabledTimes.includes(time)) return;
 
     let newSelectedTimes;
+
+
+    
 
     switch (selectionMode) {
       case 'single':

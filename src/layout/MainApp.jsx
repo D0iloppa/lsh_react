@@ -10,6 +10,7 @@ import { PAGE_COMPONENTS, DEFAULT_PAGE } from '../config/pages.config';
 import HatchPattern from '@components/HatchPattern';
 import LoadingScreen from '@components/LoadingScreen';
 import ApiClient from '@utils/ApiClient';
+import Swal from 'sweetalert2';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -173,8 +174,17 @@ const MainApp = () => {
 
 
     // 광고 호출 함수 (useCallback으로 메모이제이션)
-    const showAdWithCallback = useCallback(async (onAdComplete, fallbackAction, timeoutMs = 4000) => {
+    // 광고 호출 주기 설정 (N회마다 광고 호출)
+    const AD_CALL_INTERVAL = 5;
 
+    const showAdWithCallback = useCallback(async (onAdComplete, fallbackAction, timeoutMs = 4000) => {
+        // 세션스토리지에서 광고 호출 횟수 관리
+        const adCallCountKey = 'adCallCount';
+        let adCallCount = parseInt(sessionStorage.getItem(adCallCountKey) || '0');
+        adCallCount++;
+        sessionStorage.setItem(adCallCountKey, adCallCount.toString());
+        
+        console.log(`광고 호출 횟수: ${adCallCount}`);
 
         if (Object.keys(activeUser).length === 0) {
             // 빈 객체인 경우
@@ -234,11 +244,27 @@ const MainApp = () => {
 
         console.log('showAdWithCallback', activeUser);
 
+        if(activeUser.isActive) {
+            console.warn('active user');
+            onAdComplete();
+            return;
+        }
+
+        // N회마다 광고 호출 (1, N+1, 2N+1... 회차에 광고 호출)
+        if (adCallCount % AD_CALL_INTERVAL !== 1) {
+            console.log(`${adCallCount}회차 - 광고 호출 건너뜀 (${AD_CALL_INTERVAL}회마다 호출)`);
+            onAdComplete();
+            return;
+        }
+
+        console.log(`${adCallCount}회차 - 광고 호출 실행`);
 
         try {
             // 광고 응답 대기 타이머 (기본 4초)
             const fallbackTimer = setTimeout(() => {
                 console.warn('광고 응답 없음 - fallback 실행');
+                // 광고 실패 시에도 카운터 리셋
+                sessionStorage.setItem(adCallCountKey, '0');
                 fallbackAction();
             }, timeoutMs);
 
@@ -247,6 +273,9 @@ const MainApp = () => {
                 if (event.data === 'adCompleted') {
                     clearTimeout(fallbackTimer);
                     window.removeEventListener('message', handleAdComplete);
+                    // 광고 성공 시 카운터 리셋
+                    sessionStorage.setItem(adCallCountKey, '0');
+                    console.log('광고 완료 - 카운터 리셋');
                     onAdComplete();
                 }
             };
@@ -260,15 +289,20 @@ const MainApp = () => {
             if (isAndroid) {
                 window.native.postMessage("showAd");
             } else if (isIOS) {
+
                 window.webkit.messageHandlers.native.postMessage("showAd");
             } else {
                 console.warn('웹뷰 환경이 아님 - 바로 fallback 실행');
                 clearTimeout(fallbackTimer);
+                // 웹뷰 환경이 아닐 때도 카운터 리셋
+                sessionStorage.setItem(adCallCountKey, '0');
                 fallbackAction();
             }
         } catch (error) {
             console.error('광고 호출 중 예외 발생:', error);
             alert(JSON.stringify(error));
+            // 예외 발생 시에도 카운터 리셋
+            sessionStorage.setItem(adCallCountKey, '0');
             fallbackAction();
         }
     }, []); 

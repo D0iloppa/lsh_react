@@ -40,10 +40,12 @@ const SettingsPage = ({
   const [showOnlineStatus, setShowOnlineStatus] = useState(true);
 
   // 비밀번호 변경 관련 state
+  // const [password, setPassword] = useState({ current: '', new: '', confirm: '' });
+  // const [isPasswordVerified, setIsPasswordVerified] = useState(false);
+  // const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
+  // const [showNewPasswordFields, setShowNewPasswordFields] = useState(false);
   const [password, setPassword] = useState({ current: '', new: '', confirm: '' });
-  const [isPasswordVerified, setIsPasswordVerified] = useState(false);
-  const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
-  const [showNewPasswordFields, setShowNewPasswordFields] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const { messages, isLoading, error, get, currentLang, setLanguage: setGlobalLang, availableLanguages, refresh } = useMsg();
 
@@ -121,11 +123,11 @@ const SettingsPage = ({
 
 
   // 비밀번호 상태를 메모이제이션으로 최적화
-  const passwordState = useMemo(() => ({
-    isVerified: isPasswordVerified,
-    showFields: showNewPasswordFields,
-    isVerifying: isVerifyingPassword
-  }), [isPasswordVerified, showNewPasswordFields, isVerifyingPassword]);
+  // const passwordState = useMemo(() => ({
+  //   isVerified: isPasswordVerified,
+  //   showFields: showNewPasswordFields,
+  //   isVerifying: isVerifyingPassword
+  // }), [isPasswordVerified, showNewPasswordFields, isVerifyingPassword]);
 
   // 언어 변경 핸들러 수정
   const handleLanguageChange = (newLang) => {
@@ -320,7 +322,122 @@ const SettingsPage = ({
     }
   };
   
+  const handleChangePassword = async () => {
+      // 1. 입력값 검증
+      if (!password.current.trim()) {
+        Swal.fire({
+          title: get('SWAL_ERROR_TITLE'),
+          text: get('PASSWORD_ENTER_CURRENT'),
+          icon: 'error'
+        });
+        return;
+      }
 
+      if (!password.new.trim()) {
+        Swal.fire({
+          title: get('SWAL_ERROR_TITLE'),
+          text: get('VALIDATION_NEW_PASSWORD_REQUIRED'),
+          icon: 'error'
+        });
+        return;
+      }
+
+      if (!password.confirm.trim()) {
+        Swal.fire({
+          title: get('SWAL_ERROR_TITLE'),
+          text: get('VALIDATION_CONFIRM_PASSWORD_REQUIRED'),
+          icon: 'error'
+        });
+        return;
+      }
+
+      // 2. 새 비밀번호 유효성 검사
+      if (password.current === password.new) {
+        Swal.fire({
+          title: get('SWAL_ERROR_TITLE'),
+          text: get('PASSWORD_MUST_BE_DIFFERENT'),
+          icon: 'error'
+        });
+        return;
+      }
+
+      if (password.new !== password.confirm) {
+        Swal.fire({
+          title: get('SWAL_ERROR_TITLE'),
+          text: get('PASSWORD_CONFIRM_MISMATCH'),
+          icon: 'error'
+        });
+        return;
+      }
+
+      if (password.new.length < 6) {
+        Swal.fire({
+          title: get('SWAL_ERROR_TITLE'),
+          text: get('PASSWORD_MIN_LENGTH'),
+          icon: 'error'
+        });
+        return;
+      }
+
+      setIsChangingPassword(true);
+
+      try {
+        // 3. 현재 비밀번호 검증
+        const verifyResponse = await verifyPassword({
+          login_id: user.login_id,
+          email: user.login_id,
+          passwd: password.current,
+          login_type: user.login_type,
+          account_type: user.type
+        });
+
+        if (!verifyResponse.success) {
+          Swal.fire({
+            title: get('SWAL_ERROR_TITLE'),
+            text: get('PASSWORD_CURRENT_INCORRECT'),
+            icon: 'error'
+          });
+          return;
+        }
+
+        // 4. 새 비밀번호로 업데이트
+        const updateResponse = await ApiClient.postForm('/api/UpdatePassword', {
+          login_type: user.login_type,
+          account_type: user.type,
+          login_id: user.login_id,
+          email: user.login_id,
+          passwd: password.new,
+          rePasswd: password.confirm,
+        });
+
+        if (updateResponse.success) {
+          Swal.fire({
+            title: get('SWAL_SUCCESS_TITLE'),
+            text: get('PASSWORD_UPDATE_SUCCESS'),
+            icon: 'success'
+          });
+          
+          // 폼 초기화
+          setPassword({ current: '', new: '', confirm: '' });
+        } else {
+          Swal.fire({
+            title: get('SWAL_ERROR_TITLE'),
+            text: updateResponse.message || get('PASSWORD_UPDATE_FAILED'),
+            icon: 'error'
+          });
+        }
+
+      } catch (error) {
+        console.error('Password change error:', error);
+        Swal.fire({
+          title: get('SWAL_ERROR_TITLE'),
+          text: get('PASSWORD_UPDATE_FAILED'),
+          icon: 'error'
+        });
+      } finally {
+        setIsChangingPassword(false);
+      }
+    };
 
 
 
@@ -492,6 +609,24 @@ const SettingsPage = ({
             border-right: none;
           }
         }
+            .password-section {
+              margin-bottom: 1rem;
+            }
+            .section-box {
+              border: none;
+              background: none;
+              margin-bottom: 1.1rem;
+              transform: rotate(-0.1deg);
+              position: relative;
+              overflow: hidden;
+            }
+            .input-row {
+              margin-bottom: 0.7rem;
+            }
+            .save-btn-row {
+              display: flex;
+              justify-content: flex-end;
+            }
       `}</style>
 
       <div className="settings-container">
@@ -566,6 +701,56 @@ const SettingsPage = ({
 
               {/* 암호 변경 섹션*/}
               <div className="password-section">
+              <div className="section-title">{get('SETTINGS_CHANGE_PASSWORD')}</div>
+              <SketchDiv className="section-box">
+                <div className="input-row">
+                  <SketchInput
+                    name="currentPassword"
+                    value={password.current}
+                    onChange={e => setPassword(p => ({ ...p, current: e.target.value }))}
+                    placeholder={get('SETTINGS_CURRENT_PASSWORD_PLACEHOLDER')}
+                    type="password" 
+                    style={{fontFamily: 'none', padding:'0.4rem'}}
+                  />
+                </div>
+                
+                <div className="input-row">
+                  <SketchInput
+                    name="newPassword"
+                    value={password.new}
+                    onChange={e => setPassword(p => ({ ...p, new: e.target.value }))}
+                    placeholder={get('SETTINGS_NEW_PASSWORD_PLACEHOLDER')}
+                    type="password" 
+                    style={{fontFamily: 'none', padding:'0.4rem'}}
+                  />
+                </div>
+                
+                <div className="input-row">
+                  <SketchInput
+                    name="confirmPassword"
+                    value={password.confirm}
+                    onChange={e => setPassword(p => ({ ...p, confirm: e.target.value }))}
+                    placeholder={get('SETTINGS_CONFIRM_PASSWORD_PLACEHOLDER')}
+                    type="password" 
+                    style={{fontFamily: 'none', padding:'0.4rem'}}
+                  />
+                </div>
+                
+                <div className="save-btn-row">
+                  <SketchBtn 
+                    variant="accent" 
+                    size="small" 
+                    style={{width: '30%'}}
+                    onClick={handleChangePassword}
+                    disabled={isChangingPassword}
+                  >
+                    <HatchPattern opacity={0.6} />
+                    {isChangingPassword ? '변경 중...' : get('SETTINGS_SAVE_BUTTON')}
+                  </SketchBtn>
+                </div>
+              </SketchDiv> 
+            </div>
+              {/* <div className="password-section">
                 <div className="section-title">
                   {get('Staff.setting.password.title') || get('STAFF_SETTINGS_CHANGE_PASSWORD_TITLE')}
                 </div>
@@ -634,7 +819,7 @@ const SettingsPage = ({
                       </div>
                     </>
                   )}
-              </div>
+              </div> */}
 
 
 

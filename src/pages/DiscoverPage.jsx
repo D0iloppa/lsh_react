@@ -979,7 +979,7 @@ const openMenuOverlay = (menuList) => {
               }} 
               onClick={async () => {
                 if (reviewCount > 0) {
-
+                   
                   showAdWithCallback(
                     // 광고 완료 시 콜백
                     () => {
@@ -1135,6 +1135,8 @@ const openMenuOverlay = (menuList) => {
 
                   try {
                     // 1. room_sn 조회
+
+                    /*
                     const chatList = await ApiClient.get('/api/getChattingList', {
                       params: {
                         venue_id: venueId,
@@ -1150,6 +1152,20 @@ const openMenuOverlay = (menuList) => {
                       room_sn = chatList[0].room_sn;
                       console.log('room_sn', room_sn);
                     }
+                    */
+
+                    const chatRoom = await ApiClient.postForm('/api/getChatRoom', {
+      
+                      sender : user.user_id,
+                      sender_type: 'user',
+                
+                      receiver_id: venueInfo.manager_id,
+                      send_to:'manager'
+                    });
+                
+                    const {room_sn = null} = chatRoom;
+
+
 
                     navigateToPageWithData(PAGES.CHATTING, {
                       name: venueInfo?.name,
@@ -1208,7 +1224,8 @@ const openMenuOverlay = (menuList) => {
                         });
 
                         if (result.isConfirmed) {
-                            navigateToPageWithData(PAGES.PURCHASEPAGE);
+                            //navigateToPageWithData(PAGES.PURCHASEPAGE);
+                            navigate('/purchase');
                         }
                       }
                     } catch (error) {

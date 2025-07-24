@@ -1,13 +1,15 @@
 .main-app-container {
-    height: 100vh;
+    /* height: 100vh; */
     /* min-height: 100vh; */
     max-width: 28rem;
     margin: 0 auto;
     background-color: white;
     display: flex;
+    /* min-height: 100vh; */
     flex-direction: column;
     position: relative;
     font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+    /* overflow-y: hidden;  */
   }
 
   .hidden {
@@ -17,7 +19,7 @@
   .content-area {
     flex: 1;
     overflow-y: auto;
-    padding-bottom: 80px; 
+    padding-bottom: 8rem; 
   }
   
   .bottom-navigation {
