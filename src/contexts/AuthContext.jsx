@@ -279,15 +279,16 @@ const getUUID = () => {
   });
   */
 
-
+ const isAndroid = !!window.native;
+ const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
+            
   const payload = 'getUUID';
   if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.native) {
     // iOS WebView
     window.webkit.messageHandlers.native.postMessage(payload);
-  } else if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+  } else if (isAndroid) {
     // Android WebView
-    console.log('Android UUID 요청');
-    window.ReactNativeWebView.postMessage(payload);
+    window.native.postMessage(payload);
   } else {
     console.log('네이티브 앱 환경이 아닙니다.');
     return null;
@@ -309,14 +310,14 @@ const deviceLogin = async () => {
         console.log('받은 UUID:', uuid);
 
         // UUID를 SweetAlert로 표시
-        /*
+       
         Swal.fire({
           title: 'UUID 수신 완료!',
           text: `디바이스 UUID: ${uuid}`,
           icon: 'success',
           confirmButtonText: '확인',
         });
-        */
+       
         
         if (!uuid) {
           console.error('UUID를 받지 못했습니다.');

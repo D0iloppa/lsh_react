@@ -244,7 +244,6 @@ const deleteReview = async (reviewId) => {
           border-top-right-radius: 14px 8px;
           border-bottom-right-radius: 8px 12px;
           border-bottom-left-radius: 10px 6px;
-          transform: rotate(0.2deg);
         }
 
         .section-header {

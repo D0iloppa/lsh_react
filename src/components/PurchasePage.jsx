@@ -56,6 +56,9 @@ console.log('PAGES', PAGES)
     // 인앱 결제 요청
     const payload = 'buyItem';
 
+     const isAndroid = !!window.native;
+            const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
+
     if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.native) {
       // ✅ iOS WebView
       console.log('📱 iOS 인앱 결제 요청');
@@ -63,10 +66,10 @@ console.log('PAGES', PAGES)
     
       window.webkit.messageHandlers.native.postMessage(payload);
       
-    } else if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+    } else if (isAndroid) {
       // ✅ Android WebView
       console.log('🤖 Android 인앱 결제 요청');
-      window.ReactNativeWebView.postMessage(payload);
+      window.native.postMessage(payload);
 
     } else {
       console.warn('⚠️ 웹뷰 환경이 아님 - 인앱 결제 불가');

@@ -285,7 +285,7 @@ const ReserveSummaryPage = ({
 
     //adjustedHours === 0 ? 12 : (adjustedHours > 12 ? adjustedHours - 12 : adjustedHours);
 
-    return `${displayHours}:${minutes.toString().padStart(2, '0')}`;
+    return `${displayHours}:00`;
   };
 
   return (
