@@ -311,13 +311,14 @@ const deviceLogin = async () => {
 
         // UUID를 SweetAlert로 표시
        
+        /*
         Swal.fire({
           title: 'UUID 수신 완료!',
           text: `디바이스 UUID: ${uuid}`,
           icon: 'success',
           confirmButtonText: '확인',
         });
-       
+       */
         
         if (!uuid) {
           console.error('UUID를 받지 못했습니다.');
