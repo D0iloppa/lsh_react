@@ -1165,14 +1165,39 @@ const openMenuOverlay = (menuList) => {
                 
                     const {room_sn = null} = chatRoom;
 
+                      const response = await ApiClient.postForm('/api/getSubscriptionInfo', { 
+                        user_id: user.user_id 
+                      });
+                      
+                      let { isActiveUser = false } = response;
 
+                      console.log('isActiveUser:', isActiveUser);
 
-                    navigateToPageWithData(PAGES.CHATTING, {
-                      name: venueInfo?.name,
-                      room_sn: room_sn,
-                      send_to: 'manager',
-                      receiver_id: venueInfo.manager_id,
-                    });
+                      if (isActiveUser === true) {
+                        navigateToPageWithData(PAGES.CHATTING, {
+                          name: venueInfo?.name,
+                          room_sn: room_sn,
+                          send_to: 'manager',
+                          receiver_id: venueInfo.manager_id,
+                        });
+                      } else {
+                        // 미구독자인 경우 일일권 구매 안내
+                        const result = await Swal.fire({
+                          title: get('Popup.Button.TodayTrial'),
+                          text: get('reservation.daily_pass.purchase_required'),
+                          icon: 'info',
+                          showCancelButton: true,
+                          confirmButtonText: get('Popup.Button.TodayTrial'),
+                          cancelButtonText: get('Common.Cancel'),
+                          confirmButtonColor: '#3085d6',
+                          cancelButtonColor: '#d33'
+                        });
+
+                        if (result.isConfirmed) {
+                            //navigateToPageWithData(PAGES.PURCHASEPAGE);
+                            navigate('/purchase');
+                        }
+                      }
                   } catch (error) {
                     console.error('채팅방 조회 실패:', error);
                     alert('채팅방 정보를 불러오는 데 실패했습니다.');
