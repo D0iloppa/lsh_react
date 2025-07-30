@@ -11,10 +11,20 @@ export const MsgProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentLang, setCurrentLang] = useState(() => {
-    // 로컬스토리지에서 저장된 언어 설정 불러오기
     const savedLang = localStorage.getItem('lsh_language');
-    return savedLang || 'vi'; // 저장된 값이 없으면 기본값 'vi' 사용
-  }); // 기본 언어
+
+    if (savedLang) return savedLang;
+  
+      const browserLang = (navigator.language || navigator.languages?.[0] || '').toLowerCase();
+  
+      if (browserLang.includes('ko')) return 'kr';
+      if (browserLang.includes('en')) return 'en';
+      if (browserLang.includes('vi')) return 'vi';
+      if (browserLang.includes('ja')) return 'ja';
+      if (browserLang.includes('zh')) return 'cn';
+  
+      return 'en'; // 기본값
+    });
 
   // API에서 메시지 데이터 가져오기
   const fetchMessages = async () => {

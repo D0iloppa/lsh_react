@@ -223,7 +223,7 @@ const PersonFinderBillboard = ({ onClose }) => {
 
         .rotated .rotate-button {
           top: 15px !important;
-          right: 300px !important;
+          left: 15px !important;
         }
 
         @media (max-width: 768px) {
@@ -270,6 +270,47 @@ const PersonFinderBillboard = ({ onClose }) => {
             height: 580px;
           }
         }
+
+        .display-screen .rotate-button {
+            position: absolute;
+            z-index: 10;
+          }
+
+          .display-screen .close-btn:first-of-type {
+            right: 15px; /* 두 번째 버튼 (가운데) */
+          }
+
+          .display-screen .close-btn:last-of-type {
+            right: 30px; /* 세 번째 버튼 (오른쪽) */
+          }
+
+          .rotated .rotate-button {
+            top: 15px;
+            right: 170px;
+          }
+
+          .rotated .close-btn:first-of-type {
+            top: 15px;
+            right: 15px;
+          }
+
+          .rotated .close-btn:last-of-type {
+            top: 15px;
+            right: 30px;
+          }
+
+          .rotate-button {
+            position: absolute;
+            top: 13px;
+            right: 320px;
+            z-index: 10;
+          }
+
+          .rotated .rotate-button {
+            top: 15px;
+          }
+
+
       `}</style>
 
       <div className={`billboard-overlay ${isRotated ? 'rotated' : ''}`}>
@@ -317,26 +358,20 @@ const PersonFinderBillboard = ({ onClose }) => {
         ) : (
           // 전광판 화면
           <div className="display-screen">
-            <button className="close-btn" onClick={goBack}>
-              {get('BILLBOARD_BACK_BUTTON')}
+            <button className="close-btn" onClick={handleClose}>
+              {get('BILLBOARD_CLOSE_BUTTON')}
             </button>
             <button 
               className="close-btn" 
-              onClick={handleClose}
-              style={{ right: '170px' }}
+              onClick={goBack}
+              style={{ right: '85px' }}
             >
-              {get('BILLBOARD_CLOSE_BUTTON')}
+              {get('STAFF_EDIT_BUTTON')}
             </button>
             <button 
               className="rotate-button"
               onClick={requestRotation}
               title={get('ROTATE_TOOLTIP') || '화면을 가로 모드로 회전'}
-              style={{ 
-                position: 'absolute',
-                top: '13px',
-                right: '320px',
-                zIndex: 10
-              }}
             >
               <RotateCcw size={20} />
             </button>
