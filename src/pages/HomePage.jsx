@@ -137,6 +137,16 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
           staff_languages: item.staff_languages || '',
         }));
 
+        transformed.sort((a, b) => {
+          if (a.isFavorite !== b.isFavorite) {
+            return b.isFavorite - a.isFavorite; // true 먼저
+          } else if (a.staff_cnt !== b.staff_cnt) {
+            return b.staff_cnt - a.staff_cnt; // staff 많은 순
+          } else {
+            return a.created_at - b.created_at; // 오래된 등록 순
+          }
+        });
+
         setOriginalHotspots(transformed);
         setHotspots(transformed);
       } catch (err) {

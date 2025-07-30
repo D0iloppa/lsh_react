@@ -680,7 +680,7 @@ const SettingsPage = ({
           </SketchDiv>
 
           {/* Account Details */}
-          <SketchDiv className="settings-section">
+          <SketchDiv className="settings-section" style={{display:'none'}}>
             <HatchPattern opacity={0.4} />
             <div className="section-content">
               <h2 className="section-title">{get('Setting1.3')}</h2>
