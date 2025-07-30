@@ -364,7 +364,7 @@ const PersonFinderBillboard = ({ onClose }) => {
             <button 
               className="close-btn" 
               onClick={goBack}
-              style={{ right: '85px' }}
+              style={{ right: '100px' }}
             >
               {get('STAFF_EDIT_BUTTON')}
             </button>
