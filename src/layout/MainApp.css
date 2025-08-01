@@ -1,44 +1,57 @@
-.main-app-container {
-    /* height: 100vh; */
-    min-height: 100vh;
-    max-width: 28rem;
-    margin: 0 auto;
-    background-color: white;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
-    /* overflow-y: hidden;  */
-  }
-
-  .hidden {
-  display: none !important;
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: white;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  overflow: hidden; /* ❗ 스크롤 자체 제거 */
 }
-  
+
+body {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.main-app-container {
+  height: 100vh; /* 또는 height: 100dvh */
+  /* min-height는 제거하거나 조건부로 사용 */
+  max-width: 28rem;
+  margin: 0 auto;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+}
   .content-area {
-    flex: 1;
-    overflow-y: auto;
-    padding-bottom: 80px; 
-  }
-  
-  .bottom-navigation {
-    z-index: 1000;
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 28rem;
-    background-color: white;
-    border-top: 1px solid #1f2937;
-    padding: 1rem;
-  }
-  
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: calc(40px + env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
+}
+
+.bottom-navigation {
+  /* 기존 스타일 유지 */
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 28rem;
+  background-color: white;
+  border-top: 1px solid #1f2937;
+  padding: 1rem 1rem;
+
+  /* 추가: 배경색 아래까지 확장 */
+  box-shadow: inset 0 -9999px white;
+}
+
+
   .nav-container {
     display: flex;
     justify-content: space-around;
     align-items: center;
   }
+  
   
   .nav-item {
     font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;

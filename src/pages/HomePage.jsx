@@ -659,8 +659,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
                           borderRadius: '3px',
                           display: 'inline-block',
                           marginTop: '4px',
-                          fontSize: '12px',
-                          height: '13px'
+                          fontSize: '12px'
                         }}
                       >
                         {spot.is_reservation ? get('DiscoverPage1.1.able') : get('DiscoverPage1.1.disable')}

@@ -796,9 +796,9 @@ const openMenuOverlay = (menuList) => {
           justify-content: center; align-items: center;
           color: #6b7280; 
         }
-        .top-girls-section { padding: 1rem; margin-top: 20px}
+        .top-girls-section { padding: 1rem; margin-top: 20px; margin-bottom: 25px}
         .girls-rotation { width: 100%; margin-bottom: 3rem;}
-        .girl-slide { text-align: center;  margin-top: 20px;}
+        .girl-slide { text-align: center;  margin-top: 10px;}
         .girl-img {
           width: 220px;
           height: 300px; 
@@ -832,7 +832,7 @@ const openMenuOverlay = (menuList) => {
         }   
           .reservation-footer {
           position: fixed;
-          bottom: 90px;
+          bottom: 80px;
           left: 0;
           right: 0;
           background: white;
@@ -1209,7 +1209,7 @@ const openMenuOverlay = (menuList) => {
               <SketchBtn
                 className="sketch-button enter-button"
                 variant="event"
-                style={{ width: '85px', height: '39px', marginTop: '10px', marginLeft: '-55px' }}
+                style={{ width: '90px', height: '39px', marginTop: '10px', marginLeft: '-55px' }}
                 disabled={!venueInfo?.is_reservation}
                 onClick={async () => {
                     if (!venueInfo.is_reservation) return;

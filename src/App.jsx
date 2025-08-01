@@ -656,70 +656,66 @@ function App() {
 
     // 1. 확대 기능 비활성화
     const disableZoom = () => {
-      // 메타 태그로 확대 비활성화
-      const metaViewport = document.querySelector('meta[name="viewport"]');
-      if (metaViewport) {
-        metaViewport.setAttribute('content',
-          'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'
-        );
-      } else {
-        // 메타 태그가 없으면 생성
-        const meta = document.createElement('meta');
-        meta.name = 'viewport';
-        meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-        document.head.appendChild(meta);
+  const contentValue = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+  const metaViewport = document.querySelector('meta[name="viewport"]');
+
+  if (metaViewport) {
+    metaViewport.setAttribute('content', contentValue);
+  } else {
+    const meta = document.createElement('meta');
+    meta.name = 'viewport';
+    meta.content = contentValue;
+    document.head.appendChild(meta);
+  }
+
+  // CSS 및 이벤트 방지는 그대로 유지
+  const style = document.createElement('style');
+  style.textContent = `
+    * {
+      touch-action: manipulation;
+    }
+
+    img, canvas, video {
+      pointer-events: auto;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    input, textarea, select {
+      touch-action: auto !important;
+    }
+  `;
+  document.head.appendChild(style);
+
+  const preventZoomGestures = (e) => {
+    if (e.touches && e.touches.length > 1) {
+      const allowZoomElements = e.target.closest('[data-allow-zoom="true"]');
+      if (!allowZoomElements) {
+        e.preventDefault();
       }
+    }
+  };
 
-      // CSS로 추가 확대 방지
-      const style = document.createElement('style');
-      style.textContent = `
-        * {
-          
-        }
-        
-        img, canvas, video {
-          pointer-events: auto;
-          -webkit-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-        }
-        
-        input, textarea, select {
-          touch-action: auto !important;
-        }
-      `;
-      document.head.appendChild(style);
+  const preventDoubleTapZoom = (e) => {
+    const allowZoomElements = e.target.closest('[data-allow-zoom="true"]');
+    if (!allowZoomElements) {
+      e.preventDefault();
+    }
+  };
 
-      // 제스처 이벤트 방지
-      const preventZoomGestures = (e) => {
-        if (e.touches && e.touches.length > 1) {
-          // 특정 컴포넌트에서 허용된 경우만 제외
-          const allowZoomElements = e.target.closest('[data-allow-zoom="true"]');
-          if (!allowZoomElements) {
-            e.preventDefault();
-          }
-        }
-      };
+  document.addEventListener('touchstart', preventZoomGestures, { passive: false });
+  document.addEventListener('touchmove', preventZoomGestures, { passive: false });
+  document.addEventListener('gesturestart', preventDoubleTapZoom, { passive: false });
 
-      // 더블탭 확대 방지
-      const preventDoubleTapZoom = (e) => {
-        const allowZoomElements = e.target.closest('[data-allow-zoom="true"]');
-        if (!allowZoomElements) {
-          e.preventDefault();
-        }
-      };
+  return () => {
+    document.removeEventListener('touchstart', preventZoomGestures);
+    document.removeEventListener('touchmove', preventZoomGestures);
+    document.removeEventListener('gesturestart', preventDoubleTapZoom);
+  };
+};
 
-      document.addEventListener('touchstart', preventZoomGestures, { passive: false });
-      document.addEventListener('touchmove', preventZoomGestures, { passive: false });
-      document.addEventListener('gesturestart', preventDoubleTapZoom, { passive: false });
-
-      return () => {
-        document.removeEventListener('touchstart', preventZoomGestures);
-        document.removeEventListener('touchmove', preventZoomGestures);
-        document.removeEventListener('gesturestart', preventDoubleTapZoom);
-      };
-    };
 
     // 2. 뒤로가기 막기
     const disableBackButton = () => {

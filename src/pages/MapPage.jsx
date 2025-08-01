@@ -141,7 +141,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
     <>
       <style jsx>{`
         .map-container { max-width: 28rem; margin: 0 auto; font-family: 'BMHanna', sans-serif; background-color: white; }
-        .map-container-area { height: 85vh; position: relative; }
+        .map-container-area { height: 86.5vh; position: relative; }
         .map-content-area { height: 100%; background: #f8fafc; position: relative; overflow: hidden; }
         .map-component-placeholder { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
         .map-search-overlay { position: absolute; top: 1rem; left: 1rem; right: 1rem; z-index: 50; }
