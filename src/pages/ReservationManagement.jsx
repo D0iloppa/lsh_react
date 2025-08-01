@@ -645,7 +645,7 @@ const chatWithUser = async(r) => {
           margin-top: 8px;
         }
         .reservation-venue {
-          font-size: 0.92rem;
+          font-size: 0.82rem;
           color: #222;
           margin-bottom: 0.2rem;
         }
@@ -1135,7 +1135,7 @@ const chatWithUser = async(r) => {
                         </div>
                         <div>
                           <Edit size={10}/> {get('RESERVATION_ESCORT_LABEL')} 
-                          ({r.escort_string})
+                          ({r.escort_string})<br></br>
                           <span className={`use_escort ${r.use_escort === 1 ? 'applied' : 'not_applied'}`}>
                             {r.use_escort === 1 ? get('ESCORT_APPLIED') : get('ESCORT_NOT_APPLIED')}
                             

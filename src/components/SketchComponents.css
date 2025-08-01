@@ -2,14 +2,14 @@
 
 @font-face {
   font-family: 'BMHanna';
-  src: url('/cdn/font/BMHANNAAir_ttf.ttf') format('truetype');
+  src: url('/cdn/font/BMHANNAAir_ttf.ttf?v=3') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'BMHANNAPro';
-  src: url('/cdn/font/BMHANNAPro.ttf') format('truetype');
+  src: url('/cdn/font/BMHANNAPro.ttf?v=3') format('truetype');
   font-weight: normal;
   font-style: normal;
 }

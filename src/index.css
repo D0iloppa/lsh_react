@@ -125,8 +125,8 @@ body[data-lang="vi"] .hours-label {padding-left: 1rem; margin-right: 0.5rem;}
 body[data-lang="vi"] .week-hours div:nth-of-type(2) {margin-left: 8.2rem !important;}
 body[data-lang="vi"] .to-label{margin-right: 7px !important;}
 body[data-lang="vi"] .review-action-btn, body[data-lang="vi"] .response-form-btn {letter-spacing: -1px;}
-body[data-lang="vi"] .reservation-date{margin-top: 0.2rem; font-size: 0.92rem; font-weight: 600; margin-bottom: 1.5rem; max-width: 200px;}
-body[data-lang="vi"] .chat-style {font-size: 0.5rem !important; padding: 0.2rem !important;}
+body[data-lang="vi"] .reservation-date{margin-top: 0.2rem; font-size: 0.82rem; font-weight: 600; margin-bottom: 1.5rem; max-width: 200px;}
+body[data-lang="vi"] .chat-style {padding: 0.2rem !important;}
 body[data-lang="vi"] .billboard-btn {letter-spacing: -1px;}
 body[data-lang="vi"] .reservation-status{letter-spacing: -1px; min-width: 230px;}
 body[data-lang="vi"] .reservation-actions button {letter-spacing: -1px;}
