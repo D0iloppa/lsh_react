@@ -334,7 +334,7 @@ const LeTantonSheriffPage = () => {
         .bottom-message {
           font-size: 1rem;
           color: #374151;
-          padding-left: 19rem;
+          padding-left: 4rem;
           margin-bottom: 2rem;
         }
 
@@ -517,6 +517,7 @@ const LeTantonSheriffPage = () => {
                 </div>
                 <div className="feature-content">
                   <p>안전한 픽업 서비스</p>
+                  <p>무제한 스탭 검색</p>
                 </div>
               </div>
 
