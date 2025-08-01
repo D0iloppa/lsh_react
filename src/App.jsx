@@ -513,11 +513,10 @@ const LeTantonSheriffPage = () => {
                   <div className="feature-icon">
                     <Gift size={24} />
                   </div>
-                  <div className="feature-title">회원 전용 혜택</div>
+                  <div className="feature-title">일일권 구매 혜택</div>
                 </div>
                 <div className="feature-content">
-                  <p>프리미엄 회원 무제한 픽업 서비스</p>
-                  <p>일일권 회원 인기 바 우선 예약</p>
+                  <p>안전한 픽업 서비스</p>
                 </div>
               </div>
 
