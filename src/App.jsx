@@ -765,13 +765,11 @@ function App() {
       </div>
     );
     */}
-    {
-      /*
+    
     return (
       <LeTantonSheriffPage />
     )
-      */
-    }
+    
   }
 
   // App.jsx 또는 main.jsx
