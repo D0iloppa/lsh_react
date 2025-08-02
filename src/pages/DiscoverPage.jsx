@@ -1001,10 +1001,11 @@ const openMenuOverlay = (menuList) => {
                 display: 'inline-block',
               }}
             >
-              {venueInfo.is_reservation ? 
-                get('VENUE_RESERVATION_AVAILABLE') || '예약 가능' : 
-                get('VENUE_RESERVATION_CLOSED') || '예약 마감'
-              }
+              {venueInfo?.schedule_status === 'closed' || venueInfo?.schedule_status === 'before_open'
+  ? get('VENUE_END') || '영업 종료'
+  : (venueInfo?.is_reservation
+      ? get('DiscoverPage1.1.enable') || '예약하기'
+      : get('DiscoverPage1.1.disable') || '예약 마감')}
             </div>
           )}
 
@@ -1373,11 +1374,13 @@ const openMenuOverlay = (menuList) => {
                   id: venueId || 1,
                 })
               }}
+              
             ><HatchPattern opacity={0.8} />
-              {venueInfo?.is_reservation
-                ? get('DiscoverPage1.1.enable') || '예약하기'
-                : get('DiscoverPage1.1.disable') || '예약 마감'
-              }
+              {venueInfo?.schedule_status === 'closed' || venueInfo?.schedule_status === 'before_open'
+                ? get('VENUE_END') || '영업 종료'
+                : (venueInfo?.is_reservation
+                    ? get('DiscoverPage1.1.enable') || '예약하기'
+                    : get('DiscoverPage1.1.disable') || '예약 마감')}
             </SketchBtn>
           </div>
           <LoadingScreen
