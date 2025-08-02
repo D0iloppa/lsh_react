@@ -11,6 +11,8 @@ import ImagePlaceholder from '@components/ImagePlaceholder';
 import './Welcome.css';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
+import MessageFlag from '@components/MessageFlag';
+
 
 const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
@@ -234,6 +236,8 @@ const CocktailIcon = () => (
                              isVisible={isLoading} 
                            />
 
+
+      <MessageFlag />
     </div>
     
   );

@@ -1350,10 +1350,11 @@ const openMenuOverlay = (menuList) => {
 
               >
                 <HatchPattern opacity={0.8} />
-                {venueInfo?.is_reservation
-                  ? get('DiscoverPage1.1') || '예약하기'
-                  : get('DiscoverPage1.1.disable') || '예약 마감'
-                }
+                {venueInfo?.schedule_status === 'closed'
+                ? get('VENUE_END') || '영업 종료'
+                : (venueInfo?.is_reservation
+                    ? get('DiscoverPage1.1') || '예약하기'
+                    : get('DiscoverPage1.1.disable') || '예약 마감')}
               </SketchBtn>
             </div>
           </div>

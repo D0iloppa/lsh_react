@@ -124,6 +124,8 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
         
         setIauData(iau);
 
+        console.log('data', data);
+        
         const transformed = data.map((item, index) => ({
           id: item.venue_id || index,
           name: item.name || 'Unknown',
@@ -137,6 +139,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
           price: item.price || 0,
           staff_cnt: item.staff_cnt || 0,
           is_reservation: item.is_reservation === true,
+          schedule_status:item.schedule_status,
           staff_languages: item.staff_languages || '',
         }));
 
@@ -713,7 +716,11 @@ if (savedScrollY !== null) {
                           fontSize: '12px'
                         }}
                       >
-                        {spot.is_reservation ? get('DiscoverPage1.1.able') : get('DiscoverPage1.1.disable')}
+
+                       {spot.schedule_status === 'closed'
+                        ? get('VENUE_END')
+                        : (spot.is_reservation ? get('DiscoverPage1.1.able') : get('DiscoverPage1.1.disable'))}
+
                       </div>
                       <div style={{ fontSize: '14px', color: '#333', marginTop: '6px' }}>
                         <MapPin size={14}/> {spot.address}
