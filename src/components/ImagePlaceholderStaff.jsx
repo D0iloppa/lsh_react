@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X } from 'lucide-react';
 
 const ImagePlaceholder = ({
-  src = [],
+  src = '',
+  fullList = [],
+  initialIndex = 0,
   alt = 'Image',
   className = '',
   imageSize = 'w-full h-full',
@@ -11,14 +13,21 @@ const ImagePlaceholder = ({
   style = {},
   placeholder = '',
 }) => {
-  const isArray = Array.isArray(src);
-  const imageList = isArray ? src.filter(Boolean) : [src];
+  const imageList = Array.isArray(fullList) && fullList.length > 0 ? fullList : [src];
 
   const [imageError, setImageError] = useState(false);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
-  const shouldShowPlaceholder = !imageList?.length || imageError;
+  const startX = useRef(0);
+  const deltaX = useRef(0);
+  const isDragging = useRef(false);
+
+  useEffect(() => {
+    setCurrentIndex(initialIndex);
+  }, [initialIndex]);
+
+  const shouldShowPlaceholder = !src || imageError;
 
   const handleImageError = () => setImageError(true);
   const handleImageLoad = () => setImageError(false);
@@ -34,21 +43,48 @@ const ImagePlaceholder = ({
     document.body.style.overflow = '';
   };
 
-  const showPrev = (e) => {
-    e.stopPropagation();
+  const showPrev = () => {
     setCurrentIndex((prev) => (prev === 0 ? imageList.length - 1 : prev - 1));
-    
   };
 
-  const showNext = (e) => {
-    e.stopPropagation();
+  const showNext = () => {
     setCurrentIndex((prev) => (prev === imageList.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleStart = (x) => {
+    startX.current = x;
+    deltaX.current = 0;
+    isDragging.current = true;
+  };
+
+  const handleMove = (x) => {
+    if (!isDragging.current) return;
+    deltaX.current = x - startX.current;
+  };
+
+  const handleEnd = () => {
+    if (!isDragging.current) return;
+    if (deltaX.current > 50) {
+      showPrev();
+    } else if (deltaX.current < -50) {
+      showNext();
+    }
+    isDragging.current = false;
   };
 
   const FullscreenViewer = () => (
     <div
       className="fullscreen-overlay"
-      onClick={closeViewer}
+      //onClick={closeViewer}
+      onTouchStart={(e) => handleStart(e.touches[0].clientX)}
+      onTouchMove={(e) => handleMove(e.touches[0].clientX)}
+      onTouchEnd={handleEnd}
+      onMouseDown={(e) => handleStart(e.clientX)}
+      onMouseMove={(e) => {
+        if (isDragging.current) e.preventDefault();
+        handleMove(e.clientX);
+      }}
+      onMouseUp={handleEnd}
       style={{
         position: 'fixed',
         top: 0,
@@ -61,9 +97,9 @@ const ImagePlaceholder = ({
         alignItems: 'center',
         justifyContent: 'center',
         flexDirection: 'column',
+        touchAction: 'pan-y',
       }}
     >
-      {/* 닫기 버튼 */}
       <button
         style={{
           position: 'absolute',
@@ -88,28 +124,9 @@ const ImagePlaceholder = ({
         <X color="white" size={20} />
       </button>
 
-      {/* 좌우 버튼 */}
-      {imageList.length > 1 && (
-        <>
-          <button
-            style={{ position: 'absolute', left: 20, zIndex: 10000 }}
-            onClick={showPrev}
-          >
-            <ChevronLeft color="white" size={40} />
-          </button>
-          <button
-            style={{ position: 'absolute', right: 20, zIndex: 10000 }}
-            onClick={showNext}
-          >
-            <ChevronRight color="white" size={40} />
-          </button>
-        </>
-      )}
-
-      {/* 메인 이미지 */}
       <img
-         id="fullscreen-image"
-        src={imageList[currentIndex]}
+        id="fullscreen-image"
+        src={imageList[currentIndex] || ''}
         alt={`slide-${currentIndex}`}
         style={{
           maxWidth: '90vw',
@@ -118,9 +135,9 @@ const ImagePlaceholder = ({
           zIndex: 9998,
         }}
         onClick={(e) => e.stopPropagation()}
+        draggable={false}
       />
 
-      {/* 하단 인디케이터 */}
       {imageList.length > 1 && (
         <div
           style={{
@@ -150,28 +167,24 @@ const ImagePlaceholder = ({
   return (
     <>
       <div className={`relative ${className}`} style={style}>
-          {!shouldShowPlaceholder ? (
-            imageList.map((imgSrc, index) => (
-              <img
-                key={index}
-                src={imgSrc}
-                alt={`${alt}-${index}`}
-                className={`${imageSize} object-cover cursor-pointer`}
-                onLoad={handleImageLoad}
-                onError={handleImageError}
-                onClick={() => openViewer(index)}
-              />
-            ))
-          ) : (
-            <div className={`placeholder-image ${fallbackClassName}`}>
-              <svg className="cross-svg" viewBox="0 0 100 100">
-                <line x1="10" y1="10" x2="90" y2="90" stroke="gray" strokeWidth="2" />
-                <line x1="90" y1="10" x2="10" y2="90" stroke="gray" strokeWidth="2" />
-              </svg>
-            </div>
-          )}
-        </div>
-
+        {!shouldShowPlaceholder ? (
+          <img
+            src={src}
+            alt={`${alt}-${initialIndex}`}
+            className={`${imageSize} object-cover cursor-pointer`}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            onClick={() => openViewer(initialIndex)}
+          />
+        ) : (
+          <div className={`placeholder-image ${fallbackClassName}`}>
+            <svg className="cross-svg" viewBox="0 0 100 100">
+              <line x1="10" y1="10" x2="90" y2="90" stroke="gray" strokeWidth="2" />
+              <line x1="90" y1="10" x2="10" y2="90" stroke="gray" strokeWidth="2" />
+            </svg>
+          </div>
+        )}
+      </div>
 
       {isViewerOpen && createPortal(<FullscreenViewer />, document.body)}
 

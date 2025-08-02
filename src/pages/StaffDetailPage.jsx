@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import RotationDiv from '@components/RotationDiv';
-import ImagePlaceholder from '@components/ImagePlaceholder';
+import ImagePlaceholder from '@components/ImagePlaceholderStaff';
 import SketchHeader from '@components/SketchHeader';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
@@ -41,6 +41,29 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           {index < text.split('\n').length - 1 && <br />}
         </React.Fragment>
       ));
+    };
+
+    // 플리킹 감지를 위한 useRef 선언
+      const touchStartXRef = useRef(null);
+      const touchEndXRef = useRef(null);
+    
+      const handleTouchStart = (e) => {
+      if (e.touches.length === 1) {
+        touchStartXRef.current = e.touches[0].clientX;
+      }
+    };
+    
+    // 터치 종료
+    const handleTouchEnd = (e) => {
+      if (e.changedTouches.length === 1) {
+        touchEndXRef.current = e.changedTouches[0].clientX;
+        const deltaX = touchEndXRef.current - touchStartXRef.current;
+    
+        if (deltaX > 80) { // ← 플리킹 감지 (좌 → 우)
+          console.log('플리킹: 좌에서 우로 → 뒤로가기');
+          goBack(); // 또는 navigate(-1);
+        }
+      }
     };
 
   const handleBack = () => {
@@ -213,6 +236,21 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
     window.scrollTo(0, 0);
   }, [messages, currentLang]);
 
+
+  useEffect(() => {
+  const container = document.querySelector('.staff-detail-container');
+  if (!container) return;
+
+  container.addEventListener('touchstart', handleTouchStart, { passive: true });
+  container.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+  return () => {
+    container.removeEventListener('touchstart', handleTouchStart);
+    container.removeEventListener('touchend', handleTouchEnd);
+  };
+}, []);
+
+
   return (
     <>
       <style jsx="true">{`
@@ -314,7 +352,9 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
                   <div className="dual-image-container">
                     <div className="image-left">
                       <ImagePlaceholder
-                        src={imageUrl}
+                        src={imageUrl}  // 전체 이미지 리스트
+                        fullList={images}       
+                        initialIndex={index} // 클릭한 이미지의 index
                         placeholder={true}
                         className="profile-image"
                       />

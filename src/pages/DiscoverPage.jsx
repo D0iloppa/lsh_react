@@ -53,6 +53,13 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
  const handleDetail = (girl) => {
   try {
 
+     const container = document.querySelector('.content-area');
+
+    if (container) {
+      const scrollY = container.scrollTop+350;
+      localStorage.setItem('discoverScrollY', scrollY.toString());
+      console.log("✅ savedScrollY from .content-area:", scrollY);
+    }
 
     showAdWithCallback(
       // 광고 완료 시 콜백
@@ -79,6 +86,30 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   // 스크롤 이벤트용 별도 useEffect
 
   const navigate = useNavigate();
+
+  // 플리킹 감지를 위한 useRef 선언
+  const touchStartXRef = useRef(null);
+  const touchEndXRef = useRef(null);
+
+  const handleTouchStart = (e) => {
+  if (e.touches.length === 1) {
+    touchStartXRef.current = e.touches[0].clientX;
+  }
+};
+
+// 터치 종료
+const handleTouchEnd = (e) => {
+  if (e.changedTouches.length === 1) {
+    touchEndXRef.current = e.changedTouches[0].clientX;
+    const deltaX = touchEndXRef.current - touchStartXRef.current;
+
+    if (deltaX > 80) { // ← 플리킹 감지 (좌 → 우)
+      console.log('플리킹: 좌에서 우로 → 뒤로가기');
+      goBack(); // 또는 navigate(-1);
+    }
+  }
+};
+
   
 // useEffect(() => {
 //   const debugScroll = () => {
@@ -132,13 +163,54 @@ useEffect(() => {
   const resetContentAreaScroll = () => {
     // 진짜 스크롤 컨테이너인 .content-area를 리셋
     const contentArea = document.querySelector('.content-area');
-    if (contentArea) {
+    /*if (contentArea) {
       contentArea.scrollTop = 0;
       console.log('content-area 스크롤이 0으로 리셋됨');
-    }
+    }*/
     
     // window도 함께 (혹시 모르니)
-    window.scrollTo(0, 0);
+      if (!localStorage.getItem('discoverScrollY')) {
+        window.scrollTo(0, 0);
+      }
+    
+
+    const savedScrollY = localStorage.getItem('discoverScrollY');
+
+    
+
+    if (savedScrollY !== null) {
+      const scrollY = parseInt(savedScrollY, 10);
+      const container = document.querySelector('.content-area');
+
+      let checkCount = 0;
+      const maxChecks = 30;
+
+      const checkReadyAndScroll = () => {
+        const container = document.querySelector('.content-area');
+        if (!container) {
+          console.log('⏳ .content-area 아직 없음');
+          requestAnimationFrame(checkReadyAndScroll);
+          return;
+        }
+
+        const scrollReady = container.scrollHeight > container.clientHeight + 10;
+
+        if (scrollReady) {
+          container.scrollTop = scrollY;
+          console.log('✅ 스크롤 복원 완료:', scrollY);
+          localStorage.removeItem('discoverScrollY');
+        } else {
+          checkCount++;
+          if (checkCount < maxChecks) {
+            requestAnimationFrame(checkReadyAndScroll);
+          } else {
+            console.warn('⚠️ 스크롤 복원 실패: 조건 만족 못함');
+          }
+        }
+      };
+
+      requestAnimationFrame(checkReadyAndScroll);
+    }
   };
 
   resetContentAreaScroll();
@@ -326,6 +398,19 @@ useEffect(() => {
   }, [venueId]); // venueId가 변경될 때만 실행
 
 
+
+  useEffect(() => {
+  const container = document.querySelector('.discover-container');
+  if (!container) return;
+
+  container.addEventListener('touchstart', handleTouchStart, { passive: true });
+  container.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+  return () => {
+    container.removeEventListener('touchstart', handleTouchStart);
+    container.removeEventListener('touchend', handleTouchEnd);
+  };
+}, []);
 
 
   const renderStars = (rating = 0) => {

@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { useFcm } from '@contexts/FcmContext';
 import LoadingScreen from '@components/LoadingScreen';
 
+
 import GlobalPopupManager from '@components/GlobalPopupManager';
 import Swal from 'sweetalert2';
 import ApiClient from '@utils/ApiClient';
@@ -46,6 +47,8 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
     localStorage.removeItem('popupClosedDate');
     // testPopup.emit('adViewCount'); 
   };
+
+  
 
   useEffect(() => {
     // PopupProvider가 마운트된 후에 testPopup이 생성됨
@@ -155,12 +158,51 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
     };
 
     const init = async () => {
-      if (messages && Object.keys(messages).length > 0) {
+      if (messages && Object.keys(messages).length > 0 && !localStorage.getItem('homeScrollY')) {
         window.scrollTo(0, 0);
       }
       const favoritesData = await fetchFavorits();
       setFavorits(favoritesData);
       await fetchHotspots(favoritesData);
+
+
+const savedScrollY = localStorage.getItem('homeScrollY');
+
+if (savedScrollY !== null) {
+  const scrollY = parseInt(savedScrollY, 10);
+  const container = document.querySelector('.content-area');
+
+  let checkCount = 0;
+  const maxChecks = 30;
+
+  const checkReadyAndScroll = () => {
+    const container = document.querySelector('.content-area');
+    if (!container) {
+      console.log('⏳ .content-area 아직 없음');
+      requestAnimationFrame(checkReadyAndScroll);
+      return;
+    }
+
+    const scrollReady = container.scrollHeight > container.clientHeight + 10;
+
+    if (scrollReady) {
+      container.scrollTop = scrollY;
+      console.log('✅ 스크롤 복원 완료:', scrollY);
+      localStorage.removeItem('homeScrollY');
+    } else {
+      checkCount++;
+      if (checkCount < maxChecks) {
+        requestAnimationFrame(checkReadyAndScroll);
+      } else {
+        console.warn('⚠️ 스크롤 복원 실패: 조건 만족 못함');
+      }
+    }
+  };
+
+  requestAnimationFrame(checkReadyAndScroll);
+}
+
+
     };
 
     init();
@@ -212,6 +254,15 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   }, [searchQuery, categoryFilter, sortRating, sortPrice, sortStaff, isReservationOnly,staffLanguageFilter]);
 
   const handleDiscover = (venueId) => {
+    const container = document.querySelector('.content-area');
+
+    if (container) {
+      const scrollY = container.scrollTop;
+      localStorage.setItem('homeScrollY', scrollY.toString());
+      localStorage.setItem('discoverScrollY', '0');
+      console.log("✅ savedScrollY from .content-area:", scrollY);
+    }
+    
     navigateToPageWithData(PAGES.DISCOVER, { venueId });
   };
 

@@ -412,6 +412,10 @@ const MainApp = () => {
                                     }
                                 }
 
+                                 if (id === PAGES.HOME) {
+                                    localStorage.setItem('homeScrollY', '0');
+                                }
+                                
                                 if (data) {
                                     navigateToPageWithData(id, data);
                                 } else {
