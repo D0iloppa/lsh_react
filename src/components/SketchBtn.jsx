@@ -61,7 +61,7 @@ const SketchBtn = ({
         /* Variants */
         .sketch-btn.event {
           color: #1f2937;
-          background: linear-gradient(135deg, #00f0ff, #fff0d8);
+          background-color: #00f0ff; !important
         }
 
 
