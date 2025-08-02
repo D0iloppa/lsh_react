@@ -6,7 +6,7 @@ import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
 import HatchPattern from '@components/HatchPattern';
 import { useAuth } from '@contexts/AuthContext';
-import { Calendar, Clock, Bell, Star, User, Briefcase, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, ClipboardList, LogIn, LogOut } from 'lucide-react';
+import { Calendar, Clock, Bell, Star, User, Briefcase, Edit, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, ClipboardList, LogIn, LogOut, MessagesSquare } from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import { useFcm } from '@contexts/FcmContext';
@@ -305,7 +305,10 @@ useEffect(() => {
   }
 };
 
-console.log(PAGES)  
+
+ const handleChatting = () => {
+    navigateToPageWithData(PAGES.CHATTINGLIST, { staffId: user?.id });
+  };
 
  const handleStaffSchedule = () => {
     navigateToPageWithData(PAGES.STAFF_WORK_SCHEDULE, { staffId: user?.id });
@@ -590,7 +593,7 @@ console.log(PAGES)
             </SketchDiv>
           
 
-          <SketchDiv className="section-card" onClick={handleStaffSchedule}>
+          <SketchDiv className="section-card" onClick={handleStaffSchedule} >
             <HatchPattern opacity={0.6} />
             <div className="section-title">
               <Calendar size={14} opacity={0.5}/> {get('STAFF_UPCOMING_SHIFTS')} 
@@ -628,7 +631,7 @@ console.log(PAGES)
             </SketchDiv>
 
              {/* 체크인/체크아웃 섹션 */}
-            <SketchDiv className="section-card">
+            <SketchDiv className="section-card" style={{ display: 'none' }}>
               <HatchPattern opacity={0.6} />
               <div className="section-content">
                 {todaySchedule ? (
@@ -674,7 +677,7 @@ console.log(PAGES)
           
           <div className="action-grid">
             <div className="action-row action-row-top">
-              <div className="action-btn-wrapper">
+              <div className="action-btn-wrapper" style={{ display: 'none' }}>
                 <SketchBtn 
                   size="medium" 
                   variant="secondary" 
@@ -687,6 +690,8 @@ console.log(PAGES)
                 </SketchBtn>
                 {/* 스케줄은 뱃지 없음 */}
               </div>
+
+              
               
               <div className="action-btn-wrapper">
                 <SketchBtn 
@@ -704,6 +709,20 @@ console.log(PAGES)
                   count={notificationCounts.reservations} 
                   isVisible={notificationCounts.reservations > 0}
                 />
+              </div>
+
+              <div className="action-btn-wrapper">
+                <SketchBtn 
+                  size="medium" 
+                  variant="secondary" 
+                  className="action-btn" 
+                  style={{border: '1px solid #d1d5db'}}
+                  onClick={handleChatting}
+                >
+                  <HatchPattern opacity={0.6} />
+                  <MessagesSquare size={24}/>{get('Staff.menu.2')}
+                </SketchBtn>
+                {/* 스케줄은 뱃지 없음 */}
               </div>
             </div>
             

@@ -31,6 +31,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
     username: '',
     password: '',
     contact: '',
+    description:'',
     role: '',
   });
   const [password, setPassword] = useState({
@@ -116,7 +117,8 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
         name: staff.name || '',
         username: staff.login_id,
         password: '', // 비밀번호는 수정 시 빈 값으로
-        contact: staff.contact || staff.phone || ''
+        contact: staff.contact || staff.phone || '',
+        description:staff.description
       });
     }
   }, [otherProps?.staff]); // staff 객체만 의존성으로 설정
@@ -127,7 +129,8 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
     const response = await ApiClient.postForm('/api/updateStaff', {
         staff_id: form.staff_id,
         name: form.name || '',
-        contact: form.contact || ''
+        contact: form.contact || '',
+        description:form.description
     });
 
     if (response.success) {
@@ -321,6 +324,17 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
               </div>
             </div>
 
+             <div className="input-row">
+                      <div style={{marginBottom: '0.3rem'}}>{get('SELF_INTRODUCTION_LABEL')}</div>
+                      <SketchInput
+                        name="description"
+                        value={form.description}
+                        onChange={handleChange}
+                        placeholder={get('SELF_INTRO_PLACEHOLDER')}
+                        as="textarea"
+                        rows={8}
+                      />
+                    </div>
 
             <div className="form-actions">
               <SketchBtn variant="event" size="small" onClick={handleAddStaff}>

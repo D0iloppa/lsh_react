@@ -30,6 +30,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
     username: '',
     password: '',
     contact: '',
+    description:'',
     role: '',
   });
 
@@ -72,8 +73,9 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
       fullnm: form.name,
       login_id: form.username,
       passwd: form.password,
-      contact: form.contact,
-      created_by: user?.id
+      contact: form.description,
+      created_by: user?.id,
+      description:form.description
     }).then(res=>{
       console.log('res', res);
 
@@ -257,6 +259,20 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
                 */
               }
             </div>
+
+               <div className="input-row">
+                                  <div style={{marginBottom: '0.3rem'}}>{get('SELF_INTRODUCTION_LABEL')}</div>
+                                  <SketchInput
+                                    name="description"
+                                    value={form.description}
+                                    onChange={handleChange}
+                                    placeholder={get('SELF_INTRO_PLACEHOLDER')}
+                                    as="textarea"
+                                    rows={8}
+                                  />
+                                </div>
+            
+
             <div className="form-actions">
               <SketchBtn variant="event" size="small" onClick={handleAddStaff}>
                 {get('STAFF_SAVE_BUTTON')}
