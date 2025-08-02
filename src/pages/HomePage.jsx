@@ -717,7 +717,7 @@ if (savedScrollY !== null) {
                         }}
                       >
 
-                       {spot.schedule_status === 'closed'
+                       {spot.schedule_status === 'closed' || spot.schedule_status === 'before_open'
                         ? get('VENUE_END')
                         : (spot.is_reservation ? get('DiscoverPage1.1.able') : get('DiscoverPage1.1.disable'))}
 
