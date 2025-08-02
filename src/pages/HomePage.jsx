@@ -726,7 +726,8 @@ if (savedScrollY !== null) {
                         <MapPin size={14}/> {spot.address}
                       </div>
                       <div style={{ fontSize: '14px', color: '#555', marginTop: '4px' }}>
-                        <Clock size={14}/> {openHoursText}  / <Users size={14}/> {spot.staff_cnt} {get('title.text.16')}
+                        <Clock size={14}/> {openHoursText}  / <Users size={14}/> <strong style={{color:'rgb(11, 199, 97)'}}>{spot.staff_cnt}</strong> {get('title.text.16')}
+                        {/*<Clock size={14}/> {openHoursText}  / <img src="/cdn/stepIcon.png" alt="staff" style={{ width: '14px', height: '14px', verticalAlign: 'middle' }} /> <strong>{spot.staff_cnt}</strong> {get('title.text.16')}*/}
                       </div>
 
                       {isOverlayStyle && (
