@@ -464,6 +464,8 @@ useEffect(() => {
     const initialDistanceRef = useRef(0);
     const initialScaleRef = useRef(1);
     const lastTouchRef = useRef({ x: 0, y: 0 });
+    const touchStartX = useRef(0);
+    const touchEndX = useRef(0);
   
     // 줌 리셋
     const resetZoom = () => {
