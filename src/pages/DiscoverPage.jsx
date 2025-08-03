@@ -984,11 +984,7 @@ const openMenuOverlay = (menuList) => {
               <div className="club-name">No Image</div>
             )}
           </div>
-
-
-
-
-
+          
           {venueInfo && (
             <div
               className="is-reservation"
@@ -996,7 +992,12 @@ const openMenuOverlay = (menuList) => {
                 right: '-130px',
                 top: '-210px',
                 position: 'relative',
-                backgroundColor: venueInfo.is_reservation ? 'rgb(11, 199, 97)' : 'rgb(107 107 107)',
+                backgroundColor:
+                  venueInfo.schedule_status === 'closed' || venueInfo.schedule_status === 'before_open'
+                    ? 'rgb(107, 107, 107)'
+                    : venueInfo.is_reservation
+                    ? 'rgb(11, 199, 97)'
+                    : 'rgb(107, 107, 107)',
                 color: '#fff',
                 padding: '5px 7px',
                 borderRadius: '3px',
@@ -1022,9 +1023,17 @@ const openMenuOverlay = (menuList) => {
                 get('DiscoverPage1.5'))}
             </div>
 
+            <div>
+                  <Clock size={13} style={{ marginRight: '4px' }} />
+                  {venueInfo && venueInfo.open_time && venueInfo.close_time
+                    ? `${venueInfo.open_time} - ${venueInfo.close_time}`
+                    : '-'}
+            </div>
+
             <div className="phone" style={{ marginBottom: '5px' }}>
               <span style={{ color: '#858585' }}><Phone size={14} /> tell: </span> {venueInfo?.phone || '-'}
             </div>
+            
 
             <div style={{ marginBottom: '5px' }}>
               <span style={{ color: '#858585' }}><Users size={14} />  Staff Count: </span>
@@ -1057,6 +1066,8 @@ const openMenuOverlay = (menuList) => {
               )}
             </div>
           </div>
+
+          
 
           <div className="top-sum">
             <div className="stars">{renderStars(venueInfo?.rating)}</div>
@@ -1199,20 +1210,18 @@ const openMenuOverlay = (menuList) => {
           {/*</div><div className={`reservation-footer ${showFooter ? '' : 'hidden'}`}>*/}
           <div className={`reservation-footer ${showFooter ? '' : ''}`}>
             {<HatchPattern opacity={0.4} />}
-            <div className="reservation-footer-content">
-              <div>
-                <div className="club-name" style={{ color: '#374151', fontSize: '17px', maxWidth: '160px' }}>{venueInfo?.name || 'Club One'}</div>
-                <div>
-                  <Clock size={13} style={{ marginRight: '4px' }} />
-                  {venueInfo && venueInfo.open_time && venueInfo.close_time
-                    ? `${venueInfo.open_time} - ${venueInfo.close_time}`
-                    : '-'}
-                </div>
-              </div>
+            <div className="reservation-footer-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div className="club-name" style={{ color: '#374151', fontSize: '17px', marginTop: '10px', paddingBottom: '5px' }}>
+              {venueInfo?.name || 'Club One'}
+            </div>
+          </div>
+
+  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <SketchBtn
                 className="sketch-button enter-button"
                 variant="event"
-                style={{ width: '45px', height: '39px', marginTop: '10px', background: '#374151', color: 'white' }}
+                style={{ width: '45px', height: '39px', marginTop: '0px', marginLeft:'0px' ,background: '#374151', color: 'white' }}
                 onClick={async () => {
                   // 로그인 여부 체크
                   if (!user || !user.user_id) {
@@ -1297,10 +1306,15 @@ const openMenuOverlay = (menuList) => {
               <SketchBtn
                 className="sketch-button enter-button"
                 variant="event"
-                style={{ width: '90px', height: '39px', marginTop: '10px', marginLeft: '-55px' }}
-                disabled={!venueInfo?.is_reservation}
+                style={{ width: '90px', height: '39px', marginTop: '0px' }}
+                disabled={
+                  !venueInfo?.is_reservation ||
+                  venueInfo?.schedule_status === 'closed' ||
+                  venueInfo?.schedule_status === 'before_open'
+                }
                 onClick={async () => {
                     if (!venueInfo.is_reservation) return;
+                    if (venueInfo.schedule_status === 'closed' || venueInfo.schedule_status === 'before_open') return;
 
                     // 로그인 여부 체크
                     if (!user || !user.user_id) {
@@ -1352,6 +1366,9 @@ const openMenuOverlay = (menuList) => {
                   }}
 
               >
+
+
+
                 <HatchPattern opacity={0.8} />
                 {venueInfo?.schedule_status === 'closed' || venueInfo?.schedule_status === 'before_open'
                   ? get('VENUE_END') || '영업 종료'
@@ -1359,6 +1376,11 @@ const openMenuOverlay = (menuList) => {
                       ? get('DiscoverPage1.1.enable') || '예약하기'
                       : get('DiscoverPage1.1.disable') || '예약 마감')}
               </SketchBtn>
+
+
+
+
+
             </div>
           </div>
           <div className="action-row">
@@ -1384,6 +1406,7 @@ const openMenuOverlay = (menuList) => {
                     ? get('DiscoverPage1.1.enable') || '예약하기'
                     : get('DiscoverPage1.1.disable') || '예약 마감')}
             </SketchBtn>
+             </div>
           </div>
           <LoadingScreen
             variant="cocktail"

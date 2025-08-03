@@ -707,7 +707,12 @@ if (savedScrollY !== null) {
                       <div
                         className="is-reservation"
                         style={{
-                          backgroundColor: spot.is_reservation ? 'rgb(11, 199, 97)' : 'rgb(107 107 107)',
+                          backgroundColor:
+                            spot.schedule_status === 'closed' || spot.schedule_status === 'before_open'
+                              ? 'rgb(107, 107, 107)'
+                              : spot.is_reservation
+                              ? 'rgb(11, 199, 97)'
+                              : 'rgb(107, 107, 107)',
                           color: '#fff',
                           padding: '5px 7px',
                           borderRadius: '3px',
@@ -726,7 +731,7 @@ if (savedScrollY !== null) {
                         <MapPin size={14}/> {spot.address}
                       </div>
                       <div style={{ fontSize: '14px', color: '#555', marginTop: '4px' }}>
-                        <Clock size={14}/> {openHoursText}  / <Users size={14}/> <strong style={{color:'rgb(11, 199, 97)'}}>{spot.staff_cnt}</strong> {get('title.text.16')}
+                        <Clock size={14}/> {openHoursText}  / <Users size={14}/> <strong style={{color:'rgba(88, 88, 88, 1)'}}>{spot.staff_cnt}</strong> {get('title.text.16')}
                         {/*<Clock size={14}/> {openHoursText}  / <img src="/cdn/stepIcon.png" alt="staff" style={{ width: '14px', height: '14px', verticalAlign: 'middle' }} /> <strong>{spot.staff_cnt}</strong> {get('title.text.16')}*/}
                       </div>
 
