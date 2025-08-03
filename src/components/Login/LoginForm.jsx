@@ -413,7 +413,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
         {/* Email Input */}
         <SketchInput
           type="text"
-          placeholder={get('title.text.1')}
+          placeholder={accountType === 'staff' ? get('STAFF_LOGIN_ID_LABEL') : get('title.text.1')}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isLoading}

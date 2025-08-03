@@ -850,7 +850,7 @@ const chatWithUser = async(r) => {
             }
 
             .calendar-accordion.open {
-              max-height: 209px;
+              max-height: 240px;
             }
 
             .calendar-content {
@@ -907,16 +907,17 @@ const chatWithUser = async(r) => {
             }
 
             .calendar-scroll {
-              max-height: 12rem;
+              max-height: 5.5rem;
               overflow-y: auto;
               scroll-snap-type: y mandatory;
+              padding-bottom: 1rem;
             }
 
             .calendar-2weeks {
               position: relative;
               display: grid;
               grid-template-rows: repeat(2, 1fr);
-              height: 6rem;
+              height: 6.5rem;
               scroll-snap-align: start;
               gap: 3px;
             }
@@ -932,10 +933,10 @@ const chatWithUser = async(r) => {
               border: 1.5px solid #e5e7eb;
               border-radius: 6px;
               text-align: center;
-              font-size: 0.9rem;
-              padding: 0.4rem 0;
-              min-width: 1.8rem;
-              min-height: 1.8rem;
+              font-size: 0.85rem;
+              padding: 0.3rem 0;
+              min-width: 1.6rem;
+              min-height: 1.6rem;
               cursor: pointer;
               transition: border 0.2s, color 0.2s, opacity 0.2s, background 0.2s;
               display: flex;

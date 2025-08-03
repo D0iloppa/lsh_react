@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import SketchHeader from '@components/SketchHeader';
 import SketchBtn from '@components/SketchBtn';
 import HatchPattern from '@components/HatchPattern'
@@ -13,6 +13,9 @@ import Swal from 'sweetalert2';
 import { useAuth } from '@contexts/AuthContext';
 import ApiClient from '@utils/ApiClient';
 
+import ImageUploader from '@components/ImageUploader';
+import PhotoGallery from '@components/PhotoGallery_staff';
+
 const roleOptions = [
   { value: 'hostess', label: 'Hostess' },
   { value: 'manager', label: 'Manager' },
@@ -25,6 +28,15 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
   const [errors, setErrors] = useState({});
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [venue, setVenue] = useState(-1);
+  
+  // 이미지 관련 상태들 (staff_id 없이 임시 관리)
+  const [uploadedImages, setUploadedImages] = useState([]);
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [galleryImagesContentId, setGalleryImagesContentId] = useState([]);
+  const [galleryImagesMap, setGalleryImagesMap] = useState([]);
+  const [isLoadingData, setIsLoadingData] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  
   const [form, setForm] = useState({
     name: '',
     username: '',
@@ -59,6 +71,65 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
     return Object.keys(newErrors).length === 0;
   };
 
+  // staff_id 등록 후 이미지 연결 함수
+  const connectImagesToStaff = async (staff_id) => {
+    try {
+      console.log('🔄 이미지 연결 시작 - staff_id:', staff_id);
+
+      const allContentIds = [];
+
+      // 1. 프로필 이미지 content_id 처리
+      const imageContentId = uploadedImages.length > 0 
+        ? parseInt(uploadedImages[0].contentId, 10) 
+        : 0;
+
+      // 2. 메인 이미지 content_id 추가
+      if (imageContentId !== 0) {
+        allContentIds.push(imageContentId);
+      }
+
+      // 3. 갤러리 이미지 content_id 추가
+      if (galleryImagesContentId.length > 0) {
+        allContentIds.push(...galleryImagesContentId);
+      }
+
+      console.log("✅ 전체 content_id 목록 (메인 -> 갤러리):", allContentIds);
+
+      const contentIdString = allContentIds.join(',');
+
+      // 프로필 이미지 content_id 결정
+      const profileContentIdToUse = imageContentId !== 0 
+        ? imageContentId 
+        : 0;
+
+      // 4. 스태프 정보 업데이트 (이미지 포함)
+      const payload = {
+        staff_id: staff_id,
+        name: form.name || '',
+        contact: form.contact || '',
+        description: form.description,
+        profile_content_id: profileContentIdToUse,
+        contentIdString: contentIdString,
+      };
+
+      console.log('이미지 연결 payload:', payload);
+
+      const response = await ApiClient.postForm('/api/updateStaffV2', payload);
+
+      if (response.success) {
+        console.log('🎉 모든 이미지 연결 완료');
+        return true;
+      } else {
+        console.error('❌ 이미지 연결 실패:', response.message);
+        return false;
+      }
+
+    } catch (error) {
+      console.error('❌ 이미지 연결 중 오류:', error);
+      return false;
+    }
+  };
+
   const handleAddStaff = async () => {
 
     // 폼 검증
@@ -66,38 +137,47 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
       return; // 검증 실패 시 등록 중단
     }
 
-    ApiClient.postForm('/api/register', {
-      login_type: 'id',
-      account_type:'staff',
-      venue_id: venue,
-      fullnm: form.name,
-      login_id: form.username,
-      passwd: form.password,
-      contact: form.description,
-      created_by: user?.id,
-      description:form.description
-    }).then(res=>{
-      console.log('res', res);
+    try {
+      setIsSaving(true);
 
-      const {registerInfo = false, error = false} = res;
+      // 1. 스태프 등록 API 호출 (이미지 없이)
+      const registerResponse = await ApiClient.postForm('/api/register', {
+        login_type: 'id',
+        account_type: 'staff',
+        venue_id: venue,
+        fullnm: form.name,
+        login_id: form.username,
+        passwd: form.password,
+        contact: form.contact,
+        created_by: user?.id,
+        description: form.description,
+      });
 
-      if (error) {
+      console.log('register response:', registerResponse);
 
+      const { registerInfo = false, error = false, isDuplicate = false } = registerResponse;
+
+      if (error || isDuplicate) {
         Swal.fire({
           title: get('REGISTER_ERROR_DUPLICATE') || '이미 사용 중인 이메일입니다',
           icon: 'error',
           confirmButtonText: get('SWAL_CONFIRM_BUTTON')
         });
-        
-        return; // 현재 자리에 머무름
-
+        return;
       }
 
+      if (registerInfo && registerInfo.owner_id) {
+        const staff_id = registerInfo.owner_id; // account_id를 staff_id로 사용
+        
+        // 2. 이미지 연결 (별도 함수 호출)
+        const imageConnectionSuccess = await connectImagesToStaff(staff_id);
 
+        // 3. 성공 메시지 및 상태 초기화
+        setUploadedImages([]);
+        setGalleryImages([]);
+        setGalleryImagesContentId([]);
+        setGalleryImagesMap([]);
 
-
-
-      if(registerInfo){
         Swal.fire({
           title: get('SWAL_STAFF_REG'),
           text: get('SWAL_STAFF_REG_SUCESS'),
@@ -108,7 +188,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
             goBack();
           }
         });
-      }else{
+      } else {
         Swal.fire({
           title: get('SWAL_STAFF_REG_ERROR'),
           text: get('SCHEDULE_SAVE_ERROR_MESSAGE'),
@@ -117,10 +197,17 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
         });
       }
 
-      
-
-
-    });
+    } catch (error) {
+      console.error('Staff registration error:', error);
+      Swal.fire({
+        title: get('SWAL_STAFF_REG_ERROR'),
+        text: get('SCHEDULE_SAVE_ERROR_MESSAGE'),
+        icon: 'error',
+        confirmButtonText: get('btn.back.1')
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
     useEffect(() => {
@@ -188,6 +275,35 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
             margin-top: 0.25rem;
             margin-bottom: 0.5rem;
           }
+
+        .image-upload-section {
+          margin-bottom: 1.2rem;
+        }
+        .image-upload-title {
+          font-size: 1rem;
+          font-weight: 500;
+          margin-bottom: 0.5rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          width: 100%;
+          gap: 1rem;
+        }
+        .image-upload-title > div:first-child {
+          flex: 1;
+          font-weight: 600;
+        }
+        .image-upload-title > div:last-child {
+          flex-shrink: 0;
+          min-width: 80px;
+        }
+        .image-upload-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-around;
+          gap: 1rem;
+          margin: 1rem 0;
+        }
       `}</style>
           <div className="create-container">
           <SketchHeader
@@ -198,6 +314,84 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
           <div className="form-title">{get('STAFF_CREATE_FORM_TITLE')}</div>
           <SketchDiv className="form-box">
             <HatchPattern opacity={0.4} />
+
+            {/* 이미지 업로드 섹션 */}
+            <div className="image-upload-section">
+              <div className="image-upload-title">
+                <div>
+                  {get('PROFILE_IMAGE_TITLE')}
+                </div>
+                <div>
+                  {/* 추가 버튼이 필요한 경우 여기에 */}
+                </div>
+              </div>
+              <div className="image-upload-content">
+                <ImageUploader
+                  apiClient={ApiClient}
+                  usingCameraModule={false}
+                  containerAsUploader={true}
+                  uploadedImages={uploadedImages}
+                  onImagesChange={(images) => {
+                    console.log('ImageUploader onImagesChange:', images);
+                    setUploadedImages(images);
+                  }}
+                  maxImages={1}
+                  imageHolderStyle={{ width: '125px', height: '125px' }}
+                  showRemoveButton={true}
+                  showPreview={false}
+                  onUploadSuccess={(response) => {
+                    console.log('ImageUploader 업로드 성공:', response);
+                  }}
+                  onUploadError={(error) => {
+                    console.error('ImageUploader 업로드 실패:', error);
+                  }}
+                />
+                <div style={{}}>
+                  <PhotoGallery
+                    photoGalleryMode={{
+                      fetchList: () => Promise.resolve([]), // 등록 시에는 빈 배열 반환
+                      onUpload: async (file) => {
+                        console.log('갤러리 이미지 업로드 시작:', file);
+                        setIsLoadingData(true);
+
+                        try {
+                          const response = await ApiClient.uploadImage(file);
+                          console.log('갤러리 업로드 응답:', response);
+                          const { content_id = false, accessUrl } = response;
+                          
+                          if (content_id) {
+                            setGalleryImages(prev => [...prev, accessUrl]);
+                            setGalleryImagesContentId(prev => [...prev, content_id]);
+                            setGalleryImagesMap(prev => [...prev, { url: accessUrl, contentId: content_id }]);
+                          }
+
+                        } catch (error) {
+                          console.error('갤러리 이미지 업로드 실패:', error);
+                        } finally {
+                          setIsLoadingData(false);
+                        }
+                      }
+                    }}
+                    appendedImages={galleryImages}
+                    onAppendedImagesChange={setGalleryImages}
+                    onDeleted={(deletedImageUrl) => {
+                      console.log('갤러리 이미지 삭제 요청:', deletedImageUrl);
+                      
+                      // 로컬 상태에서 제거
+                      setGalleryImages(prev => prev.filter(img => img !== deletedImageUrl));
+                      
+                      // content_id도 제거
+                      const imageInfo = galleryImagesMap.find(item => item.url === deletedImageUrl);
+                      if (imageInfo) {
+                        setGalleryImagesContentId(prev => prev.filter(id => id !== imageInfo.contentId));
+                        setGalleryImagesMap(prev => prev.filter(item => item.url !== deletedImageUrl));
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+              <div style={{padding:'10px'}}>{get('PHOTO_GAL_DESCRIPTION_1')}</div>
+            </div>
             
             <div className="form-field">
               <div className="form-label">{get('STAFF_USERNAME_LABEL')}</div>
@@ -261,12 +455,12 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
             </div>
 
                <div className="input-row">
-                                  <div style={{marginBottom: '0.3rem'}}>{get('SELF_INTRODUCTION_LABEL')}</div>
+                                  <div style={{marginBottom: '0.3rem'}}>{get('STAFF_INTRODUCE_LABEL')}</div>
                                   <SketchInput
                                     name="description"
                                     value={form.description}
                                     onChange={handleChange}
-                                    placeholder={get('SELF_INTRO_PLACEHOLDER')}
+                                    placeholder={get('STAFF_INTRODUCE_LABEL')}
                                     as="textarea"
                                     rows={8}
                                   />
@@ -274,8 +468,13 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
             
 
             <div className="form-actions">
-              <SketchBtn variant="event" size="small" onClick={handleAddStaff}>
-                {get('STAFF_SAVE_BUTTON')}
+              <SketchBtn 
+                variant="event" 
+                size="small" 
+                onClick={handleAddStaff}
+                disabled={isSaving}
+              >
+                {isSaving ? '저장 중...' : get('STAFF_SAVE_BUTTON')}
               </SketchBtn>
               <SketchBtn variant="danger" size="small" onClick={goBack}>
                 {get('STAFF_CANCEL_BUTTON')}
@@ -286,7 +485,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
          <LoadingScreen
             variant="cocktail"
             subText="Loading..."
-            isVisible={isLoading}
+            isVisible={isLoading || isLoadingData}
           />
     </>
   );

@@ -501,15 +501,6 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
                         setGalleryImagesContentId(prev => [...prev, content_id]);
                         setGalleryImagesMap(prev => [...prev, { url: accessUrl, contentId: content_id }]);
                       }
-                      /*
-                       // 백엔드에 저장
-                       await ApiClient.postForm('/api/uploadVenueGallery', {
-                        venue_id: user?.venue_id,
-                        content_id: content_id
-                      });
-
-                          
-                        */
 
 
                     const payload = {
