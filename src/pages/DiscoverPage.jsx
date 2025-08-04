@@ -1007,8 +1007,8 @@ const openMenuOverlay = (menuList) => {
             <div
               className="is-reservation"
               style={{
-                right: '-130px',
-                top: '-210px',
+                right: '-139px',
+                top: '-192px',
                 position: 'relative',
                 backgroundColor:
                   venueInfo.schedule_status === 'closed' || venueInfo.schedule_status === 'before_open'

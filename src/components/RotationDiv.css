@@ -120,7 +120,7 @@
 /* 기본 원형 스타일 */
 .rotation-indicator {
   width: 5px;
-  height: 5px;
+  height: 14px;
   border: 1px solid black;
   background: white;
   opacity: 0.5;
