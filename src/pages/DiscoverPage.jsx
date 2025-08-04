@@ -855,7 +855,7 @@ const openMenuOverlay = (menuList) => {
         .club-image-area {
           border-radius: 3px;
           width: 100%; height: 200px; border: 1px solid #1f2937;
-          background-color: #f3f4f6; margin-bottom: 1rem;
+          background-color: #f3f4f6; 
           display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
         .club-image-area img { width: 100%; height: 100%; object-fit: cover; }
@@ -953,8 +953,6 @@ const openMenuOverlay = (menuList) => {
         .rotation-image-container{ width: 100%;
   height: 200px; }
 
-  .club-info{    text-align: center;
-    padding: 1rem;}
       `}</style>
 
       <div className="discover-container">
@@ -1023,20 +1021,6 @@ const openMenuOverlay = (menuList) => {
           )}
 
 
-          
-
-          <div className="section-title" style={{ textAlign: 'start' }}>{get('DiscoverPage1.6')}</div>
-          <div className="map-section">
-            <GoogleMapComponent
-              places={venueInfo ? [venueInfo] : []}
-              disableInteraction={false}
-              showEntrances={true} //입구 표시 활성화
-              showNearestEntranceConnection={false} 
-            />
-          </div>
-        </div>
-
-        <div className="club-info">
           <div className="club-name">{venueInfo?.name || 'Club One'}</div>
 
           <div className='sum-info text-start'>
@@ -1148,7 +1132,21 @@ const openMenuOverlay = (menuList) => {
               {get('nav.review.1')} <span className='reviewCnt'>{reviewCount}</span>{get('text.cnt.1')} {get('text.cnt.2')} &gt;
             </div>
           </div>
+       
+          
+
+          <div className="section-title" style={{ textAlign: 'start' }}>{get('DiscoverPage1.6')}</div>
+          <div className="map-section">
+            <GoogleMapComponent
+              places={venueInfo ? [venueInfo] : []}
+              disableInteraction={false}
+              showEntrances={true} //입구 표시 활성화
+              showNearestEntranceConnection={false} 
+            />
+          </div>
         </div>
+
+        
 
         <div className="top-girls-section">
           <div className="section-title">{get('DiscoverPage1.2')}</div>
