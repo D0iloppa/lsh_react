@@ -1164,7 +1164,14 @@ const openMenuOverlay = (menuList) => {
               //const displayName = `${girl.name} (${age})`;
               const displayName = `${girl.name}`;
 
-              console.log(`Girl ${index} - staff_id: ${girl.staff_id}, availCnt: ${availCnt}`);
+              const statusBackgroundColor = 
+                  venueInfo?.schedule_status === 'closed' 
+                    ? 'rgb(107, 107, 107)' 
+                    : availCnt > 0 
+                      ? 'rgb(11, 199, 97)' 
+                      : 'rgb(107, 107, 107)';
+
+              console.log(`Girl ${index} - staff_id: ${girl.staff_id}, availCnt: ${availCnt}`, statusBackgroundColor);
 
               return (
                 <div key={index} className="girl-slide" style={{ position: 'relative' }}>
@@ -1175,7 +1182,7 @@ const openMenuOverlay = (menuList) => {
                         position: 'absolute',
                         top: '10px',
                         right: '10px',
-                        backgroundColor: availCnt > 0 ? 'rgb(11, 199, 97)' : 'rgb(107, 107, 107)',
+                        backgroundColor: statusBackgroundColor,
                         color: 'rgb(255, 255, 255)',
                         padding: '3px 6px',
                         borderRadius: '3px',
