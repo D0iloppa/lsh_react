@@ -68,6 +68,8 @@ const SettingsPage = ({
   }
 }, [currentLang]);
 
+console.log("language", language)
+
 
   // useEffect 의존성 최적화 - 설정 데이터 로딩
   useEffect(() => {
