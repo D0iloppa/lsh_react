@@ -345,7 +345,7 @@ useEffect(() => {
       });
       
       // ✅ 줌 레벨을 18로 확대 (또는 원하는 레벨)
-      mapInstance.current.setZoom(18);
+      mapInstance.current.setZoom(20);
       
       onMarkerClick(place);
       });
