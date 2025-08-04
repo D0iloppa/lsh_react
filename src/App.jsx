@@ -52,7 +52,10 @@ const AppRoutes = () => {
     const params = new URLSearchParams(url.search);
     const version = params.get('version') || null;
 
-    setAppVersion(version); // 상태로도 
+      const pathname = url.pathname;
+      if (pathname === '/' || pathname === '/lsh') {
+        setAppVersion(version);
+      } 
     
     const compareVersions = (v1, v2) => {
       const a = v1.split('.').map(Number);
