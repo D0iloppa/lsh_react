@@ -698,7 +698,7 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
                     {isNewSpot(spot.created_at) && (
                       <div style={{
                         position: 'absolute',
-                        bottom: 0, // 이미지 하단에 밀착
+                        bottom: 0,
                         left: 0,
                         width: '100%',
                         backgroundColor: '#ff4757',
@@ -713,7 +713,7 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
                         borderBottomLeftRadius: '8px',
                         borderBottomRightRadius: '8px'
                       }}>
-                        NEW STAFF UPDATED!!
+                        {isOverlayStyle ? 'NEW STAFF' : 'NEW STAFF UPDATED!!'}
                       </div>
                     )}
 

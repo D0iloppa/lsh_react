@@ -93,8 +93,13 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   const touchEndXRef = useRef(null);
 
   const handleTouchStart = (e) => {
- const isMapArea = e.target.closest('.map-section') || e.target.closest('#map');
-  if (isMapArea) return; // 지도 영역에서는 플리킹 감지 안 함
+ const isIgnoredArea = 
+    e.target.closest('.map-section') || 
+    e.target.closest('#map') ||
+    e.target.closest('.venue-rotation') || // 장소 이미지 회전
+    e.target.closest('.girls-rotation');   // 스태프 회전
+
+  if (isIgnoredArea) return;
 
   if (e.touches.length === 1) {
     touchStartXRef.current = e.touches[0].clientX;
@@ -103,8 +108,13 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
 
 // 터치 종료
 const handleTouchEnd = (e) => {
-   const isMapArea = e.target.closest('.map-section') || e.target.closest('#map');
-  if (isMapArea) return; // 지도 영역에서는 플리킹 감지 안 함
+  const isIgnoredArea = 
+    e.target.closest('.map-section') || 
+    e.target.closest('#map') ||
+    e.target.closest('.venue-rotation') || // 장소 이미지 회전
+    e.target.closest('.girls-rotation');   // 스태프 회전
+
+  if (isIgnoredArea) return;
 
   if (e.changedTouches.length === 1) {
     touchEndXRef.current = e.changedTouches[0].clientX;

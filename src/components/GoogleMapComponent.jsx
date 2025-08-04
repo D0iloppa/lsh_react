@@ -17,6 +17,7 @@ const GoogleMapComponent = ({
   const [mapReady, setMapReady] = useState(false);
   const markerClickFlag = useRef(false); // 마커 클릭 여부 추적
   const entranceMarkersRef = useRef([]);
+  const [autoZoomDone, setAutoZoomDone] = useState(false);
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
   const entrances = [
@@ -45,14 +46,13 @@ useEffect(() => {
 
 
 useEffect(() => {
-  if (!mapReady || !places || places.length === 0 || !showEntrances) return;
+  if (!mapReady || !places || places.length === 0 || !showEntrances || autoZoomDone) return;
 
   const venue = places[0];
   if (!venue || !venue.latitude || !venue.longitude) return;
 
   const bounds = new window.google.maps.LatLngBounds();
   
-  // 모든 위치 추가
   bounds.extend({
     lat: parseFloat(venue.latitude),
     lng: parseFloat(venue.longitude)
@@ -65,19 +65,17 @@ useEffect(() => {
     });
   });
 
-  // ✅ 범위 크기에 따른 동적 패딩 계산
   const ne = bounds.getNorthEast();
   const sw = bounds.getSouthWest();
   const latSpan = ne.lat() - sw.lat();
   const lngSpan = ne.lng() - sw.lng();
   const maxSpan = Math.max(latSpan, lngSpan);
 
-  // 범위가 클수록 더 큰 패딩 적용
   let paddingSize;
-  if (maxSpan > 0.01) paddingSize = 90;      // 매우 넓은 범위
-  else if (maxSpan > 0.007) paddingSize = 70; // 넓은 범위
-  else if (maxSpan > 0.005) paddingSize = 40; // 중간 범위
-  else paddingSize = 20;                      // 좁은 범위
+  if (maxSpan > 0.01) paddingSize = 90;
+  else if (maxSpan > 0.007) paddingSize = 70;
+  else if (maxSpan > 0.005) paddingSize = 40;
+  else paddingSize = 20;
 
   const padding = {
     top: paddingSize,
@@ -86,11 +84,8 @@ useEffect(() => {
     left: paddingSize
   };
 
-  console.log('Lat span:', latSpan, 'Lng span:', lngSpan, 'Max span:', maxSpan, 'Padding:', paddingSize);
-
   mapInstance.current.fitBounds(bounds, padding);
   
-  // 최대/최소 줌 제한
   const listener = window.google.maps.event.addListener(mapInstance.current, "idle", function() {
     const currentZoom = mapInstance.current.getZoom();
     
@@ -98,14 +93,16 @@ useEffect(() => {
       mapInstance.current.setZoom(17);
     }
     
-    if (currentZoom < 12) { // 최소 줌을 12로 낮춤
+    if (currentZoom < 12) {
       mapInstance.current.setZoom(12);
     }
     
     window.google.maps.event.removeListener(listener);
+    setAutoZoomDone(true); // ✅ 자동줌 완료 표시
   });
 
-}, [places, mapReady, showEntrances]);
+}, [places, mapReady, showEntrances, autoZoomDone]);
+
 
 
 
@@ -342,7 +339,15 @@ useEffect(() => {
 
       marker.addListener("click", () => {
         markerClickFlag.current = true; // ✅ 마커 클릭으로 설정
-        onMarkerClick(place);
+         mapInstance.current.setCenter({
+        lat: parseFloat(place.latitude),
+        lng: parseFloat(place.longitude)
+      });
+      
+      // ✅ 줌 레벨을 18로 확대 (또는 원하는 레벨)
+      mapInstance.current.setZoom(18);
+      
+      onMarkerClick(place);
       });
 
       markersRef.current.push(marker);
