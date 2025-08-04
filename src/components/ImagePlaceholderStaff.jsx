@@ -38,7 +38,7 @@ const ImagePlaceholder = ({
      const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
       
      if (isIOS) {
-      /* try {
+       try {
         window.webkit.messageHandlers.native.postMessage(
           JSON.stringify({
             type: 'openImageViewer',
@@ -49,10 +49,9 @@ const ImagePlaceholder = ({
       } catch (e) {
         console.error('iOS 메시지 전송 실패:', e);
       }
-*/
-        setCurrentIndex(index);
-        setIsViewerOpen(true);
-        document.body.style.overflow = 'hidden';
+        //setCurrentIndex(index);
+        //setIsViewerOpen(true);
+        //document.body.style.overflow = 'hidden';
      } else {
       setCurrentIndex(index);
       setIsViewerOpen(true);
