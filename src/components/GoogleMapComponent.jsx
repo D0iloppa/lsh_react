@@ -214,7 +214,7 @@ useEffect(() => {
 
   //입구 아이콘 생성
 const createEntranceIcon = (label) => {
-  const baseSize = 30;
+  const baseSize = 35;
   const scale = 2;
   const canvas = document.createElement('canvas');
   canvas.width = baseSize * scale;
@@ -224,7 +224,7 @@ const createEntranceIcon = (label) => {
   ctx.scale(scale, scale);
   
   // 배경 원 그리기
-  ctx.fillStyle = 'rgba(57, 143, 255, 0.6)';
+  ctx.fillStyle = 'rgba(33, 125, 247, 0.9)';
   ctx.strokeStyle = '#ffffff';
   ctx.lineWidth = 1.5;
   ctx.beginPath();

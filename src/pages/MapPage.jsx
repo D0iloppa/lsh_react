@@ -388,6 +388,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
             <div className="map-component-placeholder">
               <GoogleMapComponent
                 places={places}
+                showEntrances={true}
                 onMarkerClick={(venue) => {
                    if (venue.isEntrance) {
                     // 입구 클릭 시 처리 - 리스트만 표시하고 상세 정보는 표시하지 않음
