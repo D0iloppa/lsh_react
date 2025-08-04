@@ -77,7 +77,7 @@ const AppRoutes = () => {
         if (version && compareVersions(version, '1.0.2') < 0) {
             //이전버전
             if (isAndroid) {
-              navigate('/downloadAndroid');
+              //navigate('/downloadAndroid');
             } else if (isIOS) {
               navigate('/downloadIOS');
             } 
@@ -86,7 +86,7 @@ const AppRoutes = () => {
         }
     } else {
        if (isAndroid) {
-        navigate('/downloadAndroid');
+        //navigate('/downloadAndroid');
       } else if (isIOS) {
         navigate('/downloadIOS');
       } 

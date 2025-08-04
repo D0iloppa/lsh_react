@@ -100,56 +100,69 @@
   left: 50%;
   transform: translateX(-50%);
   display: flex;
+  flex-direction: column;
   gap: 4px;
   z-index: 20;
-
-  max-width: 50%; /* 화면 넘침 방지 */
-  overflow-x: auto; /* 좌우 스크롤 허용 */
-  overflow-y: hidden;
-  white-space: nowrap;
-  padding-bottom: 2px;
-  scrollbar-width: none; /* Firefox 스크롤 숨김 */
+  align-items: center;
+  max-width: 100%;
+  padding: 0 10px;
 }
+
+.rotation-indicator-row {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.rotation-indicator {
+  width: 6px;
+  height: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0.5;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.rotation-indicator.active {
+  background: linear-gradient(135deg, #00f0ff, #fff0d8);
+  opacity: 1;
+}
+
+.rotation-indicator.nearby {
+  opacity: 0.75;
+}
+
+.rotation-indicator.far {
+  opacity: 0.3;
+}
+
 
 /* Chrome, Safari 스크롤 숨김 */
 .rotation-indicators::-webkit-scrollbar {
   display: none;
 }
 
-
-/* 기본 원형 스타일 */
-.rotation-indicator {
-  width: 5px;
-  height: 14px;
-  border: 1px solid black;
-  background: white;
-  opacity: 0.5;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-}
-
 /* 현재 위치 */
 .rotation-indicator.active {
-  width: 5px;
-  height: 14px;
-  border: 1px solid black;
   background: linear-gradient(135deg, #00f0ff, #fff0d8);
   opacity: 1;
+  transform: scale(1.2);
 }
 
 /* 가까운 위치 */
 .rotation-indicator.nearby {
-  width: 5px;
-  height: 14px;
-  border: 1px solid #333;
   opacity: 0.75;
 }
 
 /* 먼 위치 */
 .rotation-indicator.far {
-  width: 5px;
-  height: 14px;
-  border: 1px solid #333;
   opacity: 0.3;
 }
 

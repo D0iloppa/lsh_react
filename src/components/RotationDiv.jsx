@@ -193,34 +193,48 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
         </>
       )}
 
-      {showIndicators && rotationItems.length > 1 && (
-          <div className="rotation-indicators">
-            {(() => {
-              const totalItems = rotationItems.length;
-              const indicatorCount = 5;
-              const groupSize = Math.ceil(totalItems / indicatorCount);
+{showIndicators && rotationItems.length > 1 && (() => {
+  const maxIndicators = 30;
+  const indicatorsToShow = rotationItems.slice(0, maxIndicators);
+  const total = indicatorsToShow.length;
 
-              return [...Array(indicatorCount)].map((_, index) => {
-                const targetIndex = index * groupSize;
-                const isActive =
-                  currentIndex >= targetIndex &&
-                  currentIndex < targetIndex + groupSize;
+  // 한 줄에 최대 15개씩 배치
+  const itemsPerRow = 15;
+  const firstRowCount = Math.min(itemsPerRow, total);
+  const secondRowCount = Math.max(0, total - itemsPerRow);
 
-                let className = 'rotation-indicator';
-                if (isActive) className += ' active';
+  const firstRow = indicatorsToShow.slice(0, firstRowCount);
+  const secondRow = indicatorsToShow.slice(firstRowCount);
 
-                return (
-                  <button
-                    key={index}
-                    className={className}
-                    onClick={() => goToSlide(targetIndex)}
-                    aria-label={`Go to item ${targetIndex + 1}`}
-                  />
-                );
-              });
-            })()}
-          </div>
-        )}
+  const renderRow = (items, offset = 0) => (
+    <div className="rotation-indicator-row" key={offset}>
+      {items.map((_, i) => {
+        const index = offset + i;
+        let className = 'rotation-indicator';
+        if (index === currentIndex) className += ' active';
+        else if (Math.abs(index - currentIndex) <= 1) className += ' nearby';
+        else className += ' far';
+
+        return (
+          <button
+            key={index}
+            className={className}
+            onClick={() => goToSlide(index)}
+            aria-label={`Go to item ${index + 1}`}
+          />
+        );
+      })}
+    </div>
+  );
+
+  return (
+    <div className="rotation-indicators">
+      {renderRow(firstRow, 0)}
+      {secondRow.length > 0 && renderRow(secondRow, firstRow.length)}
+    </div>
+  );
+})()}
+
 
     </div>
   );
