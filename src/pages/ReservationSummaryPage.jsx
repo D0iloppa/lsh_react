@@ -33,13 +33,14 @@ const ReserveSummaryPage = ({
     endTime: '',
     duration: '',
     attendee: '',
-    memo: ''
+    memo: '',
+    escort_entrance: ''
   });
   const [isConfirming, setIsConfirming] = useState(false);
 
 
   const { user, isLoggedIn } = useAuth();
-  console.log("user", user)
+  console.log("displayData", displayData)
 
 
   const [agreements, setAgreements] = useState({
@@ -84,7 +85,9 @@ const ReserveSummaryPage = ({
         venueToItem,
         targetName,
         pickupService,
-        useStaffService
+        useStaffService,
+        selectedEntrance,
+        escort_entrance
       } = reserve_data;
 
       // API 요청을 위한 payload 준비
@@ -102,7 +105,8 @@ const ReserveSummaryPage = ({
         mngCode:0,
         use_escort: pickupService ? 1 : 0,
         use_staff: useStaffService ? 1 : 0,
-        venueToItem:true, pickupService:pickupService,useStaffService:useStaffService
+        venueToItem:true, pickupService:pickupService,useStaffService:useStaffService,
+        escort_entrance: escort_entrance
       };
 
       setReservationPayload(api_payload);
@@ -120,13 +124,27 @@ const ReserveSummaryPage = ({
         attendee: `${attendee}${get('Reservation.PersonUnit') || '명'}`,
         memo: memo || '',
         pickupService: pickupService,
-        useStaffService: useStaffService
+        useStaffService: useStaffService,
+        escort_entrance: escort_entrance
       };
 
       setDisplayData(display_data);
       console.log('🖥️ Display data prepared:', display_data);
     }
   }, [reserve_data, get]);
+
+const getEntranceText = (entranceValue) => {
+  if (!entranceValue) return '';
+  
+  switch(entranceValue) {
+    case '1':
+      return get('ENTRANCE_MARKER_1');
+    case '2':
+      return get('ENTRANCE_MARKER_2');
+    default:
+      return entranceValue;
+  }
+};
 
   // 예약 대상 표시명 생성
   const getTargetDisplayName = (target, target_id) => {
@@ -269,7 +287,8 @@ const ReserveSummaryPage = ({
       noMemo: get('BookingSum.NoMemo') || '메모 없음',
       confirmingButton: get('Reservation.Confirming') || '예약 확정 중...',
       escortLabel:get('reservation.escort.1'),
-      useStaffLabel:get('STAFF_MSG_1')
+      useStaffLabel:get('STAFF_MSG_1'),
+      entranceLabel: get('title.text.15')
     };
   };
 
@@ -507,6 +526,13 @@ const ReserveSummaryPage = ({
                 <span className="summary-label"></span>
                 <div className="summary-value">
                   {<span className="">{messages_summary.useStaffLabel}</span>}
+                </div>
+              </div>
+
+              <div className="summary-item" style={{display:(displayData.escort_entrance)? '' : 'none'}}>
+                <span className="summary-label">{messages_summary.entranceLabel}:</span>
+                <div className="summary-value">
+                  <span>{getEntranceText(displayData.escort_entrance)}</span>
                 </div>
               </div>
 

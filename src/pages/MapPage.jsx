@@ -233,7 +233,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
         }
         .venue-list-item:hover { background-color: #f3f4f6; }
         .venue-name { font-size: 1.1rem; font-weight: bold; color: #1f2937; }
-        .venue-details { margin-top: 0.4rem; font-size: 0.9rem; color: #4b5563; }
+        .venue-details { font-size: 0.9rem; color: #4b5563; }
 
         .hidden-header {
           display: none !important;
@@ -389,8 +389,16 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
               <GoogleMapComponent
                 places={places}
                 onMarkerClick={(venue) => {
-                  setMarkerSelectedVenue(venue);
-                  setShowVenueList(true);
+                   if (venue.isEntrance) {
+                    // 입구 클릭 시 처리 - 리스트만 표시하고 상세 정보는 표시하지 않음
+                    console.log("입구 클릭:", venue.name, venue.address);
+                    setMarkerSelectedVenue(venue);
+                    setShowVenueList(true);
+                  } else {
+                    // 일반 장소 클릭 시 기존 처리
+                    setMarkerSelectedVenue(venue);
+                    setShowVenueList(true);
+                  }
                 }}
                 onMapClick={() => {
                  setShowVenueList(false);
@@ -461,58 +469,70 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
             </div>
 
            {showVenueList && (
-            <div className="venue-list-overlay">
-              <div className="venue-list-scroll">
-                {(markerSelectedVenue ? [markerSelectedVenue] : places).map((venue, index, array) => (
-                    <SketchDiv
-                      key={venue.venue_id}
-                      id={`venue-${venue.venue_id}`}
-                      className="venue-list-item"
-                      onClick={() => navigateToPageWithData(PAGES.DISCOVER, { venueId: venue.venue_id })}
-                      style={{
-                        display: 'flex',
-                        gap: '0.5rem',
-                        alignItems: 'center',
-                        // marginBottom: index === array.length - 1 && array.length > 1 ? '0' : '1rem',
-                        position: 'relative',
-                      }}
-                    >
-                      <div style={{ flex: '0 0 130px', height: '130px', borderRadius: '10px', overflow: 'hidden' }}>
-                        <img
-                          src={venue.image_url}
-                          alt={venue.name}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }}
-                        />
-                      </div>
-                      <div style={{ flex: '1' }}>
-                        <div className="venue-name">{venue.name}</div>
-                        <div className="venue-details">
-                          <MapPin size={12}/> {renderMaskedContent(venue.address, venue.isActiveUser)}
-                        </div>
-                        <div className="venue-details">
-                          <Phone size={12} style={{ marginRight: '4px' }} />
-                          {venue.phone
-                            ? renderMaskedContent(venue.phone, venue.isActiveUser)
-                            : '-'}
-                        </div>
-                        <div className="venue-details"><Users size={12}/> {venue.staff_cnt}{get('text.cnt1')} <Star size={12} fill='yellow'/>{venue.rating}/5</div>
-                      </div>
-                      <div
-                        style={{
-                          position: 'absolute',
-                          right: '1rem',
-                          bottom: '0.5rem',
-                          fontSize: '16px',
-                          fontWeight: 'bold',
-                          color: '#222'
-                        }}
-                      >
-                      </div>
-                    </SketchDiv>
-                  ))}
+  <div className="venue-list-overlay">
+    <div className="venue-list-scroll">
+      {(markerSelectedVenue ? [markerSelectedVenue] : places).map((venue, index, array) => (
+        <SketchDiv
+          key={venue.venue_id || venue.name} // ✅ 입구는 venue_id가 없을 수 있으므로
+          id={`venue-${venue.venue_id || venue.name}`}
+          className="venue-list-item"
+          onClick={() => {
+            // ✅ 입구인 경우 클릭 이벤트 처리 안함 또는 다른 처리
+            if (!venue.isEntrance) {
+              navigateToPageWithData(PAGES.DISCOVER, { venueId: venue.venue_id });
+            }
+          }}
+          style={{
+            display: 'flex',
+            gap: '0.5rem',
+            alignItems: 'center',
+            position: 'relative',
+            cursor: venue.isEntrance ? 'default' : 'pointer', // ✅ 입구는 커서 변경
+          }}
+        >
+          {/* ✅ 입구인 경우 다른 콘텐츠 표시 */}
+          {venue.isEntrance ? (
+            <>
+              <div style={{ flex: '0 0 130px', height: '130px', borderRadius: '10px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#60a5ffff' }}>
+                <div style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>{venue.name}</div>
+              </div>
+              <div style={{ flex: '1' }}>
+                <div className="venue-name">{venue.name}</div>
+                <div className="venue-details">
+                  <MapPin size={12}/> {venue.address}
                 </div>
               </div>
-            )}
+            </>
+          ) : (
+            // 기존 일반 장소 렌더링 코드
+            <>
+              <div style={{ flex: '0 0 130px', height: '130px', borderRadius: '10px', overflow: 'hidden' }}>
+                <img
+                  src={venue.image_url}
+                  alt={venue.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }}
+                />
+              </div>
+              <div style={{ flex: '1' }}>
+                <div className="venue-name">{venue.name}</div>
+                <div className="venue-details">
+                  <MapPin size={12}/> {renderMaskedContent(venue.address, venue.isActiveUser)}
+                </div>
+                <div className="venue-details">
+                  <Phone size={12} style={{ marginRight: '4px' }} />
+                  {venue.phone
+                    ? renderMaskedContent(venue.phone, venue.isActiveUser)
+                    : '-'}
+                </div>
+                <div className="venue-details"><Users size={12}/> {venue.staff_cnt}{get('text.cnt1')} <Star size={12} fill='yellow'/>{venue.rating}/5</div>
+              </div>
+            </>
+          )}
+        </SketchDiv>
+      ))}
+    </div>
+  </div>
+)}
 
             <LoadingScreen isVisible={isLoading} />
           </SketchDiv>

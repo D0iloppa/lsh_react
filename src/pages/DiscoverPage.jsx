@@ -92,6 +92,9 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   const touchEndXRef = useRef(null);
 
   const handleTouchStart = (e) => {
+ const isMapArea = e.target.closest('.map-section') || e.target.closest('#map');
+  if (isMapArea) return; // 지도 영역에서는 플리킹 감지 안 함
+
   if (e.touches.length === 1) {
     touchStartXRef.current = e.touches[0].clientX;
   }
@@ -99,13 +102,16 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
 
 // 터치 종료
 const handleTouchEnd = (e) => {
+   const isMapArea = e.target.closest('.map-section') || e.target.closest('#map');
+  if (isMapArea) return; // 지도 영역에서는 플리킹 감지 안 함
+
   if (e.changedTouches.length === 1) {
     touchEndXRef.current = e.changedTouches[0].clientX;
     const deltaX = touchEndXRef.current - touchStartXRef.current;
 
-    if (deltaX > 80) { // ← 플리킹 감지 (좌 → 우)
+    if (deltaX > 80) {
       console.log('플리킹: 좌에서 우로 → 뒤로가기');
-      goBack(); // 또는 navigate(-1);
+      goBack();
     }
   }
 };
@@ -883,7 +889,7 @@ const openMenuOverlay = (menuList) => {
           justify-content: center; align-items: center;
           color: #6b7280; 
         }
-        .top-girls-section { padding: 1rem; margin-top: 20px; margin-bottom: 25px}
+        .top-girls-section { padding: 1rem; margin-top: 20px;}
         .girls-rotation { width: 100%; margin-bottom: 3rem;}
         .girl-slide { text-align: center;  margin-top: 10px;}
         .girl-img {
@@ -923,7 +929,7 @@ const openMenuOverlay = (menuList) => {
           left: 0;
           right: 0;
           background: white;
-          padding: 10px 10px 12px 15px;
+          padding: 7px 10px 8px 15px;
           z-index: 1000;
           transform: translateY(0);
           transition: transform 0.3s ease-in-out;
@@ -941,10 +947,13 @@ const openMenuOverlay = (menuList) => {
          justify-content: space-between;
         }
 
-        .top-sum {margin-top: 25px; display: flex; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 8px; border-bottom: 1px solid #cecece;}
+        .top-sum {margin-top: 25px; display: flex; justify-content: space-between; border-bottom: 1px solid #cecece;}
 
         .rotation-image-container{ width: 100%;
   height: 200px; }
+
+  .club-info{    text-align: center;
+    padding: 1rem;}
       `}</style>
 
       <div className="discover-container">
@@ -1013,6 +1022,20 @@ const openMenuOverlay = (menuList) => {
           )}
 
 
+          
+
+          <div className="section-title" style={{ textAlign: 'start' }}>{get('DiscoverPage1.6')}</div>
+          <div className="map-section">
+            <GoogleMapComponent
+              places={venueInfo ? [venueInfo] : []}
+              disableInteraction={false}
+              showEntrances={true} //입구 표시 활성화
+              showNearestEntranceConnection={false} 
+            />
+          </div>
+        </div>
+
+        <div className="club-info">
           <div className="club-name">{venueInfo?.name || 'Club One'}</div>
 
           <div className='sum-info text-start'>
@@ -1124,17 +1147,6 @@ const openMenuOverlay = (menuList) => {
               {get('nav.review.1')} <span className='reviewCnt'>{reviewCount}</span>{get('text.cnt.1')} {get('text.cnt.2')} &gt;
             </div>
           </div>
-
-          <div className="section-title" style={{ textAlign: 'start' }}>{get('DiscoverPage1.6')}</div>
-          <div className="map-section">
-            <GoogleMapComponent
-              places={venueInfo ? [venueInfo] : []}
-              disableInteraction={true}
-            />
-          </div>
-        </div>
-
-        <div className="upcoming-events">
         </div>
 
         <div className="top-girls-section">
@@ -1221,7 +1233,7 @@ const openMenuOverlay = (menuList) => {
               <SketchBtn
                 className="sketch-button enter-button"
                 variant="event"
-                style={{ width: '45px', height: '39px', marginTop: '0px', marginLeft:'0px' ,background: '#374151', color: 'white' }}
+                style={{ width: '45px', marginTop: '0px', marginLeft:'0px' ,background: '#374151', color: 'white' }}
                 onClick={async () => {
                   // 로그인 여부 체크
                   if (!user || !user.user_id) {
@@ -1306,7 +1318,7 @@ const openMenuOverlay = (menuList) => {
               <SketchBtn
                 className="sketch-button enter-button"
                 variant="event"
-                style={{ width: '90px', height: '39px', marginTop: '0px' }}
+                style={{ width: '90px', marginTop: '0px' }}
                 disabled={
                   !venueInfo?.is_reservation ||
                   venueInfo?.schedule_status === 'closed' ||

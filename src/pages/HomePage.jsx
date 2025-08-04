@@ -143,15 +143,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
           staff_languages: item.staff_languages || '',
         }));
 
-        transformed.sort((a, b) => {
-          if (a.isFavorite !== b.isFavorite) {
-            return b.isFavorite - a.isFavorite; // true 먼저
-          } else if (a.staff_cnt !== b.staff_cnt) {
-            return b.staff_cnt - a.staff_cnt; // staff 많은 순
-          } else {
-            return a.created_at - b.created_at; // 오래된 등록 순
-          }
-        });
+        transformed.sort((a, b) => b.staff_cnt - a.staff_cnt);
 
         setOriginalHotspots(transformed);
         setHotspots(transformed);
@@ -215,7 +207,18 @@ if (savedScrollY !== null) {
     navigate(-1);
   };
   
-  const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort) => {
+  
+  const isNewSpot = (createdAt) => {
+    if (!createdAt) return false;
+    const createdDate = new Date(createdAt);
+    const now = new Date();
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(now.getDate() - 7); // 🔄 일주일 전으로 설정
+    return createdDate > oneWeekAgo;
+  };
+
+
+const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort) => {
     let filtered = [...originalHotspots];
 
     if (query.trim()) {
@@ -691,6 +694,30 @@ if (savedScrollY !== null) {
                     >
                       <Heart fill={spot.isFavorite ? '#f43f5e' : 'white'} color="white" />
                     </div>
+
+                    {isNewSpot(spot.created_at) && (
+                      <div style={{
+                        position: 'absolute',
+                        bottom: 0, // 이미지 하단에 밀착
+                        left: 0,
+                        width: '100%',
+                        backgroundColor: '#ff4757',
+                        color: 'white',
+                        textAlign: 'center',
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        zIndex: 10,
+                        padding: '6px 0',
+                        lineHeight: 1.2,
+                        boxShadow: '0 -2px 6px rgba(0,0,0,0.3)',
+                        borderBottomLeftRadius: '8px',
+                        borderBottomRightRadius: '8px'
+                      }}>
+                        NEW STAFF UPDATED!!
+                      </div>
+                    )}
+
+
 
                     {!isOverlayStyle && (
                       <div className="rating-badge">

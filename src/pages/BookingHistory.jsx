@@ -420,6 +420,7 @@ const BookingHistoryPage = ({
         // 🎯 API 데이터를 bookings 형태로 변환
         const formattedBookings = (response.data || []).map(item => ({
           id: item.reservation_id,
+          use_escort: item.use_escort,
           targetName: item.target_name,
           hostName: item.venue_name,
           date: item.date,
@@ -440,7 +441,8 @@ const BookingHistoryPage = ({
           isReviewable:item.isReviewable,
           is_reservation:item.is_reservation,
           clientId: item.client_id,
-          cancelable:item.cancelable
+          cancelable:item.cancelable,
+          escort_entrance:item.escort_entrance
         }));
         
         setAllBookings(formattedBookings); // ⬅ 전체 데이터 저장
@@ -492,6 +494,21 @@ const BookingHistoryPage = ({
     return `${diffHours}${get('Reservation.HourUnit') || '시간'}`;
   };
 
+
+const getEntranceText = (entranceValue) => {
+  console.log("entranceValue", entranceValue, typeof entranceValue);
+
+  if (!entranceValue) return '';
+
+  switch(String(entranceValue).trim()) {
+    case '1':
+      return get('ENTRANCE_MARKER_1');
+    case '2':
+      return get('ENTRANCE_MARKER_2');
+    default:
+      return entranceValue;
+  }
+};
 
   return (
     <>
@@ -687,7 +704,7 @@ const BookingHistoryPage = ({
           margin: 0;
         }
 
-        .booking-time, .booking-attendee, .booking-note {
+        .booking-time, .booking-attendee, .booking-note, .booking-escort {
           font-size: 0.85rem;
           color: #6b7280;
           margin: 0;
@@ -750,6 +767,25 @@ const BookingHistoryPage = ({
             gap: 0.25rem;
           }
         }
+
+        .use_escort.applied {
+            color: #ffffff;
+            background-color: #44cc63;
+            padding: 0px 5px;
+            border-radius: 4px;
+            margin-left: 0.3rem;
+            font-size: 14px;
+          }
+
+          .use_escort.not_applied {
+            color: #6c757d;
+            background-color: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: normal;
+            margin-left: 0.3rem;
+            font-size: 14px;
+          }
       `}</style>
 
       <div className="booking-history-container">
@@ -892,6 +928,15 @@ const BookingHistoryPage = ({
                     </p>
                     <p className="booking-attendee">
                      <Edit size={12}/> {get('RESERVATION_ATTENDEE_LABEL')} {booking.attendee} {get('Reservation.PersonUnit')}
+                    </p>
+                    <p className="booking-escort">
+                      <Edit size={12} /> {get('RESERVATION_ESCORT_LABEL')}
+                      <span className={`use_escort ${booking.use_escort == 1 ? 'applied' : 'not_applied'}`}>
+                        {booking.use_escort == 1 ? get('ESCORT_APPLIED') : get('ESCORT_NOT_APPLIED')}
+                      </span>
+                      {booking.use_escort == 1 && (
+                        <span className="entrance-text">({getEntranceText(booking.escort_entrance)})</span>
+                      )}
                     </p>
                     <p className="booking-note">
                    <Edit size={12}/> {get('Reservation.MemoLabel')}: {booking.note || get('NO_NOTE_MESSAGE')}

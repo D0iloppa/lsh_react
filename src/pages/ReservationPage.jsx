@@ -53,6 +53,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   const [targetName, setTargetName] = useState('');
   const [pickupService, setPickupService] = useState(false);
   const [useStaffService, setUseStaffService] = useState(false);
+  const [selectedEntrance, setSelectedEntrance] = useState('');
   
 
   // 체크박스 상태들
@@ -101,6 +102,8 @@ const isAllAgreed = () => {
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
   const [shouldAutoSelect, setShouldAutoSelect] = useState(false);
+
+  
 
   useEffect(() => {
   const resetContentAreaScroll = () => {
@@ -468,6 +471,17 @@ const handleReserve = async () => {
       return; // 유효성 검사 실패 시 예약 진행하지 않음
     }
 
+    //입구 선택 검증
+     if (pickupService && !selectedEntrance) {
+    Swal.fire({
+      title: get('reservation.entrance.required') || '장소를 선택해주세요.',
+      icon: 'warning',
+      confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+    });
+    return;
+  }
+
+  console.log("selectedEntrance", selectedEntrance)
     
 
     // Duration 방식의 예약 처리 로직
@@ -485,6 +499,8 @@ const handleReserve = async () => {
       endTime: reservationData.endTime,
       pickupService: pickupService,
       useStaffService: useStaffService,
+      selectedEntrance: selectedEntrance,
+      escort_entrance: selectedEntrance,
       memo: memo 
     };
     
@@ -713,6 +729,7 @@ const handleReserve = async () => {
 
         .reserve-section {
           padding: 1rem 1.5rem 1.5rem;
+          margin-bottom: 1rem;
         }
 
         .form-step-3 { 
@@ -775,6 +792,8 @@ const handleReserve = async () => {
           setPickupService = {setPickupService}
           useStaffService = {useStaffService}
           setUseStaffService = {setUseStaffService}
+          selectedEntrance={selectedEntrance}
+          onEntranceChange={setSelectedEntrance}
           getTargetLabel={getTargetLabel}
         />
         {/* <div className='Important-info'>

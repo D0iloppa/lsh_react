@@ -97,12 +97,23 @@
 .rotation-indicators {
   position: absolute;
   top: 12px;
-  left: 50%; /* 가운데 정렬 기준 */
+  left: 50%;
   transform: translateX(-50%);
   display: flex;
   gap: 4px;
   z-index: 20;
-  /* width, height은 자식 요소에 따라 자동으로 결정 */
+
+  max-width: 50%; /* 화면 넘침 방지 */
+  overflow-x: auto; /* 좌우 스크롤 허용 */
+  overflow-y: hidden;
+  white-space: nowrap;
+  padding-bottom: 2px;
+  scrollbar-width: none; /* Firefox 스크롤 숨김 */
+}
+
+/* Chrome, Safari 스크롤 숨김 */
+.rotation-indicators::-webkit-scrollbar {
+  display: none;
 }
 
 
@@ -161,11 +172,9 @@
 .rotation-div.edge-left::before {
   left: 0;
   border-radius: 20px 0 0 20px;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .rotation-div.edge-right::after {
   right: 0;
   border-radius: 0 20px 20px 0;
-  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
 }

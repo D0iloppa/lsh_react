@@ -33,9 +33,31 @@ const ImagePlaceholder = ({
   const handleImageLoad = () => setImageError(false);
 
   const openViewer = (index) => {
-    setCurrentIndex(index);
-    setIsViewerOpen(true);
-    document.body.style.overflow = 'hidden';
+
+     const isAndroid = !!window.native;
+     const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
+      
+     if (isIOS) {
+      /* try {
+        window.webkit.messageHandlers.native.postMessage(
+          JSON.stringify({
+            type: 'openImageViewer',
+            images: imageList,
+            startIndex: index
+          })
+        );
+      } catch (e) {
+        console.error('iOS 메시지 전송 실패:', e);
+      }
+*/
+        setCurrentIndex(index);
+        setIsViewerOpen(true);
+        document.body.style.overflow = 'hidden';
+     } else {
+      setCurrentIndex(index);
+      setIsViewerOpen(true);
+      document.body.style.overflow = 'hidden';
+     } 
   };
 
   const closeViewer = () => {

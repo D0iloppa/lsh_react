@@ -1,17 +1,93 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import {DoorOpen} from 'lucide-react';
 
 const GoogleMapComponent = ({
   places = [],
   onMarkerClick = () => {},
   onMapClick = () => {},
-  disableInteraction = false
+  disableInteraction = false,
+  showEntrances = false,
+  showNearestEntranceConnection = false
 }) => {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const markersRef = useRef([]);
   const myLocationMarker = useRef(null);
   const [mapReady, setMapReady] = useState(false);
-  const markerClickFlag = useRef(false); // ✅ 마커 클릭 여부 추적
+  const markerClickFlag = useRef(false); // 마커 클릭 여부 추적
+  const entranceMarkersRef = useRef([]);
+  const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+  const entrances = [
+  {
+    name: get('ENTRANCE_MARKER_1_1'),
+    address: "8A Thái Văn Lung, Bến Nghé, Quận 1, Hồ Chí Minh",
+    isEntrance: true,
+    latitude: 10.7792315,
+    longitude: 106.704617
+  },
+  {
+    name: get('ENTRANCE_MARKER_2_1'),
+    address: "15B11 Lê Thánh Tôn, Bến Nghé, Quận 1, Hồ Chí Minh",
+    isEntrance: true,
+    latitude: 10.7804183,
+    longitude: 106.7045508
+  }
+];
+
+useEffect(() => {
+  return () => {
+    // 입구 마커 정리만
+    entranceMarkersRef.current.forEach(marker => marker.setMap(null));
+  };
+}, []);
+
+
+// ✅ 지도 범위 조정 useEffect 수정
+useEffect(() => {
+  if (!mapReady || !places || places.length === 0 || !showEntrances) return; // showNearestEntranceConnection 조건 제거
+
+  const venue = places[0];
+  if (!venue || !venue.latitude || !venue.longitude) return;
+
+  const bounds = new window.google.maps.LatLngBounds();
+  
+  bounds.extend({
+    lat: parseFloat(venue.latitude),
+    lng: parseFloat(venue.longitude)
+  });
+
+  entrances.forEach((entrance) => {
+    bounds.extend({
+      lat: entrance.latitude,
+      lng: entrance.longitude
+    });
+  });
+
+  // 항상 범위 조정 (disableInteraction 조건 제거)
+  mapInstance.current.fitBounds(bounds);
+  
+  const listener = window.google.maps.event.addListener(mapInstance.current, "idle", function() {
+    if (mapInstance.current.getZoom() > 14) { 
+      mapInstance.current.setZoom(14);
+    }
+    window.google.maps.event.removeListener(listener);
+  });
+
+}, [places, mapReady, showEntrances]); 
+ //현재 언어 설정
+ useEffect(() => {
+    //window.scrollTo(0, 0);
+
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      // setLanguage('en'); // 기본 언어 설정
+      console.log('Current language set to:', currentLang);
+      //window.scrollTo(0, 0);
+    }
+  }, [messages, currentLang]);
+
 
   useEffect(() => {
     const loadGoogleMaps = () => {
@@ -104,6 +180,102 @@ const GoogleMapComponent = ({
       anchor: new window.google.maps.Point(baseSize / 2, baseSize),
     };
   };
+
+
+  //입구 아이콘 생성
+const createEntranceIcon = (label) => {
+  const baseSize = 30;
+  const scale = 2;
+  const canvas = document.createElement('canvas');
+  canvas.width = baseSize * scale;
+  canvas.height = baseSize * scale;
+  const ctx = canvas.getContext('2d');
+
+  ctx.scale(scale, scale);
+  
+  // 배경 원 그리기
+  ctx.fillStyle = 'rgba(57, 143, 255, 0.6)';
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(baseSize / 2, baseSize / 2, baseSize / 2 - 1, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // ✅ DoorOpen 아이콘 크기 줄임
+  const doorIconSize = 10; // ✅ 14에서 10으로 줄임
+  const iconX = baseSize / 2 - doorIconSize / 2;
+  const iconY = baseSize / 2 - doorIconSize / 2 - 2; // ✅ -3에서 -2로 조정
+
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 1.2; // ✅ 1.5에서 1.2로 줄임
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  ctx.beginPath();
+  // 문틀
+  ctx.rect(iconX + 1, iconY + 1, doorIconSize - 2, doorIconSize - 2); // ✅ 여백 줄임
+  // 문짝 (열린 상태)
+  ctx.moveTo(iconX + 2, iconY + 1);
+  ctx.lineTo(iconX + doorIconSize - 2, iconY + 1);
+  ctx.lineTo(iconX + doorIconSize - 1, iconY + 2);
+  ctx.lineTo(iconX + doorIconSize - 1, iconY + doorIconSize - 1);
+  // 손잡이
+  ctx.moveTo(iconX + doorIconSize - 3, iconY + doorIconSize / 2);
+  ctx.lineTo(iconX + doorIconSize - 2, iconY + doorIconSize / 2);
+  ctx.stroke();
+
+  // 텍스트를 아이콘 아래로 이동
+  ctx.font = 'bold 7px Arial';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  
+  const textY = baseSize / 2 + 7;
+  ctx.fillText(label, baseSize / 2, textY);
+
+  return {
+    url: canvas.toDataURL(),
+    scaledSize: new window.google.maps.Size(baseSize, baseSize),
+    anchor: new window.google.maps.Point(baseSize / 2, baseSize),
+  };
+};
+
+//입구 아이콘 표시
+useEffect(() => {
+  if (!mapReady || !window.google || !mapInstance.current || !showEntrances) return; 
+
+  // 기존 entrance 마커가 있으면 제거
+  entranceMarkersRef.current.forEach(marker => marker.setMap(null));
+  entranceMarkersRef.current = [];
+
+  entrances.forEach((entrance) => {
+    const icon = createEntranceIcon(entrance.name);
+    
+    const marker = new window.google.maps.Marker({
+      position: {
+        lat: entrance.latitude,
+        lng: entrance.longitude
+      },
+      map: mapInstance.current,
+      title: entrance.name,
+      icon
+    });
+
+    marker.addListener("click", () => {
+      markerClickFlag.current = true;
+
+      onMarkerClick({
+          ...entrance,
+          isEntrance: true
+        });
+    });
+
+    entranceMarkersRef.current.push(marker);
+  });
+}, [mapReady, showEntrances]);
+
+
 
   useEffect(() => {
     if (!mapReady || !places) return;

@@ -43,6 +43,7 @@ import Terms from '@components/Terms/TermsView';
 import Privacy from '@components/Privacy/PrivacyView';
 import PurchasePage from '@components/PurchasePage';
 
+
 // 페이지 상수
 export const PAGES = {
     HOME: 'HOME',

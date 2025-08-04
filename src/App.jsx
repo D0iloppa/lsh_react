@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
@@ -33,12 +33,61 @@ import HatchPattern from '@components/HatchPattern';
 
 import PurchasePage from '@components/PurchasePage';
 
+import DownloadIOS from '@components/Welcome/downloadIOS';
+import DownloadAndroid from '@components/Welcome/downloadAndroid';
+
 import Swal from 'sweetalert2';
 
 
 const AppRoutes = () => {
   const { deviceLogin, isLoggedIn } = useAuth();
   const { currentLang, messages } = useMsg();
+
+    const [appVersion, setAppVersion] = useState(null); // 없을 때는 null 유지
+
+  useEffect(() => {
+    const currentQuery = window.location.href;
+
+    const url = new URL(currentQuery);
+    const params = new URLSearchParams(url.search);
+    const version = params.get('app_version') || params.get('version') || null;
+
+    setAppVersion(version); // 상태로도 
+    
+    const compareVersions = (v1, v2) => {
+      const a = v1.split('.').map(Number);
+      const b = v2.split('.').map(Number);
+      for (let i = 0; i < Math.max(a.length, b.length); i++) {
+        if ((a[i] || 0) > (b[i] || 0)) return 1;
+        if ((a[i] || 0) < (b[i] || 0)) return -1;
+      }
+      return 0;
+    };
+
+    const isAndroid = !!window.native;
+    const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
+             
+    // 조건문 바로 실행
+    if (version) {
+        if (version && compareVersions(version, '1.0.3') < 0) {
+            //이전버전
+         /*   if (isAndroid) {
+              navigate('/downloadAndroid');
+            } else if (isIOS) {
+              navigate('/downloadIOS');
+            } */
+        } else {
+           //최신버전
+        }
+    } else {
+       //
+       /*if (isAndroid) {
+        navigate('/downloadAndroid');
+      } else if (isIOS) {
+        navigate('/downloadIOS');
+      } */
+    }
+}, []);
 
 
     useEffect(() => {
@@ -84,6 +133,20 @@ const AppRoutes = () => {
         element={
           /*<LoginView />*/
           isLoggedIn ? <Navigate to="/main" replace /> : <LoginView />
+        }
+      />
+
+      <Route
+        path="/downloadIOS"
+        element={
+          <DownloadIOS />
+        }
+      />
+
+      <Route
+        path="/downloadAndroid"
+        element={
+          <DownloadAndroid />
         }
       />
 

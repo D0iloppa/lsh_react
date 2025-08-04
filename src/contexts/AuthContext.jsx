@@ -162,6 +162,7 @@ const iauMasking = (iau, text, onPurchaseClick) => {
             height: 23px;
             overflow: visible;
             opacity: 0.8;
+            max-width: 157px;
           }
           
           .masked-section::after {

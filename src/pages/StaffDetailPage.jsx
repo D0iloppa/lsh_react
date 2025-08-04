@@ -46,8 +46,14 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
     // 플리킹 감지를 위한 useRef 선언
       const touchStartXRef = useRef(null);
       const touchEndXRef = useRef(null);
-    
+
+       
       const handleTouchStart = (e) => {
+
+        const isIgnoredArea = e.target.closest('.profile-rotation');
+  if (isIgnoredArea) return;
+
+  
       if (e.touches.length === 1) {
         touchStartXRef.current = e.touches[0].clientX;
       }
@@ -55,6 +61,10 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
     
     // 터치 종료
     const handleTouchEnd = (e) => {
+
+       const isIgnoredArea = e.target.closest('.profile-rotation');
+  if (isIgnoredArea) return;
+
       if (e.changedTouches.length === 1) {
         touchEndXRef.current = e.changedTouches[0].clientX;
         const deltaX = touchEndXRef.current - touchStartXRef.current;

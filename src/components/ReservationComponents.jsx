@@ -854,7 +854,7 @@ export const MemoSelector = ({ value, onChange, messages = {} }) => {
   );
 };
 
-export const PickupSelector = ({ value, onChange, messages = {}, onBookerChange }) => {
+export const PickupSelector = ({ value, onChange, messages = {}, onBookerChange, onEntranceChange, selectedEntrance = '' }) => {
 
   const {user} = useAuth();
   
@@ -873,6 +873,12 @@ export const PickupSelector = ({ value, onChange, messages = {}, onBookerChange 
     setBookerValue(newValue);
     onBookerChange?.(newValue);
   }, [onBookerChange]);
+
+  //입구 선택
+  const handleEntranceChange = useCallback((e) => {
+    const newValue = e.target.value;
+    onEntranceChange?.(newValue);
+  }, [onEntranceChange]);
 
   return (
     <div className="form-step"
@@ -920,7 +926,6 @@ export const PickupSelector = ({ value, onChange, messages = {}, onBookerChange 
         <div></div>
 
         {value && (
-
           <SketchDiv className="reserve-info" style={{marginTop:'5px'}}>
             <div className="summary-item" style={{
               display: 'flex',
@@ -943,8 +948,34 @@ export const PickupSelector = ({ value, onChange, messages = {}, onBookerChange 
                 }}
               />
             </div>
-          </SketchDiv>
 
+            {/* ✅ 입구 선택 드롭다운 추가 */}
+            <div className="summary-item" style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              marginTop: '8px'
+            }}>
+              <span className="summary-label">{messages['entranceLabel'] || '장소'}:</span>
+              <select
+                value={selectedEntrance}
+                onChange={handleEntranceChange}
+                style={{
+                  flex: 1,
+                  padding: '5px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  backgroundColor: 'white',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <option value="">{messages['entranceSelect'] || '선택하세요'}</option>
+                <option value="1">{messages['ENTRANCE_MARKER_1'] || '1번 입구'}</option>
+                <option value="2">{messages['ENTRANCE_MARKER_2'] || '2번 입구'}</option>
+              </select>
+            </div>
+          </SketchDiv>
         )}
 
         {value && (
@@ -1046,6 +1077,8 @@ export const ReservationForm = ({
   setPickupService,
   useStaffService,
   setUseStaffService,
+  selectedEntrance,
+  onEntranceChange,
   getTargetLabel = () => {}
 }) => {
 
@@ -1113,6 +1146,8 @@ console.log("messages", messages)
       value={pickupService}
       onChange={setPickupService}
       onBookerChange={onBookerChange}
+      onEntranceChange={onEntranceChange} 
+      selectedEntrance={selectedEntrance}
       messages={{
         bookerLabel: messages['bookerLabel'],
         pickupLabel: messages['pickupLabel'] || '옵션',

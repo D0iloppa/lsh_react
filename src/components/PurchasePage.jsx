@@ -16,7 +16,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage})
   const { get } = useMsg();
   const [isProcessing, setIsProcessing] = useState(false);
 
-console.log('PAGES', PAGES)
+console.log('PAGES', user)
 
   useEffect(() => {
   const resetContentAreaScroll = () => {
@@ -78,7 +78,7 @@ console.log('PAGES', PAGES)
       Swal.fire({
           title: get('daily.pass.notice.title'),
           text: get('in.app.purchase.not.supported'),
-          icon: 'success',
+          icon: 'info',
           confirmButtonText: get('Common.Confirm')
         })
     }

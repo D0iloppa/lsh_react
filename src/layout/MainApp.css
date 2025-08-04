@@ -12,6 +12,10 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+img {
+  -webkit-touch-callout: none;     /* iOS에서 꾹 누를 때 저장 등 메뉴 차단 */
+}
+
 .main-app-container {
   height: 100vh; /* 또는 height: 100dvh */
   /* min-height는 제거하거나 조건부로 사용 */
