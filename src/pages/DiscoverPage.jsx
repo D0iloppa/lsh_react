@@ -909,6 +909,7 @@ const openMenuOverlay = (menuList) => {
           object-fit: cover; border-radius: 0.5rem;
           margin: 0 auto 0.5rem;
           object-position: top;
+          margin-top :40px;
         }
         .girl-name {
           
@@ -1197,7 +1198,7 @@ const openMenuOverlay = (menuList) => {
                       <img src={girl.image_url} className="girl-img" alt="girl" />
                       <div style={{
                         position: 'absolute',
-                        top: '10px',
+                        top: '50px',
                         right: '10px',
                         backgroundColor: statusBackgroundColor,
                         color: 'rgb(255, 255, 255)',
@@ -1213,7 +1214,7 @@ const openMenuOverlay = (menuList) => {
                       <ImagePlaceholder />
                       <div style={{
                         position: 'absolute',
-                        top: '10px',
+                        top: '50px',
                         right: '10px',
                         backgroundColor: 
                         venueInfo.schedule_status === 'closed' 
