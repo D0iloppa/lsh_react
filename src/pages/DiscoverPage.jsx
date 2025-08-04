@@ -1175,24 +1175,13 @@ const openMenuOverlay = (menuList) => {
                         position: 'absolute',
                         top: '10px',
                         right: '10px',
-                        backgroundColor: 
-                          venueInfo.schedule_status === 'closed' 
-                            ? 'rgb(107, 107, 107)' 
-                            : availCnt > 0 
-                              ? 'rgb(11, 199, 97)' 
-                              : 'rgb(107, 107, 107)',
+                        backgroundColor: availCnt > 0 ? 'rgb(11, 199, 97)' : 'rgb(107, 107, 107)',
                         color: 'rgb(255, 255, 255)',
                         padding: '3px 6px',
                         borderRadius: '3px',
                         fontSize: '11px',
                       }}>
-                        {
-                          venueInfo.schedule_status === 'closed'
-                            ? get('VENUE_RESERVATION_CLOSED')
-                            : availCnt > 0 
-                              ? get('VENUE_RESERVATION_AVAILABLE') 
-                              : get('VENUE_RESERVATION_CLOSED')
-                        }
+                        {availCnt > 0 ? get('VENUE_RESERVATION_AVAILABLE') : get('VENUE_RESERVATION_CLOSED')}
                       </div>
                     </div>
                   ) : (
