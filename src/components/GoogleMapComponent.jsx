@@ -74,8 +74,8 @@ useEffect(() => {
 
   // 범위가 클수록 더 큰 패딩 적용
   let paddingSize;
-  if (maxSpan > 0.01) paddingSize = 85;      // 매우 넓은 범위
-  else if (maxSpan > 0.007) paddingSize = 65; // 넓은 범위
+  if (maxSpan > 0.01) paddingSize = 90;      // 매우 넓은 범위
+  else if (maxSpan > 0.007) paddingSize = 70; // 넓은 범위
   else if (maxSpan > 0.005) paddingSize = 40; // 중간 범위
   else paddingSize = 20;                      // 좁은 범위
 
