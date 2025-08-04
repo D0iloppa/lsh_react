@@ -1181,7 +1181,13 @@ const openMenuOverlay = (menuList) => {
                         borderRadius: '3px',
                         fontSize: '11px',
                       }}>
-                        {availCnt > 0 ? get('VENUE_RESERVATION_AVAILABLE') : get('VENUE_RESERVATION_CLOSED')}
+                        {
+                          venueInfo?.schedule_status === 'closed'
+                            ? get('VENUE_RESERVATION_CLOSED')
+                            : availCnt > 0 
+                              ? get('VENUE_RESERVATION_AVAILABLE') 
+                              : get('VENUE_RESERVATION_CLOSED')
+                        }
                       </div>
                     </div>
                   ) : (
