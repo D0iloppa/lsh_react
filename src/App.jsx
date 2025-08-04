@@ -71,21 +71,21 @@ const AppRoutes = () => {
     if (version) {
         if (version && compareVersions(version, '1.0.3') < 0) {
             //이전버전
-            if (isAndroid) {
+           /* if (isAndroid) {
               navigate('/downloadAndroid');
             } else if (isIOS) {
               navigate('/downloadIOS');
-            } 
+            } */
         } else {
            //최신버전
         }
     } else {
        //
-       if (isAndroid) {
+     /*  if (isAndroid) {
         navigate('/downloadAndroid');
       } else if (isIOS) {
         navigate('/downloadIOS');
-      } 
+      } */
     }
 }, []);
 
