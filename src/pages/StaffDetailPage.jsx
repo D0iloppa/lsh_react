@@ -17,6 +17,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
   const [date, setDate] = useState('');
   const [partySize, setPartySize] = useState('');
   const [availCnt, setAvailCnt] = useState(0);
+  const [vnScheduleStatus, setVnScheduleStatus] = useState('');
   const [isLoadingAvailCnt, setIsLoadingAvailCnt] = useState(false);
   const [loading, setLoading] = useState(false);
   const [girl, setGirl] = useState(otherProps || {});
@@ -221,6 +222,9 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
       setIsLoadingAvailCnt(true);
 
       try {
+
+        setVnScheduleStatus(girl.vn_schedule_status);
+        
         const response = await ApiClient.get('/api/staffAvailCnt', {
           params: { staff_id: girl.staff_id }
         });
@@ -328,14 +332,23 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
               {!isLoadingAvailCnt && (
                 <span
                   style={{
-                    backgroundColor: availCnt > 0 ? 'rgb(11, 199, 97)' : 'rgb(107, 107, 107)',
+                    backgroundColor: 
+                      vnScheduleStatus === 'closed' 
+                        ? 'rgb(107, 107, 107)' 
+                        : availCnt > 0 
+                          ? 'rgb(11, 199, 97)' 
+                          : 'rgb(107, 107, 107)',
                     color: 'white',
                     padding: '2px 6px',
                     borderRadius: '3px',
                     fontSize: '10px',
                   }}
                 >
-                  {availCnt > 0 ? get('DiscoverPage1.1.able') : get('DiscoverPage1.1.disable')}
+                  {vnScheduleStatus === 'closed'
+                    ? get('DiscoverPage1.1.disable')
+                    : availCnt > 0 
+                      ? get('DiscoverPage1.1.able') 
+                      : get('DiscoverPage1.1.disable')}
                 </span>
               )}
             </div>
@@ -395,13 +408,15 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
             className="sketch-button enter-button"
             variant="event"
             style={{ display: 'block' }}
-            disabled={availCnt <= 0}
+            disabled={availCnt <= 0 || vnScheduleStatus === 'closed'}
             onClick={handleReserve}
           >
             <HatchPattern opacity={0.8} />
-            {availCnt > 0
-              ? get('DiscoverPage1.1') || '예약하기'
-              : get('DiscoverPage1.1.disable') || '예약 마감'}
+            {vnScheduleStatus === 'closed'
+              ? get('DiscoverPage1.1.disable') || '예약 마감'
+              : availCnt > 0
+                ? get('DiscoverPage1.1') || '예약하기'
+                : get('DiscoverPage1.1.disable') || '예약 마감'}
           </SketchBtn>
         </div>
 

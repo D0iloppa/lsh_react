@@ -44,20 +44,21 @@ useEffect(() => {
 }, []);
 
 
-// ✅ 지도 범위 조정 useEffect 수정
 useEffect(() => {
-  if (!mapReady || !places || places.length === 0 || !showEntrances) return; // showNearestEntranceConnection 조건 제거
+  if (!mapReady || !places || places.length === 0 || !showEntrances) return;
 
   const venue = places[0];
   if (!venue || !venue.latitude || !venue.longitude) return;
 
   const bounds = new window.google.maps.LatLngBounds();
   
+  // 베뉴 위치 추가
   bounds.extend({
     lat: parseFloat(venue.latitude),
     lng: parseFloat(venue.longitude)
   });
 
+  // 입구 위치들 추가
   entrances.forEach((entrance) => {
     bounds.extend({
       lat: entrance.latitude,
@@ -65,17 +66,36 @@ useEffect(() => {
     });
   });
 
-  // 항상 범위 조정 (disableInteraction 조건 제거)
-  mapInstance.current.fitBounds(bounds);
+  // 패딩 설정 (더 확대된 효과)
+  const padding = {
+    top: 15,     
+    right: 15,   
+    bottom: 15,  
+    left: 15     
+  };
+
+  // 패딩과 함께 범위 조정
+  mapInstance.current.fitBounds(bounds, padding);
   
+  // 줌 제한 설정
   const listener = window.google.maps.event.addListener(mapInstance.current, "idle", function() {
-    if (mapInstance.current.getZoom() > 14) { 
-      mapInstance.current.setZoom(14);
+    const currentZoom = mapInstance.current.getZoom();
+    
+    if (currentZoom > 17) { 
+      mapInstance.current.setZoom(17);
     }
+    
+    if (currentZoom < 15) {
+      mapInstance.current.setZoom(15);
+    }
+    
     window.google.maps.event.removeListener(listener);
   });
 
-}, [places, mapReady, showEntrances]); 
+}, [places, mapReady, showEntrances]);
+
+
+
  //현재 언어 설정
  useEffect(() => {
     //window.scrollTo(0, 0);

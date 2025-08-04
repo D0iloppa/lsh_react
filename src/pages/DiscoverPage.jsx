@@ -53,6 +53,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
  const handleDetail = (girl) => {
   try {
 
+     girl.vn_schedule_status = venueInfo.schedule_status;
      const container = document.querySelector('.content-area');
 
     if (container) {
