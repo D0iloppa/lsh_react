@@ -136,12 +136,12 @@
 }
 
 .rotation-indicator.nearby {
-  opacity: 0.75;
+  opacity: 0.3 !important;
   background:gray;
 }
 
 .rotation-indicator.far {
-  opacity: 0.3;
+  opacity: 0.3 !important;
    background:gray;
 }
 
