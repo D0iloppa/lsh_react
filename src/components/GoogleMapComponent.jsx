@@ -365,7 +365,7 @@ useEffect(() => {
 
         const center = isInVietnam
           ? { lat: latitude, lng: longitude }
-          : { lat: 10.7810752, lng: 106.7052086 };
+          : { lat: 10.7800125, lng: 106.7050903 };
 
         mapInstance.current.setCenter(center);
 
