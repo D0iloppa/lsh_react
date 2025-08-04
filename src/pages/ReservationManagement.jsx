@@ -128,7 +128,8 @@ const transformReservationData = (apiData) => {
       use_staff: item.use_staff,
       note: item.note,
       attendee: item.attendee,
-      noShowCount: item.no_show_count
+      noShowCount: item.no_show_count,
+      escort_entrance:item.escort_entrance
     };
     
     console.log('Transformed item:', transformed); // 변환된 데이터 확인
@@ -533,6 +534,22 @@ const getReservationCountByDate = (date) => {
   }).length;
 };
   
+
+const getEntranceText = (entranceValue) => {
+  console.log("entranceValue", entranceValue, typeof entranceValue);
+
+  if (!entranceValue) return '';
+
+  switch(String(entranceValue).trim()) {
+    case '1':
+      return get('ENTRANCE_MARKER_1');
+    case '2':
+      return get('ENTRANCE_MARKER_2');
+    default:
+      return entranceValue;
+  }
+};
+
 const chatWithUser = async(r) => {
     console.log('chatWithUser', r);
 
@@ -652,6 +669,9 @@ const chatWithUser = async(r) => {
 
          .reservation-venue div{
           margin-bottom: 1rem;
+          display: flex;
+          line-height: 0.8;
+          gap: 0.5rem;
         }
 
         .reservation-status {
@@ -737,7 +757,7 @@ const chatWithUser = async(r) => {
               color: #126d6a;
               border: 1px solid #11a29d;
               border-radius: 15px;
-              margin-left: 0.3rem;
+              margin-top: -0.4rem;
             }
 
             .date-filter-section {
@@ -1134,20 +1154,24 @@ const chatWithUser = async(r) => {
                         <div>
                           <Edit size={10}/> {get('RESERVATION_ATTENDEE_LABEL')} <strong>{r.attendee} {get('ATTENDEE_COUNT_UNIT')}</strong>
                         </div>
-                        <div>
-                          <Edit size={10}/> {get('RESERVATION_ESCORT_LABEL')} 
-                          ({r.escort_string})<br></br>
-                          <span className={`use_escort ${r.use_escort === 1 ? 'applied' : 'not_applied'}`}>
-                            {r.use_escort === 1 ? get('ESCORT_APPLIED') : get('ESCORT_NOT_APPLIED')}
-                            
-                          </span>
-                        </div>
-                         <div>
-                          <Edit size={10}/> {get('STAFF_MSG_1')} 
-                          <span className={`use_escort ${r.use_staff === 1 ? 'applied' : 'not_applied'}`}>
-                            {r.use_staff === 1 ? get('ESCORT_APPLIED') : get('ESCORT_NOT_APPLIED')}
-                          </span>
-                        </div>
+                        
+                        {r.use_escort === 1 && (
+                          <div>
+                            <Edit size={10} /> {get('RESERVATION_ESCORT_LABEL')} ({r.escort_string})<br />
+                            <span className="use_escort applied">
+                              {get('ESCORT_APPLIED')}
+                            </span>
+                          </div>
+                        )}
+
+                        {r.use_escort === 1 && r.escort_entrance && (
+                          <div>
+                            <Edit size={10} /> {get('title.text.15')}:
+                            <span className="entrance-text"> {getEntranceText(r.escort_entrance)}</span>
+                          </div>
+                        )}
+
+
                         <div>
                           <Edit size={10}/> {get('RESERVATION_NOTE_LABEL')} {r.note ? r.note : <span style={{color:'#9d9d9d'}}>{get('NO_NOTE_MESSAGE')}</span>}
                         </div>

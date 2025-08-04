@@ -338,7 +338,7 @@ const loadStaffList = async () => {
         .add-btn-row {
           display: flex;
           justify-content: flex-end;
-          margin: 1.5rem 0 1rem 0;
+          margin: 0.5rem 0 1rem 0;
         }
         .staff-list {
           display: flex;

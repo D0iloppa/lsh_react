@@ -3,13 +3,15 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { RotateCcw } from 'lucide-react'; // 회전 아이콘
 import Swal from 'sweetalert2';
 
-const PersonFinderBillboard = ({ onClose }) => {
+const PersonFinderBillboard = ({  onClose, initialName}) => {
   const [isDisplaying, setIsDisplaying] = useState(false);
   const [name, setName] = useState('');
-  const [inputName, setInputName] = useState('');
+  const [inputName, setInputName] = useState(initialName ?? '');
   const [isRotated, setIsRotated] = useState(false);
   const marqueeRef = useRef(null);
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+  console.log("initialName", initialName)
 
   useEffect(() => {
     if (messages && Object.keys(messages).length > 0) {

@@ -60,6 +60,11 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
   const validateForm = () => {
     const newErrors = {};
 
+    // 사용자명 검증
+    if (!form.username || !form.username.trim()) {
+      newErrors.username = get('STAFF_USERNAME_PLACEHOLDER');
+    }
+
     // 비밀번호 검증
     if (!form.password.trim()) {
       newErrors.password = get('VALIDATION_PASSWORD_REQUIRED');
@@ -240,12 +245,12 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
           position:relative;
           font-size: 1.3rem;
           font-weight: 600;
-          padding: 0.3rem;
-          margin: 1.2rem 0 0.2rem 0;
+          padding: 0.3rem;          
           text-align: left;
         }
         .form-box {
           padding: 1.1rem 1.2rem 1.2rem 1.2rem;
+          margin-bottom: 1rem;
         }
         .form-label {
           font-size: 1rem;
@@ -400,6 +405,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
                 value={form.username}
                 onChange={handleChange}
                 placeholder={get('STAFF_USERNAME_PLACEHOLDER')}
+                error={errors.username}
               />
             </div>
             <div className="form-field">
