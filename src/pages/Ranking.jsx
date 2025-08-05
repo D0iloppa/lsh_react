@@ -536,7 +536,7 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
        
          /* 1위 카드*/
         .ranking-card.rank-1 {
-            background: linear-gradient(145deg, #fffef8ff, #f7ffc9, #ffffff);
+            background: linear-gradient(145deg, #fffef8ff, #feff9b, #ffffff);
             border: 2px solid #ffcc3f;
             position: relative;
             overflow: hidden;
