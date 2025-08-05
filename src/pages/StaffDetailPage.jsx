@@ -150,11 +150,25 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
     }
   };
 
+
+  const staffViewCntUpsert = () => {
+    console.log('viewCountUpsert', girl);
+
+    ApiClient.postForm('/api/viewCountUpsert', {
+      target_type: 'staff',
+      target_id: girl.staff_id,
+      venue_id: girl.venue_id,
+    });
+    
+  }
+
   useEffect(() => {
     const fetchStaffData = async () => {
       if (otherProps.fromReview && otherProps.staff_id) {
         setLoading(true);
         try {
+
+
           const response = await ApiClient.get('/api/getStaffProfile', {
             params: { staff_id: otherProps.staff_id }
           });
@@ -187,6 +201,9 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
 
   // 이미지 가져오기
   useEffect(() => {
+
+  staffViewCntUpsert();
+
   const fetchStaffPhotos = async () => {
     if (!otherProps.staff_id) return;
 

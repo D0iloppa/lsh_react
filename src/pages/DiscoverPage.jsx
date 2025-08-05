@@ -306,11 +306,28 @@ useEffect(() => {
     //fetchTopGirls();
   }, [venueId, messages, currentLang]);
 
+
+  const venueViewCntUpsert = () => {
+    console.log('viewCountUpsert', venueId);
+
+    ApiClient.postForm('/api/viewCountUpsert', {
+      target_type: 'venue',
+      venue_id: venueId
+    });
+    
+  }
+
   useEffect(() => {
     const fetchAllData = async () => {
       if (!venueId) return;
 
       try {
+
+
+        venueViewCntUpsert();
+
+
+
         // 1. 먼저 staff 리스트를 가져옴
         const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
         const res = await axios.get(`${API_HOST}/api/getVenueStaffList`, {

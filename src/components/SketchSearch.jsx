@@ -88,7 +88,7 @@ const SketchSearch = ({
       <div className="search-input-wrapper">
         <input
           type="text"
-          placeholder={get('Search1.1')}
+          placeholder={placeholder}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="search-input"

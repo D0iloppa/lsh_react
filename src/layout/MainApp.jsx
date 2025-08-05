@@ -1,7 +1,7 @@
 // src/layout/MainApp.jsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@contexts/AuthContext';
-import { Home, Search, Calendar, User, Map, ChevronUp, Star,Icon, History, MessagesSquare, Settings } from 'lucide-react';
+import { Home, Search, Trophy, Calendar, User, Map, ChevronUp, Star,Icon, History, MessagesSquare, Settings } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useLoginOverlay } from '@hooks/useLoginOverlay.jsx';
@@ -376,7 +376,8 @@ const MainApp = () => {
     // 네비게이션 메뉴들
     const navigationItems = [
         { id: PAGES.HOME, icon: Home, label: get('Footer1.3'), needLogin:false },
-        { id: PAGES.SEARCH, icon: Search, label: get('btn.searchMap.1.1'), needLogin:false },
+        // { id: PAGES.SEARCH, icon: Search, label: get('btn.searchMap.1.1'), needLogin:false },
+        { id: PAGES.RANKING, icon: Trophy, label: get('TITLE_RANK'), needLogin:false },
         { id: PAGES.CHATTINGLIST, icon: MessagesSquare, label: get('MENU_CHATTING'), 
             needLogin:true,
             data: { 

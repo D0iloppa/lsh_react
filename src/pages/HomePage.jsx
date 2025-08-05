@@ -201,6 +201,8 @@ if (savedScrollY !== null) {
     };
 
     init();
+
+
   }, [messages, currentLang]);
 
   const handleGoBack = () => {
@@ -505,12 +507,13 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
             text-align: center;
             padding: 1rem;
             margin: 1rem 0;
-            //background: linear-gradient(135deg, rgb(255 255 255), rgb(231 245 255), rgb(188 254 255));
+            // background: linear-gradient(135deg, rgb(255 255 255), rgb(231 245 255), rgb(188 254 255));
             border: 1px solid rgb(14, 133, 189);
             border-radius: 8px;
             color: #0369a1;
             font-weight: bold;
             max-width: 400px;
+            background: #e2f5ff;
         }
 
         .daily-purchase::before {
@@ -531,7 +534,7 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
                 transparent
             );
             transform: rotate(30deg);
-            animation: shine-diagonal 2s ease-in-out infinite;
+            animation: shine-diagonal 4s ease-in-out infinite;
             filter: blur(2px);
         }
 
@@ -606,6 +609,7 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
           <HatchPattern opacity={0.3} />
           <h1 className="hero-title">{get('HomePage1.1')}</h1>
           <SketchSearch
+              placeholder={get('Search1.1')}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
           />

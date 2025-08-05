@@ -314,7 +314,7 @@ const FavoritesPage = ({
           {/* Section Header */}
           <div className="section-header">
             <h1 className="section-title">{get('Menu1.8')}</h1>
-            <div className="filter-buttons">
+            {/* <div className="filter-buttons">
               <SketchBtn 
                 variant="secondary" 
                 size="small"
@@ -341,7 +341,7 @@ const FavoritesPage = ({
                 <HatchPattern opacity={0.4} />
                 {get('title.text.16')}
               </SketchBtn>
-            </div>
+            </div> */}
 
           </div>
 
