@@ -215,7 +215,10 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
           target_type: rankingType,
           timeFilter: timeFilter
         });
-        const data = res.data || [];
+       
+       // 최대 랭킹
+        const topRank = 12;
+        const data = (res.data || []).slice(0, topRank);
 
         console.log('rank', data);
 
@@ -233,7 +236,7 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
           schedule_status: item.schedule_status,
           is_reservation: item.is_open === 'available',
           reservation_count: item.reservation_count || 0,
-          view_count: item.view_count || 0,
+          view_cnt: item.view_cnt || 0,
           staff_cnt: rankingType === 'venue' ? item.staff_cnt : null,
           venue_name: rankingType === 'staff' ? item.venue_name : null,
           rank: index + 1,
@@ -699,7 +702,7 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
                     </div>
                     <div className="stat-item">
                       <Eye size={12} />
-                      {get('ranking_veiw_text')} {item.view_count.toLocaleString()}
+                      {get('ranking_veiw_text')} {item.view_cnt.toLocaleString()}
                     </div>
                     {rankingType === 'venue' && item.staff_cnt && (
                       <div className="stat-item">
