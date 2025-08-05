@@ -52,19 +52,21 @@ const CocktailIcon = () => (
 );
 
 export default function LoginView({ navigateToPage, PAGES, propsUseMsg = false }) {
-  const { messages, get } =  propsUseMsg ? propsUseMsg() : useMsg();
+  const { messages, get,currentLang } =  propsUseMsg ? propsUseMsg() : useMsg();
 
   
 const navigate = useNavigate();
 
-  useEffect(() => {
+    useEffect(() => {
     if (messages && Object.keys(messages).length > 0) {
       console.log('✅ Messages loaded:', messages);
+      console.log('Current language set to:', currentLang);
       window.scrollTo(0, 0);
     }
-  }, [messages]);
+  }, [messages, currentLang]);
 
-//console.log('PAGES', PAGES)
+
+console.log('currentLang', currentLang)
 
   return (
     <div className="login-container">
@@ -84,7 +86,7 @@ const navigate = useNavigate();
             <CocktailIcon />
             <h1 className="sketch-title sketch-title--large" style={{ display: 'flex' }}>
               LeTanTon Sheriff
-              <ImagePlaceholder src="/cdn/age.png" style={{ lineHeight: '0.5', marginLeft: '8px', width: '26px' }} />
+              <ImagePlaceholder src="/cdn/age.png" style={{ lineHeight: '0.5', marginLeft: '8px', width: '36px' }} />
             </h1>
           </div>
           <p className="description" style={{ color: '#ca1212', margin: '0', textAlign: 'center', fontSize: '13px' }}>

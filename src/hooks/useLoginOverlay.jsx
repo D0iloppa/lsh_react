@@ -13,9 +13,12 @@ export const useLoginOverlay = (navigationProps, onLoginSuccess = null) => {
     const { currentLang } = useMsg();
     const { navigateToPage, navigateToPageWithData, PAGES } = navigationProps;
 
+  
+
     const openLoginOverlay = useCallback((targetPage = null, targetData = null) => {
         console.log('openLoginOverlay 호출됨');
-        
+          console.log("currentLang", currentLang)
+          
         // 목표 페이지 정보를 전역에 저장
         window.loginTargetPage = targetPage;
         window.loginTargetData = targetData;
@@ -82,7 +85,7 @@ export const useLoginOverlay = (navigationProps, onLoginSuccess = null) => {
             
             return (
                 <BrowserRouter>
-                    <MsgProvider initialLanguage={currentLang}>
+                    {/* <MsgProvider initialLanguage={currentLang}> */}
                         <AuthProvider>
                             <style>{`
                                 .go-home-button {
@@ -157,11 +160,12 @@ export const useLoginOverlay = (navigationProps, onLoginSuccess = null) => {
                                         redirectUrl="/profile"
                                         showSocialLogin={true}
                                         isOverlay={true}
+                                       
                                     />
                                 </div>
                             </div>
                         </AuthProvider>
-                    </MsgProvider>
+                    {/* </MsgProvider> */}
                 </BrowserRouter>
             );
         });

@@ -94,6 +94,7 @@ const PromotionsPage = ({
             background-color: white;
             min-height: 100vh;
             position: relative;
+            padding-bottom: 3rem;
           }
 
           .content-section {

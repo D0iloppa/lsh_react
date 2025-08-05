@@ -233,6 +233,7 @@ const ViewReviewPage = ({
           position: relative;
           margin: 1rem;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+          padding-bottom: 3rem;
         }
 
         .header {
@@ -421,6 +422,7 @@ const ViewReviewPage = ({
             border-left: none;
             border-right: none;
             margin: 1rem;
+            padding-bottom: 3rem;
           }
         }
 

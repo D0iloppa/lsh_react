@@ -519,6 +519,7 @@ const getEntranceText = (entranceValue) => {
           background-color: white;
           position: relative;
           padding: 1rem;
+          padding-bottom: 3rem;
         }
 
         .header {
@@ -751,6 +752,7 @@ const getEntranceText = (entranceValue) => {
             border-left: none;
             border-right: none;
             padding: 1rem;
+            padding-bottom: 3rem;
           }
 
           .booking-content {
@@ -881,7 +883,7 @@ const getEntranceText = (entranceValue) => {
               fontSize: '0.9rem',
               color: '#0369a1'
             }}>
-              {selectedDate.format('YYYY년 MM월 DD일')} {get('menu.reserve.history')}
+              {selectedDate.format('YYYY/ MM/ DD')} {get('menu.reserve.history')}
             </div>
           )}
 
