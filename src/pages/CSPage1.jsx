@@ -133,7 +133,7 @@ const CSPage1 = ({
           margin: 0 auto;
           background-color: white;
           position: relative;
-
+          padding: 1rem;
            font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
@@ -229,6 +229,7 @@ const CSPage1 = ({
             max-width: 100%;
             border-left: none;
             border-right: none;
+            padding: 1rem;
           }
         }
       `}</style>

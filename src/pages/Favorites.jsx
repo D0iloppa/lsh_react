@@ -360,7 +360,7 @@ const FavoritesPage = ({
                   <div className="venue-details">
                     <div className="venue-info">
                     <h3 className="venue-name">{venue.name}</h3>
-                    <ShareIcon />
+                    {/* <ShareIcon /> */}
                     </div>
                     <p className="venue-description">{venue.description}</p>
                   </div>

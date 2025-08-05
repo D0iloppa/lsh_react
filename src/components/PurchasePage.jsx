@@ -277,14 +277,14 @@ console.log('PAGES', user)
         }
 
         .card-body {
-          padding: 2rem;
+          padding: 0.5rem 0.5rem;
         }
 
         .benefits-title {
           font-size: 1.2rem;
           font-weight: bold;
           color: #333;
-          margin-bottom: 1rem;
+          margin-bottom: 0.5rem;
           text-align: center;
           display: flex;
           align-items: center;
@@ -307,7 +307,7 @@ console.log('PAGES', user)
           align-items: flex-start;
           gap: 0.75rem;
           margin-bottom: 1rem;
-          font-size: 0.95rem;
+          font-size: 15px;
           line-height: 1.5;
           color: #374151;
           // letter-spacing: -1px;
@@ -399,7 +399,7 @@ console.log('PAGES', user)
           }
 
           .card-body {
-            padding: 1rem 1rem;
+            padding: 0.5rem 0.5rem;
           }
 
           .price {
