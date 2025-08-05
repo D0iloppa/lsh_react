@@ -535,28 +535,12 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
        
          /* 1위 카드*/
         .ranking-card.rank-1 {
-            background: linear-gradient(145deg, #fffef8ff, #fbffd7, #ffffff)
-            border: 2px solid #ffc83f;
+            background: linear-gradient(145deg, #fffef8ff, #f7ffc9, #ffffff);
+            border: 2px solid #f1ff3f;
             position: relative;
             overflow: hidden;
         }
-        
-        .ranking-card.rank-1::before {
-          content: '';
-          position: absolute;
-          top: -50%;
-          left: -50%;
-          width: 200%;
-          height: 200%;
-          background: linear-gradient(45deg, 
-            transparent, 
-            rgba(255, 255, 255, 0.1), 
-            transparent);
-          animation: shine 3s ease-in-out infinite;
-          pointer-events: none;
-          box-shadow: 0 2px 8px rgba(255, 195, 67, 0.3);
-        }
-
+       
         /* 2위 카드 - 실버 그라디언트 */
         .ranking-card.rank-2 {
            background: linear-gradient(135deg, #ffffff70, #c3c3c370, #ffffff90);
