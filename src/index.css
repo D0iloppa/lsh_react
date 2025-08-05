@@ -129,7 +129,7 @@ body[data-lang="vi"] .password-section button{width: 35% !important;}
 body[data-lang="vi"] .attendee-select{height: 50px !important;}
 body[data-lang="vi"] .top-girls-section .girls-rotation .rotation-content .rotation-items-container .rotation-item .girl-slide button{width: 100% !important;}
 body[data-lang="vi"] .filter-tab{letter-spacing: -1px; width: 28%;}
-body[data-lang="vi"] .select-box{min-width: 70px;}
+body[data-lang="vi"] .select-box{min-width: 65px;}
 
 
 
@@ -138,3 +138,10 @@ body[data-lang="vi"] .select-box{min-width: 70px;}
 body[data-lang="en"] .scroll-up-btn, body[data-lang="en"] .bottom-map-section {bottom: 115px;}
 body[data-lang="en"] .girls-rotation{margin-bottom: 5rem;}
 body[data-lang="en"] .filter-tab{letter-spacing: -1px;}
+
+
+/* 일본어일 경우 */
+body[data-lang="ja"] .select-box{min-width: 65px;}
+body[data-lang="ja"] .filter-tab{letter-spacing: -1px; width: 28%;}
+body[data-lang="ja"] .reservation-footer-content{letter-spacing: -1px;}
+body[data-lang="ja"] .filter-tabs .filter-tab:nth-of-type(2) {letter-spacing: -1px;}

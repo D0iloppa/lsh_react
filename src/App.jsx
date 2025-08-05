@@ -35,6 +35,8 @@ import PurchasePage from '@components/PurchasePage';
 
 import DownloadIOS from '@components/Welcome/downloadIOS';
 import DownloadAndroid from '@components/Welcome/downloadAndroid';
+import Block from '@components/Welcome/Block';
+
 
 import Swal from 'sweetalert2';
 
@@ -46,17 +48,18 @@ const AppRoutes = () => {
     const [appVersion, setAppVersion] = useState(null); // 없을 때는 null 유지
 
   useEffect(() => {
+  const init = async () => {
     const currentQuery = window.location.href;
 
     const url = new URL(currentQuery);
     const params = new URLSearchParams(url.search);
     const version = params.get('version') || null;
+    const pathname = url.pathname;
 
-      const pathname = url.pathname;
-      if (pathname === '/' || pathname === '/lsh') {
-        setAppVersion(version);
-      } 
-    
+    if (pathname === '/' || pathname === '/lsh') {
+      setAppVersion(version);
+    }
+
     const compareVersions = (v1, v2) => {
       const a = v1.split('.').map(Number);
       const b = v2.split('.').map(Number);
@@ -70,28 +73,46 @@ const AppRoutes = () => {
     const isAndroid = !!window.native;
     const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
 
-    
+    try {
+      const uuid = await getUUIDTmp(); // ✅ 정상 await
+   
+       const allowedUUIDs = [
+        '2E14837B-E59D-4812-BA9E-583E20947AAC',
+        '89716887-4177-4DD9-A76A-9DB026231E6D',
+        '7f94a544b7a4fa9a'
+      ];
 
-    // 조건문 바로 실행
+    if (!allowedUUIDs.includes(uuid)) {
+      navigate('/block');
+      return;
+    }
+
+    } catch (err) {
+      console.error('UUID 오류:', err);
+      Swal.fire('UUID 에러', err.toString(), 'error');
+    }
+
+    // 나머지 버전 조건 분기
     if (version) {
-        if (version && compareVersions(version, '1.0.2') < 0) {
-            //이전버전
-            if (isAndroid) {
-              //navigate('/downloadAndroid');
-            } else if (isIOS) {
-              navigate('/downloadIOS');
-            } 
-        } else {
-           //최신버전
+      if (compareVersions(version, '1.0.2') < 0) {
+        if (isAndroid) {
+          // navigate('/downloadAndroid');
+        } else if (isIOS) {
+          navigate('/downloadIOS');
         }
+      }
     } else {
-       if (isAndroid) {
-        //navigate('/downloadAndroid');
+      if (isAndroid) {
+        // navigate('/downloadAndroid');
       } else if (isIOS) {
         navigate('/downloadIOS');
-      } 
+      }
     }
+  };
+
+  init(); // 즉시 실행
 }, []);
+
 
 
     useEffect(() => {
@@ -151,6 +172,14 @@ const AppRoutes = () => {
         path="/downloadAndroid"
         element={
           <DownloadAndroid />
+        }
+      />
+
+      
+      <Route
+        path="/block"
+        element={
+          <Block />
         }
       />
 
@@ -858,6 +887,39 @@ return (
 }
 
 
+export const getUUIDTmp = () => {
+  return new Promise((resolve, reject) => {
+    let resolved = false;
+
+    const handleMessage = (event) => {
+      resolved = true;
+      window.removeEventListener('message', handleMessage);
+      resolve(event.data);
+    };
+
+    // iOS WebView
+    if (window.webkit?.messageHandlers?.native?.postMessage) {
+      window.addEventListener('message', handleMessage);
+      window.webkit.messageHandlers.native.postMessage('getUUID');
+    }
+    // Android WebView
+    else if (window.native?.postMessage) {
+      window.addEventListener('message', handleMessage);
+      window.native.postMessage('getUUID');
+    }
+    else {
+      reject('❌ Native 환경이 아님');
+    }
+
+    // 10초 타임아웃 처리
+    setTimeout(() => {
+      if (!resolved) {
+        window.removeEventListener('message', handleMessage);
+        reject('⏱ UUID 수신 타임아웃');
+      }
+    }, 10000);
+  });
+};
 
 
 
