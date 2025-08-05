@@ -217,7 +217,7 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
         });
        
        // 최대 랭킹
-        const topRank = 12;
+        const topRank = 10;
         const data = (res.data || []).slice(0, topRank);
 
         console.log('rank', data);
