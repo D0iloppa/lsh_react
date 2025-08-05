@@ -539,7 +539,7 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
        
          /* 1위 카드*/
         .ranking-card.rank-1 {
-            background: linear-gradient(145deg, #fffef8ff, #feff9b, #ffffff);
+            background: linear-gradient(38deg, #fffef8ff, #feff9b, #ffffff);
             border: 2px solid #ffcc3f;
             position: relative;
             overflow: hidden;
@@ -547,14 +547,14 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
        
         /* 2위 카드 - 실버 그라디언트 */
         .ranking-card.rank-2 {
-           background: linear-gradient(135deg, #ffffff70, #c3c3c370, #ffffff90);
+           background: linear-gradient(38deg, #ffffff70, #c3c3c370, #ffffff90);
             border: 2px solid #bdbdbd;
             box-shadow: 0 2px 8px rgba(192, 192, 192, 0.3);
         }
 
         /* 3위 카드 - 브론즈 그라디언트 */
         .ranking-card.rank-3 {
-            background: linear-gradient(135deg, #fff3e870, #ffddc070, #ffffff90);
+            background: linear-gradient(38deg, #fff3e870, #ffddc070, #ffffff90);
             border: 2px solid #ffab55;
             box-shadow: 0 2px 8px rgba(205, 127, 50, 0.3);
         }
