@@ -890,7 +890,7 @@ const openMenuOverlay = (menuList) => {
         // .upcoming-events {
         //   padding: 1rem; border-bottom: 1px solid #1f2937;
         // }
-        .section-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 1rem;}
+        .section-title { font-size: 1.1rem; font-weight: bold; margin: 1rem 0rem 1rem 0rem;}
         .events-grid {
           display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
         }

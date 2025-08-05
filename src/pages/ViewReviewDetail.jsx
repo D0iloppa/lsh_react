@@ -213,7 +213,7 @@ const ViewReviewPage = ({
           margin: 0 auto;
           background-color: white;
           position: relative;
-
+          margin: 1rem;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
@@ -401,6 +401,7 @@ const ViewReviewPage = ({
             max-width: 100%;
             border-left: none;
             border-right: none;
+            margin: 1rem;
           }
         }
 

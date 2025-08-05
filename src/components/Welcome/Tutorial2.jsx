@@ -42,8 +42,8 @@ const Tutorial2 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
             { get('Tutorial2.2') }
           </p>
 
-        <div className="">
-          <ImagePlaceholder  src={"/cdn/tuto2.png"}  style={{opacity: '0.8', border: '1px solid #333', borderRadius: '5px',height: '440px'}}/>
+        <div style={{margin: '1rem'}}>
+          <ImagePlaceholder  src={"/cdn/tuto2.png"}  style={{opacity: '0.8', border: '1px solid #333', borderRadius: '2px',height: '540px'}}/>
 
 
           {/* Next Screen 버튼 */}

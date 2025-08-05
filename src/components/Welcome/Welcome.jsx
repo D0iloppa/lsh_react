@@ -203,7 +203,7 @@ const CocktailIcon = () => (
         </div>
 
 
-       <div className="relative" style={{ marginTop: '1rem' }}>
+       <div className="relative" style={{ marginTop: '1rem', margin: '1rem'}}>
           <HatchPattern opacity={0.8} />
           
           <SketchBtn 
@@ -214,7 +214,7 @@ const CocktailIcon = () => (
             {get('Welcome1.2')}
           </SketchBtn>
         </div>
-        <div className="relative" style={{ marginTop: '1rem' }}>
+        <div className="relative" style={{ marginTop: '1rem', margin: '1rem' }}>
           <HatchPattern opacity={0.4} />
           
           <SketchBtn 

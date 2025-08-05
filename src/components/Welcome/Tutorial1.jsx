@@ -57,20 +57,20 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
         </div>
 
         {/* 제목 */}
-        <h1 className="sketch-title sketch-title--large" style={{ fontSize: '1.20rem', marginTop :'10px', marginBottom: '10px' }}>
+        <h1 className="sketch-title sketch-title--large" style={{ fontSize: '1.20rem', marginTop :'10px', marginBottom: '10px', margin: '1rem' }}>
           {get('Tutorial1.1')}
         </h1>
 
         {/* 설명 텍스트 */}
         <p className="sketch-description text-center text-gray-600 leading-relaxed mb-8 transform rotate-1"
-          style={{ fontSize: '15px', marginTop :'5px', marginBottom: '20px' }}
+          style={{ fontSize: '15px', marginTop :'5px', marginBottom: '20px', margin: '1rem' }}
         >
           {get('Tutorial1.2')}
         </p>
 
         {/* 메인 이미지 */}
-        <div className="mb-6">
-          <ImagePlaceholder  src={"/cdn/tuto-1.png"}  style={{opacity: '0.8' ,border: '1px solid #333', borderRadius: '5px',height: '465px'}}/>
+        <div className="mb-6" style={{margin: '1rem'}}>
+          <ImagePlaceholder  src={"/cdn/tuto-1.png"}  style={{opacity: '0.8' ,border: '1px solid #333', borderRadius: '2px',height: '540px'}}/>
         </div>
 
 
@@ -78,7 +78,7 @@ const Tutorial1 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
         
 
         {/* Next Screen 버튼 */}
-        <div className="relative" style={{ marginTop: '20px' }}>
+        <div className="relative" style={{ marginTop: '20px', margin: '1rem' }}>
           <HatchPattern opacity={0.3} />
           
           <SketchBtn 

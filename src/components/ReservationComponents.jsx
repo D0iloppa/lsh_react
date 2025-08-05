@@ -269,32 +269,56 @@ export const generateTimeSlots = (startHour = 0, endHour = 24) => {
 // 새로운 함수: 라벨과 값을 분리한 시간 슬롯 생성
 export const generateTimeSlotsWithLabels = (startHour = 19, endHour = 3) => {
   const timeSlots = [];
+  const usedValues = new Set();
 
-  // 19:00 ~ 23:00 (당일)
-  for (let hour = startHour; hour <= 23; hour++) {
-    const displayTime = hour.toString().padStart(2, '0') + ':00';
-    const actualTime = hour.toString().padStart(2, '0') + ':00';
+  if (startHour <= endHour) {
+    // 일반 영업: 09:00 ~ 18:00 같은 경우
+    for (let hour = startHour; hour <= endHour; hour++) {
+      const displayTime = hour.toString().padStart(2, '0') + ':00';
+      const actualTime = hour.toString().padStart(2, '0') + ':00';
+      
+      if (!usedValues.has(actualTime)) {
+        timeSlots.push({
+          label: displayTime,
+          value: actualTime,
+          isNextDay: false
+        });
+        usedValues.add(actualTime);
+      }
+    }
+  } else {
+    // 심야 영업: 19:00 ~ 03:00 같은 경우 (startHour > endHour)
     
-    timeSlots.push({
-      label: displayTime,    // 표시용: 19:00, 20:00, 21:00, 22:00, 23:00
-      value: actualTime,     // 실제값: 19:00, 20:00, 21:00, 22:00, 23:00
-      isNextDay: false
-    });
-  }
+    // 당일 시간대: startHour ~ 23:00
+    for (let hour = startHour; hour <= 23; hour++) {
+      const displayTime = hour.toString().padStart(2, '0') + ':00';
+      const actualTime = hour.toString().padStart(2, '0') + ':00';
+      
+      if (!usedValues.has(actualTime)) {
+        timeSlots.push({
+          label: displayTime,
+          value: actualTime,
+          isNextDay: false
+        });
+        usedValues.add(actualTime);
+      }
+    }
 
-  // 00:00 ~ 03:00 (다음날)
-  for (let hour = 0; hour <= endHour; hour++) {
-    const displayTime = hour.toString().padStart(2, '0') + ':00';
-    const actualTime = (hour + 24).toString().padStart(2, '0') + ':00'; // 24:00, 25:00, 26:00, 27:00
-    
-    timeSlots.push({
-      label: displayTime,    // 표시용: 00:00, 01:00, 02:00, 03:00
-      value: actualTime,     // 실제값: 24:00, 25:00, 26:00, 27:00
-      isNextDay: true
-    });
+    // 다음날 시간대: 00:00 ~ endHour
+    for (let hour = 0; hour <= endHour; hour++) {
+      const displayTime = hour.toString().padStart(2, '0') + ':00';
+      const actualTime = (hour + 24).toString().padStart(2, '0') + ':00';
+      
+      if (!usedValues.has(actualTime)) {
+        timeSlots.push({
+          label: displayTime,
+          value: actualTime,
+          isNextDay: true
+        });
+        usedValues.add(actualTime);
+      }
+    }
   }
-
-  console.log('timeSlots', timeSlots);
 
   return timeSlots;
 };

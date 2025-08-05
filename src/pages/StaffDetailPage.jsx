@@ -317,10 +317,12 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           margin-top: 0.75rem;
           font-size: 0.95rem;
           color: #4b5563;
+          margin: 1rem;
         }
         .booking-form-section {
           margin-top: 2rem;
           padding-bottom: 20px;
+          margin: 1rem;
         }
       `}</style>
 

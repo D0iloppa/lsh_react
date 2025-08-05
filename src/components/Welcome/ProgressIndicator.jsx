@@ -20,6 +20,7 @@ const ProgressIndicator = ({
           justify-content: center;
           gap: 0.5rem;
           margin-bottom: 1rem;
+          margin-top: 1rem;
         }
         
         .progress-dot {

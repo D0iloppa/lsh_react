@@ -518,6 +518,7 @@ const getEntranceText = (entranceValue) => {
           margin: 0 auto;
           background-color: white;
           position: relative;
+          padding: 1rem;
         }
 
         .header {
@@ -637,7 +638,7 @@ const getEntranceText = (entranceValue) => {
         }
 
         .bookings-section {
-          padding: 1rem;
+          margin-top: 1rem;
         }
 
         .booking-card {
@@ -749,6 +750,7 @@ const getEntranceText = (entranceValue) => {
             max-width: 100%;
             border-left: none;
             border-right: none;
+            padding: 1rem;
           }
 
           .booking-content {

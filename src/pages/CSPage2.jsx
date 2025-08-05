@@ -303,7 +303,7 @@ const CSPage2 = ({
       <div className="cs2-container">
         {/* Header */}
         <SketchHeader
-          title="Customer Support"
+          title={get('CUSTOMER_INQUIRY_TITLE')}
           showBack={true}
           onBack={goBack}
           rightButtons={[]}

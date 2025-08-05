@@ -21,15 +21,18 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 
 import Swal from 'sweetalert2';
-  
+import { getVietnamDate, getVietnamTime, getVietnamHour, isVietnamToday, getVietnamDateObject } from '@utils/VietnamTime';
 
 const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps }) => {
   const { target, id } = otherProps || {};
   const { user } = useAuth();
 
   const getTodayString = () => {
+    /*
     const today = new Date();
     return today.toISOString().split('T')[0];
+    */
+    return getVietnamDate();
   };
 
   // 상태들 - Duration 방식으로 변경
@@ -46,7 +49,10 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   });
 
   const [note, setNote] = useState('');
-  const [baseDate] = useState(new Date()); // 오늘 날짜 고정
+  const [baseDate] = useState(() => {
+    const vietnamTime = getVietnamTime();
+    return new Date(`${vietnamTime.date}T${vietnamTime.time}+07:00`);
+  });
   const [scheduleData, setScheduleData] = useState({});
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
@@ -144,7 +150,10 @@ const isAllAgreed = () => {
   // scheduleData 업데이트 완료 후 실행
   useEffect(() => {
     if (shouldAutoSelect && Object.keys(scheduleData).length > 0) {
+      /*
       const today = new Date().toISOString().split('T')[0];
+      */
+      const today = getVietnamDate();
       console.log('DEFAULT SELECT with complete data:', today, scheduleData);
       handleDateSelect(today, 1);
       setShouldAutoSelect(false);
@@ -223,22 +232,32 @@ const isAllAgreed = () => {
       console.log('🕐 Venue hours:', open_time, close_time);
 
       venueTimeSlots = generateTimeSlotsWithLabels(open_time, close_time);
-      setTimeSlots(venueTimeSlots); // timeSlots 상태 업데이트
+      console.log('🕐 Generated time slots:', venueTimeSlots);
+      
+      // 중복 제거 후 타임슬롯 설정
+      const uniqueTimeSlots = venueTimeSlots.filter((slot, index, self) => 
+        index === self.findIndex(s => s.value === slot.value)
+      );
+      
+      console.log('🕐 Unique time slots:', uniqueTimeSlots);
+      setTimeSlots(uniqueTimeSlots); // 중복 제거된 타임슬롯 설정
     }
 
     try {
-      // 1. 지난 시간인지 확인
-      const today = new Date().toISOString().split('T')[0];
+      // 1. 지난 시간인지 확인 (베트남 시간 기준)
+      const today = getVietnamDate();
+
+      console.log('🕐 Vietnam today:', today);
       
-      if (fullDate === today) {
-        const currentHour = new Date().getHours();
-        console.log('🕐 Current hour:', currentHour, 'for date:', fullDate);
+      if (isVietnamToday(fullDate)) {
+        const currentHour = getVietnamHour();
+        console.log('🕐 Vietnam current hour:', currentHour, 'for date:', fullDate);
 
         let _open_time = venueInfo.open_time
         _open_time = _open_time.split(':')[0];
         _open_time = Number.parseInt(_open_time);
         
-        // 현재 시간까지 비활성화 (새로운 형식 지원)
+        // 현재 시간까지 비활성화 (베트남 시간 기준)
         for (let hour = _open_time; hour <= currentHour; hour++) {
           const timeString = hour.toString().padStart(2, '0') + ':00';
           disabledTimes.push(timeString);
@@ -250,6 +269,21 @@ const isAllAgreed = () => {
       // 2. 예약 가능한 리스트에 존재하는지 확인
       let scheduleList_filter = scheduleList.filter(i => i.work_date == fullDate);
       console.log('📅 Schedule list for', fullDate, ':', scheduleList_filter);
+      
+      // 스케줄 데이터에서 중복 시간 확인
+      const timeCounts = {};
+      scheduleList_filter.forEach(schedule => {
+        const time = schedule.time;
+        timeCounts[time] = (timeCounts[time] || 0) + 1;
+      });
+      
+      const duplicates = Object.entries(timeCounts)
+        .filter(([time, count]) => count > 1)
+        .map(([time, count]) => `${time} (${count} times)`);
+      
+      if (duplicates.length > 0) {
+        console.warn('⚠️ Duplicate times found in schedule:', duplicates);
+      }
       
       if (scheduleList_filter.length > 0) {
         // scheduleList에서 time 필드들을 추출하여 가능한 시간 리스트 생성
@@ -265,9 +299,12 @@ const isAllAgreed = () => {
             return time;
           });
         
+        console.log('📋 Raw available times (before deduplication):', availableTimes);
+        
         // 중복 제거
         const uniqueAvailableTimes = [...new Set(availableTimes)];
-        console.log('📋 Available times from schedule list:', uniqueAvailableTimes);
+        console.log('📋 Available times after deduplication:', uniqueAvailableTimes);
+        console.log('📋 Duplicate count:', availableTimes.length - uniqueAvailableTimes.length);
         
         if (uniqueAvailableTimes.length > 0) {
           // 새로운 형식의 timeSlots에서 value 값들을 추출하여 비교

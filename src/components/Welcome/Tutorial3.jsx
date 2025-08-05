@@ -67,7 +67,7 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
         </div>
       </SketchDiv> */}
 
-      <ImagePlaceholder  src={"/cdn/tuto3.png"}  style={{opacity: '0.8', border: '1px solid #333', borderRadius: '5px',height: '463px'}}/>
+      <ImagePlaceholder  src={"/cdn/tuto3.png"}  style={{opacity: '0.8', border: '1px solid #333', borderRadius: '2px',height: '540px', margin: '1rem'}}/>
       {/* 메인 이미지 */}
       {/* <div className="">
         <ImagePlaceholder src={"/cdn/tuto-2.png"} className="w-full h-48" style={{margin: 'auto', width: '330px', height:'307px', border: '1px solid #333', padding: '10px', borderTopLeftRadius: '15px 8px',
@@ -78,7 +78,7 @@ const Tutorial3 = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
       </div> */}
 
       {/* Next Screen 버튼 */}
-      <div className="relative" style={{ marginTop: '10px' }}>
+      <div className="relative" style={{ marginTop: '10px', margin: '1rem' }}>
           {<HatchPattern opacity={0.8} />}
           
           <SketchBtn 

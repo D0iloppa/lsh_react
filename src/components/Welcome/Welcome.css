@@ -87,6 +87,8 @@
     /* welcome section*/
    .welcome-description{
     text-align: start;
+    font-size: 15px;
+    margin: 1rem;
    }
 
   /* 브랜드 섹션 */
