@@ -459,6 +459,7 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
           border-radius: 8px;
           overflow: hidden;
           position: relative;
+          border: 1px solid #333;
         }
         .content-area {
           flex: 1;
@@ -536,7 +537,7 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
          /* 1위 카드*/
         .ranking-card.rank-1 {
             background: linear-gradient(145deg, #fffef8ff, #f7ffc9, #ffffff);
-            border: 2px solid #f1ff3f;
+            border: 2px solid #ffcc3f;
             position: relative;
             overflow: hidden;
         }
