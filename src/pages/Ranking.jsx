@@ -239,6 +239,7 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
           view_cnt: item.view_cnt || 0,
           staff_cnt: rankingType === 'venue' ? item.staff_cnt : null,
           venue_name: rankingType === 'staff' ? item.venue_name : null,
+          venue_id : item.venue_id,
           rank: index + 1,
           score: calculateRankingScore(item)
         }));
@@ -284,15 +285,16 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
     setRankingData(filtered);
   }, [searchQuery, originalData]);
 
-  const handleDiscover = (itemId) => {
-    console.log("itemId", itemId)
+  const handleDiscover = (item) => {
+    console.log("item", item)
 
     if (rankingType === 'venue') {
-      navigateToPageWithData(PAGES.DISCOVER, { venueId: itemId });
+      navigateToPageWithData(PAGES.DISCOVER, { venueId: item.id });
     } else {
       // 스탭 상세 페이지로 이동
       navigateToPageWithData(PAGES.STAFFDETAIL, { 
-        staff_id: itemId,  // staffId → staff_id로 변경
+        staff_id: item.id,  // staffId → staff_id로 변경
+        venue_id:item.venue_id,
         fromReview: true   // 데이터 fetch를 위해 필요
       });
     }
@@ -360,8 +362,11 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
           font-family: 'BMHanna', 'Comic Sans MS';
           padding-bottom: 3rem;
         }
+
+        .search-container{margin-bottom: 1rem !important;}
+
         .hero-section {
-          padding: 2rem 1.5rem 1.5rem;
+          padding: 1rem 1.5rem 1.5rem;
           background: white;
           border-radius: 12px;
           border: 1px solid #333;
@@ -377,14 +382,10 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
           justify-content: center;
           gap: 8px;
         }
-        .filter-section {
-        //   padding: 1rem 1.5rem;
-        //   margin-top: 1rem;
-        }
+        
         .filter-tabs {
           display: flex;
           gap: 12px;
-          margin-bottom: 16px;
         }
         .filter-tab {
           padding: 8px 16px;
@@ -623,7 +624,7 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
               <div
                 key={item.id}
                 className={`ranking-card ${item.rank <= 3 ? `rank-${item.rank}` : ''}`}
-                onClick={() => handleDiscover(item.id)}
+                onClick={() => handleDiscover(item)}
               >
                 {/* 순위 표시 */}
                 <div className="rank-number">
