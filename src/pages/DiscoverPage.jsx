@@ -180,10 +180,10 @@ useEffect(() => {
   const resetContentAreaScroll = () => {
     // 진짜 스크롤 컨테이너인 .content-area를 리셋
     const contentArea = document.querySelector('.content-area');
-    /*if (contentArea) {
+    if (contentArea) {
       contentArea.scrollTop = 0;
       console.log('content-area 스크롤이 0으로 리셋됨');
-    }*/
+    }
     
     // window도 함께 (혹시 모르니)
       if (!localStorage.getItem('discoverScrollY')) {
