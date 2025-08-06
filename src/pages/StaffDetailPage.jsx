@@ -155,6 +155,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
       <style jsx="true">{`
         .staff-detail-container {
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+          padding-bottom: 2rem;
         }
         .profile-images-section {
           margin-bottom: 1rem;
@@ -200,6 +201,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           font-size: 0.95rem;
           color: #4b5563;
           min-height: 100px; /* ✅ 추가된 줄 */
+          margin: 1rem;
         }
         .booking-form-section {
           margin-top: 2rem;

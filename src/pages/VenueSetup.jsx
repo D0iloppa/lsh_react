@@ -1004,7 +1004,6 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
           font-size: 0.875rem;
           color: #888;
           text-align: center;
-          margin-top: 1rem;
           line-height: 1.4;
           padding: 3px;
         }

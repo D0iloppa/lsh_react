@@ -11,7 +11,7 @@ const PersonFinderBillboard = ({  onClose, initialName}) => {
   const marqueeRef = useRef(null);
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
-  console.log("initialName", initialName)
+  //console.log("initialName", initialName)
 
   useEffect(() => {
     if (messages && Object.keys(messages).length > 0) {
@@ -33,16 +33,42 @@ const PersonFinderBillboard = ({  onClose, initialName}) => {
     setTimeout(() => {
       if (marqueeRef.current) {
         marqueeRef.current.style.animation = 'none';
-        marqueeRef.current.offsetHeight; // 리플로우 강제 실행
-        marqueeRef.current.style.animation = 'marquee 20s linear infinite, blink 1s step-start infinite';
+        marqueeRef.current.offsetHeight;
+        
+        // 텍스트 폭 측정
+        const textWidth = marqueeRef.current.scrollWidth;
+        const screenWidth = window.innerWidth;
+        
+        console.log('textWidth:', textWidth, 'screenWidth:', screenWidth); // 디버깅용
+        
+        // 완전히 사라질 위치 계산
+        const endPosition = -(textWidth + 50); // 여유분 50px 추가
+        
+        // 동적 키프레임 생성
+        const keyframeName = `marquee-${Date.now()}`;
+        const styleSheet = document.styleSheets[0];
+        const keyframes = `
+          @keyframes ${keyframeName} {
+            0% { left: ${screenWidth}px; }
+            100% { left: ${endPosition}px; }
+          }
+        `;
+        styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
+        
+        // 속도 계산 (초당 150픽셀)
+        const totalDistance = screenWidth + Math.abs(endPosition);
+        const duration = totalDistance / 80;
+        
+        marqueeRef.current.style.animation = `${keyframeName} ${duration}s linear infinite, blink 1s step-start infinite`;
       }
-    }, 50);
+    }, 200); // 50ms에서 200ms로 증가
   };
 
   const goBack = () => {
     setIsDisplaying(false);
-    setInputName('');
-    setName('');
+    setInputName(name);
+    setIsRotated(false);
+    // setName('');
   };
 
   const handleClose = () => {
@@ -366,7 +392,7 @@ const PersonFinderBillboard = ({  onClose, initialName}) => {
             <button 
               className="close-btn" 
               onClick={goBack}
-              style={{ right: '100px' }}
+              style={{ right: '90px', background: 'gray' }}
             >
               {get('STAFF_EDIT_BUTTON')}
             </button>

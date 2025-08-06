@@ -601,7 +601,7 @@ const EditProfile = ({ navigateToPageWithData, PAGES, goBack, pageData, ...other
             type="number"
           />
         </div>
-        <div className="input-row" style={{marginBottom: '0.3rem', display: 'none'}}>
+        <div className="input-row" style={{marginBottom: '0.3rem'}}>
           <div style={{marginBottom: '0.3rem'}}>{get('LANGUAGES_LABEL')}</div>
           <SketchInput
             name="languages"
