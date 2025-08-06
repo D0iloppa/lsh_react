@@ -1067,7 +1067,10 @@ const openMenuOverlay = (menuList) => {
   height: 100%;
   object-fit: cover;
   display: block;
+  min-width: 100%;
+  min-height: 100%;
 }
+
 
 .girl-name {
   position: absolute;
