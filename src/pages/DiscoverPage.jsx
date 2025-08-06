@@ -995,6 +995,7 @@ const openMenuOverlay = (menuList) => {
   gap: 15px;
   margin-bottom: 20px;
 }
+
 .podium-rank {
   width: 100%;
   text-align: center;
@@ -1003,7 +1004,20 @@ const openMenuOverlay = (menuList) => {
   cursor: pointer;
   border-radius: 8px;
   padding: 8px 0;
+  background-color: black; /* ✅ 검정 배경 */
+  height: 320px; /* ✅ 고정 높이로 통일 */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* ✅ 수직 정렬 */
+  align-items: center;      /* ✅ 수평 정렬 */
 }
+
+.podium-rank img.girl-img {
+  max-height: 100%; /* ✅ 이미지 비율 제한 */
+  object-fit: contain; /* ✅ 이미지 비율 유지 */
+}
+
+
 .rank-1 { height: auto; }
 .rank-2, .rank-3 { height: auto; }
 .badge {
@@ -1059,7 +1073,7 @@ const openMenuOverlay = (menuList) => {
 
 .girl-name {
   position: absolute;
-  bottom: 20px;
+  bottom: 0;
   width: 100%;
   padding: 6px 0;
   background: rgba(0, 0, 0, 0.5); /* 반투명 배경 */
@@ -1086,8 +1100,8 @@ const openMenuOverlay = (menuList) => {
 .badge-rank2,
 .badge-rank3 {
   position: absolute;
-  top: -10px;
-  z-index:1000;
+  top: -25px;
+  z-index:100;
   left: 10%;
   transform: translateX(-50%);
   width: 80px;
@@ -1329,53 +1343,62 @@ const openMenuOverlay = (menuList) => {
             
               {/* 1등 단독 */}
               <div className="first-place-container">
-  {topGirls[0] && (() => {
-    const availCnt = topGirls[0].availCnt || 0;
-    const statusBackgroundColor =
-      venueInfo?.schedule_status === 'closed'
-        ? 'rgb(107, 107, 107)'
-        : availCnt > 0
-        ? 'rgb(11, 199, 97)'
-        : 'rgb(107, 107, 107)';
-    const statusText =
-      venueInfo?.schedule_status === 'closed'
-        ? get('VENUE_RESERVATION_CLOSED')
-        : availCnt > 0
-        ? get('VENUE_RESERVATION_AVAILABLE')
-        : get('VENUE_RESERVATION_CLOSED');
+  {topGirls[0] ? (
+    (() => {
+      const availCnt = topGirls[0].availCnt || 0;
+      const statusBackgroundColor =
+        venueInfo?.schedule_status === 'closed'
+          ? 'rgb(107, 107, 107)'
+          : availCnt > 0
+          ? 'rgb(11, 199, 97)'
+          : 'rgb(107, 107, 107)';
+      const statusText =
+        venueInfo?.schedule_status === 'closed'
+          ? get('VENUE_RESERVATION_CLOSED')
+          : availCnt > 0
+          ? get('VENUE_RESERVATION_AVAILABLE')
+          : get('VENUE_RESERVATION_CLOSED');
 
-    return (
-      <div className="podium-rank rank-1" onClick={() => handleDetail(topGirls[0])}>
-        <div className="badge-rank1"></div>
-        <div style={{ position: 'relative' }}>
-          <img src={topGirls[0].image_url} className="girl-img" alt="1위" />
-          <div
-            style={{
-              position: 'absolute',
-              top: '8px',
-              right: '8px',
-              backgroundColor: statusBackgroundColor,
-              color: 'white',
-              padding: '3px 6px',
-              borderRadius: '3px',
-              fontSize: '11px',
-              zIndex: 2
-            }}
-          >
-            {statusText}
+      return (
+        <div className="podium-rank rank-1" onClick={() => handleDetail(topGirls[0])}>
+          <div className="badge-rank1"></div>
+          <div style={{ position: 'relative' }}>
+            <img src={topGirls[0].image_url} className="girl-img" alt="1위" />
+            <div
+              style={{
+                position: 'absolute',
+                top: '8px',
+                right: '8px',
+                backgroundColor: statusBackgroundColor,
+                color: 'white',
+                padding: '3px 6px',
+                borderRadius: '3px',
+                fontSize: '11px',
+                zIndex: 2
+              }}
+            >
+              {statusText}
+            </div>
           </div>
+          <div className="girl-name">{topGirls[0].name}</div>
         </div>
-        <div className="girl-name">{topGirls[0].name}</div>
-      </div>
-    );
-  })()}
+      );
+    })()
+  ) : (
+    <div className="podium-rank rank-1">
+      <div className="badge-rank1"></div>
+      <div style={{ color: '#aaa', fontSize: '14px' }}>{get('DiscoverPage1.2.empty.title') || '스태프 없음'}</div>
+    </div>
+  )}
 </div>
 
 
+
               {/* 2, 3등 나란히 */}
-             <div className="second-third-container">
-  {[topGirls[1], topGirls[2]].map((girl, i) =>
-    girl ? (() => {
+<div className="second-third-container">
+  {[1, 2].map((index) => {
+    const girl = topGirls[index];
+    if (girl) {
       const availCnt = girl.availCnt || 0;
       const statusBackgroundColor =
         venueInfo?.schedule_status === 'closed'
@@ -1393,12 +1416,12 @@ const openMenuOverlay = (menuList) => {
       return (
         <div
           key={girl.staff_id}
-          className={`podium-rank rank-${i + 2}`}
+          className={`podium-rank rank-${index + 1}`}
           onClick={() => handleDetail(girl)}
         >
-          <div className={`badge-rank${i + 2}`}></div>
+          <div className={`badge-rank${index + 1}`}></div>
           <div style={{ position: 'relative' }}>
-            <img src={girl.image_url} className="girl-img" alt={`${i + 2}위`} />
+            <img src={girl.image_url} className="girl-img" alt={`${index + 1}위`} />
             <div
               style={{
                 position: 'absolute',
@@ -1418,8 +1441,15 @@ const openMenuOverlay = (menuList) => {
           <div className="girl-name">{girl.name}</div>
         </div>
       );
-    })() : null
-  )}
+    } else {
+      return (
+        <div key={`empty-${index}`} className={`podium-rank rank-${index + 1}`}>
+          <div className={`badge-rank${index + 1}`}></div>
+          <div style={{ color: '#aaa', fontSize: '14px' }}>{get('DiscoverPage1.2.empty.title') || '스태프 없음'}</div>
+        </div>
+      );
+    }
+  })}
 </div>
 
 
