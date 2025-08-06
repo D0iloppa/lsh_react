@@ -4,6 +4,7 @@ import axios from 'axios';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchHeader from '@components/SketchHeader';
+import SketchDiv from '@components/SketchDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
@@ -293,12 +294,31 @@ const FavoritesPage = ({
             gap: 0.75rem;
           }
 
-          .venue-image {
-            align-self: center;
-          }
+                  .venue-image {
+          align-self: center;
         }
-          
-      `}</style>
+
+        .empty-state {
+          text-align: center;
+          padding: 3rem 1rem;
+          color: #6b7280;
+        }
+
+        .empty-state h3 {
+          font-size: 1.25rem;
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+          color: #374151;
+        }
+
+        .empty-state p {
+          font-size: 0.875rem;
+          line-height: 1.5;
+          margin: 0;
+        }
+      }
+        
+    `}</style>
 
       <div className="favorites-container">
         {/* Header */}
@@ -347,44 +367,54 @@ const FavoritesPage = ({
 
           {/* Favorites List */}
           <div className="favorites-list">
-            {filteredFavorites.map((venue, index) => (
-              <div key={venue.venue_id} className="favorite-card">
-                <HatchPattern opacity={0.4} />
-                
-                  <div className="card-content" onClick={() => handleDiscover(venue)}>
-                  <ImagePlaceholder 
-                    src={venue.image_url} 
-                    className="venue-image"
-                  />
+            {filteredFavorites.length > 0 ? (
+              filteredFavorites.map((venue, index) => (
+                <div key={venue.venue_id} className="favorite-card">
+                  <HatchPattern opacity={0.4} />
                   
-                  <div className="venue-details">
-                    <div className="venue-info">
-                    <h3 className="venue-name">{venue.name}</h3>
-                    {/* <ShareIcon /> */}
+                    <div className="card-content" onClick={() => handleDiscover(venue)}>
+                    <ImagePlaceholder 
+                      src={venue.image_url} 
+                      className="venue-image"
+                    />
+                    
+                    <div className="venue-details">
+                      <div className="venue-info">
+                      <h3 className="venue-name">{venue.name}</h3>
+                      {/* <ShareIcon /> */}
+                      </div>
+                      <p className="venue-description">{venue.description}</p>
                     </div>
-                    <p className="venue-description">{venue.description}</p>
-                  </div>
 
-                  <div className="book-action">
-                    <SketchBtn 
-                      variant="primary" 
-                      size="small"
-                       onClick={(e) => {
-                        e.stopPropagation();
-                        handleBook(venue);
-                      }}
-                    >
-                      {get('btn.booking.2')}
-                    </SketchBtn>
-                     <LoadingScreen 
-                               variant="cocktail"
-                               loadingText="Loading..."
-                               isVisible={isLoading} 
-                             />
+                    <div className="book-action">
+                      <SketchBtn 
+                        variant="primary" 
+                        size="small"
+                         onClick={(e) => {
+                          e.stopPropagation();
+                          handleBook(venue);
+                        }}
+                      >
+                        {get('btn.booking.2')}
+                      </SketchBtn>
+                       <LoadingScreen 
+                                 variant="cocktail"
+                                 loadingText="Loading..."
+                                 isVisible={isLoading} 
+                               />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <SketchDiv className="favorite-card">
+                <HatchPattern opacity={0.02} />
+                <div className="empty-state">
+                  <h3>{get('Favorites.empty.title')}</h3>
+                  <p style={{fontSize: '0.83rem'}}>{get('Favorites.empty.description')}</p>
+                </div>
+              </SketchDiv>
+            )}
           </div>
         </div>
       </div>

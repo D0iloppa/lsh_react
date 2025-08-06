@@ -1294,50 +1294,66 @@ const openMenuOverlay = (menuList) => {
         
 
         <div className="top-girls-section">
-  <div className="section-title">{get('DiscoverPage1.2')}</div>
+          <div className="section-title">{get('DiscoverPage1.2')}</div>
 
-  {/* 1등 단독 */}
-  <div className="first-place-container">
-    {topGirls[0] && (
-      <div className="podium-rank rank-1" onClick={() => handleDetail(topGirls[0])}>
-        <div className="badge-rank1"></div>
-        <img src={topGirls[0].image_url} className="girl-img" alt="1위" />
-        <div className="girl-name">{topGirls[0].name}</div>
-      </div>
-    )}
-  </div>
+          {/* 비어있는 경우 */}
+          {topGirls.length === 0 ? (
+            <div className="empty-state-container" style={{
+                height: '10rem',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center'
+            }}>
+              <div className="empty-state">
+                <h3>{get('DiscoverPage1.2.empty.title')}</h3>
+                <p style={{fontSize: '0.83rem'}}>{get('DiscoverPage1.2.empty.description')}</p>
+              </div>   
+            </div>
+            
+          ) : (
+            <>
+              {/* 1등 단독 */}
+              <div className="first-place-container">
+                {topGirls[0] && (
+                  <div className="podium-rank rank-1" onClick={() => handleDetail(topGirls[0])}>
+                    <div className="badge-rank1"></div>
+                    <img src={topGirls[0].image_url} className="girl-img" alt="1위" />
+                    <div className="girl-name">{topGirls[0].name}</div>
+                  </div>
+                )}
+              </div>
 
-  {/* 2, 3등 나란히 */}
-  <div className="second-third-container">
-    {[topGirls[1], topGirls[2]].map((girl, i) =>
-      girl ? (
-        <div
-          key={girl.staff_id}
-          className={`podium-rank rank-${i + 2}`}
-          onClick={() => handleDetail(girl)}
-        >
-          <div className={`badge-rank${i + 2}`}></div>
-          <img src={girl.image_url} className="girl-img" alt={`${i + 2}위`} />
-          <div className="girl-name">{girl.name}</div>
+              {/* 2, 3등 나란히 */}
+              <div className="second-third-container">
+                {[topGirls[1], topGirls[2]].map((girl, i) =>
+                  girl ? (
+                    <div
+                      key={girl.staff_id}
+                      className={`podium-rank rank-${i + 2}`}
+                      onClick={() => handleDetail(girl)}
+                    >
+                      <div className={`badge-rank${i + 2}`}></div>
+                      <img src={girl.image_url} className="girl-img" alt={`${i + 2}위`} />
+                      <div className="girl-name">{girl.name}</div>
+                    </div>
+                  ) : null
+                )}
+              </div>
+
+              {/* 나머지 */}
+              <div className="scrollable-list">
+                {topGirls.slice(3).map((girl) => (
+                  <div key={girl.staff_id} className="girl-slide" onClick={() => handleDetail(girl)}>
+                    <div className="girl-image-box">
+                      <img src={girl.image_url} className="girl-img" alt="girl" />
+                      <div className="girl-name">{girl.name}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
-      ) : null
-    )}
-  </div>
-
-
-  {/* 나머지 */}
-  <div className="scrollable-list">
-    {topGirls.slice(3).map((girl) => (
-      <div key={girl.staff_id} className="girl-slide" onClick={() => handleDetail(girl)}>
-        <div className="girl-image-box">
-          <img src={girl.image_url} className="girl-img" alt="girl" />
-          <div className="girl-name">{girl.name}</div>
-        </div>
-  
-      </div>
-    ))}
-  </div>
-</div>
 
       </div>
     </>
