@@ -1063,12 +1063,12 @@ const openMenuOverlay = (menuList) => {
 }
 
 .girl-img {
-  width: 100%;
+  width: 120%;
   height: 100%;
   object-fit: cover;
   display: block;
-  min-width: 100%;
-  min-height: 100%;
+  object-position: center;
+
 }
 
 
