@@ -93,11 +93,14 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   const touchEndXRef = useRef(null);
 
   const handleTouchStart = (e) => {
- const isIgnoredArea = 
+  const isIgnoredArea = 
     e.target.closest('.map-section') || 
     e.target.closest('#map') ||
-    e.target.closest('.venue-rotation') || // 장소 이미지 회전
-    e.target.closest('.girls-rotation');   // 스태프 회전
+    e.target.closest('.venue-rotation') || 
+    e.target.closest('.girls-rotation') || 
+    e.target.closest('.girl-image-box') || 
+    e.target.closest('.first-place-container') || 
+    e.target.closest('.second-third-container'); // ✅ 추가됨
 
   if (isIgnoredArea) return;
 
@@ -111,8 +114,11 @@ const handleTouchEnd = (e) => {
   const isIgnoredArea = 
     e.target.closest('.map-section') || 
     e.target.closest('#map') ||
-    e.target.closest('.venue-rotation') || // 장소 이미지 회전
-    e.target.closest('.girls-rotation');   // 스태프 회전
+    e.target.closest('.venue-rotation') || 
+    e.target.closest('.girls-rotation') || 
+    e.target.closest('.girl-image-box') || 
+    e.target.closest('.first-place-container') || 
+    e.target.closest('.second-third-container'); // ✅ 추가됨
 
   if (isIgnoredArea) return;
 
@@ -926,12 +932,8 @@ const openMenuOverlay = (menuList) => {
           object-fit: cover; border-radius: 0.5rem;
           margin: 0 auto 0.5rem;
           object-position: top;
-          margin-top :40px;
         }
-        .girl-name {
-          
-          text-align: center; margin-bottom: 0.5rem;
-        }
+      
         .girl-detail-btn {
           display: block; margin: 0 auto; padding: 0.3rem 2rem;
           border: 1px solid #1f2937; background-color: white; border-radius: 3px;
@@ -980,6 +982,121 @@ const openMenuOverlay = (menuList) => {
 
         .rotation-image-container{ width: 100%;
   height: 200px; }
+
+  .first-place-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+.second-third-container {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+.podium-rank {
+  width: 100%;
+  text-align: center;
+  position: relative;
+  color: white;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 8px 0;
+}
+.rank-1 { height: auto; }
+.rank-2, .rank-3 { height: auto; }
+.badge {
+  position: absolute;
+  top: -20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  background-color: #0f4c5c;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.scrollable-list {
+  display: flex;
+  overflow-x: auto;
+  gap: 16px;
+  margin-bottom : 30px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none; /* Firefox */
+}
+.scrollable-list::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+  
+.girl-slide {
+  flex: 0 0 auto;
+  width: 140px;
+  scroll-snap-align: start;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.girl-image-box {
+  position: relative;
+  width: 140px;
+  height: 200px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.girl-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.girl-name {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 6px 0;
+  background: rgba(0, 0, 0, 0.5); /* 반투명 배경 */
+  color: white;
+  font-size: 14px;
+  text-align: center;
+  font-weight: bold;
+}
+
+
+.badge-rank1,
+.badge-rank2,
+.badge-rank3 {
+  position: absolute;
+  top: -10px;
+  left: 10%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 80px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 50%;
+}
+
+/* 각각의 랭크 이미지 적용 */
+.badge-rank1 {
+  background-image: url('/cdn/rank1.png');
+}
+.badge-rank2 {
+  background-image: url('/cdn/rank2.png');
+}
+.badge-rank3 {
+  background-image: url('/cdn/rank3.png');
+}
+
+
+
 
       `}</style>
 
@@ -1177,307 +1294,51 @@ const openMenuOverlay = (menuList) => {
         
 
         <div className="top-girls-section">
-          <div className="section-title">{get('DiscoverPage1.2')}</div>
-          <RotationDiv interval={500000000} swipeThreshold={50} showIndicators={true} pauseOnHover={true} className="girls-rotation">
-            {staffList.map((girl, index) => {
-              // topGirls에서 같은 staff_id의 availCnt 찾기
-              const topGirlData = topGirls.find(topGirl => topGirl.staff_id === girl.staff_id);
-              const availCnt = topGirlData?.availCnt || 0;
-              //console.log("availCnt", availCnt)
+  <div className="section-title">{get('DiscoverPage1.2')}</div>
 
-              // 나이 계산
-              const birthYear = parseInt(girl.birth_year, 10);
-              const currentYear = new Date().getFullYear();
-              const age = birthYear ? currentYear - birthYear : '?';
-              //const displayName = `${girl.name} (${age})`;
-              const displayName = `${girl.name}`;
+  {/* 1등 단독 */}
+  <div className="first-place-container">
+    {topGirls[0] && (
+      <div className="podium-rank rank-1" onClick={() => handleDetail(topGirls[0])}>
+        <div className="badge-rank1"></div>
+        <img src={topGirls[0].image_url} className="girl-img" alt="1위" />
+        <div className="girl-name">{topGirls[0].name}</div>
+      </div>
+    )}
+  </div>
 
-              const statusBackgroundColor = 
-              venueInfo?.schedule_status === 'closed' 
-                ? 'rgb(107, 107, 107)' 
-                : availCnt > 0 
-                  ? 'rgb(11, 199, 97)' 
-                  : 'rgb(107, 107, 107)';
-
-              const statusText = 
-                  venueInfo?.schedule_status === 'closed'
-                    ? get('VENUE_RESERVATION_CLOSED')
-                    : availCnt > 0 
-                      ? get('VENUE_RESERVATION_AVAILABLE') 
-                      : get('VENUE_RESERVATION_CLOSED');
-
-              console.log(`Girl ${index} - staff_id: ${girl.staff_id}, availCnt: ${availCnt}`);
-
-              return (
-                <div key={index} className="girl-slide" style={{ position: 'relative' }}>
-                  {girl.image_url ? (
-                    <div style={{ position: 'relative' }}>
-                      <img src={girl.image_url} className="girl-img" alt="girl" />
-                      <div style={{
-                        position: 'absolute',
-                        top: '50px',
-                        right: '10px',
-                        backgroundColor: statusBackgroundColor,
-                        color: 'rgb(255, 255, 255)',
-                        padding: '3px 6px',
-                        borderRadius: '3px',
-                        fontSize: '11px',
-                      }}>
-                        {statusText}
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ position: 'relative' }}>
-                      <ImagePlaceholder />
-                      <div style={{
-                        position: 'absolute',
-                        top: '50px',
-                        right: '10px',
-                        backgroundColor: 
-                        venueInfo.schedule_status === 'closed' 
-                          ? 'rgb(107, 107, 107)' 
-                          : availCnt > 0 
-                            ? 'rgb(11, 199, 97)' 
-                            : 'rgb(107, 107, 107)',
-                        color: 'rgb(255, 255, 255)',
-                        padding: '3px 6px',
-                        borderRadius: '3px',
-                        fontSize: '11px',
-                      }}>
-                         {
-                          venueInfo.schedule_status === 'closed'
-                            ? get('VENUE_RESERVATION_CLOSED')
-                            : availCnt > 0 
-                              ? get('VENUE_RESERVATION_AVAILABLE') 
-                              : get('VENUE_RESERVATION_CLOSED')
-                        }
-                      </div>
-                    </div>
-                  )}
-                  <div className="girl-name">{displayName}</div>
-
-                  <SketchBtn
-                    type="text"
-                    className="sketch-button"
-                    size='small'
-                    variant='primary'
-                    style={{ width: '130px', marginBottom: '20px' }}
-                    onClick={() => handleDetail(girl)}
-                  >
-                    <HatchPattern opacity={0.8} />
-                    {get('DiscoverPage1.3')}
-                  </SketchBtn>
-                </div>
-              );
-            })}
-          </RotationDiv>
-          {/*</div><div className={`reservation-footer ${showFooter ? '' : 'hidden'}`}>*/}
-          <div className={`reservation-footer ${showFooter ? '' : ''}`}>
-            {<HatchPattern opacity={0.4} />}
-            <div className="reservation-footer-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            <div className="club-name" style={{ color: '#374151', fontSize: '17px', marginTop: '10px', paddingBottom: '5px' }}>
-              {venueInfo?.name || 'Club One'}
-            </div>
-          </div>
-
-  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <SketchBtn
-                className="sketch-button enter-button"
-                variant="event"
-                style={{ width: '45px', marginTop: '0px', marginLeft:'0px' ,background: '#374151', color: 'white' }}
-                onClick={async () => {
-                  // 로그인 여부 체크
-                  if (!user || !user.user_id) {
-                    // navigate('/login'); ← 이거 대신 오버레이로 변경
-                    openLoginOverlay(PAGES.DISCOVER, { venueId }); // 오버레이 함수 호출
-                    return;
-                  }
-
-                  try {
-                    // 1. room_sn 조회
-
-                    /*
-                    const chatList = await ApiClient.get('/api/getChattingList', {
-                      params: {
-                        venue_id: venueId,
-                        target: 'manager',
-                        user_id: user.user_id,
-                        account_id: user.user_id,
-                        account_type: user.type,
-                      },
-                    });
-
-                    let room_sn = null;
-                    if (chatList.length > 0) {
-                      room_sn = chatList[0].room_sn;
-                      console.log('room_sn', room_sn);
-                    }
-                    */
-
-                    const chatRoom = await ApiClient.postForm('/api/getChatRoom', {
-      
-                      sender : user.user_id,
-                      sender_type: 'user',
-                
-                      receiver_id: venueInfo.manager_id,
-                      send_to:'manager'
-                    });
-                
-                    const {room_sn = null} = chatRoom;
-
-                      const response = await ApiClient.postForm('/api/getSubscriptionInfo', { 
-                        user_id: user.user_id 
-                      });
-                      
-                      let { isActiveUser = false } = response;
-
-                      console.log('isActiveUser:', isActiveUser);
-
-                      if (isActiveUser === true) {
-                        navigateToPageWithData(PAGES.CHATTING, {
-                          name: venueInfo?.name,
-                          room_sn: room_sn,
-                          send_to: 'manager',
-                          receiver_id: venueInfo.manager_id,
-                        });
-                      } else {
-                        // 미구독자인 경우 일일권 구매 안내
-                        const result = await Swal.fire({
-                          title: get('Popup.Button.TodayTrial'),
-                          text: get('reservation.daily_pass.purchase_required'),
-                          icon: 'info',
-                          showCancelButton: true,
-                          confirmButtonText: get('Popup.Button.TodayTrial'),
-                          cancelButtonText: get('Common.Cancel'),
-                          confirmButtonColor: '#3085d6',
-                          cancelButtonColor: '#d33'
-                        });
-
-                        if (result.isConfirmed) {
-                            //navigateToPageWithData(PAGES.PURCHASEPAGE);
-                            navigate('/purchase');
-                        }
-                      }
-                  } catch (error) {
-                    console.error('채팅방 조회 실패:', error);
-                    alert('채팅방 정보를 불러오는 데 실패했습니다.');
-                  }
-                }}
-              >
-                <MessageCircle size={16} />
-              </SketchBtn>
-              <SketchBtn
-                className="sketch-button enter-button"
-                variant="event"
-                style={{ width: '90px', marginTop: '0px' }}
-                disabled={
-                  !venueInfo?.is_reservation ||
-                  venueInfo?.schedule_status === 'closed' ||
-                  venueInfo?.schedule_status === 'before_open'
-                }
-                onClick={async () => {
-                    if (!venueInfo.is_reservation) return;
-                    if (venueInfo.schedule_status === 'closed' || venueInfo.schedule_status === 'before_open') return;
-
-                    // 로그인 여부 체크
-                    if (!user || !user.user_id) {
-                      openLoginOverlay(PAGES.DISCOVER, { venueId }); // 오버레이 함수 호출
-                      return;
-                    }
-
-                    try {
-                      const response = await ApiClient.postForm('/api/getSubscriptionInfo', { 
-                        user_id: user.user_id 
-                      });
-
-                      let { isActiveUser = false } = response;
-
-                      console.log('isActiveUser:', isActiveUser);
-
-                      if (isActiveUser === true) {
-                        // 구독자인 경우 바로 예약 페이지로 이동
-                        navigateToPageWithData(PAGES.RESERVATION, {
-                          target: 'venue',
-                          id: venueId || 1,
-                        });
-                      } else {
-                        // 미구독자인 경우 일일권 구매 안내
-                        const result = await Swal.fire({
-                          title: get('Popup.Button.TodayTrial'),
-                          text: get('reservation.daily_pass.purchase_required'),
-                          icon: 'info',
-                          showCancelButton: true,
-                          confirmButtonText: get('Popup.Button.TodayTrial'),
-                          cancelButtonText: get('Common.Cancel'),
-                          confirmButtonColor: '#3085d6',
-                          cancelButtonColor: '#d33'
-                        });
-
-                        if (result.isConfirmed) {
-                            //navigateToPageWithData(PAGES.PURCHASEPAGE);
-                            navigate('/purchase');
-                        }
-                      }
-                    } catch (error) {
-                      console.error('구독 정보 확인 중 오류:', error);
-                      // 에러 발생 시 기본 동작 (예약 페이지로 이동)
-                      navigateToPageWithData(PAGES.RESERVATION, {
-                        target: 'venue',
-                        id: venueId || 1,
-                      });
-                    }
-                  }}
-
-              >
-
-
-
-                <HatchPattern opacity={0.8} />
-                {venueInfo?.schedule_status === 'closed' || venueInfo?.schedule_status === 'before_open'
-                  ? get('VENUE_END') || '영업 종료'
-                  : (venueInfo?.is_reservation
-                      ? get('DiscoverPage1.1.enable') || '예약하기'
-                      : get('DiscoverPage1.1.disable') || '예약 마감')}
-              </SketchBtn>
-
-
-
-
-
-            </div>
-          </div>
-          <div className="action-row">
-            <SketchBtn
-              className="sketch-button enter-button"
-              variant="event"
-              style={{ 'display': 'none' }}
-              disabled={!venueInfo?.is_reservation}
-              onClick={() => {
-
-                if (!venueInfo.is_reservation) return;
-
-                navigateToPageWithData(PAGES.RESERVATION, {
-                  target: 'venue',
-                  id: venueId || 1,
-                })
-              }}
-              
-            ><HatchPattern opacity={0.8} />
-              {venueInfo?.schedule_status === 'closed' || venueInfo?.schedule_status === 'before_open'
-                ? get('VENUE_END') || '영업 종료'
-                : (venueInfo?.is_reservation
-                    ? get('DiscoverPage1.1.enable') || '예약하기'
-                    : get('DiscoverPage1.1.disable') || '예약 마감')}
-            </SketchBtn>
-             </div>
-          </div>
-          <LoadingScreen
-            variant="cocktail"
-            loadingText="Loading..."
-            isVisible={isLoading}
-          />
+  {/* 2, 3등 나란히 */}
+  <div className="second-third-container">
+    {[topGirls[1], topGirls[2]].map((girl, i) =>
+      girl ? (
+        <div
+          key={girl.staff_id}
+          className={`podium-rank rank-${i + 2}`}
+          onClick={() => handleDetail(girl)}
+        >
+          <div className={`badge-rank${i + 2}`}></div>
+          <img src={girl.image_url} className="girl-img" alt={`${i + 2}위`} />
+          <div className="girl-name">{girl.name}</div>
         </div>
+      ) : null
+    )}
+  </div>
+
+
+  {/* 나머지 */}
+  <div className="scrollable-list">
+    {topGirls.slice(3).map((girl) => (
+      <div key={girl.staff_id} className="girl-slide" onClick={() => handleDetail(girl)}>
+        <div className="girl-image-box">
+          <img src={girl.image_url} className="girl-img" alt="girl" />
+          <div className="girl-name">{girl.name}</div>
+        </div>
+  
+      </div>
+    ))}
+  </div>
+</div>
+
       </div>
     </>
   );

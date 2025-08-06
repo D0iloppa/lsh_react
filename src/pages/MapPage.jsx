@@ -214,11 +214,11 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
         .venue-list-scroll {
           height: 230px;
           overflow-y: auto;
-          padding: 1rem;
+          padding: 0.5rem;
         }
           
         .venue-list-item {
-          height: 180px;
+          height: 195px;
           margin-bottom: 1rem !important;
           padding: 0.5rem;
           border: 1px solid #e5e7eb;

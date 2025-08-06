@@ -416,6 +416,47 @@ const MainApp = () => {
                                  if (id === PAGES.HOME) {
                                     localStorage.setItem('homeScrollY', '0');
                                 }
+
+                               if(id === PAGES.RANKING) {
+                                    console.log("activeUser", activeUser);
+
+                                    // activeUser 상태가 빈 객체이거나 isActive가 false인 경우
+                                    if (Object.keys(activeUser).length === 0) {
+                                        
+                                        isActiveUser().then(({isActiveUser: isActive = false}) => {
+                                            setActiveUser({
+                                                isActive,
+                                                lastChecked: new Date().toISOString()
+                                            });
+
+                                            // API 결과에 따라 처리
+                                            if (!isActive) {
+                                                Swal.fire({
+                                                    title: get('ranking_swal_title'),
+                                                    text: get('RANKING_PURCHASE_MESSAGE'),
+                                                    icon: 'question',
+                                                    showCancelButton: true,
+                                                    confirmButtonText: get('Popup.Button.TodayTrial'),
+                                                    cancelButtonText: get('Common.Cancel'),
+                                                    confirmButtonColor: '#3085d6',
+                                                    cancelButtonColor: '#d33'
+                                                }).then((result) => {
+                                                    if (result.isConfirmed) {
+                                                        navigate('/purchase');
+                                                    }
+                                                });
+                                            } else {
+                                                navigateToPage(id);
+                                            }
+                                        }).catch(error => {
+                                            console.error('사용자 상태 확인 실패:', error);
+                                            // 에러 시 구매 페이지로 이동
+                                            navigate('/purchase');
+                                        });
+                                        return;
+                                    }
+                                }
+                                
                                 
                                 if (data) {
                                     navigateToPageWithData(id, data);

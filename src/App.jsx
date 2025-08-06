@@ -50,15 +50,21 @@ const AppRoutes = () => {
   useEffect(() => {
   const init = async () => {
     const currentQuery = window.location.href;
-
     const url = new URL(currentQuery);
     const params = new URLSearchParams(url.search);
-    const version = params.get('version') || null;
+    const versionFromParam = params.get('version');
     const pathname = url.pathname;
 
-    if (pathname === '/' || pathname === '/lsh') {
-      setAppVersion(version);
+    // ✅ 저장된 버전이 있는 경우
+    let version = versionFromParam || localStorage.getItem('app_version');
+
+    // ✅ 버전이 있으면 localStorage에 저장
+    if (versionFromParam) {
+      localStorage.setItem('app_version', versionFromParam);
     }
+
+    // ✅ 전역 상태에도 반영
+    setAppVersion(version);
 
     const compareVersions = (v1, v2) => {
       const a = v1.split('.').map(Number);
@@ -74,27 +80,29 @@ const AppRoutes = () => {
     const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
 
     try {
-      const uuid = await getUUIDTmp(); // ✅ 정상 await
-   
-       const allowedUUIDs = [
+      const uuid = await getUUIDTmp();
+
+      const allowedUUIDs = [
         '2E14837B-E59D-4812-BA9E-583E20947AAC',
         '89716887-4177-4DD9-A76A-9DB026231E6D',
+        'FCCD560A-D1D2-4CEC-A0CA-F5888E5A6B35',
+        '259d616410fefca9',
         '7f94a544b7a4fa9a'
       ];
 
-    if (!allowedUUIDs.includes(uuid)) {
-      navigate('/block');
-      return;
-    }
+      if (!allowedUUIDs.includes(uuid)) {
+        navigate('/block');
+        return;
+      }
 
     } catch (err) {
       console.error('UUID 오류:', err);
       Swal.fire('UUID 에러', err.toString(), 'error');
     }
 
-    // 나머지 버전 조건 분기
+    // ✅ 버전 분기 처리
     if (version) {
-      if (compareVersions(version, '1.0.2') < 0) {
+      if (compareVersions(version, '1.0.3') < 0) {
         if (isAndroid) {
           // navigate('/downloadAndroid');
         } else if (isIOS) {
@@ -110,8 +118,9 @@ const AppRoutes = () => {
     }
   };
 
-  init(); // 즉시 실행
+  init();
 }, []);
+
 
 
 

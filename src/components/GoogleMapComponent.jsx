@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import {DoorOpen} from 'lucide-react';
+import Swal from 'sweetalert2';
 
 const GoogleMapComponent = ({
   places = [],
@@ -354,40 +355,104 @@ useEffect(() => {
     });
   }, [places, mapReady]);
 
-  useEffect(() => {
+useEffect(() => {
+  const init = async () => {
     if (!mapReady || !window.google || !mapInstance.current) return;
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const { latitude, longitude } = position.coords;
+     if (disableInteraction) return;
 
-        const isInVietnam = latitude >= 8 && latitude <= 24 && longitude >= 102 && longitude <= 110;
+    try {
+      // ✅ 1. 내 위치 문자열 받아오기
+      const coordString = await getMyLocation(); // 예: "37.2222,127.1232131"
+      const [latStr, lngStr] = coordString.split(',');
+      const latitude = parseFloat(latStr);
+      const longitude = parseFloat(lngStr);
 
-        const center = isInVietnam
-          ? { lat: latitude, lng: longitude }
-          : { lat: 10.7800125, lng: 106.7050903 };
+      // ✅ 베트남 여부 판별
+      const isInVietnam = latitude >= 8 && latitude <= 24 && longitude >= 102 && longitude <= 110;
 
-        mapInstance.current.setCenter(center);
+      const center = isInVietnam
+        ? { lat: latitude, lng: longitude }
+        : { lat: 10.7800125, lng: 106.7050903 };
 
-        if (myLocationMarker.current) {
-          myLocationMarker.current.setMap(null);
-        }
+      // 지도 중심 이동
+      mapInstance.current.setCenter(center);
+      mapInstance.current.setZoom(16);
 
-        myLocationMarker.current = new window.google.maps.Marker({
-          position: center,
-          map: mapInstance.current,
-          icon: {
-            url: '/cdn/person_icon.png',
-            scaledSize: new window.google.maps.Size(48, 48),
-            anchor: new window.google.maps.Point(24, 48)
-          },
-          title: '내 위치'
-        });
+      // 기존 마커 제거
+      if (myLocationMarker.current) {
+        myLocationMarker.current.setMap(null);
+      }
+
+      // 새 마커 추가
+      myLocationMarker.current = new window.google.maps.Marker({
+        position: center,
+        map: mapInstance.current,
+        icon: {
+          url: '/cdn/person_icon.png',
+          scaledSize: new window.google.maps.Size(48, 48),
+          anchor: new window.google.maps.Point(24, 48),
+        },
+        title: '내 위치',
       });
+
+      return; // ✅ 내 위치 설정 완료
+    } catch (error) {
+      console.warn('내 위치 파싱 실패 또는 없음 → 장소로 이동 시도');
     }
-  }, [mapReady]);
+
+    // ✅ 2. 내 위치가 없거나 실패한 경우 → places[0]으로 중심 이동
+    if (places.length > 0 && places[0].latitude && places[0].longitude) {
+      const fallbackLocation = {
+        lat: parseFloat(places[0].latitude),
+        lng: parseFloat(places[0].longitude)
+      };
+
+      mapInstance.current.setCenter(fallbackLocation);
+      mapInstance.current.setZoom(16);
+    }
+  };
+
+  init();
+}, [mapReady, places]);
+
 
   return <div id="map" ref={mapRef} style={{ width: '100%', height: '100%' }} />;
+};
+
+export const getMyLocation = () => {
+
+  return new Promise((resolve, reject) => {
+    let resolved = false;
+
+    const handleMessage = (event) => {
+      resolved = true;
+      window.removeEventListener('message', handleMessage);
+      resolve(event.data);
+    };
+
+    // iOS WebView
+    if (window.webkit?.messageHandlers?.native?.postMessage) {
+      window.addEventListener('message', handleMessage);
+      window.webkit.messageHandlers.native.postMessage('getLocation');
+    }
+    // Android WebView
+    else if (window.native?.postMessage) {
+      window.addEventListener('message', handleMessage);
+      window.native.postMessage('getLocation');
+    }
+    else {
+      reject('❌ Native 환경이 아님');
+    }
+
+    // 10초 타임아웃 처리
+    setTimeout(() => {
+      if (!resolved) {
+        window.removeEventListener('message', handleMessage);
+        reject('⏱ getLocation 수신 타임아웃');
+      }
+    }, 10000);
+  });
 };
 
 export default GoogleMapComponent;
