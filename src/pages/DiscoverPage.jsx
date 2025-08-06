@@ -957,6 +957,7 @@ const openMenuOverlay = (menuList) => {
           .reservation-footer {
           position: fixed;
           bottom: 80px;
+          height: 60px;
           left: 0;
           right: 0;
           background: white;
@@ -1023,7 +1024,7 @@ const openMenuOverlay = (menuList) => {
   display: flex;
   overflow-x: auto;
   gap: 16px;
-  margin-bottom : 30px;
+  margin-bottom : 100px;
   scroll-snap-type: x mandatory;
   scrollbar-width: none; /* Firefox */
 }
@@ -1058,10 +1059,22 @@ const openMenuOverlay = (menuList) => {
 
 .girl-name {
   position: absolute;
-  bottom: 0;
+  bottom: 20px;
   width: 100%;
   padding: 6px 0;
   background: rgba(0, 0, 0, 0.5); /* 반투명 배경 */
+  color: white;
+  font-size: 14px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.girl-name-slide {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 6px 0;
+  background: rgba(0, 0, 0, 0.5);
   color: white;
   font-size: 14px;
   text-align: center;
@@ -1074,6 +1087,7 @@ const openMenuOverlay = (menuList) => {
 .badge-rank3 {
   position: absolute;
   top: -10px;
+  z-index:1000;
   left: 10%;
   transform: translateX(-50%);
   width: 80px;
@@ -1294,7 +1308,7 @@ const openMenuOverlay = (menuList) => {
         
 
         <div className="top-girls-section">
-          <div className="section-title">{get('DiscoverPage1.2')}</div>
+          <div className="section-title">{get('ranking.staff.title')}</div>
 
           {/* 비어있는 경우 */}
           {topGirls.length === 0 ? (
@@ -1312,51 +1326,292 @@ const openMenuOverlay = (menuList) => {
             
           ) : (
             <>
+            
               {/* 1등 단독 */}
               <div className="first-place-container">
-                {topGirls[0] && (
-                  <div className="podium-rank rank-1" onClick={() => handleDetail(topGirls[0])}>
-                    <div className="badge-rank1"></div>
-                    <img src={topGirls[0].image_url} className="girl-img" alt="1위" />
-                    <div className="girl-name">{topGirls[0].name}</div>
-                  </div>
-                )}
-              </div>
+  {topGirls[0] && (() => {
+    const availCnt = topGirls[0].availCnt || 0;
+    const statusBackgroundColor =
+      venueInfo?.schedule_status === 'closed'
+        ? 'rgb(107, 107, 107)'
+        : availCnt > 0
+        ? 'rgb(11, 199, 97)'
+        : 'rgb(107, 107, 107)';
+    const statusText =
+      venueInfo?.schedule_status === 'closed'
+        ? get('VENUE_RESERVATION_CLOSED')
+        : availCnt > 0
+        ? get('VENUE_RESERVATION_AVAILABLE')
+        : get('VENUE_RESERVATION_CLOSED');
+
+    return (
+      <div className="podium-rank rank-1" onClick={() => handleDetail(topGirls[0])}>
+        <div className="badge-rank1"></div>
+        <div style={{ position: 'relative' }}>
+          <img src={topGirls[0].image_url} className="girl-img" alt="1위" />
+          <div
+            style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              backgroundColor: statusBackgroundColor,
+              color: 'white',
+              padding: '3px 6px',
+              borderRadius: '3px',
+              fontSize: '11px',
+              zIndex: 2
+            }}
+          >
+            {statusText}
+          </div>
+        </div>
+        <div className="girl-name">{topGirls[0].name}</div>
+      </div>
+    );
+  })()}
+</div>
+
 
               {/* 2, 3등 나란히 */}
-              <div className="second-third-container">
-                {[topGirls[1], topGirls[2]].map((girl, i) =>
-                  girl ? (
-                    <div
-                      key={girl.staff_id}
-                      className={`podium-rank rank-${i + 2}`}
-                      onClick={() => handleDetail(girl)}
-                    >
-                      <div className={`badge-rank${i + 2}`}></div>
-                      <img src={girl.image_url} className="girl-img" alt={`${i + 2}위`} />
-                      <div className="girl-name">{girl.name}</div>
-                    </div>
-                  ) : null
-                )}
-              </div>
+             <div className="second-third-container">
+  {[topGirls[1], topGirls[2]].map((girl, i) =>
+    girl ? (() => {
+      const availCnt = girl.availCnt || 0;
+      const statusBackgroundColor =
+        venueInfo?.schedule_status === 'closed'
+          ? 'rgb(107, 107, 107)'
+          : availCnt > 0
+          ? 'rgb(11, 199, 97)'
+          : 'rgb(107, 107, 107)';
+      const statusText =
+        venueInfo?.schedule_status === 'closed'
+          ? get('VENUE_RESERVATION_CLOSED')
+          : availCnt > 0
+          ? get('VENUE_RESERVATION_AVAILABLE')
+          : get('VENUE_RESERVATION_CLOSED');
+
+      return (
+        <div
+          key={girl.staff_id}
+          className={`podium-rank rank-${i + 2}`}
+          onClick={() => handleDetail(girl)}
+        >
+          <div className={`badge-rank${i + 2}`}></div>
+          <div style={{ position: 'relative' }}>
+            <img src={girl.image_url} className="girl-img" alt={`${i + 2}위`} />
+            <div
+              style={{
+                position: 'absolute',
+                top: '8px',
+                right: '8px',
+                backgroundColor: statusBackgroundColor,
+                color: 'white',
+                padding: '3px 6px',
+                borderRadius: '3px',
+                fontSize: '11px',
+                zIndex: 2
+              }}
+            >
+              {statusText}
+            </div>
+          </div>
+          <div className="girl-name">{girl.name}</div>
+        </div>
+      );
+    })() : null
+  )}
+</div>
+
 
               {/* 나머지 */}
-              <div className="scrollable-list">
-                {topGirls.slice(3).map((girl) => (
-                  <div key={girl.staff_id} className="girl-slide" onClick={() => handleDetail(girl)}>
-                    <div className="girl-image-box">
-                      <img src={girl.image_url} className="girl-img" alt="girl" />
-                      <div className="girl-name">{girl.name}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
+<div className="scrollable-list">
+  {topGirls.slice(3).map((girl) => {
+    const topGirlData = topGirls.find(topGirl => topGirl.staff_id === girl.staff_id);
+    const availCnt = topGirlData?.availCnt || 0;
 
+    const statusBackgroundColor = 
+      venueInfo?.schedule_status === 'closed' 
+        ? 'rgb(107, 107, 107)' 
+        : availCnt > 0 
+          ? 'rgb(11, 199, 97)' 
+          : 'rgb(107, 107, 107)';
+
+    const statusText = 
+      venueInfo?.schedule_status === 'closed'
+        ? get('VENUE_RESERVATION_CLOSED')
+        : availCnt > 0 
+          ? get('VENUE_RESERVATION_AVAILABLE') 
+          : get('VENUE_RESERVATION_CLOSED');
+
+    return (
+      <div key={girl.staff_id} className="girl-slide" onClick={() => handleDetail(girl)}>
+  <div className="girl-image-box" style={{ position: 'relative' }}>
+    <img src={girl.image_url} className="girl-img" alt="girl" />
+    
+    {/* 상태 텍스트 */}
+    <div
+      style={{
+        position: 'absolute',
+        top: '8px',
+        right: '8px',
+        backgroundColor: statusBackgroundColor,
+        color: 'white',
+        padding: '3px 6px',
+        borderRadius: '3px',
+        fontSize: '11px',
+        zIndex: 2
+      }}
+    >
+      {statusText}
+    </div>
+
+    {/* ✅ 이름 텍스트: 이미지 안으로 이동 */}
+    <div className="girl-name-slide">{girl.name}</div>
+  </div>
+</div>
+
+
+    );
+  })}
+</div>
+
+
+               <div className={`reservation-footer ${showFooter ? '' : 'hidden'}`}>
+  {<HatchPattern opacity={0.4} />}
+  <div className="reservation-footer-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <div className="club-name" style={{ color: '#374151', fontSize: '17px', marginTop: '10px', paddingBottom: '5px' }}>
+        {venueInfo?.name || 'Club One'}
       </div>
-    </>
+    </div>
+
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <SketchBtn
+        className="sketch-button enter-button"
+        variant="event"
+        style={{ width: '45px', marginTop: '0px', marginLeft:'0px' ,background: '#374151', color: 'white' }}
+        onClick={async () => {
+          if (!user || !user.user_id) {
+            openLoginOverlay(PAGES.DISCOVER, { venueId });
+            return;
+          }
+
+          try {
+            const chatRoom = await ApiClient.postForm('/api/getChatRoom', {
+              sender : user.user_id,
+              sender_type: 'user',
+              receiver_id: venueInfo.manager_id,
+              send_to:'manager'
+            });
+            const {room_sn = null} = chatRoom;
+
+            const response = await ApiClient.postForm('/api/getSubscriptionInfo', { 
+              user_id: user.user_id 
+            });
+            let { isActiveUser = false } = response;
+
+            if (isActiveUser === true) {
+              navigateToPageWithData(PAGES.CHATTING, {
+                name: venueInfo?.name,
+                room_sn: room_sn,
+                send_to: 'manager',
+                receiver_id: venueInfo.manager_id,
+              });
+            } else {
+              const result = await Swal.fire({
+                title: get('Popup.Button.TodayTrial'),
+                text: get('reservation.daily_pass.purchase_required'),
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: get('Popup.Button.TodayTrial'),
+                cancelButtonText: get('Common.Cancel'),
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33'
+              });
+
+              if (result.isConfirmed) {
+                navigate('/purchase');
+              }
+            }
+          } catch (error) {
+            console.error('채팅방 조회 실패:', error);
+            alert('채팅방 정보를 불러오는 데 실패했습니다.');
+          }
+        }}
+      >
+        <MessageCircle size={16} />
+      </SketchBtn>
+      <SketchBtn
+        className="sketch-button enter-button"
+        variant="event"
+        style={{ width: '90px', marginTop: '0px' }}
+        disabled={
+          !venueInfo?.is_reservation ||
+          venueInfo?.schedule_status === 'closed' ||
+          venueInfo?.schedule_status === 'before_open'
+        }
+        onClick={async () => {
+          if (!venueInfo.is_reservation) return;
+          if (venueInfo.schedule_status === 'closed' || venueInfo.schedule_status === 'before_open') return;
+          if (!user || !user.user_id) {
+            openLoginOverlay(PAGES.DISCOVER, { venueId });
+            return;
+          }
+
+          try {
+            const response = await ApiClient.postForm('/api/getSubscriptionInfo', { 
+              user_id: user.user_id 
+            });
+            let { isActiveUser = false } = response;
+
+            if (isActiveUser === true) {
+              navigateToPageWithData(PAGES.RESERVATION, {
+                target: 'venue',
+                id: venueId || 1,
+              });
+            } else {
+              const result = await Swal.fire({
+                title: get('Popup.Button.TodayTrial'),
+                text: get('reservation.daily_pass.purchase_required'),
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: get('Popup.Button.TodayTrial'),
+                cancelButtonText: get('Common.Cancel'),
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33'
+              });
+              if (result.isConfirmed) {
+                navigate('/purchase');
+              }
+            }
+          } catch (error) {
+            console.error('구독 정보 확인 중 오류:', error);
+            navigateToPageWithData(PAGES.RESERVATION, {
+              target: 'venue',
+              id: venueId || 1,
+            });
+          }
+        }}
+      >
+        <HatchPattern opacity={0.8} />
+        {venueInfo?.schedule_status === 'closed' || venueInfo?.schedule_status === 'before_open'
+          ? get('VENUE_END') || '영업 종료'
+          : (venueInfo?.is_reservation
+              ? get('DiscoverPage1.1.enable') || '예약하기'
+              : get('DiscoverPage1.1.disable') || '예약 마감')}
+      </SketchBtn>
+    </div>
+  </div>
+</div>
+   
+
+
+              </>
+            )}
+          </div>
+
+        </div>
+      </>
   );
 };
 
