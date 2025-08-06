@@ -102,7 +102,7 @@ const AppRoutes = () => {
 
     // ✅ 버전 분기 처리
     if (version) {
-      if (compareVersions(version, '1.0.3') < 0) {
+      if (compareVersions(version, '1.0.2') < 0) {
         if (isAndroid) {
           // navigate('/downloadAndroid');
         } else if (isIOS) {
