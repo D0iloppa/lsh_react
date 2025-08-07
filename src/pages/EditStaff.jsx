@@ -216,12 +216,18 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
 
       console.log('갤러리 전체 데이터:', staffGalleryDataRef.current);
 
+
       // 2. 메인 이미지 content_id 추가
+      if (imageContentId !== 0) {
+        allContentIds.push(imageContentId);
+      } 
+      /*
       if (imageContentId !== 0) {
         allContentIds.push(imageContentId);
       } else if (staffInfo.profile_content_id) {
         allContentIds.push(staffInfo.profile_content_id);
       }
+      */
 
       // 3. 갤러리 이미지 content_id 추가 (DB에서 가져온 데이터)
       const galleryIdsFromRef = (staffGalleryDataRef.current || [])
@@ -242,6 +248,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
       const contentIdString = allContentIds.join(',');
 
       // 프로필 이미지 content_id 결정
+      /*
       const profileContentIdToUse = imageContentId !== 0 
         ? imageContentId 
         : staffInfo.profile_content_id;
@@ -254,6 +261,25 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
         profile_content_id: profileContentIdToUse,
         contentIdString: contentIdString,
       };
+      */
+       // 프로필 이미지 content_id 결정
+       const profileContentIdToUse = imageContentId !== 0 
+       ? imageContentId 
+       : null;
+
+
+     const payload = {
+       staff_id: form.staff_id,
+       name: form.name || '',
+       contact: form.contact || '',
+       description: form.description,
+       contentIdString: contentIdString,
+     };
+
+     // profile_content_id가 null이 아닐 때만 payload에 추가
+     if (profileContentIdToUse !== null) {
+       payload.profile_content_id = profileContentIdToUse;
+     }
 
       console.log('저장 payload:', payload);
 
