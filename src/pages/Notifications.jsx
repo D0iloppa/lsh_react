@@ -318,6 +318,22 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
           color: #6b7280;
         }
 
+        .empty-state {
+          text-align: center;
+          padding: 2rem 0;
+          color: #6b7280;
+        }
+
+        .empty-state h3 {
+          font-size: 1.1rem;
+          margin-bottom: 0.5rem;
+          color: #374151;
+        }
+
+        .empty-state p {
+          font-size: 0.83rem;
+        }
+
         @media (max-width: 480px) {
           .notifications-container {
             max-width: 100%;
@@ -382,53 +398,62 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
 
         {/* Notifications List */}
         <div className="notifications-list">
-          {filteredNotifications.map((notification) => (
-            <SketchDiv
-              key={notification.id}
-              className={`notification-item ${notification.isRead ? 'read' : ''}`}
-              onClick={() => handleNotificationClick(notification)}
-            >
-              {<HatchPattern opacity={0.4} />}
+          {filteredNotifications.length > 0 ? (
+            filteredNotifications.map((notification) => (
+              <SketchDiv
+                key={notification.id}
+                className={`notification-item ${notification.isRead ? 'read' : ''}`}
+                onClick={() => handleNotificationClick(notification)}
+              >
+                {<HatchPattern opacity={0.4} />}
 
-              <div className="notification-content">
-                <div className="notification-icon">
-                  {notification.icon}
-                </div>
+                <div className="notification-content">
+                  <div className="notification-icon">
+                    {notification.icon}
+                  </div>
 
-                <div className="notification-details">
-                  <p className="notification-message">
-                    {notification.title}
-                  </p>
-                  <p className="notification-message">
-                    {notification.message}
-                  </p>
-                  <p className="notification-datetime">
-                    {notification.created_at
-                        ? new Date(notification.created_at).toLocaleString('ko-KR', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit',
-                            hour12: false
-                          }).replace(/\./g, '-').replace(' ', ' ').replace(/- /g, '-')
-                        : ''}
-                  </p>
-                </div>
+                  <div className="notification-details">
+                    <p className="notification-message">
+                      {notification.title}
+                    </p>
+                    <p className="notification-message">
+                      {notification.message}
+                    </p>
+                    <p className="notification-datetime">
+                      {notification.created_at
+                          ? new Date(notification.created_at).toLocaleString('ko-KR', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit',
+                              hour12: false
+                            }).replace(/\./g, '-').replace(' ', ' ').replace(/- /g, '-')
+                          : ''}
+                    </p>
+                  </div>
 
-                <div className={`notification-status ${notification.isRead ? 'read' : 'unread'}`}>
-                  {notification.status}
+                  <div className={`notification-status ${notification.isRead ? 'read' : 'unread'}`}>
+                    {notification.status}
+                  </div>
                 </div>
+              </SketchDiv>
+            ))
+          ) : (
+            <SketchDiv className="notification-item">
+              <HatchPattern opacity={0.02} />
+              <div className="empty-state">
+                <h3>{get('Notifications.empty.title')}</h3>
+                <p style={{fontSize: '0.83rem'}}>{get('Notifications.empty.description')}</p>
               </div>
             </SketchDiv>
-            
-          ))}
-            <LoadingScreen 
-                      variant="cocktail"
-                      loadingText="Loading..."
-                      isVisible={isLoading} 
-                    />
+          )}
+          <LoadingScreen 
+            variant="cocktail"
+            loadingText="Loading..."
+            isVisible={isLoading} 
+          />
         </div>
       </div>
     </>
