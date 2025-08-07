@@ -1,4 +1,10 @@
-# 📱 lsh_staff
+# 📱 lsh_admin
+관리자용 어플리케이션
+
+
+
+@checkout from lsh_staff
+
 
 LeTanTon Sheriff - 스태프 전용 모바일 웹 애플리케이션입니다.  
 Docker 기반의 개발 환경 위에서 실행되며, 내부 호스트명은 `lsh.host`로 설정되어 있습니다.
