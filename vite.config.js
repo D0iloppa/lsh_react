@@ -11,11 +11,11 @@ export default defineConfig(({ command, mode }) => {
   console.log('  - command:', command)
   console.log('  - mode:', mode)
   console.log('  - isProduction:', isProduction)
-  console.log('  - base will be:', isProduction ? '/' : '/lsh_staff')
+  console.log('  - base will be:', isProduction ? '/' : '/lsh_admin')
   console.log('---')
   
   return {
-    base: isProduction ? '/' : '/lsh_staff',
+    base: isProduction ? '/' : '/lsh_admin',
     resolve: {
       alias: {
         '@': '/src',

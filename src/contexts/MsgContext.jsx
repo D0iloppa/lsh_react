@@ -13,17 +13,8 @@ export const MsgProvider = ({ children }) => {
   const [currentLang, setCurrentLang] = useState(() => {
     const savedLang = localStorage.getItem('lsh_language');
 
-    if (savedLang) return savedLang;
-  
-      const browserLang = (navigator.language || navigator.languages?.[0] || '').toLowerCase();
-  
-      if (browserLang.includes('ko')) return 'kr';
-      if (browserLang.includes('en')) return 'en';
-      if (browserLang.includes('vi')) return 'vi';
-      if (browserLang.includes('ja')) return 'ja';
-      if (browserLang.includes('zh')) return 'cn';
-  
-      return 'en'; // 기본값
+    if (savedLang) return 'kr';
+      return 'kr'; // 기본값
     });
 
   // API에서 메시지 데이터 가져오기
@@ -121,7 +112,7 @@ export const MsgProvider = ({ children }) => {
     setCurrentLang(lang);
     
      // 로컬스토리지에 언어 설정 저장
-     localStorage.setItem('lsh_language', lang);
+     localStorage.setItem('lsh_language', 'kr');
    
   }, []);
 

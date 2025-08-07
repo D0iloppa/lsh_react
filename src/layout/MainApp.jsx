@@ -31,7 +31,7 @@ const MainApp = () => {
 
     useEffect(() => {
         const {language} = user;
-        setLanguage(language);
+        setLanguage('kr');
         
         window.scrollTo(0, 0);
         if (messages && Object.keys(messages).length > 0) {
@@ -178,58 +178,7 @@ const MainApp = () => {
             </main>
 
             {/* 하단 네비게이션 (고정) */}
-            <nav className="bottom-navigation">
-                <div className="nav-container">
-                    {<HatchPattern opacity={0.3} />}
-                    {navigationItems.map(({ id, icon: Icon, label, data = false }) => (
-                        <button
-                            key={id}
-                            onClick={() => {
-                                if( id == PAGES.RESERVATION_MANAGEMENT || id == PAGES.CHATTINGLIST){
-                                    const chk = user.venue_id;
-
-                                    if(!chk || chk < 1){
-                                        console.log('venue 생성 전');
-
-                                        Swal.fire({
-                                            title: get('SWAL_VENUE_REG1'),
-                                            text:  get('SWAL_VENUE_REG2'),
-                                            icon: 'info',
-                                            confirmButtonText: get('BUTTON_CONFIRM'),
-                                            confirmButtonColor: '#3085d6',
-                                            showCancelButton: false,
-                                            allowOutsideClick: true
-                                        });
-
-
-                                        return false;
-                                    }
-
-
-                                }
-
-                                if(data) {
-                                    navigateToPageWithData(id, data)
-                                } else {
-                                    navigateToPage(id)
-                                }
-                            }}
-                            className={`nav-item ${currentPage === id ? 'active' : ''}`}
-                        >
-                            <div className="nav-icon-container">
-                                <Icon className="nav-icon" />
-                                {/* 채팅 버튼에만 뱃지 추가 */}
-                                {id === PAGES.CHATTINGLIST && unreadChatCount > 0 && (
-                                    <span className="chat-badge">
-                                        {unreadChatCount > 99 ? '99+' : unreadChatCount}
-                                    </span>
-                                )}
-                            </div>
-                            <span className="nav-label">{label}</span>
-                        </button>
-                    ))}
-                </div>
-            </nav>
+           
 
             {currentPage == 'HOME' && (
                 <section className="bottom-map-section">

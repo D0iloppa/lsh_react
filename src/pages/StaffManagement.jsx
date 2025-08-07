@@ -302,8 +302,8 @@ const loadStaffList = async () => {
 
       const transformedData = transformStaffData(filteredList);
       // created_at 기준으로 정렬 (오래된 순서대로 = 등록 순서)
-      const sortedData = transformedData.sort((a, b) => a.created_at - b.created_at);
-      setStaffList(transformedData);
+      const sortedData = transformedData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setStaffList(sortedData);
     } else {
       console.log('No staff data found');
       setStaffList([]);
@@ -424,7 +424,7 @@ const loadStaffList = async () => {
               </span>
             }
             showBack={true}
-            onBack={goBack}
+             onBack={() => window.history.back()}
           />
           
           <div className="add-btn-row">
@@ -533,7 +533,8 @@ const loadStaffList = async () => {
                           alignItems: 'center',
                           justifyContent: 'center',
                           fontFamily: 'inherit',
-                          fontWeight: '500'
+                          fontWeight: '500',
+                          display:'none'
                         }}
                         title={get('STAFF_DELETE_BUTTON') || '삭제'}
                       >
@@ -550,7 +551,8 @@ const loadStaffList = async () => {
                       marginTop: '4px',
                       position: 'absolute',
                       bottom: '25px',
-                      right: '8px'
+                      right: '8px',
+                      display:'none'
                     }}>
                       <ToggleRadio 
                         checked={staff.status === 'active'}

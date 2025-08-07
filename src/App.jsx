@@ -33,12 +33,12 @@ const AppRoutes = () => {
 
   useEffect(() => {
     // body에 현재 언어 속성 추가
-    document.body.setAttribute('data-lang', currentLang);
-    console.log("currentLang", currentLang)
+    document.body.setAttribute('data-lang', 'kr');
+    console.log("currentLang", 'kr')
     
     // 또는 클래스 방식
     document.body.classList.remove('lang-en', 'lang-ko', 'lang-ja', 'lang-vi', 'lang-cn');
-    document.body.classList.add(`lang-${currentLang}`);
+    document.body.classList.add('lang-kr');
   }, [currentLang]);
 
 

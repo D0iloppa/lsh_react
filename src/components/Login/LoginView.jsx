@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 import SketchDiv from '@components/SketchDiv';
 import LoginForm from './LoginForm';
@@ -12,6 +13,13 @@ import RotationDiv from '@components/RotationDiv';
 import PopularVenue from '@components/PopularVenue';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import MessageFlag from '@components/MessageFlag';
+import SketchBtn from '@components/SketchBtn';
+
+
+import { useAuth } from '@contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+import ApiClient from '@utils/ApiClient';
 
 // 칵테일 아이콘 컴포넌트
 const CocktailIcon = () => (
@@ -56,6 +64,12 @@ const CocktailIcon = () => (
 export default function LoginView() {
 
   const { messages, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  const [venues, setVenues] = useState([]);
+  const [selectedVenue, setSelectedVenue] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+  const { login_v2 } = useAuth();
 
   useEffect(() => {
     if (messages && Object.keys(messages).length > 0) {
@@ -66,6 +80,64 @@ export default function LoginView() {
     }
   }, [messages, currentLang]);
 
+  // 매장 리스트 가져오기
+  useEffect(() => {
+    const fetchVenues = async () => {
+      setLoading(true);
+      try {
+
+        const response = await ApiClient.get('/api/admin/getManagerList');
+        const venueList = response.data || [];
+
+        setVenues(venueList);
+        console.log('매장 리스트 로드 완료:', venueList);
+      } catch (error) {
+        console.error('매장 리스트 가져오기 실패:', error);
+        setVenues([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVenues();
+  }, []);
+
+  // 로그인 버튼 클릭 핸들러
+  const handleLogin = async () => {
+    if (!selectedVenue) {
+      alert('매장을 선택해주세요.');
+      return;
+    }
+
+    const selectedVenueData = venues.find(venue => venue.venue_id === parseInt(selectedVenue));
+    if (selectedVenueData) {
+      console.log('선택된 매장:', selectedVenueData);
+
+
+
+      const response = await ApiClient.postForm('/api/admin/managerLogin', {
+        owner_id: selectedVenueData.manager_id
+      });
+
+      const { error = false, manager = false } = response;
+
+      if(error || !manager) {
+        console.log('로그인 실패:', manager);
+
+      } else {
+
+        login_v2({
+          login_type: 'email',
+          account_type: 'manager',
+          user:manager,
+        }).then((result) => {
+          console.log('로그인 성공');
+          navigate('/manager');
+        });
+
+      }
+    }
+  };
 
   const popularVenues = [
     {
@@ -163,7 +235,46 @@ export default function LoginView() {
           paddingRight: '1.0rem',
         }}
       >
-        <LoginForm />
+        {/* 첫 번째 영역 */}
+        <SketchDiv 
+          className="selection-area"
+          style={{
+            marginBottom: '1rem',
+            padding: '1rem'
+          }}
+        >
+          <select 
+            value={selectedVenue}
+            onChange={(e) => setSelectedVenue(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #d1d5db',
+              borderRadius: '8px',
+              backgroundColor: '#f9fafb',
+              fontSize: '0.875rem',
+              marginBottom: '1rem'
+            }}
+            disabled={loading}
+          >
+            <option value="">매장을 선택해주세요</option>
+            {venues.map((venue) => (
+              <option key={venue.manager_id} value={venue.venue_id}>
+                {`${venue.venue_name}`}
+              </option>
+            ))}
+          </select>
+          
+          <SketchBtn 
+            variant="primary"
+            size="medium"
+            onClick={handleLogin}
+            disabled={!selectedVenue || loading}
+            style={{ width: '100%' }}
+          >
+            {loading ? '로딩 중...' : '관리하기'}
+          </SketchBtn>
+        </SketchDiv>
       </div>
       
 
@@ -173,7 +284,6 @@ export default function LoginView() {
 
 
       </div>
-      <MessageFlag />
     </div>
   );
 }

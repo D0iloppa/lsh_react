@@ -72,25 +72,25 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
     setTimeout(() => {
 
       
-      result.user.language=currentLang;
+      result.user.language='kr';
       
           console.log("123211", result.user);
          if (accountType === 'manager') {
           const response = ApiClient.postForm('/api/updateLanguageSettingV2', {
            user_id: result.user?.manager_id, 
-           language: currentLang,
+           language: 'kr',
            user_type:accountType
         });
         }
         if (accountType === 'staff') {
           const response = ApiClient.postForm('/api/updateLanguageSettingV2', {
            user_id: result.user?.staff_id, 
-           language: currentLang,
+           language: 'kr',
            user_type:accountType
         });
         }
 
-        setLanguage(currentLang);
+        setLanguage('kr');
 
       if (accountType === 'manager') {
 

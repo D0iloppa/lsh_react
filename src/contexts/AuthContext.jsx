@@ -58,7 +58,48 @@ export const AuthProvider = ({ children }) => {
   };
 
 
+  const login_v2 = async (params={}) => {
+    try {
+      setLoading(true);
+      
+      /*
+      // Login 컴포넌트의 유효성 검사 함수 사용
+      const validation = validateForm(email, password);
+      if (!validation.isValid) {
+        return {
+          success: false,
+          errors: validation.errors
+        };
+      }
+      */
 
+
+      // Login 컴포넌트의 API 호출 함수 사용
+      
+      //localStorage.removeItem('lsh_language');
+
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('user', JSON.stringify(params.user));
+      localStorage.setItem('loginType', params.login_type);
+      localStorage.setItem('accountType', params.account_type);
+
+      setIsLoggedIn(true);
+      setIsJustLoggedIn(true);
+      setUser(params.user);
+      setLoginType(params.login_type);
+      setAccountType(params.account_type);
+      console.log('로그인 성공:', params.user);
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      return {
+        success: false,
+        errors: { general: 'Something went wrong. Please try again.' }
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   // 로그인 함수 (Login 컴포넌트 로직 재활용)
@@ -85,7 +126,7 @@ export const AuthProvider = ({ children }) => {
           // 성공 시 상태 업데이트
 
           // 로컬 language가 아닌 설정값 참조위함
-          localStorage.removeItem('lsh_language');
+          //localStorage.removeItem('lsh_language');
 
           localStorage.setItem('isLoggedIn', 'true');
           localStorage.setItem('user', JSON.stringify(result.user));
@@ -200,6 +241,7 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     login,
+    login_v2,
     verifyPassword,
     logout,
     loginType,

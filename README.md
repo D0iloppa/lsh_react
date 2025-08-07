@@ -1,6 +1,12 @@
 # 📱 lsh_admin
 관리자용 어플리케이션
 
+docker run -it --name lsh_admin \
+  --workdir /app \
+  -v $(pwd)/lsh_admin:/app \
+  --network dev-net \
+  --restart unless-stopped \
+  node:lts-bullseye sh
 
 
 @checkout from lsh_staff
