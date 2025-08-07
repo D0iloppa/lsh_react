@@ -85,13 +85,14 @@ const AppRoutes = () => {
       const allowedUUIDs = [
         '2E14837B-E59D-4812-BA9E-583E20947AAC',
         '89716887-4177-4DD9-A76A-9DB026231E6D',
+        'FCCD560A-D1D2-4CEC-A0CA-F5888E5A6B35',
         '259d616410fefca9',
         '7f94a544b7a4fa9a'
       ];
 
       if (!allowedUUIDs.includes(uuid)) {
-        //navigate('/block');
-        //return;
+        navigate('/block');
+        return;
       }
 
     } catch (err) {

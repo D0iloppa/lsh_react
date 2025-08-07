@@ -8,14 +8,16 @@ const FLAG_CODES = {
   vi: 'VN',
   en: 'US',
   ja: 'JP',
+  cn: 'CN',
 };
 const LANG_LABELS = {
   kr: '한국어',
   vi: 'Tiếng Việt',
   en: 'English',
-  ja: '日본語',
+  ja: '日本語',
+  cn: '中文',
 };
-const LANGS = ['kr', 'en', 'vi', 'ja'];
+const LANGS = ['kr', 'en', 'vi', 'ja', 'cn'];
 
 const MENU_WIDTH = 160;
 const MENU_HEIGHT = 200;
