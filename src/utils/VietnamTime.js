@@ -95,3 +95,41 @@ export const isVietnamToday = (dateString) => {
   return dateString === getVietnamDate();
 }; 
 
+
+const formatYMDInTZ = (date, timeZone = 'Asia/Ho_Chi_Minh') => {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date); // 'YYYY-MM-DD'
+};
+
+// 타임존 기준으로 Date를 "해당 지역 시간"으로 보정한 사본 생성
+const toTZDate = (date, timeZone = 'Asia/Ho_Chi_Minh') =>
+  new Date(date.toLocaleString('en-US', { timeZone }));
+
+const tzNoonFromYMD = (y, m /*1~12*/, d) =>
+  new Date(Date.UTC(y, m - 1, d, 12, 0, 0)); // UTC 정오 → 어떤 TZ로 보나 날짜가 안전
+
+const TZ = 'Asia/Ho_Chi_Minh';
+
+export const vnNow = () => new Date(new Date().toLocaleString('en-US', { timeZone: TZ }));
+
+// 'HH:mm' -> {h,m}
+export const parseHHMM = (hhmm) => {
+  const [h, m = '0'] = hhmm.split(':');
+  return { h: parseInt(h, 10), m: parseInt(m, 10) };
+};
+
+// YYYY-MM-DD + HH:mm (+dayOffset) => 베트남시간의 절대 Date
+export const buildVNDateTime = (ymd, hhmm, dayOffset = 0) => {
+  const { h, m } = parseHHMM(hhmm);
+  // dayOffset 적용 + 정밀 비교를 위해 문자열로 명시 오프셋(+07:00)
+  // 24시 이상은 hour에서 dayOffset += Math.floor(h/24), hour = h%24 처리를 같이
+  let extra = Math.floor(h / 24);
+  const hour = h % 24;
+  const base = new Date(`${ymd}T${String(hour).padStart(2,'0')}:${String(m).padStart(2,'0')}:00+07:00`);
+  base.setDate(base.getDate() + dayOffset + extra);
+  return base;
+};

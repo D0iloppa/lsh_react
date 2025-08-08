@@ -21,11 +21,21 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 
 import Swal from 'sweetalert2';
-import { getVietnamDate, getVietnamTime, getVietnamHour, isVietnamToday, getVietnamDateObject } from '@utils/VietnamTime';
+
+import {
+   getVietnamDate, 
+   getVietnamTime, 
+   getVietnamHour, 
+   isVietnamToday, 
+   getVietnamDateObject,
+   buildVNDateTime,
+   parseHHMM,
+   vnNow 
+} from '@utils/VietnamTime';
 
 const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps }) => {
   const { target, id } = otherProps || {};
-  const { user } = useAuth();
+  const { user, isActiveUser } = useAuth();
 
   const getTodayString = () => {
     /*
@@ -49,29 +59,13 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   });
 
   const [note, setNote] = useState('');
-  const [baseDate] = useState(() => {
+  const [baseDate, setBaseDate] = useState(null);
+  /*
+  useState(() => {
     const vietnamTime = getVietnamTime();
-    
-    let targetDate = vietnamTime.date;
-    let targetTime = vietnamTime.time;
-    
-    // 새벽 시간(00:00~06:00)일 때 하루 전날로 설정
-    const currentHour = vietnamTime.hour;
-
-    if (currentHour >= 0 && currentHour < 6) {
-      // 하루 전날 계산
-      const yesterday = new Date(`${vietnamTime.date}T${vietnamTime.time}+07:00`);
-      yesterday.setDate(yesterday.getDate() - 1);
-      
-      const year = yesterday.getFullYear();
-      const month = String(yesterday.getMonth() + 1).padStart(2, '0');
-      const day = String(yesterday.getDate()).padStart(2, '0');
-      
-      targetDate = `${year}-${month}-${day}`;
-    }
-    
-    return new Date(`${targetDate}T${targetTime}+07:00`);
+    return new Date(`${vietnamTime.date}T${vietnamTime.time}+07:00`);
   });
+  */
   const [scheduleData, setScheduleData] = useState({});
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
@@ -168,16 +162,31 @@ const isAllAgreed = () => {
 
   // scheduleData 업데이트 완료 후 실행
   useEffect(() => {
-    if (shouldAutoSelect && Object.keys(scheduleData).length > 0) {
-      /*
-      const today = new Date().toISOString().split('T')[0];
-      */
-      const today = getVietnamDate();
-      console.log('DEFAULT SELECT with complete data:', today, scheduleData);
-      handleDateSelect(today, 1);
-      setShouldAutoSelect(false);
-    }
+    const run = async () => {
+      if (shouldAutoSelect && Object.keys(scheduleData).length > 0) {
+        
+        const { subscription = {} } = await isActiveUser();
+        
+  
+        //const today = getVietnamDate();
+        console.log('DEFAULT SELECT with complete data:', scheduleData, subscription.started_at);
+        
+        if (!subscription?.started_at) return;
+
+        // "2025-08-04 14:46:55.516583" → "2025-08-04"
+        const startYmd = subscription.started_at.slice(0, 10);
+    
+        // 달력 앵커: 베트남 정오로 고정 (경계 이슈 회피)
+        setBaseDate(new Date(`${startYmd}T12:00:00+07:00`));
+    
+        handleDateSelect(startYmd, 1);
+        setShouldAutoSelect(false);
+      }
+    };
+  
+    run();
   }, [scheduleData, shouldAutoSelect]);
+  
 
   const getTargetLabel = () => {
     const {staff={}} = otherProps;
@@ -221,172 +230,112 @@ const isAllAgreed = () => {
     goBack();
   }
 
-  const handleDateSelect = (fullDate, dayNumber) => {
+  const handleDateSelect = (fullDate /* YYYY-MM-DD */, dayNumber) => {
     setSelectedDate(fullDate);
-    
-    // 날짜 변경시 예약 데이터 초기화
-    setReservationData({
-      startTime: '',
-      duration: null,
-      endTime: null
-    });
-
-    console.log('check-schedule', scheduleData);
-
-    const {venueInfo = false, scheduleList = []}  = scheduleData;
-    
-    // 1. venue-info에 의한 timeSlot 설정
-    let disabledTimes = [];
-
-    let venueTimeSlots = []; // 변수 선언을 상단으로 이동
-    
-    if(venueInfo){
-      let {open_time, close_time} = venueInfo;
-      
-      open_time = open_time.split(':')[0];
-      open_time = Number.parseInt(open_time);
-      close_time = close_time.split(':')[0];
-      close_time = Number.parseInt(close_time);
-
-      console.log('🕐 Venue hours:', open_time, close_time);
-
-      venueTimeSlots = generateTimeSlotsWithLabels(open_time, close_time);
-      console.log('🕐 Generated time slots:', venueTimeSlots);
-      
-      // 중복 제거 후 타임슬롯 설정
-      const uniqueTimeSlots = venueTimeSlots.filter((slot, index, self) => 
-        index === self.findIndex(s => s.value === slot.value)
-      );
-      
-      console.log('🕐 Unique time slots:', uniqueTimeSlots);
-      setTimeSlots(uniqueTimeSlots); // 중복 제거된 타임슬롯 설정
+    setReservationData({ startTime: '', duration: null, endTime: null });
+  
+    const { venueInfo = null, scheduleList = [] } = scheduleData || {};
+    let nextDisabled = [];
+    let venueTimeSlots = [];
+  
+    // 1) 가드
+    if (!venueInfo?.open_time || !venueInfo?.close_time) {
+      setTimeSlots([]);
+      setDisabledTimes([]);
+      console.warn('[handleDateSelect] venueInfo missing; skip. fullDate=', fullDate);
+      return;
     }
-
+  
+    // 2) 타임슬롯 생성
+    const openHour = parseInt(venueInfo.open_time.split(':')[0], 10);
+    const closeHour = parseInt(venueInfo.close_time.split(':')[0], 10);
+    venueTimeSlots = generateTimeSlotsWithLabels(openHour, closeHour);
+    const uniqueTimeSlots = venueTimeSlots.filter((slot, i, self) =>
+      i === self.findIndex(s => s.value === slot.value)
+    );
+    setTimeSlots(uniqueTimeSlots);
+  
     try {
-      // 1. 지난 시간인지 확인 (베트남 시간 기준)
-      const today = getVietnamDate();
-
-      console.log('🕐 Vietnam today:', today);
-      
-      if (isVietnamToday(fullDate)) {
-        const currentHour = getVietnamHour();
-        console.log('🕐 Vietnam current hour:', currentHour, 'for date:', fullDate);
-
-        let _open_time = venueInfo.open_time
-        _open_time = _open_time.split(':')[0];
-        _open_time = Number.parseInt(_open_time);
-        
-        // 현재 시간까지 비활성화 (베트남 시간 기준)
-        for (let hour = _open_time; hour <= currentHour; hour++) {
-          const timeString = hour.toString().padStart(2, '0') + ':00';
-          disabledTimes.push(timeString);
-        }
-        
-        console.log('⏰ Past times disabled:', disabledTimes);
-      }
-    
-      // 2. 예약 가능한 리스트에 존재하는지 확인
-      let scheduleList_filter = scheduleList.filter(i => i.work_date == fullDate);
-      console.log('📅 Schedule list for', fullDate, ':', scheduleList_filter);
-      
-      // 스케줄 데이터에서 중복 시간 확인
-      const timeCounts = {};
-      scheduleList_filter.forEach(schedule => {
-        const time = schedule.time;
-        timeCounts[time] = (timeCounts[time] || 0) + 1;
-      });
-      
-      const duplicates = Object.entries(timeCounts)
-        .filter(([time, count]) => count > 1)
-        .map(([time, count]) => `${time} (${count} times)`);
-      
-      if (duplicates.length > 0) {
-        console.warn('⚠️ Duplicate times found in schedule:', duplicates);
-      }
-      
-      if (scheduleList_filter.length > 0) {
-        // scheduleList에서 time 필드들을 추출하여 가능한 시간 리스트 생성
-        const availableTimes = scheduleList_filter
-          .map(schedule => schedule.time) // time 필드 추출
-          .filter(time => time && time !== '') // null, undefined, 빈 문자열 제거
-          .map(time => {
-            // 시간 형식 통일 (HH:mm:ss -> HH:00 형태로)
-            if (time.includes(':')) {
-              const hour = time.split(':')[0];
-              return hour.padStart(2, '0') + ':00';
-            }
-            return time;
-          });
-        
-        console.log('📋 Raw available times (before deduplication):', availableTimes);
-        
-        // 중복 제거
-        const uniqueAvailableTimes = [...new Set(availableTimes)];
-        console.log('📋 Available times after deduplication:', uniqueAvailableTimes);
-        console.log('📋 Duplicate count:', availableTimes.length - uniqueAvailableTimes.length);
-        
-        if (uniqueAvailableTimes.length > 0) {
-          // 새로운 형식의 timeSlots에서 value 값들을 추출하여 비교
-          const timeSlotValues = venueTimeSlots.map(slot => slot.value);
-          console.log('🕐 Time slot values:', timeSlotValues);
-          
-          // 가능한 시간 리스트에 없는 시간들을 비활성화
-          timeSlotValues.forEach(timeSlotValue => {
-            // 24시 이상인 경우 00시 형식으로 변환하여 비교
-            let compareTime = timeSlotValue;
-            if (parseInt(timeSlotValue.split(':')[0]) >= 24) {
-              const hour = parseInt(timeSlotValue.split(':')[0]) - 24;
-              compareTime = hour.toString().padStart(2, '0') + ':00';
-            }
-            
-            if (!uniqueAvailableTimes.includes(compareTime)) {
-              disabledTimes.push(timeSlotValue);
-            }
-          });
-          
-          console.log('🚫 Times not in available list:', 
-            timeSlotValues.filter(timeSlotValue => {
-              let compareTime = timeSlotValue;
-              if (parseInt(timeSlotValue.split(':')[0]) >= 24) {
-                const hour = parseInt(timeSlotValue.split(':')[0]) - 24;
-                compareTime = hour.toString().padStart(2, '0') + ':00';
-              }
-              return !uniqueAvailableTimes.includes(compareTime);
-            })
-          );
-          console.log('✅ Available times that match:', 
-            timeSlotValues.filter(timeSlotValue => {
-              let compareTime = timeSlotValue;
-              if (parseInt(timeSlotValue.split(':')[0]) >= 24) {
-                const hour = parseInt(timeSlotValue.split(':')[0]) - 24;
-                compareTime = hour.toString().padStart(2, '0') + ':00';
-              }
-              return uniqueAvailableTimes.includes(compareTime);
-            })
-          );
+      const now = vnNow();
+  
+      // scheduleList에서 가능한 시간(정규화) 셋
+      const availableSet = new Set(
+        scheduleList
+          .filter(i => i.work_date === fullDate)
+          .map(i => {
+            const hh = (i.time || '').split(':')[0]?.padStart(2, '0') || '00';
+            return `${hh}:00|${i.is_next_day ? 1 : 0}`;
+          })
+      );
+  
+      const isOvernight =
+        parseInt(venueInfo.open_time.split(':')[0], 10) * 60 +
+          parseInt(venueInfo.open_time.split(':')[1] || '0', 10)
+        >
+        parseInt(venueInfo.close_time.split(':')[0], 10) * 60 +
+          parseInt(venueInfo.close_time.split(':')[1] || '0', 10);
+  
+      const openAbs = buildVNDateTime(fullDate, venueInfo.open_time);
+      const closeAbs = isOvernight
+        ? buildVNDateTime(fullDate, venueInfo.close_time, 1)
+        : buildVNDateTime(fullDate, venueInfo.close_time, 0);
+  
+      // ===== 디버그 헤더 =====
+      console.groupCollapsed(
+        `%c[handleDateSelect] ${fullDate}`,
+        'color:#2563eb;font-weight:bold;'
+      );
+      console.log('now(VN):', now.toISOString(), now);
+      console.log('openAbs:', openAbs.toISOString(), openAbs, 'closeAbs:', closeAbs.toISOString(), closeAbs);
+      console.log('isOvernight:', isOvernight);
+      console.log('uniqueTimeSlots:', uniqueTimeSlots.map(s => s.value));
+      console.log('availableSet:', Array.from(availableSet));
+  
+      // 슬롯별 유효성 판정
+      for (const slot of uniqueTimeSlots) {
+        const rawH = parseInt(slot.value.split(':')[0], 10);
+        const dayOffset = rawH >= 24 ? 1 : 0;
+        const slotAbs = buildVNDateTime(fullDate, slot.value, 0);
+  
+        let reason = null;
+  
+        if (slotAbs <= now) {
+          reason = 'past';
+        } else if (!(slotAbs >= openAbs && slotAbs <= closeAbs)) {
+          reason = 'out_of_business_window';
         } else {
-          console.warn('⚠️ No valid times found in schedule list for', fullDate);
-          // 가능한 시간이 없으면 모든 시간 비활성화
-          const timeSlotValues = venueTimeSlots.map(slot => slot.value);
-          disabledTimes.push(...timeSlotValues);
+          const key = `${String(rawH % 24).padStart(2, '0')}:00|${dayOffset}`;
+          if (!availableSet.has(key)) reason = 'not_in_schedule';
         }
-      } else {
-        console.log('ℹ️ No schedule found for', fullDate);
-        // 스케줄이 없으면 모든 시간 비활성화
-        const timeSlotValues = venueTimeSlots.map(slot => slot.value);
-        disabledTimes.push(...timeSlotValues);
+  
+        if (reason) {
+          nextDisabled.push(slot.value);
+        }
+  
+        // 슬롯별 상세 로그 (원하면 주석 해제)
+        // console.log(`slot=${slot.value}`, {
+        //   slotAbsISO: slotAbs.toISOString(),
+        //   past: slotAbs <= now,
+        //   inBusinessWindow: slotAbs >= openAbs && slotAbs <= closeAbs,
+        //   key: `${String(rawH % 24).padStart(2,'0')}:00|${dayOffset}`,
+        //   inAvailable: availableSet.has(`${String(rawH % 24).padStart(2,'0')}:00|${dayOffset}`),
+        //   disabledReason: reason
+        // });
       }
-    
-    } catch (error) {
-      console.error('❌ Error calculating disabled times:', error);
+  
+      const finalDisabled = [...new Set(nextDisabled)].sort();
+      console.log('FINAL disabledTimes:', finalDisabled);
+      console.groupEnd();
+  
+      setDisabledTimes(finalDisabled);
+    } catch (e) {
+      console.error('[handleDateSelect] error:', e);
+      const fallback = uniqueTimeSlots.map(s => s.value);
+      console.log('FINAL disabledTimes (fallback all):', fallback);
+      setDisabledTimes(fallback);
     }
-    
-    // 중복 제거 및 정렬
-    const uniqueDisabledTimes = [...new Set(disabledTimes)].sort();
-    console.log('🔒 Final disabled times:', uniqueDisabledTimes);
-    
-    setDisabledTimes(uniqueDisabledTimes);
   };
+  
 
   // Duration 기반 시간 선택 핸들러
   const handleTimeSelect = (timeData) => {

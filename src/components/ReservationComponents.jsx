@@ -226,6 +226,9 @@ export const generateWeeklyDays = (baseDate) => {
 
 // 년월 표시 함수
 export const getYearMonthDisplay = (date) => {
+
+  if(!date) return 'loading...';
+
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   return `${year}.${month}`;
@@ -271,7 +274,7 @@ export const generateTimeSlotsWithLabels = (startHour = 19, endHour = 3) => {
   const timeSlots = [];
   const usedValues = new Set();
 
-  if (startHour <= endHour) {
+  if (startHour < endHour) {
     // 일반 영업: 09:00 ~ 18:00 같은 경우
     for (let hour = startHour; hour <= endHour; hour++) {
       const displayTime = hour.toString().padStart(2, '0') + ':00';
@@ -290,7 +293,7 @@ export const generateTimeSlotsWithLabels = (startHour = 19, endHour = 3) => {
     // 심야 영업: 19:00 ~ 03:00 같은 경우 (startHour > endHour)
     
     // 당일 시간대: startHour ~ 23:00
-    for (let hour = startHour; hour <= 23; hour++) {
+    for (let hour = startHour; hour < 23; hour++) {
       const displayTime = hour.toString().padStart(2, '0') + ':00';
       const actualTime = hour.toString().padStart(2, '0') + ':00';
       
@@ -305,7 +308,7 @@ export const generateTimeSlotsWithLabels = (startHour = 19, endHour = 3) => {
     }
 
     // 다음날 시간대: 00:00 ~ endHour
-    for (let hour = 0; hour <= endHour; hour++) {
+    for (let hour = 0; hour < endHour; hour++) {
       const displayTime = hour.toString().padStart(2, '0') + ':00';
       const actualTime = (hour + 24).toString().padStart(2, '0') + ':00';
       

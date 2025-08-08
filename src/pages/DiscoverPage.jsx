@@ -304,7 +304,9 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
         const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
 
         const response = await axios.get(`${API_HOST}/api/getVenue`, {
-          params: { venue_id: venueId },
+          params: { venue_id: venueId
+            ,lang:currentLang
+           },
         });
 
         console.log("response", response.data)
@@ -380,7 +382,9 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
         // 1. 먼저 staff 리스트를 가져옴
         const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
         const res = await axios.get(`${API_HOST}/api/getVenueStaffList`, {
-          params: { venue_id: venueId },
+          params: { venue_id: venueId
+            ,lang:currentLang
+           },
         });
         const staffList = res.data || [];
         //console.log("staffList", staffList)
