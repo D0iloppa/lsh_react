@@ -762,7 +762,7 @@ export const DurationBasedTimeSelector = ({
               marginBottom: '10px',
             }}
           >
-            {displayDate}
+            {currentDate}
           </div>
 
           {/* 버튼들 */}
@@ -893,7 +893,7 @@ export const TimeSlotSelector = ({
 
   const getTimeSlotVariant = (timeSlot) => {
     const time = typeof timeSlot === 'string' ? timeSlot : timeSlot.value;
-    if (disabledTimes.includes(time)) return 'disabled';
+    if (disabledTimes.includes(time)) return 'accent';
     if (currentSelectedTimes.includes(time)) return 'accent';
     return 'secondary';
   };
