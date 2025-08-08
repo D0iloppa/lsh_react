@@ -457,6 +457,8 @@ const computeScheduleDate = (fullDate, venueInfo, now = vnNow()) => {
       console.log('availableSet:', Array.from(availableSet));
       console.log('expiredAt:', expiredAtDate, expiredYmd);
       console.log('userReservationList:', userReservationList);
+      console.log('fullDate:', fullDate);
+      console.log('scheduleYmd:', scheduleYmd);
     
       for (const slot of uniqueTimeSlots) {
         const rawH = parseInt(slot.value.split(':')[0], 10);
