@@ -740,11 +740,9 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
                         className="is-reservation"
                         style={{
                           backgroundColor:
-                            spot.schedule_status === 'closed' || spot.schedule_status === 'before_open'
-                              ? 'rgb(107, 107, 107)'
-                              : spot.is_reservation
-                              ? 'rgb(11, 199, 97)'
-                              : 'rgb(107, 107, 107)',
+                            spot.schedule_status === 'available'
+                            ? 'rgb(11, 199, 97)'  // 예약가능 - 초록색
+                            : 'rgb(107, 107, 107)', // 영업종료 - 회색
                           color: '#fff',
                           padding: '5px 7px',
                           borderRadius: '3px',
@@ -754,10 +752,10 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
                         }}
                       >
 
-                       {spot.schedule_status === 'closed' || spot.schedule_status === 'before_open'
-                        ? get('VENUE_END')
-                        : (spot.is_reservation ? get('DiscoverPage1.1.able') : get('DiscoverPage1.1.disable'))}
-
+                      {spot.schedule_status === 'available'
+                          ? get('DiscoverPage1.1.able')  // 예약가능
+                          : get('VENUE_END') // 영업종료
+                      }  
                       </div>
                       <div style={{ fontSize: '14px', color: '#333', marginTop: '6px' }}>
                         <MapPin size={14}/> {spot.address}

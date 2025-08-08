@@ -218,13 +218,10 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
        
        // 최대 랭킹
         const topRank = 10;
-        const data = (res.data || []).slice(0, topRank);
+        //const data = (res.data || []).slice(0, topRank);
+        const data = res.data || []
 
         console.log('rank', data);
-
-
-        // 더미 데이터 사용
-        //const data = generateDummyData();
 
         const transformed = data.map((item, index) => ({
           id: item.target_type == 'venue' ? item.venue_id : item.target_id,

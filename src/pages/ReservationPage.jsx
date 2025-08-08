@@ -51,7 +51,26 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   const [note, setNote] = useState('');
   const [baseDate] = useState(() => {
     const vietnamTime = getVietnamTime();
-    return new Date(`${vietnamTime.date}T${vietnamTime.time}+07:00`);
+    
+    let targetDate = vietnamTime.date;
+    let targetTime = vietnamTime.time;
+    
+    // 새벽 시간(00:00~06:00)일 때 하루 전날로 설정
+    const currentHour = vietnamTime.hour;
+
+    if (currentHour >= 0 && currentHour < 6) {
+      // 하루 전날 계산
+      const yesterday = new Date(`${vietnamTime.date}T${vietnamTime.time}+07:00`);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      const year = yesterday.getFullYear();
+      const month = String(yesterday.getMonth() + 1).padStart(2, '0');
+      const day = String(yesterday.getDate()).padStart(2, '0');
+      
+      targetDate = `${year}-${month}-${day}`;
+    }
+    
+    return new Date(`${targetDate}T${targetTime}+07:00`);
   });
   const [scheduleData, setScheduleData] = useState({});
   const [errorMsg, setErrorMsg] = useState('');

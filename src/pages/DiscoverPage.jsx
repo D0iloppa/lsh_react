@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef  } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import RotationDiv from '@components/RotationDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
@@ -17,7 +17,7 @@ import Swal from 'sweetalert2';
 
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
- 
+
 
 const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ...otherProps }) => {
 
@@ -28,58 +28,97 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   const [showFooter, setShowFooter] = useState(true);
   const [reviewCount, setReviewCount] = useState(0);
 
-/*
-  const handleDetail = (girl) => {
-    navigateToPageWithData(PAGES.STAFFDETAIL, girl);
-  };*/
+  /*
+    const handleDetail = (girl) => {
+      navigateToPageWithData(PAGES.STAFFDETAIL, girl);
+    };*/
   const { user, isActiveUser, iauMasking } = useAuth();
 
-    // 텍스트 줄바꿈 처리 함수
-    const formatTextWithLineBreaks = (text) => {
-      if (!text) return '';
-      
-      return text.split('\n').map((line, index) => (
-        <React.Fragment key={index}>
-          {line}
-          {index < text.split('\n').length - 1 && <br />}
-        </React.Fragment>
-      ));
-    };
+  
+  const staffStatus = (staff) => {
 
-    // 커스텀 훅 사용
+    const availCnt = staff?.availCnt || 0;
+
+    const statusBackgroundColor =
+      venueInfo?.schedule_status === 'closed'
+        ? 'rgb(107, 107, 107)'
+        : availCnt > 0
+          ? 'rgb(11, 199, 97)'
+          : 'rgb(107, 107, 107)';
+
+    const statusText =
+      venueInfo?.schedule_status === 'closed'
+        ? get('VENUE_RESERVATION_CLOSED')
+        : availCnt > 0
+          ? get('VENUE_RESERVATION_AVAILABLE')
+          : get('VENUE_RESERVATION_CLOSED');
+
+
+    return(
+      <div
+      style={{
+        position: 'absolute',
+        top: '8px',
+        right: '8px',
+        backgroundColor: statusBackgroundColor,
+        color: 'white',
+        padding: '3px 6px',
+        borderRadius: '3px',
+        fontSize: '11px',
+        zIndex: 2
+      }}
+    >
+      {statusText}
+    </div>
+    )
+  }
+
+  // 텍스트 줄바꿈 처리 함수
+  const formatTextWithLineBreaks = (text) => {
+    if (!text) return '';
+
+    return text.split('\n').map((line, index) => (
+      <React.Fragment key={index}>
+        {line}
+        {index < text.split('\n').length - 1 && <br />}
+      </React.Fragment>
+    ));
+  };
+
+  // 커스텀 훅 사용
   const navigationProps = { navigateToPageWithData, PAGES, goBack };
   const { openLoginOverlay } = useLoginOverlay(navigationProps);
 
- const handleDetail = (girl) => {
-  try {
+  const handleDetail = (girl) => {
+    try {
 
-     girl.vn_schedule_status = venueInfo.schedule_status;
-     const container = document.querySelector('.content-area');
+      girl.vn_schedule_status = venueInfo.schedule_status;
+      const container = document.querySelector('.content-area');
 
-    if (container) {
-      const scrollY = container.scrollTop+350;
-      localStorage.setItem('discoverScrollY', scrollY.toString());
-      console.log("✅ savedScrollY from .content-area:", scrollY);
+      if (container) {
+        const scrollY = container.scrollTop + 350;
+        localStorage.setItem('discoverScrollY', scrollY.toString());
+        console.log("✅ savedScrollY from .content-area:", scrollY);
+      }
+
+      showAdWithCallback(
+        // 광고 완료 시 콜백
+        () => {
+          navigateToPageWithData(PAGES.STAFFDETAIL, girl);
+        },
+        // fallback 콜백 (광고 응답 없을 때)
+        () => {
+          navigateToPageWithData(PAGES.STAFFDETAIL, girl);
+        },
+        1000 // 1초 타임아웃
+      );
+
+
+    } catch (e) {
+      console.error('광고 호출 중 예외 발생:', e);
+      navigateToPageWithData(PAGES.STAFFDETAIL, girl);
     }
-
-    showAdWithCallback(
-      // 광고 완료 시 콜백
-      () => {
-        navigateToPageWithData(PAGES.STAFFDETAIL, girl);
-      },
-      // fallback 콜백 (광고 응답 없을 때)
-      () => {
-        navigateToPageWithData(PAGES.STAFFDETAIL, girl);
-      },
-      1000 // 1초 타임아웃
-    );
-
-
-  } catch (e) {
-    console.error('광고 호출 중 예외 발생:', e);
-    navigateToPageWithData(PAGES.STAFFDETAIL, girl);
-  }
-};
+  };
 
 
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
@@ -93,78 +132,78 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   const touchEndXRef = useRef(null);
 
   const handleTouchStart = (e) => {
-  const isIgnoredArea = 
-    e.target.closest('.map-section') || 
-    e.target.closest('#map') ||
-    e.target.closest('.venue-rotation') || 
-    e.target.closest('.girls-rotation') || 
-    e.target.closest('.girl-image-box') ||
-    e.target.closest('.girl-image-box-top') ||
+    const isIgnoredArea =
+      e.target.closest('.map-section') ||
+      e.target.closest('#map') ||
+      e.target.closest('.venue-rotation') ||
+      e.target.closest('.girls-rotation') ||
+      e.target.closest('.girl-image-box') ||
+      e.target.closest('.girl-image-box-top') ||
 
-    
-    e.target.closest('.first-place-container') || 
-    e.target.closest('.second-third-container'); // ✅ 추가됨
 
-  if (isIgnoredArea) return;
+      e.target.closest('.first-place-container') ||
+      e.target.closest('.second-third-container'); // ✅ 추가됨
 
-  if (e.touches.length === 1) {
-    touchStartXRef.current = e.touches[0].clientX;
-  }
-};
+    if (isIgnoredArea) return;
 
-// 터치 종료
-const handleTouchEnd = (e) => {
-  const isIgnoredArea = 
-    e.target.closest('.map-section') || 
-    e.target.closest('#map') ||
-    e.target.closest('.venue-rotation') || 
-    e.target.closest('.girls-rotation') || 
-    e.target.closest('.girl-image-box') || 
-    e.target.closest('.girl-image-box-top') ||
-    e.target.closest('.first-place-container') || 
-    e.target.closest('.second-third-container'); // ✅ 추가됨
-
-  if (isIgnoredArea) return;
-
-  if (e.changedTouches.length === 1) {
-    touchEndXRef.current = e.changedTouches[0].clientX;
-    const deltaX = touchEndXRef.current - touchStartXRef.current;
-
-    if (deltaX > 80) {
-      console.log('플리킹: 좌에서 우로 → 뒤로가기');
-      goBack();
+    if (e.touches.length === 1) {
+      touchStartXRef.current = e.touches[0].clientX;
     }
-  }
-};
+  };
 
-  
-// useEffect(() => {
-//   const debugScroll = () => {
-//     console.log('=== 스크롤 디버깅 ===');
-//     console.log('window.scrollY:', window.scrollY);
-//     console.log('window.pageYOffset:', window.pageYOffset);
-//     console.log('document.documentElement.scrollTop:', document.documentElement.scrollTop);
-//     console.log('document.body.scrollTop:', document.body.scrollTop);
-//     console.log('document.documentElement.clientHeight:', document.documentElement.clientHeight);
-//     console.log('document.documentElement.scrollHeight:', document.documentElement.scrollHeight);
-//     console.log('document.body.clientHeight:', document.body.clientHeight);
-//     console.log('document.body.scrollHeight:', document.body.scrollHeight);
-    
-//     const discoverContainer = document.querySelector('.discover-container');
-//     if (discoverContainer) {
-//       console.log('discover-container scrollTop:', discoverContainer.scrollTop);
-//       console.log('discover-container scrollHeight:', discoverContainer.scrollHeight);
-//       console.log('discover-container clientHeight:', discoverContainer.clientHeight);
-//     }
-//   };
+  // 터치 종료
+  const handleTouchEnd = (e) => {
+    const isIgnoredArea =
+      e.target.closest('.map-section') ||
+      e.target.closest('#map') ||
+      e.target.closest('.venue-rotation') ||
+      e.target.closest('.girls-rotation') ||
+      e.target.closest('.girl-image-box') ||
+      e.target.closest('.girl-image-box-top') ||
+      e.target.closest('.first-place-container') ||
+      e.target.closest('.second-third-container'); // ✅ 추가됨
 
-//   debugScroll();
-  
-//   // 스크롤 시도
-//   window.scrollTo(0, 0);
-  
-//   setTimeout(debugScroll, 1000);
-// }, [venueId]);
+    if (isIgnoredArea) return;
+
+    if (e.changedTouches.length === 1) {
+      touchEndXRef.current = e.changedTouches[0].clientX;
+      const deltaX = touchEndXRef.current - touchStartXRef.current;
+
+      if (deltaX > 80) {
+        console.log('플리킹: 좌에서 우로 → 뒤로가기');
+        goBack();
+      }
+    }
+  };
+
+
+  // useEffect(() => {
+  //   const debugScroll = () => {
+  //     console.log('=== 스크롤 디버깅 ===');
+  //     console.log('window.scrollY:', window.scrollY);
+  //     console.log('window.pageYOffset:', window.pageYOffset);
+  //     console.log('document.documentElement.scrollTop:', document.documentElement.scrollTop);
+  //     console.log('document.body.scrollTop:', document.body.scrollTop);
+  //     console.log('document.documentElement.clientHeight:', document.documentElement.clientHeight);
+  //     console.log('document.documentElement.scrollHeight:', document.documentElement.scrollHeight);
+  //     console.log('document.body.clientHeight:', document.body.clientHeight);
+  //     console.log('document.body.scrollHeight:', document.body.scrollHeight);
+
+  //     const discoverContainer = document.querySelector('.discover-container');
+  //     if (discoverContainer) {
+  //       console.log('discover-container scrollTop:', discoverContainer.scrollTop);
+  //       console.log('discover-container scrollHeight:', discoverContainer.scrollHeight);
+  //       console.log('discover-container clientHeight:', discoverContainer.clientHeight);
+  //     }
+  //   };
+
+  //   debugScroll();
+
+  //   // 스크롤 시도
+  //   window.scrollTo(0, 0);
+
+  //   setTimeout(debugScroll, 1000);
+  // }, [venueId]);
 
   // useEffect(() => {
   //   const handleScroll = () => {
@@ -186,66 +225,66 @@ const handleTouchEnd = (e) => {
   // }, []); // 의존성 배열 비움
 
 
-useEffect(() => {
-  const resetContentAreaScroll = () => {
-    // 진짜 스크롤 컨테이너인 .content-area를 리셋
-    const contentArea = document.querySelector('.content-area');
-    if (contentArea) {
-      contentArea.scrollTop = 0;
-      console.log('content-area 스크롤이 0으로 리셋됨');
-    }
-    
-    // window도 함께 (혹시 모르니)
+  useEffect(() => {
+    const resetContentAreaScroll = () => {
+      // 진짜 스크롤 컨테이너인 .content-area를 리셋
+      const contentArea = document.querySelector('.content-area');
+      if (contentArea) {
+        contentArea.scrollTop = 0;
+        console.log('content-area 스크롤이 0으로 리셋됨');
+      }
+
+      // window도 함께 (혹시 모르니)
       if (!localStorage.getItem('discoverScrollY')) {
         window.scrollTo(0, 0);
       }
-    
 
-    const savedScrollY = localStorage.getItem('discoverScrollY');
 
-    
+      const savedScrollY = localStorage.getItem('discoverScrollY');
 
-    if (savedScrollY !== null) {
-      const scrollY = parseInt(savedScrollY, 10);
-      const container = document.querySelector('.content-area');
 
-      let checkCount = 0;
-      const maxChecks = 30;
 
-      const checkReadyAndScroll = () => {
+      if (savedScrollY !== null) {
+        const scrollY = parseInt(savedScrollY, 10);
         const container = document.querySelector('.content-area');
-        if (!container) {
-          console.log('⏳ .content-area 아직 없음');
-          requestAnimationFrame(checkReadyAndScroll);
-          return;
-        }
 
-        const scrollReady = container.scrollHeight > container.clientHeight + 10;
+        let checkCount = 0;
+        const maxChecks = 30;
 
-        if (scrollReady) {
-          container.scrollTop = scrollY;
-          console.log('✅ 스크롤 복원 완료:', scrollY);
-          localStorage.removeItem('discoverScrollY');
-        } else {
-          checkCount++;
-          if (checkCount < maxChecks) {
+        const checkReadyAndScroll = () => {
+          const container = document.querySelector('.content-area');
+          if (!container) {
+            console.log('⏳ .content-area 아직 없음');
             requestAnimationFrame(checkReadyAndScroll);
-          } else {
-            console.warn('⚠️ 스크롤 복원 실패: 조건 만족 못함');
+            return;
           }
-        }
-      };
 
-      requestAnimationFrame(checkReadyAndScroll);
-    }
-  };
+          const scrollReady = container.scrollHeight > container.clientHeight + 10;
 
-  resetContentAreaScroll();
-  
-  // DOM 렌더링 완료 후 한 번 더
-  setTimeout(resetContentAreaScroll, 100);
-  
-}, [venueId]);
+          if (scrollReady) {
+            container.scrollTop = scrollY;
+            console.log('✅ 스크롤 복원 완료:', scrollY);
+            localStorage.removeItem('discoverScrollY');
+          } else {
+            checkCount++;
+            if (checkCount < maxChecks) {
+              requestAnimationFrame(checkReadyAndScroll);
+            } else {
+              console.warn('⚠️ 스크롤 복원 실패: 조건 만족 못함');
+            }
+          }
+        };
+
+        requestAnimationFrame(checkReadyAndScroll);
+      }
+    };
+
+    resetContentAreaScroll();
+
+    // DOM 렌더링 완료 후 한 번 더
+    setTimeout(resetContentAreaScroll, 100);
+
+  }, [venueId]);
 
   useEffect(() => {
     //window.scrollTo(0, 0);
@@ -312,7 +351,7 @@ useEffect(() => {
     // };
 
     fetchVenueInfo();
-    
+
     //fetchTopGirls();
   }, [venueId, messages, currentLang]);
 
@@ -324,7 +363,7 @@ useEffect(() => {
       target_type: 'venue',
       venue_id: venueId
     });
-    
+
   }
 
   useEffect(() => {
@@ -413,7 +452,7 @@ useEffect(() => {
     };
 
     fetchAllData();
-    
+
     window.scrollTo(0, 0);
   }, [venueId]);
 
@@ -444,17 +483,17 @@ useEffect(() => {
 
 
   useEffect(() => {
-  const container = document.querySelector('.discover-container');
-  if (!container) return;
+    const container = document.querySelector('.discover-container');
+    if (!container) return;
 
-  container.addEventListener('touchstart', handleTouchStart, { passive: true });
-  container.addEventListener('touchend', handleTouchEnd, { passive: true });
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchend', handleTouchEnd, { passive: true });
 
-  return () => {
-    container.removeEventListener('touchstart', handleTouchStart);
-    container.removeEventListener('touchend', handleTouchEnd);
-  };
-}, []);
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, []);
 
 
   const renderStars = (rating = 0) => {
@@ -502,7 +541,7 @@ useEffect(() => {
     const [translateX, setTranslateX] = useState(0);
     const [translateY, setTranslateY] = useState(0);
     const [isZoomed, setIsZoomed] = useState(false);
-    
+
     const imageRef = useRef(null);
     const lastTapRef = useRef(0);
     const initialDistanceRef = useRef(0);
@@ -510,7 +549,7 @@ useEffect(() => {
     const lastTouchRef = useRef({ x: 0, y: 0 });
     const touchStartX = useRef(0);
     const touchEndX = useRef(0);
-  
+
     // 줌 리셋
     const resetZoom = () => {
       setScale(1);
@@ -540,17 +579,17 @@ useEffect(() => {
       }
     };
 
-  
+
     // 이미지 변경 시 줌 리셋
     useEffect(() => {
       resetZoom();
     }, [currentIndex]);
-  
+
     // 더블탭 줌
     const handleDoubleTap = (e) => {
       const now = Date.now();
       const timeSinceLastTap = now - lastTapRef.current;
-      
+
       if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
         e.preventDefault();
         if (scale === 1) {
@@ -562,7 +601,7 @@ useEffect(() => {
       }
       lastTapRef.current = now;
     };
-  
+
     // 핀치 줌 시작
     const handleTouchStart = (e) => {
       if (e.touches.length === 2) {
@@ -580,7 +619,7 @@ useEffect(() => {
         lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
       }
     };
-  
+
     // 핀치 줌 중
     const handleTouchMove = (e) => {
       if (e.touches.length === 2) {
@@ -591,10 +630,10 @@ useEffect(() => {
           Math.pow(touch2.clientX - touch1.clientX, 2) +
           Math.pow(touch2.clientY - touch1.clientY, 2)
         );
-        
+
         const newScale = (distance / initialDistanceRef.current) * initialScaleRef.current;
         const clampedScale = Math.min(Math.max(newScale, 1), 4); // 1x ~ 4x
-        
+
         setScale(clampedScale);
         setIsZoomed(clampedScale > 1);
       } else if (e.touches.length === 1 && isZoomed) {
@@ -602,27 +641,27 @@ useEffect(() => {
         const touch = e.touches[0];
         const deltaX = touch.clientX - lastTouchRef.current.x;
         const deltaY = touch.clientY - lastTouchRef.current.y;
-        
+
         setTranslateX(prev => prev + deltaX);
         setTranslateY(prev => prev + deltaY);
-        
+
         lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
       }
     };
-  
+
     // 네비게이션 (줌 상태에서는 비활성화)
     const goToNext = () => {
       if (!isZoomed) {
         setCurrentIndex((prev) => (prev + 1) % menuList.length);
       }
     };
-  
+
     const goToPrev = () => {
       if (!isZoomed) {
         setCurrentIndex((prev) => (prev - 1 + menuList.length) % menuList.length);
       }
     };
-  
+
     return (
       <div
         style={{
@@ -642,15 +681,15 @@ useEffect(() => {
       >
         <div
           style={{
-          position: 'relative',
-    backgroundColor: 'black',
-    overflow: 'hidden',
-    width: '100vw',
-    height: '100vh',
-    display: 'flex',
-    alignItems: 'center',     // 세로 정렬
-    justifyContent: 'center'  // 가로 정렬
-        }}
+            position: 'relative',
+            backgroundColor: 'black',
+            overflow: 'hidden',
+            width: '100vw',
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'center',     // 세로 정렬
+            justifyContent: 'center'  // 가로 정렬
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* 닫기 버튼 */}
@@ -675,7 +714,7 @@ useEffect(() => {
           >
             <X size={18} />
           </button>
-  
+
           {/* 줌 리셋 버튼 */}
           {isZoomed && (
             <button
@@ -697,7 +736,7 @@ useEffect(() => {
               리셋
             </button>
           )}
-  
+
           {/* 이전 버튼 */}
           {menuList.length > 1 && !isZoomed && (
             <button
@@ -723,7 +762,7 @@ useEffect(() => {
               <ChevronLeft size={20} />
             </button>
           )}
-  
+
           {/* 다음 버튼 */}
           {menuList.length > 1 && !isZoomed && (
             <button
@@ -749,10 +788,10 @@ useEffect(() => {
               <ChevronRight size={20} />
             </button>
           )}
-  
+
           {/* 메뉴 이미지 */}
-          <div 
-            style={{ 
+          <div
+            style={{
               position: 'relative',
               overflow: 'hidden',
               touchAction: isZoomed ? 'none' : 'auto'
@@ -780,7 +819,7 @@ useEffect(() => {
               onClick={handleDoubleTap}
               onDragStart={(e) => e.preventDefault()}
             />
-  
+
             {/* 인디케이터 */}
             {menuList.length > 1 && !isZoomed && (
               <div style={{
@@ -807,7 +846,7 @@ useEffect(() => {
               </div>
             )}
           </div>
-  
+
           {/* 메뉴 카운터 */}
           {menuList.length > 1 && !isZoomed && (
             <div style={{
@@ -824,7 +863,7 @@ useEffect(() => {
               {currentIndex + 1} / {menuList.length}
             </div>
           )}
-  
+
           {/* 줌 상태일 때 도움말 */}
           {isZoomed && (
             <div style={{
@@ -848,27 +887,17 @@ useEffect(() => {
 
   // 기존 컴포넌트에서 사용
   // 기존 컴포넌트에서 사용
-const openMenuOverlay = (menuList) => {
-  const overlayElement = overlay.open(({ isOpen, close, unmount }) => (
-    <MenuOverlay
-      menuList={menuList}
-      onClose={() => {
-        console.log('Trying to close...');
-        unmount(); // close 대신 unmount 시도
-      }}
-    />
-  ));
-};
-
-
-
-
-
-
-
-
-
-
+  const openMenuOverlay = (menuList) => {
+    const overlayElement = overlay.open(({ isOpen, close, unmount }) => (
+      <MenuOverlay
+        menuList={menuList}
+        onClose={() => {
+          console.log('Trying to close...');
+          unmount(); // close 대신 unmount 시도
+        }}
+      />
+    ));
+  };
 
 
 
@@ -1154,7 +1183,7 @@ const openMenuOverlay = (menuList) => {
               <div className="club-name">No Image</div>
             )}
           </div>
-          
+
           {venueInfo && (
             <div
               className="is-reservation"
@@ -1163,47 +1192,45 @@ const openMenuOverlay = (menuList) => {
                 top: '-192px',
                 position: 'relative',
                 backgroundColor:
-                  venueInfo.schedule_status === 'closed' || venueInfo.schedule_status === 'before_open'
-                    ? 'rgb(107, 107, 107)'
-                    : venueInfo.is_reservation
-                    ? 'rgb(11, 199, 97)'
-                    : 'rgb(107, 107, 107)',
+                  venueInfo.schedule_status === 'available'
+                    ? 'rgb(11, 199, 97)'  // 예약가능 - 초록색
+                    : 'rgb(107, 107, 107)', // 영업종료 - 회색
                 color: '#fff',
                 padding: '5px 7px',
                 borderRadius: '3px',
                 display: 'inline-block',
               }}
             >
-              {venueInfo?.schedule_status === 'closed' || venueInfo?.schedule_status === 'before_open'
-  ? get('VENUE_END') || '영업 종료'
-  : (venueInfo?.is_reservation
-      ? get('DiscoverPage1.1.enable') || '예약하기'
-      : get('DiscoverPage1.1.disable') || '예약 마감')}
+              {
+                venueInfo.schedule_status === 'available'
+                  ? get('DiscoverPage1.1.able')  // 예약가능
+                  : get('VENUE_END') // 영업종료
+              }
             </div>
           )}
 
 
-          <div className="club-name">{venueInfo?.name || 'Club One'}</div>
+          <div className="club-name">{venueInfo?.name || 'Lethanton Club'}</div>
 
           <div className='sum-info text-start'>
             <div className="club-location">{venueInfo?.address || venueInfo?.location || 'in Vietnam'}</div>
-           
+
             <div className="description">
               {formatTextWithLineBreaks(venueInfo?.description ||
                 get('DiscoverPage1.5'))}
             </div>
 
             <div>
-                  <Clock size={13} style={{ marginRight: '4px' }} />
-                  {venueInfo && venueInfo.open_time && venueInfo.close_time
-                    ? `${venueInfo.open_time} - ${venueInfo.close_time}`
-                    : '-'}
+              <Clock size={13} style={{ marginRight: '4px' }} />
+              {venueInfo && venueInfo.open_time && venueInfo.close_time
+                ? `${venueInfo.open_time} - ${venueInfo.close_time}`
+                : '-'}
             </div>
 
             <div className="phone" style={{ marginBottom: '5px' }}>
               <span style={{ color: '#858585' }}><Phone size={14} /> tell: </span> {venueInfo?.phone || '-'}
             </div>
-            
+
 
             <div style={{ marginBottom: '5px' }}>
               <span style={{ color: '#858585' }}><Users size={14} />  Staff Count: </span>
@@ -1237,18 +1264,18 @@ const openMenuOverlay = (menuList) => {
             </div>
           </div>
 
-          
+
 
           <div className="top-sum">
             <div className="stars">{renderStars(venueInfo?.rating)}</div>
-           <div 
-              style={{ 
+            <div
+              style={{
                 color: reviewCount > 0 ? '#0072ff' : '#999999',
                 cursor: reviewCount > 0 ? 'pointer' : 'default'
-              }} 
+              }}
               onClick={async () => {
                 if (reviewCount > 0) {
-                   
+
                   showAdWithCallback(
                     // 광고 완료 시 콜백
                     () => {
@@ -1265,27 +1292,27 @@ const openMenuOverlay = (menuList) => {
 
 
 
-/*
-                  const { isActiveUser: isActive = false } = await isActiveUser();
-
-                  if (isActive) {
-                    navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
-                  } else {
-
-                    showAdWithCallback(
-                      // 광고 완료 시 콜백
-                      () => {
-                        navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
-                      },
-                      // fallback 콜백 (광고 응답 없을 때)
-                      () => {
-                        navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
-                      },
-                      1000 // 1초 타임아웃
-                    );
-                        
-                  }
-*/
+                  /*
+                                    const { isActiveUser: isActive = false } = await isActiveUser();
+                  
+                                    if (isActive) {
+                                      navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
+                                    } else {
+                  
+                                      showAdWithCallback(
+                                        // 광고 완료 시 콜백
+                                        () => {
+                                          navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
+                                        },
+                                        // fallback 콜백 (광고 응답 없을 때)
+                                        () => {
+                                          navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
+                                        },
+                                        1000 // 1초 타임아웃
+                                      );
+                                          
+                                    }
+                  */
 
 
                 }
@@ -1294,8 +1321,8 @@ const openMenuOverlay = (menuList) => {
               {get('nav.review.1')} <span className='reviewCnt'>{reviewCount}</span>{get('text.cnt.1')} {get('text.cnt.2')} &gt;
             </div>
           </div>
-       
-          
+
+
 
           <div className="section-title" style={{ textAlign: 'start' }}>{get('DiscoverPage1.6')}</div>
           <div className="map-section">
@@ -1303,12 +1330,12 @@ const openMenuOverlay = (menuList) => {
               places={venueInfo ? [venueInfo] : []}
               disableInteraction={true}
               showEntrances={true} //입구 표시 활성화
-              showNearestEntranceConnection={false} 
+              showNearestEntranceConnection={false}
             />
           </div>
         </div>
 
-        
+
 
         <div className="top-girls-section">
           <div className="section-title">{get('DiscoverPage1.2')}</div>
@@ -1316,308 +1343,263 @@ const openMenuOverlay = (menuList) => {
           {/* 비어있는 경우 */}
           {topGirls.length === 0 ? (
             <div className="empty-state-container" style={{
-                height: '10rem',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center'
+              height: '10rem',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
             }}>
               <div className="empty-state">
                 <h3>{get('DiscoverPage1.2.empty.title')}</h3>
-                <p style={{fontSize: '0.83rem'}}>{get('DiscoverPage1.2.empty.description')}</p>
-              </div>   
+                <p style={{ fontSize: '0.83rem' }}>{get('DiscoverPage1.2.empty.description')}</p>
+              </div>
             </div>
-            
+
           ) : (
             <>
-{/* 1등 단독 */}
-<div className="first-place-container">
-  {topGirls[0] && (() => {
-    const availCnt = topGirls[0]?.availCnt || 0;
-    const statusBackgroundColor = 
-      venueInfo?.schedule_status === 'closed' 
-        ? 'rgb(107, 107, 107)' 
-        : availCnt > 0 
-          ? 'rgb(11, 199, 97)' 
-          : 'rgb(107, 107, 107)';
+              {/* 1등 단독 */}
+              <div className="first-place-container">
+                {topGirls[0] && (() => {
+                  return (
+                    <div className="podium-rank rank-1" onClick={() => handleDetail(topGirls[0])}>
+                      <div className="badge-rank1"></div>
+                      <div className="girl-image-box-top" style={{ position: 'relative' }}>
+                        <img src={topGirls[0].image_url} className="girl-img" alt="1위" />
 
-    const statusText = 
-      venueInfo?.schedule_status === 'closed'
-        ? get('VENUE_RESERVATION_CLOSED')
-        : availCnt > 0 
-          ? get('VENUE_RESERVATION_AVAILABLE') 
-          : get('VENUE_RESERVATION_CLOSED');
+                        {/* 상태 텍스트 */}
+                        {staffStatus(topGirls[0])}
+                        <div className="girl-name">{topGirls[0].name}</div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
 
-    return (
-      <div className="podium-rank rank-1" onClick={() => handleDetail(topGirls[0])}>
-        <div className="badge-rank1"></div>
-        <div className="girl-image-box-top" style={{ position: 'relative' }}>
-          <img src={topGirls[0].image_url} className="girl-img" alt="1위" />
+              {/* 2, 3등 나란히 */}
+              <div className="second-third-container">
+                {[topGirls[1], topGirls[2]].map((girl, i) =>
+                  girl ? (() => {
 
-          {/* 상태 텍스트 */}
-          <div
-            style={{
-              position: 'absolute',
-              top: '8px',
-              right: '8px',
-              backgroundColor: statusBackgroundColor,
-              color: 'white',
-              padding: '3px 6px',
-              borderRadius: '3px',
-              fontSize: '11px',
-              zIndex: 2
-            }}
-          >
-            {statusText}
-          </div>
+                    return (
+                      <div
+                        key={girl.staff_id}
+                        className={`podium-rank rank-${i + 2}`}
+                        onClick={() => handleDetail(girl)}
+                      >
+                        <div className={`badge-rank${i + 2}`}></div>
+                        <div className="girl-image-box" style={{ position: 'relative' }}>
+                          <img src={girl.image_url} className="girl-img" alt={`${i + 2}위`} />
 
-          <div className="girl-name">{topGirls[0].name}</div>
-        </div>
-      </div>
-    );
-  })()}
-</div>
+                          {/* 상태 텍스트 */}
+                          {staffStatus(girl)}
 
-{/* 2, 3등 나란히 */}
-<div className="second-third-container">
-  {[topGirls[1], topGirls[2]].map((girl, i) =>
-    girl ? (() => {
-      const availCnt = girl?.availCnt || 0;
-      const statusBackgroundColor = 
-        venueInfo?.schedule_status === 'closed' 
-          ? 'rgb(107, 107, 107)' 
-          : availCnt > 0 
-            ? 'rgb(11, 199, 97)' 
-            : 'rgb(107, 107, 107)';
-
-      const statusText = 
-        venueInfo?.schedule_status === 'closed'
-          ? get('VENUE_RESERVATION_CLOSED')
-          : availCnt > 0 
-            ? get('VENUE_RESERVATION_AVAILABLE') 
-            : get('VENUE_RESERVATION_CLOSED');
-
-      return (
-        <div
-          key={girl.staff_id}
-          className={`podium-rank rank-${i + 2}`}
-          onClick={() => handleDetail(girl)}
-        >
-          <div className={`badge-rank${i + 2}`}></div>
-          <div className="girl-image-box" style={{ position: 'relative' }}>
-            <img src={girl.image_url} className="girl-img" alt={`${i + 2}위`} />
-
-            {/* 상태 텍스트 */}
-            <div
-              style={{
-                position: 'absolute',
-                top: '8px',
-                right: '8px',
-                backgroundColor: statusBackgroundColor,
-                color: 'white',
-                padding: '3px 6px',
-                borderRadius: '3px',
-                fontSize: '11px',
-                zIndex: 2
-              }}
-            >
-              {statusText}
-            </div>
-
-            <div className="girl-name">{girl.name}</div>
-          </div>
-        </div>
-      );
-    })() : null
-  )}
-</div>
+                          <div className="girl-name">{girl.name}</div>
+                        </div>
+                      </div>
+                    );
+                  })() : null
+                )}
+              </div>
 
 
               {/* 나머지 */}
-                  <div className="scrollable-list">
-                    {topGirls.slice(3).map((girl) => {
-                      const topGirlData = topGirls.find(topGirl => topGirl.staff_id === girl.staff_id);
-                      const availCnt = topGirlData?.availCnt || 0;
+              <div className="scrollable-list">
+                {topGirls.slice(3).map((girl) => {
+                  const topGirlData = topGirls.find(topGirl => topGirl.staff_id === girl.staff_id);
 
-                      const statusBackgroundColor = 
-                        venueInfo?.schedule_status === 'closed' 
-                          ? 'rgb(107, 107, 107)' 
-                          : availCnt > 0 
-                            ? 'rgb(11, 199, 97)' 
-                            : 'rgb(107, 107, 107)';
+                  return (
+                    <div key={girl.staff_id} className="girl-slide" onClick={() => handleDetail(girl)}>
+                      <div className="girl-image-box" style={{ position: 'relative' }}>
+                        <img src={girl.image_url} className="girl-img" alt="girl" />
 
-                      const statusText = 
-                        venueInfo?.schedule_status === 'closed'
-                          ? get('VENUE_RESERVATION_CLOSED')
-                          : availCnt > 0 
-                            ? get('VENUE_RESERVATION_AVAILABLE') 
-                            : get('VENUE_RESERVATION_CLOSED');
-
-                      return (
-                        <div key={girl.staff_id} className="girl-slide" onClick={() => handleDetail(girl)}>
-                          <div className="girl-image-box" style={{ position: 'relative' }}>
-                            <img src={girl.image_url} className="girl-img" alt="girl" />
-
-                            {/* 상태 텍스트 */}
-                            <div
-                              style={{
-                                position: 'absolute',
-                                top: '8px',
-                                right: '8px',
-                                backgroundColor: statusBackgroundColor,
-                                color: 'white',
-                                padding: '3px 6px',
-                                borderRadius: '3px',
-                                fontSize: '11px',
-                                zIndex: 2
-                              }}
-                            >
-                              {statusText}
-                            </div>
-
-                            {/* ✅ 이름 텍스트: 이미지 내부로 이동 */}
-                            <div className="girl-name">{girl.name}</div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        {staffStatus(girl)}
+                        {/* ✅ 이름 텍스트: 이미지 내부로 이동 */}
+                        <div className="girl-name">{girl.name}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
 
             </>
           )}
         </div>
 
 
-      </div>{/* === Footer 추가 위치 === */}
-<div className={`reservation-footer ${showFooter ? '' : 'hidden'}`}>
-  {<HatchPattern opacity={0.4} />}
-  <div className="reservation-footer-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-    <div style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-      <div className="club-name" style={{ color: '#374151', fontSize: '17px', marginTop: '10px', paddingBottom: '5px' }}>
-        {venueInfo?.name || 'Club One'}
       </div>
-    </div>
+      {/* === Footer 추가 위치 === */}
+      <div className={`reservation-footer ${showFooter ? '' : 'hidden'}`}>
+        {<HatchPattern opacity={0.4} />}
+        <div className="reservation-footer-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            
 
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <SketchBtn
-        className="sketch-button enter-button"
-        variant="event"
-        style={{ width: '45px', marginTop: '0px', marginLeft: '0px', background: '#374151', color: 'white' }}
-        onClick={async () => {
-          if (!user || !user.user_id) {
-            openLoginOverlay(PAGES.DISCOVER, { venueId });
-            return;
-          }
+            <div style={{
+              maxWidth: '160px',
+              height: '60px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center'
+            }}>
+              {/* 영업 상태 */}
+              {venueInfo && (
+                <div
+                  className="is-reservation"
+                  style={{
+                    position: 'relative',
+                    backgroundColor:
+                      venueInfo.schedule_status === 'available'
+                        ? 'rgb(11, 199, 97)'  // 예약가능 - 초록색
+                        : 'rgb(107, 107, 107)', // 영업종료 - 회색
+                    color: '#fff',
+                    padding: '3px 6px',
+                    borderRadius: '3px',
+                    display: 'inline-block',
+                    fontSize: '10px',
+                    alignSelf: 'flex-start'
+                  }}
+                >
+                  {
+                    venueInfo.schedule_status === 'available'
+                      ? get('DiscoverPage1.1.able')  // 예약가능
+                      : get('VENUE_END') // 영업종료
+                  }
+                </div>
+              )}
+              {/* 가게명 */}
+              <div className="club-name" style={{
+                color: '#374151',
+                fontSize: '18px',
+                fontWeight: '500',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}>
+                {venueInfo?.name || 'Club One'}
+              </div>
+          </div>
 
-          try {
-            const chatRoom = await ApiClient.postForm('/api/getChatRoom', {
-              sender: user.user_id,
-              sender_type: 'user',
-              receiver_id: venueInfo.manager_id,
-              send_to: 'manager'
-            });
-            const { room_sn = null } = chatRoom;
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <SketchBtn
+              className="sketch-button enter-button"
+              variant="event"
+              style={{ width: '45px', marginTop: '0px', marginLeft: '0px', background: '#374151', color: 'white' }}
+              onClick={async () => {
+                if (!user || !user.user_id) {
+                  openLoginOverlay(PAGES.DISCOVER, { venueId });
+                  return;
+                }
 
-            const response = await ApiClient.postForm('/api/getSubscriptionInfo', {
-              user_id: user.user_id
-            });
-            let { isActiveUser = false } = response;
+                try {
+                  const chatRoom = await ApiClient.postForm('/api/getChatRoom', {
+                    sender: user.user_id,
+                    sender_type: 'user',
+                    receiver_id: venueInfo.manager_id,
+                    send_to: 'manager'
+                  });
+                  const { room_sn = null } = chatRoom;
 
-            if (isActiveUser === true) {
-              navigateToPageWithData(PAGES.CHATTING, {
-                name: venueInfo?.name,
-                room_sn: room_sn,
-                send_to: 'manager',
-                receiver_id: venueInfo.manager_id,
-              });
-            } else {
-              const result = await Swal.fire({
-                title: get('Popup.Button.TodayTrial'),
-                text: get('reservation.daily_pass.purchase_required'),
-                icon: 'info',
-                showCancelButton: true,
-                confirmButtonText: get('Popup.Button.TodayTrial'),
-                cancelButtonText: get('Common.Cancel'),
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33'
-              });
+                  const response = await ApiClient.postForm('/api/getSubscriptionInfo', {
+                    user_id: user.user_id
+                  });
+                  let { isActiveUser = false } = response;
 
-              if (result.isConfirmed) {
-                navigate('/purchase');
+                  if (isActiveUser === true) {
+                    navigateToPageWithData(PAGES.CHATTING, {
+                      name: venueInfo?.name,
+                      room_sn: room_sn,
+                      send_to: 'manager',
+                      receiver_id: venueInfo.manager_id,
+                    });
+                  } else {
+                    const result = await Swal.fire({
+                      title: get('Popup.Button.TodayTrial'),
+                      text: get('reservation.daily_pass.purchase_required'),
+                      icon: 'info',
+                      showCancelButton: true,
+                      confirmButtonText: get('Popup.Button.TodayTrial'),
+                      cancelButtonText: get('Common.Cancel'),
+                      confirmButtonColor: '#3085d6',
+                      cancelButtonColor: '#d33'
+                    });
+
+                    if (result.isConfirmed) {
+                      navigate('/purchase');
+                    }
+                  }
+                } catch (error) {
+                  console.error('채팅방 조회 실패:', error);
+                  alert('채팅방 정보를 불러오는 데 실패했습니다.');
+                }
+              }}
+            >
+              <MessageCircle size={16} />
+            </SketchBtn>
+            <SketchBtn
+              className="sketch-button enter-button"
+              variant="event"
+              style={{ width: '90px', marginTop: '0px' }}
+              disabled={
+                false
+                /*
+                !venueInfo?.is_reservation ||
+                venueInfo?.schedule_status === 'closed' ||
+                venueInfo?.schedule_status === 'before_open'
+                */
               }
-            }
-          } catch (error) {
-            console.error('채팅방 조회 실패:', error);
-            alert('채팅방 정보를 불러오는 데 실패했습니다.');
-          }
-        }}
-      >
-        <MessageCircle size={16} />
-      </SketchBtn>
-      <SketchBtn
-        className="sketch-button enter-button"
-        variant="event"
-        style={{ width: '90px', marginTop: '0px' }}
-        disabled={
-          !venueInfo?.is_reservation ||
-          venueInfo?.schedule_status === 'closed' ||
-          venueInfo?.schedule_status === 'before_open'
-        }
-        onClick={async () => {
-          if (!venueInfo.is_reservation) return;
-          if (venueInfo.schedule_status === 'closed' || venueInfo.schedule_status === 'before_open') return;
-          if (!user || !user.user_id) {
-            openLoginOverlay(PAGES.DISCOVER, { venueId });
-            return;
-          }
+              onClick={async () => {
+                if (!venueInfo.is_reservation) return;
+                if (venueInfo.schedule_status === 'closed' || venueInfo.schedule_status === 'before_open') return;
+                if (!user || !user.user_id) {
+                  openLoginOverlay(PAGES.DISCOVER, { venueId });
+                  return;
+                }
 
-          try {
-            const response = await ApiClient.postForm('/api/getSubscriptionInfo', {
-              user_id: user.user_id
-            });
-            let { isActiveUser = false } = response;
+                try {
+                  const response = await ApiClient.postForm('/api/getSubscriptionInfo', {
+                    user_id: user.user_id
+                  });
+                  let { isActiveUser = false } = response;
 
-            if (isActiveUser === true) {
-              navigateToPageWithData(PAGES.RESERVATION, {
-                target: 'venue',
-                id: venueId || 1,
-              });
-            } else {
-              const result = await Swal.fire({
-                title: get('Popup.Button.TodayTrial'),
-                text: get('reservation.daily_pass.purchase_required'),
-                icon: 'info',
-                showCancelButton: true,
-                confirmButtonText: get('Popup.Button.TodayTrial'),
-                cancelButtonText: get('Common.Cancel'),
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33'
-              });
-              if (result.isConfirmed) {
-                navigate('/purchase');
+                  if (isActiveUser === true) {
+                    navigateToPageWithData(PAGES.RESERVATION, {
+                      target: 'venue',
+                      id: venueId || 1,
+                    });
+                  } else {
+                    const result = await Swal.fire({
+                      title: get('Popup.Button.TodayTrial'),
+                      text: get('reservation.daily_pass.purchase_required'),
+                      icon: 'info',
+                      showCancelButton: true,
+                      confirmButtonText: get('Popup.Button.TodayTrial'),
+                      cancelButtonText: get('Common.Cancel'),
+                      confirmButtonColor: '#3085d6',
+                      cancelButtonColor: '#d33'
+                    });
+                    if (result.isConfirmed) {
+                      navigate('/purchase');
+                    }
+                  }
+                } catch (error) {
+                  console.error('구독 정보 확인 중 오류:', error);
+                  navigateToPageWithData(PAGES.RESERVATION, {
+                    target: 'venue',
+                    id: venueId || 1,
+                  });
+                }
+              }}
+            >
+              <HatchPattern opacity={0.8} />
+              {
+                /* 예약하기 버튼은 항상 가능 */
+                get('DiscoverPage1.1.enable')
               }
-            }
-          } catch (error) {
-            console.error('구독 정보 확인 중 오류:', error);
-            navigateToPageWithData(PAGES.RESERVATION, {
-              target: 'venue',
-              id: venueId || 1,
-            });
-          }
-        }}
-      >
-        <HatchPattern opacity={0.8} />
-        {venueInfo?.schedule_status === 'closed' || venueInfo?.schedule_status === 'before_open'
-          ? get('VENUE_END') || '영업 종료'
-          : (venueInfo?.is_reservation
-            ? get('DiscoverPage1.1.enable') || '예약하기'
-            : get('DiscoverPage1.1.disable') || '예약 마감')}
-      </SketchBtn>
-    </div>
-  </div>
-</div>
+            </SketchBtn>
+          </div>
+        </div>
+      </div>
 
     </>
-    
+
   );
 };
 
