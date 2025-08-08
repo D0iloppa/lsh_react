@@ -4,6 +4,17 @@ import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
 import { useAuth } from '../contexts/AuthContext';
 
+import {
+  getVietnamDate, 
+  getVietnamTime, 
+  getVietnamHour, 
+  isVietnamToday, 
+  getVietnamDateObject,
+  buildVNDateTime,
+  parseHHMM,
+  vnNow 
+} from '@utils/VietnamTime';
+
 // 주간 테이블 CSS 스타일 (이 스타일을 부모 컴포넌트에 추가하세요)
 export const weeklyTableStyles = `
 
@@ -201,7 +212,7 @@ export const weeklyTableStyles = `
 
  
 // 주간 테이블 생성 유틸리티 함수 (오늘부터 7일간)
-export const generateWeeklyDays = (baseDate) => {
+export const generateWeeklyDays = (baseDate, maxDay = 1) => {
   const today = new Date(baseDate);
   const weekDays = [];
   const dayHeaders = ['일', '월', '화', '수', '목', '금', '토'];
@@ -216,11 +227,13 @@ export const generateWeeklyDays = (baseDate) => {
       dayName: dayHeaders[dayOfWeek],
       date: currentDate.getDate(),
       fullDate: currentDate.toISOString().split('T')[0],
+      disabled: i >= maxDay,
       isToday: i === 0,
       dayOfWeek: dayOfWeek
     });
   }
   
+  console.log('generateWeeklyDays', weekDays);
   return weekDays;
 };
 
@@ -559,14 +572,20 @@ export const AttendeeSelector = ({ value, onChange, messages = {} }) => {
 // 주간 테이블 컴포넌트
 export const WeeklyTableComponent = ({ 
   baseDate, 
+  maxDay = 1,
   selectedDate, 
   onDateSelect, 
   disabledDates = [],
   messages = {} // 다국어 메시지 추가
 }) => {
-  const weekDays = generateWeeklyDays(baseDate);
+  const weekDays = generateWeeklyDays(baseDate, maxDay);
+
+  console.log('WeeklyTableComponent', weekDays);
   
   const handleDateSelect = (dayInfo) => {
+
+    if(dayInfo.disabled) return;
+
     if (!disabledDates.includes(dayInfo.fullDate)) {
       onDateSelect(dayInfo.fullDate, dayInfo.date);
     }
@@ -593,9 +612,13 @@ export const WeeklyTableComponent = ({
         {weekDays.map((dayInfo, index) => (
           <div 
             key={index} 
-            className={`weekly-day ${isSelected(dayInfo) ? 'selected' : ''} ${
-              isDateDisabled(dayInfo) ? 'disabled' : ''
-            } ${dayInfo.isToday ? 'today' : ''}`}
+            className={`
+              weekly-day 
+              ${isSelected(dayInfo) ? 'selected' : ''} 
+              ${isDateDisabled(dayInfo) ? 'disabled' : ''} 
+              ${dayInfo.disabled ? 'disabled' : ''}
+              ${isVietnamToday(dayInfo.fullDate) ? 'today' : ''}
+            `}
             onClick={() => handleDateSelect(dayInfo)}
             style={{
               opacity: isDateDisabled(dayInfo) ? 0.3 : 1,
@@ -1084,6 +1107,7 @@ export const ReservationForm = ({
   attendee,
   onAttendeeChange,
   baseDate,
+  maxDay = 1,
   selectedDate,
   onDateSelect,
   timeSlots,
@@ -1131,6 +1155,7 @@ console.log("messages", messages)
       
       <WeeklyTableComponent
         baseDate={baseDate}
+        maxDay={maxDay}
         selectedDate={selectedDate}
         onDateSelect={onDateSelect}
         disabledDates={disabledDates}

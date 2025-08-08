@@ -13,6 +13,16 @@ import { useMsg } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
 import { usePopup } from '@contexts/PopupContext';
 
+import CountryFlag from 'react-country-flag';
+
+const FLAG_CODES = {
+  kr: 'KR',
+  en: 'US',
+  vi: 'VN',
+  ja: 'JP',
+  cn: 'CN',
+};
+
 const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCallback, ...otherProps }) => {
   const [date, setDate] = useState('');
   const [partySize, setPartySize] = useState('');
@@ -341,6 +351,11 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           padding-bottom: 20px;
           margin: 1rem;
         }
+          .staff-languages {
+          font-size: 0.9rem;
+          margin-top: 0.5rem;
+          color: #555;
+        }
       `}</style>
 
       <div className="staff-detail-container">
@@ -410,6 +425,40 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
 
         <div className="staff-info-section">
           <div className="staff-name">{girl.name || 'Unknown Staff'}</div>
+          {girl.languages && (
+            <div
+              className="staff-languages"
+              style={{
+                marginTop: '0.5rem',
+                fontSize: '0.9rem',
+                color: '#555',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                flexWrap: 'wrap'
+              }}
+            >
+              <span>대화 가능:</span>
+              {girl.languages.split(',').map((lang) => {
+                const code = FLAG_CODES[lang.trim()];
+                return code ? (
+                  <CountryFlag
+                    key={lang}
+                    countryCode={code}
+                    svg
+                    style={{
+                      fontSize: '1.5rem',
+                      lineHeight: '1.5rem'
+                    }}
+                    title={lang}
+                  />
+                ) : null;
+              })}
+            </div>
+          )}
+
+
           {/*
           <div className="staff-age">
             {girl.birth_year ? `Age ${getAgeFromBirthYear(girl.birth_year)}` : 'Age N/A'}
@@ -448,5 +497,24 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
     </>
   );
 };
+
+const getLanguageFlagImages = (langStr) => {
+  if (!langStr) return [];
+
+  const flagMap = {
+    kr: '/flags/kr.png',
+    en: '/flags/us.png',
+    vi: '/flags/vn.png',
+    ja: '/flags/jp.png',
+    cn: '/flags/cn.png',
+  };
+
+  return langStr
+    .split(',')
+    .map(l => l.trim())
+    .filter(l => flagMap[l])
+    .map(l => ({ lang: l, src: flagMap[l] }));
+};
+
 
 export default StaffDetailPage;

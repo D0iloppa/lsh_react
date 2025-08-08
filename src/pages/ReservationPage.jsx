@@ -60,6 +60,10 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
 
   const [note, setNote] = useState('');
   const [baseDate, setBaseDate] = useState(null);
+  const [maxDay, setMaxDay] = useState(1);
+  const [subscription, setSubscription] = useState({});
+
+
   /*
   useState(() => {
     const vietnamTime = getVietnamTime();
@@ -165,19 +169,38 @@ const isAllAgreed = () => {
     const run = async () => {
       if (shouldAutoSelect && Object.keys(scheduleData).length > 0) {
         
-        const { subscription = {} } = await isActiveUser();
         
-  
-        //const today = getVietnamDate();
-        console.log('DEFAULT SELECT with complete data:', scheduleData, subscription.started_at);
         
         if (!subscription?.started_at) return;
 
+
         // "2025-08-04 14:46:55.516583" → "2025-08-04"
         const startYmd = subscription.started_at.slice(0, 10);
+
+        const expired_at = subscription.expired_at;
+        
+        let _maxDay = 1;
+        if (expired_at) {
+          // 날짜 부분만 추출
+          const startYmd = subscription.started_at.slice(0, 10);
+          const expiredYmd = expired_at.slice(0, 10);
+        
+          // VN 자정 기준 Date 객체 생성
+          const startDate = new Date(`${startYmd}T00:00:00+07:00`);
+          const expiredDate = new Date(`${expiredYmd}T00:00:00+07:00`);
+        
+          // 날짜 차이 + 1 (양 끝 포함)
+          const diffDays = Math.floor((expiredDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+        
+          _maxDay = diffDays;
+        }
+
     
         // 달력 앵커: 베트남 정오로 고정 (경계 이슈 회피)
         setBaseDate(new Date(`${startYmd}T12:00:00+07:00`));
+        setMaxDay(_maxDay);
+
+        console.log('DEFAULT SELECT with complete data:', scheduleData, subscription, _maxDay);
     
         handleDateSelect(startYmd, 1);
         setShouldAutoSelect(false);
@@ -209,7 +232,10 @@ const isAllAgreed = () => {
         target: target,
         target_id: id
       })
-      .then(response => {
+      .then(async (response) => {
+        const { subscription = {} } = await isActiveUser();
+        setSubscription(subscription);
+        
         console.log('✅ Schedule loaded:', response);
         setScheduleData(response || {});
         setErrorMsg(null);
@@ -235,6 +261,10 @@ const isAllAgreed = () => {
     setReservationData({ startTime: '', duration: null, endTime: null });
   
     const { venueInfo = null, scheduleList = [] } = scheduleData || {};
+
+
+
+
     let nextDisabled = [];
     let venueTimeSlots = [];
   
@@ -257,8 +287,7 @@ const isAllAgreed = () => {
   
     try {
       const now = vnNow();
-  
-      // scheduleList에서 가능한 시간(정규화) 셋
+    
       const availableSet = new Set(
         scheduleList
           .filter(i => i.work_date === fullDate)
@@ -267,20 +296,24 @@ const isAllAgreed = () => {
             return `${hh}:00|${i.is_next_day ? 1 : 0}`;
           })
       );
-  
+    
       const isOvernight =
         parseInt(venueInfo.open_time.split(':')[0], 10) * 60 +
           parseInt(venueInfo.open_time.split(':')[1] || '0', 10)
         >
         parseInt(venueInfo.close_time.split(':')[0], 10) * 60 +
           parseInt(venueInfo.close_time.split(':')[1] || '0', 10);
-  
+    
       const openAbs = buildVNDateTime(fullDate, venueInfo.open_time);
       const closeAbs = isOvernight
         ? buildVNDateTime(fullDate, venueInfo.close_time, 1)
         : buildVNDateTime(fullDate, venueInfo.close_time, 0);
-  
-      // ===== 디버그 헤더 =====
+    
+      // 🎯 만료일 Date 객체 (VN 시간)
+      const expiredAtStr = subscription?.expired_at;
+      const expiredAtDate = expiredAtStr ? new Date(expiredAtStr) : null;
+      const expiredYmd = expiredAtStr ? expiredAtStr.slice(0, 10) : null;
+    
       console.groupCollapsed(
         `%c[handleDateSelect] ${fullDate}`,
         'color:#2563eb;font-weight:bold;'
@@ -290,43 +323,38 @@ const isAllAgreed = () => {
       console.log('isOvernight:', isOvernight);
       console.log('uniqueTimeSlots:', uniqueTimeSlots.map(s => s.value));
       console.log('availableSet:', Array.from(availableSet));
-  
-      // 슬롯별 유효성 판정
+      console.log('expiredAt:', expiredAtDate, expiredYmd);
+    
       for (const slot of uniqueTimeSlots) {
         const rawH = parseInt(slot.value.split(':')[0], 10);
         const dayOffset = rawH >= 24 ? 1 : 0;
         const slotAbs = buildVNDateTime(fullDate, slot.value, 0);
-  
+    
         let reason = null;
-  
+    
         if (slotAbs <= now) {
           reason = 'past';
-        } else if (!(slotAbs >= openAbs && slotAbs <= closeAbs)) {
+        } 
+        // 구독 만료일이면, 만료 시각 이후는 비활성화
+        else if (expiredYmd && fullDate === expiredYmd && expiredAtDate && slotAbs > expiredAtDate) {
+          reason = 'after_expired_time';
+        }
+        else if (!(slotAbs >= openAbs && slotAbs <= closeAbs)) {
           reason = 'out_of_business_window';
         } else {
           const key = `${String(rawH % 24).padStart(2, '0')}:00|${dayOffset}`;
           if (!availableSet.has(key)) reason = 'not_in_schedule';
         }
-  
+    
         if (reason) {
           nextDisabled.push(slot.value);
         }
-  
-        // 슬롯별 상세 로그 (원하면 주석 해제)
-        // console.log(`slot=${slot.value}`, {
-        //   slotAbsISO: slotAbs.toISOString(),
-        //   past: slotAbs <= now,
-        //   inBusinessWindow: slotAbs >= openAbs && slotAbs <= closeAbs,
-        //   key: `${String(rawH % 24).padStart(2,'0')}:00|${dayOffset}`,
-        //   inAvailable: availableSet.has(`${String(rawH % 24).padStart(2,'0')}:00|${dayOffset}`),
-        //   disabledReason: reason
-        // });
       }
-  
+    
       const finalDisabled = [...new Set(nextDisabled)].sort();
       console.log('FINAL disabledTimes:', finalDisabled);
       console.groupEnd();
-  
+    
       setDisabledTimes(finalDisabled);
     } catch (e) {
       console.error('[handleDateSelect] error:', e);
@@ -334,6 +362,7 @@ const isAllAgreed = () => {
       console.log('FINAL disabledTimes (fallback all):', fallback);
       setDisabledTimes(fallback);
     }
+    
   };
   
 
@@ -780,6 +809,7 @@ const handleReserve = async () => {
           attendee={attendee}
           onAttendeeChange={setAttendee}
           baseDate={baseDate}
+          maxDay={maxDay}
           selectedDate={selectedDate}
           onDateSelect={handleDateSelect}
           timeSlots={timeSlots}
