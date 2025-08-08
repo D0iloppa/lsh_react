@@ -1546,8 +1546,10 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                 */
               }
               onClick={async () => {
-                if (!venueInfo.is_reservation) return;
-                if (venueInfo.schedule_status === 'closed' || venueInfo.schedule_status === 'before_open') return;
+                // if (!venueInfo.is_reservation) return;
+                // if (venueInfo.schedule_status === 'closed' || venueInfo.schedule_status === 'before_open') return;
+
+                
                 if (!user || !user.user_id) {
                   openLoginOverlay(PAGES.DISCOVER, { venueId });
                   return;
