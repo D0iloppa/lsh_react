@@ -114,7 +114,16 @@ const tzNoonFromYMD = (y, m /*1~12*/, d) =>
 
 const TZ = 'Asia/Ho_Chi_Minh';
 
-export const vnNow = () => new Date(new Date().toLocaleString('en-US', { timeZone: TZ }));
+export const vnNow = () => {
+  const f = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: TZ, hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  });
+  const p = f.formatToParts(new Date()).reduce((o, x) => (o[x.type] = x.value, o), {});
+  // 예: 2025-08-08T01:04:25+07:00
+  return new Date(`${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}+07:00`);
+};
 
 // 'HH:mm' -> {h,m}
 export const parseHHMM = (hhmm) => {

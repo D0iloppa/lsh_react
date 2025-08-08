@@ -306,7 +306,7 @@ export const generateTimeSlotsWithLabels = (startHour = 19, endHour = 3) => {
     // 심야 영업: 19:00 ~ 03:00 같은 경우 (startHour > endHour)
     
     // 당일 시간대: startHour ~ 23:00
-    for (let hour = startHour; hour < 23; hour++) {
+    for (let hour = startHour; hour < 24; hour++) {
       const displayTime = hour.toString().padStart(2, '0') + ':00';
       const actualTime = hour.toString().padStart(2, '0') + ':00';
       
@@ -641,6 +641,7 @@ export const DurationBasedTimeSelector = ({
   selectedDuration = null,
   onTimeSelect, 
   disabledTimes = [],
+  baseDate = new Date(),
   maxDuration = 6, // 최대 6시간까지 선택 가능
   messages = {} // 다국어 메시지 추가
 }) => {
@@ -722,34 +723,111 @@ export const DurationBasedTimeSelector = ({
         )}
       </div>
 
-      <div 
-        className="time-grid" 
-        style={{ userSelect: 'none' }}
-      >
-        {timeSlots.map((timeSlot, index) => {
-          const time = typeof timeSlot === 'string' ? timeSlot : timeSlot.value;
-          const displayTime = typeof timeSlot === 'string' ? timeSlot : timeSlot.label;
-          
-          return (
-            <SketchBtn
-              key={index}
-              variant={getTimeSlotVariant(timeSlot)}
-              size="small"
-              onClick={() => handleTimeClick(timeSlot)}
-              disabled={disabledTimes.includes(time)}
-              style={{
-                opacity: disabledTimes.includes(time) ? 0.5 : 1,
-                position: 'relative'
-              }}
-            >
-              <HatchPattern 
-                opacity={startTime === time ? 0.6 : 0.4} 
-              />
-              {displayTime}
-            </SketchBtn>
-          );
-        })}
-      </div>
+
+
+
+<div style={{ userSelect: 'none', width: '100%' }}>
+  {(() => {
+    const result = [];
+    let currentDate = null;
+    let buttonGroup = [];
+
+    const pushGroup = () => {
+      if (!currentDate || buttonGroup.length === 0) return;
+
+
+      const days = ['일', '월', '화', '수', '목', '금', '토'];
+
+      // currentDate가 "YYYY-MM-DD" 문자열
+      const dateObj = new Date(currentDate);
+      const dayName = days[dateObj.getDay()];
+      const displayDate = `${currentDate} (${dayName})`;
+
+      result.push(
+        <div
+          key={`group-${currentDate}`}
+          style={{
+            display: 'block',        // 💥 핵심: 가로 정렬 안 하도록 block 지정
+            width: '100%',
+            marginBottom: '24px',
+          }}
+        >
+          {/* 날짜 */}
+          <div
+            style={{
+              display: 'block',     // 💥 날짜도 block
+              fontSize: '16px',
+              fontWeight: '700',
+              color: '#111827',
+              marginBottom: '10px',
+            }}
+          >
+            {displayDate}
+          </div>
+
+          {/* 버튼들 */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '8px',
+          }}>
+            {buttonGroup}
+          </div>
+        </div>
+      );
+    };
+
+    timeSlots.forEach((timeSlot, index) => {
+      const time = typeof timeSlot === 'string' ? timeSlot : timeSlot.value;
+      const displayTime = typeof timeSlot === 'string' ? timeSlot : timeSlot.label;
+
+      const hour = parseInt(time.split(':')[0], 10);
+      const isNextDay = hour >= 24;
+
+      const labelDate = new Date(baseDate);
+      if (isNextDay) labelDate.setDate(labelDate.getDate() + 1);
+
+      const dateLabelString = labelDate.toISOString().split('T')[0];
+
+      if (currentDate !== dateLabelString) {
+        pushGroup(); // 이전 그룹 밀어넣기
+        currentDate = dateLabelString;
+        buttonGroup = [];
+      }
+
+      buttonGroup.push(
+        <SketchBtn
+          key={`btn-${index}`}
+          variant={getTimeSlotVariant(timeSlot)}
+          size="small"
+          onClick={() => handleTimeClick(timeSlot)}
+          disabled={disabledTimes.includes(time)}
+          style={{
+            opacity: disabledTimes.includes(time) ? 0.5 : 1,
+            position: 'relative',
+          }}
+        >
+          <HatchPattern opacity={startTime === time ? 0.6 : 0.4} />
+          {displayTime}
+        </SketchBtn>
+      );
+    });
+
+    pushGroup(); // 마지막 그룹
+
+    return result;
+  })()}
+</div>
+
+
+
+
+
+
+
+
+
+
 
       <DurationSelector
         startTime={startTime}
@@ -1164,6 +1242,7 @@ console.log("messages", messages)
       
       {useDurationMode ? (
         <DurationBasedTimeSelector
+          baseDate={selectedDate ? new Date(selectedDate) : new Date()}
           timeSlots={timeSlots}
           selectedStartTime={selectedTimes?.startTime || ''}
           selectedDuration={selectedTimes?.duration || null}

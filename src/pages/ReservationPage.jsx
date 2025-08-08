@@ -352,6 +352,7 @@ const checkDuplicateReserve = (
   
     try {
       const now = vnNow();
+      const isTodayVN = getVietnamDate() === fullDate; 
     
       const availableSet = new Set(
         scheduleList
@@ -398,9 +399,10 @@ const checkDuplicateReserve = (
     
         let reason = null;
     
-        if (slotAbs <= now) {
+        if (isTodayVN && slotAbs <= now) {
           reason = 'past';
-        } 
+        }
+        
         // 구독 만료일이면, 만료 시각 이후는 비활성화
         else if (expiredYmd && fullDate === expiredYmd && expiredAtDate && slotAbs > expiredAtDate) {
           reason = 'after_expired_time';
