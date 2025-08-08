@@ -417,7 +417,7 @@ const computeScheduleDate = (fullDate, venueInfo, now = vnNow()) => {
       
       const availableSet = new Set(
         scheduleList
-          .filter(i => i.work_date === scheduleYmd)
+          .filter(i => i.work_date === fullDate)
           .map(i => {
             const hh = (i.time || '').split(':')[0]?.padStart(2, '0') || '00';
             return `${hh}:00|${i.is_next_day ? 1 : 0}`;

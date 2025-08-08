@@ -91,8 +91,8 @@ const AppRoutes = () => {
       ];
 
       if (!allowedUUIDs.includes(uuid)) {
-        //navigate('/block');
-        //return;
+        navigate('/block');
+        return;
       }
 
     } catch (err) {
