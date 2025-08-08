@@ -333,13 +333,22 @@ const checkDuplicateReserve = (
     }
   
     // 2) 타임슬롯 생성
-    const openHour = parseInt(venueInfo.open_time.split(':')[0], 10);
+    const [openHour, openMinute] = venueInfo.open_time.split(':').map(n => parseInt(n, 10));
     const closeHour = parseInt(venueInfo.close_time.split(':')[0], 10);
+
     venueTimeSlots = generateTimeSlotsWithLabels(openHour, closeHour);
-    const uniqueTimeSlots = venueTimeSlots.filter((slot, i, self) =>
+    let uniqueTimeSlots = venueTimeSlots.filter((slot, i, self) =>
       i === self.findIndex(s => s.value === slot.value)
     );
+
+    // 만약 영업 시작분이 0보다 크면, 해당 시각 이전 슬롯 제거
+    if (openMinute > 0) {
+      const openTimeString = String(openHour).padStart(2, '0') + ':00';
+      uniqueTimeSlots = uniqueTimeSlots.filter(slot => slot.value !== openTimeString);
+    }
+
     setTimeSlots(uniqueTimeSlots);
+
   
     try {
       const now = vnNow();
