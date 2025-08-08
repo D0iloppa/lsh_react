@@ -124,12 +124,16 @@ export const parseHHMM = (hhmm) => {
 
 // YYYY-MM-DD + HH:mm (+dayOffset) => 베트남시간의 절대 Date
 export const buildVNDateTime = (ymd, hhmm, dayOffset = 0) => {
-  const { h, m } = parseHHMM(hhmm);
-  // dayOffset 적용 + 정밀 비교를 위해 문자열로 명시 오프셋(+07:00)
-  // 24시 이상은 hour에서 dayOffset += Math.floor(h/24), hour = h%24 처리를 같이
-  let extra = Math.floor(h / 24);
+  const { h, m } = parseHHMM(hhmm); // "HH:mm" 또는 "HH:mm:ss" 모두 처리된다고 가정
+  let extra = Math.floor(h / 24);       // 24:00, 25:00 ... 처리
   const hour = h % 24;
+
+  // 베트남(+07:00) 기준 앵커 생성
   const base = new Date(`${ymd}T${String(hour).padStart(2,'0')}:${String(m).padStart(2,'0')}:00+07:00`);
-  base.setDate(base.getDate() + dayOffset + extra);
-  return base;
+
+  // 하루 단위는 ms로 더해서 타임존/로컬 DST 의존성 제거
+  const daysToAdd = (dayOffset + extra);
+  const result = new Date(base.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+
+  return result;
 };
