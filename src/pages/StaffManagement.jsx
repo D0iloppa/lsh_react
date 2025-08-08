@@ -182,6 +182,7 @@ const transformStaffData = (apiData) => {
       image_url:item.image_url,
       images: combinedImages, // image_url과 images를 합친 배열
       description:item.description,
+      languages:item.languages,
       // 여러 가능성을 체크해서 status 설정
       status: item.status || 
               (item.is_active ? 'active' : 'on_leave') || 
@@ -302,7 +303,7 @@ const loadStaffList = async () => {
 
       const transformedData = transformStaffData(filteredList);
       // created_at 기준으로 정렬 (오래된 순서대로 = 등록 순서)
-      const sortedData = transformedData.sort((a, b) => a.created_at - b.created_at);
+      const sortedData = transformedData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       setStaffList(transformedData);
     } else {
       console.log('No staff data found');
