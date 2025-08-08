@@ -37,7 +37,9 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   
   const staffStatus = (staff) => {
 
-    const availCnt = staff?.availCnt || 0;
+    // const availCnt = staff?.availCnt || 0;
+    
+    const availCnt = 1;
 
     const statusBackgroundColor =
       venueInfo?.schedule_status === 'closed'
@@ -1553,7 +1555,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                 // if (!venueInfo.is_reservation) return;
                 // if (venueInfo.schedule_status === 'closed' || venueInfo.schedule_status === 'before_open') return;
 
-                
+
                 if (!user || !user.user_id) {
                   openLoginOverlay(PAGES.DISCOVER, { venueId });
                   return;
