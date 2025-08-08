@@ -312,6 +312,45 @@ const checkDuplicateReserve = (
   return false;
 };
 
+
+const getBizDateForNow = (venueInfo) => {
+  const now = vnNow();
+  const todayYmd = getVietnamDate(now);
+
+  const { h: openH, m: openM }  = parseHH(venueInfo?.open_time);
+  const { h: closeH, m: closeM } = parseHH(venueInfo?.close_time);
+
+  const isOvernight = (openH * 60 + openM) > (closeH * 60 + closeM);
+
+  if (!isOvernight) {
+    // 일반 영업: 오늘이 곧 비즈니스 날짜
+    return todayYmd;
+  }
+
+  // 심야 영업: 자정 이후~클로즈 이전에는 전날이 비즈니스 날짜
+  const hh = now.getHours();
+  const mm = now.getMinutes();
+  const nowMin = hh * 60 + mm;
+  const closeMin = closeH * 60 + closeM;
+
+  if (nowMin < closeMin) {
+    // 전날로 이동
+    const d = new Date(`${todayYmd}T12:00:00+07:00`);
+    d.setDate(d.getDate() - 1);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  // 클로즈 지나면 오늘이 비즈니스 날짜
+  return todayYmd;
+};
+
+
+
+
+
   const handleDateSelect = (fullDate /* YYYY-MM-DD */, dayNumber) => {
     setSelectedDate(fullDate);
     setReservationData({ startTime: '', duration: null, endTime: null });
@@ -402,7 +441,7 @@ const checkDuplicateReserve = (
         if (isTodayVN && slotAbs <= now) {
           reason = 'past';
         }
-        
+
         // 구독 만료일이면, 만료 시각 이후는 비활성화
         else if (expiredYmd && fullDate === expiredYmd && expiredAtDate && slotAbs > expiredAtDate) {
           reason = 'after_expired_time';

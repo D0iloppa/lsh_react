@@ -37,9 +37,9 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   
   const staffStatus = (staff) => {
 
-    // const availCnt = staff?.availCnt || 0;
+    const availCnt = staff?.availCnt || 1;
     
-    const availCnt = 1;
+    //const availCnt = 1;
 
     const statusBackgroundColor =
       venueInfo?.schedule_status === 'closed'

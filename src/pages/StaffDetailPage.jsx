@@ -256,15 +256,11 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           params: { staff_id: girl.staff_id }
         });
 
-        /*
         if (Array.isArray(response) && response.length > 0) {
           setAvailCnt(response[0]?.availcnt || 0);
         } else {
           setAvailCnt(0);
         }
-        */
-       
-        setAvailCnt(1);
 
       } catch (error) {
         console.error('availCnt 로딩 실패:', error);
