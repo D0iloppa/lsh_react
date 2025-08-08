@@ -180,7 +180,9 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
 
 
           const response = await ApiClient.get('/api/getStaffProfile', {
-            params: { staff_id: otherProps.staff_id }
+            params: { staff_id: otherProps.staff_id
+              ,lang:currentLang
+             }
           });
 
           const apiDataArray = Array.isArray(response)

@@ -313,38 +313,55 @@ const checkDuplicateReserve = (
 };
 
 
-const getBizDateForNow = (venueInfo) => {
-  const now = vnNow();
-  const todayYmd = getVietnamDate(now);
+const computeScheduleDate = (fullDate, venueInfo, now = vnNow()) => {
 
-  const { h: openH, m: openM }  = parseHH(venueInfo?.open_time);
-  const { h: closeH, m: closeM } = parseHH(venueInfo?.close_time);
+  const toMinutes = (t = '00:00:00') => {
+    const [hh='0', mm='0'] = t.split(':');
+    return parseInt(hh, 10) * 60 + parseInt(mm, 10);
+  };
 
-  const isOvernight = (openH * 60 + openM) > (closeH * 60 + closeM);
-
-  if (!isOvernight) {
-    // 일반 영업: 오늘이 곧 비즈니스 날짜
-    return todayYmd;
-  }
-
-  // 심야 영업: 자정 이후~클로즈 이전에는 전날이 비즈니스 날짜
-  const hh = now.getHours();
-  const mm = now.getMinutes();
-  const nowMin = hh * 60 + mm;
-  const closeMin = closeH * 60 + closeM;
-
-  if (nowMin < closeMin) {
-    // 전날로 이동
-    const d = new Date(`${todayYmd}T12:00:00+07:00`);
-    d.setDate(d.getDate() - 1);
+  const shiftYmd = (ymd, days) => {
+    const d = new Date(`${ymd}T12:00:00+07:00`);
+    d.setDate(d.getDate() + days);
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
+  };
+
+
+  const openM = toMinutes(venueInfo?.open_time);
+  const closeM = toMinutes(venueInfo?.close_time);
+  const isOvernight = openM > closeM;
+
+  // 오늘(베트남)인지
+  const todayVN = new Date(now.toLocaleString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', hour12:false }))
+                    .toISOString().slice(0,10);
+  const isTodayVN = (todayVN === fullDate);
+
+  // 기본은 사용자가 고른 날짜 그대로
+  let scheduleYmd = fullDate;
+  let shifted = false;
+
+  // 심야영업 이면서, 사용자가 '오늘'을 골랐고, 현재시각이 클로즈 전이면 → 전날로 당김
+  if (isOvernight && isTodayVN) {
+    const nowM = now.getHours() * 60 + now.getMinutes();
+    if (nowM < closeM) {
+      scheduleYmd = shiftYmd(fullDate, -1);
+      shifted = true;
+    }
   }
 
-  // 클로즈 지나면 오늘이 비즈니스 날짜
-  return todayYmd;
+  // 디버그
+  console.log('[computeScheduleDate]', {
+    fullDate, todayVN, isTodayVN, isOvernight,
+    nowVN: now.toISOString(),
+    open_time: venueInfo?.open_time,
+    close_time: venueInfo?.close_time,
+    result: scheduleYmd, shifted
+  });
+
+  return { scheduleYmd, isOvernight, shifted };
 };
 
 
@@ -392,27 +409,37 @@ const getBizDateForNow = (venueInfo) => {
     try {
       const now = vnNow();
       const isTodayVN = getVietnamDate() === fullDate; 
-    
+
+     
+
+      const { scheduleYmd, isOvernight } = computeScheduleDate(fullDate, venueInfo);
+
+      
       const availableSet = new Set(
         scheduleList
-          .filter(i => i.work_date === fullDate)
+          .filter(i => i.work_date === scheduleYmd)
           .map(i => {
             const hh = (i.time || '').split(':')[0]?.padStart(2, '0') || '00';
             return `${hh}:00|${i.is_next_day ? 1 : 0}`;
           })
       );
     
+      /*
       const isOvernight =
         parseInt(venueInfo.open_time.split(':')[0], 10) * 60 +
           parseInt(venueInfo.open_time.split(':')[1] || '0', 10)
         >
         parseInt(venueInfo.close_time.split(':')[0], 10) * 60 +
           parseInt(venueInfo.close_time.split(':')[1] || '0', 10);
+      */
+
+      
+
     
-      const openAbs = buildVNDateTime(fullDate, venueInfo.open_time);
+      const openAbs = buildVNDateTime(scheduleYmd, venueInfo.open_time);
       const closeAbs = isOvernight
-        ? buildVNDateTime(fullDate, venueInfo.close_time, 1)
-        : buildVNDateTime(fullDate, venueInfo.close_time, 0);
+        ? buildVNDateTime(scheduleYmd, venueInfo.close_time, 1)
+        : buildVNDateTime(scheduleYmd, venueInfo.close_time, 0);
     
       // 🎯 만료일 Date 객체 (VN 시간)
       const expiredAtStr = subscription?.expired_at;
