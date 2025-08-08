@@ -26,7 +26,7 @@ const FLAG_CODES = {
 const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCallback, ...otherProps }) => {
   const [date, setDate] = useState('');
   const [partySize, setPartySize] = useState('');
-  const [availCnt, setAvailCnt] = useState(1);
+  const [availCnt, setAvailCnt] = useState(0);
   const [vnScheduleStatus, setVnScheduleStatus] = useState('');
   const [isLoadingAvailCnt, setIsLoadingAvailCnt] = useState(false);
   const [loading, setLoading] = useState(false);
