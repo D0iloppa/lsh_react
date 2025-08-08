@@ -230,7 +230,7 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
           image: item.image_url,
           address: item.address || '',
           opening_hours: rankingType === 'venue' ? `${item.open_time}~${item.close_time}` : null,
-          schedule_status: item.schedule_status,
+          schedule_status: item.is_open,
           is_reservation: item.is_open === 'available',
           reservation_count: item.reservation_count || 0,
           view_cnt: item.view_cnt || 0,
@@ -659,6 +659,7 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
 
                   {/* 영업 상태 (매장만) */}
                   {rankingType === 'venue' && (
+                    /*
                     <div
                       style={{
                         backgroundColor:
@@ -679,6 +680,28 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
                         ? get('VENUE_END') || '영업종료'
                         : (item.is_reservation ? get('DiscoverPage1.1.able') || '예약가능' : get('DiscoverPage1.1.disable') || '예약불가')}
                     </div>
+                    */
+                    <div
+                        className="is-reservation"
+                        style={{
+                          backgroundColor:
+                          item.schedule_status === 'available'
+                            ? 'rgb(11, 199, 97)'  // 예약가능 - 초록색
+                            : 'rgb(107, 107, 107)', // 영업종료 - 회색
+                          color: '#fff',
+                          padding: '5px 7px',
+                          borderRadius: '3px',
+                          display: 'inline-block',
+                          marginTop: '4px',
+                          fontSize: '12px'
+                        }}
+                      >
+
+                      {item.schedule_status === 'available'
+                          ? get('DiscoverPage1.1.able')  // 예약가능
+                          : get('VENUE_END') // 영업종료
+                      }  
+                      </div>
                   )}
 
                   {/* 주소 (매장만) */}
