@@ -230,7 +230,8 @@ const isAllAgreed = () => {
       
       ApiClient.postForm('/api/schedule', {  // data
         target: target,
-        target_id: id
+        target_id: id,
+        user_id: user.user_id
       })
       .then(async (response) => {
         const { subscription = {} } = await isActiveUser();
@@ -256,11 +257,66 @@ const isAllAgreed = () => {
     goBack();
   }
 
+
+  const SLOT_MINUTES = 60;
+
+// "YYYY-MM-DD HH:mm:ss" (VN local) -> Date(+07:00)
+const parseVNLocalTs = (ts) => new Date(`${ts.replace(' ', 'T')}+07:00`);
+
+// [aStart, aEnd) vs [bStart, bEnd)
+const overlaps = (aStart, aEnd, bStart, bEnd) =>
+  aStart < bEnd && bStart < aEnd;
+
+/**
+ * 예약 레코드를 슬롯 기준으로 정규화.
+ * - end를 "마지막 슬롯의 시작(포함)"으로 해석
+ * - end가 없거나 start >= end이면 1슬롯로 간주
+ * - 예) start=17:00, end=18:00, SLOT=60분 -> [17:00, 19:00)
+ */
+const normalizeRangeInclusiveEndAsSlotStart = (start, end, slotMinutes = SLOT_MINUTES) => {
+  const slotMs = slotMinutes * 60 * 1000;
+  if (!end || end <= start) {
+    // 단일 슬롯
+    return [start, new Date(start.getTime() + slotMs)];
+  }
+
+  // end를 마지막 슬롯의 "시작"으로 보므로, (end-start)/slot + 1 슬롯
+  const raw = (end.getTime() - start.getTime()) / slotMs;
+  // 부동소수 오차 방지를 위해 반올림
+  const slotsBetween = Math.round(raw);
+  const slotCount = Math.max(1, slotsBetween + 1);
+  const normEnd = new Date(start.getTime() + slotCount * slotMs);
+  return [start, normEnd];
+};
+
+const checkDuplicateReserve = (
+  slotAbs /* Date */,
+  hours /* number */,
+  userReservationList = [],
+  slotMinutesForZeroOrInclusiveEnd = SLOT_MINUTES
+) => {
+  const slotEnd = new Date(slotAbs.getTime() + hours * 60 * 60 * 1000);
+
+  for (const r of userReservationList) {
+    if (!r.start_ts) continue;
+
+    const rawStart = parseVNLocalTs(r.start_ts);
+    const rawEnd   = r.end_ts ? parseVNLocalTs(r.end_ts) : null;
+
+    // 🔴 여기서 end를 "마지막 슬롯 시작"으로 간주해 정규화
+    const [rStart, rEnd] =
+      normalizeRangeInclusiveEndAsSlotStart(rawStart, rawEnd, slotMinutesForZeroOrInclusiveEnd);
+
+    if (overlaps(slotAbs, slotEnd, rStart, rEnd)) return true;
+  }
+  return false;
+};
+
   const handleDateSelect = (fullDate /* YYYY-MM-DD */, dayNumber) => {
     setSelectedDate(fullDate);
     setReservationData({ startTime: '', duration: null, endTime: null });
   
-    const { venueInfo = null, scheduleList = [] } = scheduleData || {};
+    const { venueInfo = null, scheduleList = [],  userReservationList=[]} = scheduleData || {};
 
 
 
@@ -324,6 +380,7 @@ const isAllAgreed = () => {
       console.log('uniqueTimeSlots:', uniqueTimeSlots.map(s => s.value));
       console.log('availableSet:', Array.from(availableSet));
       console.log('expiredAt:', expiredAtDate, expiredYmd);
+      console.log('userReservationList:', userReservationList);
     
       for (const slot of uniqueTimeSlots) {
         const rawH = parseInt(slot.value.split(':')[0], 10);
@@ -344,6 +401,11 @@ const isAllAgreed = () => {
         } else {
           const key = `${String(rawH % 24).padStart(2, '0')}:00|${dayOffset}`;
           if (!availableSet.has(key)) reason = 'not_in_schedule';
+          else{
+            if (checkDuplicateReserve(slotAbs, 1, userReservationList)) {
+              reason = 'conflict_user_reservation';
+            }
+          }
         }
     
         if (reason) {

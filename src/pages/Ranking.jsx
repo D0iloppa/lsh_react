@@ -725,7 +725,7 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
                       <Eye size={12} />
                       {get('ranking_veiw_text')} {item.view_cnt.toLocaleString()}
                     </div>
-                    {rankingType === 'venue' && item.staff_cnt && (
+                    {rankingType === 'venue' && item.staff_cnt != null && (
                       <div className="stat-item">
                         <Users size={12} />
                         {get('title.text.16')} {item.staff_cnt}{get('Reservation.PersonUnit')}

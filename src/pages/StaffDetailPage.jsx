@@ -439,7 +439,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
                 flexWrap: 'wrap'
               }}
             >
-              <span>대화 가능:</span>
+              <span>{get('LANGUAGES_LABEL')}:</span>
               {girl.languages.split(',').map((lang) => {
                 const code = FLAG_CODES[lang.trim()];
                 return code ? (
