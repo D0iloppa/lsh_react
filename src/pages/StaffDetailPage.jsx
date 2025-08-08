@@ -26,7 +26,7 @@ const FLAG_CODES = {
 const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCallback, ...otherProps }) => {
   const [date, setDate] = useState('');
   const [partySize, setPartySize] = useState('');
-  const [availCnt, setAvailCnt] = useState(0);
+  const [availCnt, setAvailCnt] = useState(1);
   const [vnScheduleStatus, setVnScheduleStatus] = useState('');
   const [isLoadingAvailCnt, setIsLoadingAvailCnt] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -256,11 +256,15 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           params: { staff_id: girl.staff_id }
         });
 
+        /*
         if (Array.isArray(response) && response.length > 0) {
           setAvailCnt(response[0]?.availcnt || 0);
         } else {
           setAvailCnt(0);
         }
+        */
+       
+        setAvailCnt(1);
 
       } catch (error) {
         console.error('availCnt 로딩 실패:', error);
