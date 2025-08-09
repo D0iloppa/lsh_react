@@ -154,14 +154,14 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
   
   const extendCoupon = async () => {
 
-    const { subscription = {}} = isActiveUser();
+    const { subscription = {}} = await isActiveUser();
 
 
     const response = await ApiClient.postForm('/api/extendCoupon', {
       user_id: subscription.user_id,
       subscription_id: subscription.subscription_id
     });
-    const { success = false } = response;
+    const { success = true } = response;
   
     if (success) {
       await Swal.fire({
@@ -170,7 +170,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
         icon: 'success',
         confirmButtonText: get('Common.Confirm')
       });
-      navigate('/main');
+      // navigate('/main');
     } else {
       throw new Error('구매 실패');
     }

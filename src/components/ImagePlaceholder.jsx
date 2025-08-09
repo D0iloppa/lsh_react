@@ -10,6 +10,7 @@ const ImagePlaceholder = ({
   fallbackClassName = '',
   style = {},
   placeholder = '',
+  noPopup = false
 }) => {
   const isArray = Array.isArray(src);
   const imageList = isArray ? src.filter(Boolean) : [src];
@@ -24,6 +25,8 @@ const ImagePlaceholder = ({
   const handleImageLoad = () => setImageError(false);
 
   const openViewer = (index) => {
+    if (noPopup) return;
+    
     setCurrentIndex(index);
     setIsViewerOpen(true);
     document.body.style.overflow = 'hidden';
