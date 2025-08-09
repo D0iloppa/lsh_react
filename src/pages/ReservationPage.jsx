@@ -398,115 +398,123 @@ const computeTodayScheduleDate = (venueInfo) => {
 
 
   const handleDateSelect = (fullDate /* YYYY-MM-DD */, dayNumber) => {
-  setSelectedDate(fullDate);
-  setReservationData({ startTime: '', duration: null, endTime: null });
+    setSelectedDate(fullDate);
+    setReservationData({ startTime: '', duration: null, endTime: null });
 
-  const { venueInfo = null, scheduleList = [], userReservationList = [] } = scheduleData || {};
-  let nextDisabled = [];
-  let venueTimeSlots = [];
+    const { venueInfo = null, scheduleList = [], userReservationList = [] } = scheduleData || {};
+    let nextDisabled = [];
+    let venueTimeSlots = [];
 
-  if (!venueInfo?.open_time || !venueInfo?.close_time) {
-    setTimeSlots([]);
-    setDisabledTimes([]);
-    console.warn('[handleDateSelect] venueInfo missing; skip. fullDate=', fullDate);
-    return;
-  }
-
-  // 슬롯 생성 + 정각아닌 오픈분 제거
-  const [openHour, openMinute] = venueInfo.open_time.split(':').map(n => parseInt(n, 10));
-  const closeHour = parseInt(venueInfo.close_time.split(':')[0], 10);
-
-  venueTimeSlots = generateTimeSlotsWithLabels(openHour, closeHour);
-  let uniqueTimeSlots = venueTimeSlots.filter((slot, i, self) =>
-    i === self.findIndex(s => s.value === slot.value)
-  );
-  if (openMinute > 0) {
-    const openTimeString = String(openHour).padStart(2, '0') + ':00';
-    uniqueTimeSlots = uniqueTimeSlots.filter(slot => slot.value !== openTimeString);
-  }
-  setTimeSlots(uniqueTimeSlots);
-
-  try {
-    const now = vnNow();
-
-    // 오늘(시스템 기준) schedule_date 계산
-    const { scheduleYmdToday, isOvernight } = computeTodayScheduleDate(venueInfo);
-    // fullDate가 오늘-근무일과 같다면 "오늘 취급" → 지난 시간 비활성화
-    const isActiveDay = (fullDate === scheduleYmdToday);
-
-    // 선택한 날짜(fullDate) 기준 가용 시간셋
-    const availableSet = new Set(
-      scheduleList
-        .filter(i => i.work_date === fullDate)
-        .map(i => {
-          const hh = (i.time || '').split(':')[0]?.padStart(2, '0') || '00';
-          return `${hh}:00|${i.is_next_day ? 1 : 0}`;
-        })
-    );
-
-    // 선택한 날짜(fullDate) 기준 영업창
-    const openAbs = buildVNDateTime(fullDate, venueInfo.open_time, 0);
-    const closeAbs = isOvernight
-      ? buildVNDateTime(fullDate, venueInfo.close_time, 1) // 자정 넘김
-      : buildVNDateTime(fullDate, venueInfo.close_time, 0);
-
-    // 구독 만료 절대시각
-    const expiredAtStr  = subscription?.expired_at;
-    const expiredAtDate = expiredAtStr ? new Date(expiredAtStr) : null;
-
-    console.groupCollapsed(
-      `%c[handleDateSelect] ${fullDate}`,
-      'color:#2563eb;font-weight:bold;'
-    );
-    console.log('now(VN):', now.toISOString(), now);
-    console.log('scheduleYmdToday:', scheduleYmdToday, 'isActiveDay:', isActiveDay);
-    console.log('openAbs:', openAbs.toISOString(), openAbs, 'closeAbs:', closeAbs.toISOString(), closeAbs);
-    console.log('isOvernight:', isOvernight);
-    console.log('uniqueTimeSlots:', uniqueTimeSlots.map(s => s.value));
-    console.log('availableSet:', Array.from(availableSet));
-    console.log('expiredAt:', expiredAtDate);
-    console.log('userReservationList:', userReservationList);
-
-    for (const slot of uniqueTimeSlots) {
-      const rawH = parseInt(slot.value.split(':')[0], 10);
-      const dayOffset = rawH >= 24 ? 1 : 0;
-      const slotAbs = buildVNDateTime(fullDate, slot.value, 0); // fullDate 앵커 유지
-
-      let reason = null;
-
-      // ⬅️ 여기서 ‘오늘 취급(isActiveDay)’일 때만 지난 시간 컷
-      if (isActiveDay && slotAbs <= now) {
-        reason = 'past';
-      }
-      else if (expiredAtDate && slotAbs > expiredAtDate) {
-        reason = 'after_expired_time';
-      }
-      else if (!(slotAbs >= openAbs && slotAbs <= closeAbs)) {
-        reason = 'out_of_business_window';
-      } else {
-        const key = `${String(rawH % 24).padStart(2, '0')}:00|${dayOffset}`;
-        if (!availableSet.has(key)) {
-          reason = 'not_in_schedule';
-        } else if (checkDuplicateReserve(slotAbs, 1, userReservationList)) {
-          reason = 'conflict_user_reservation';
-        }
-      }
-
-      if (reason) nextDisabled.push(slot.value);
+    if (!venueInfo?.open_time || !venueInfo?.close_time) {
+      setTimeSlots([]);
+      setDisabledTimes([]);
+      console.warn('[handleDateSelect] venueInfo missing; skip. fullDate=', fullDate);
+      return;
     }
 
-    const finalDisabled = [...new Set(nextDisabled)].sort();
-    console.log('FINAL disabledTimes:', finalDisabled);
-    console.groupEnd();
+    // 슬롯 생성 + 정각아닌 오픈분 제거
+    const [openHour, openMinute] = venueInfo.open_time.split(':').map(n => parseInt(n, 10));
+    const closeHour = parseInt(venueInfo.close_time.split(':')[0], 10);
 
-    setDisabledTimes(finalDisabled);
-  } catch (e) {
-    console.error('[handleDateSelect] error:', e);
-    const fallback = uniqueTimeSlots.map(s => s.value);
-    console.log('FINAL disabledTimes (fallback all):', fallback);
-    setDisabledTimes(fallback);
-  }
-};
+    venueTimeSlots = generateTimeSlotsWithLabels(openHour, closeHour);
+    let uniqueTimeSlots = venueTimeSlots.filter((slot, i, self) =>
+      i === self.findIndex(s => s.value === slot.value)
+    );
+    if (openMinute > 0) {
+      const openTimeString = String(openHour).padStart(2, '0') + ':00';
+      uniqueTimeSlots = uniqueTimeSlots.filter(slot => slot.value !== openTimeString);
+    }
+    setTimeSlots(uniqueTimeSlots);
+
+    try {
+      const now = vnNow();
+
+      // 오늘(시스템 기준) schedule_date 계산
+      const { scheduleYmdToday, isOvernight } = computeTodayScheduleDate(venueInfo);
+      // fullDate가 오늘-근무일과 같다면 "오늘 취급" → 지난 시간 비활성화
+      const isActiveDay = (fullDate === scheduleYmdToday);
+
+      // 선택한 날짜(fullDate) 기준 가용 시간셋
+      const availableSet = new Set(
+        scheduleList
+          .filter(i => i.work_date === fullDate)
+          .map(i => {
+            const hh = (i.time || '').split(':')[0]?.padStart(2, '0') || '00';
+            return `${hh}:00|${i.is_next_day ? 1 : 0}`;
+          })
+      );
+
+      // 선택한 날짜(fullDate) 기준 영업창
+      const openAbs = buildVNDateTime(fullDate, venueInfo.open_time, 0);
+      const closeAbs = isOvernight
+        ? buildVNDateTime(fullDate, venueInfo.close_time, 1) // 자정 넘김
+        : buildVNDateTime(fullDate, venueInfo.close_time, 0);
+
+      // 구독 만료 절대시각
+      const expiredAtStr  = subscription?.expired_at;
+      const expiredAtDate = expiredAtStr ? new Date(expiredAtStr) : null;
+
+      console.groupCollapsed(
+        `%c[handleDateSelect] ${fullDate}`,
+        'color:#2563eb;font-weight:bold;'
+      );
+      console.log('now(VN):', now.toISOString(), now);
+      console.log('scheduleYmdToday:', scheduleYmdToday, 'isActiveDay:', isActiveDay);
+      console.log('openAbs:', openAbs.toISOString(), openAbs, 'closeAbs:', closeAbs.toISOString(), closeAbs);
+      console.log('isOvernight:', isOvernight);
+      console.log('uniqueTimeSlots:', uniqueTimeSlots.map(s => s.value));
+      console.log('availableSet:', Array.from(availableSet));
+      console.log('expiredAt:', expiredAtDate);
+      console.log('userReservationList:', userReservationList);
+
+      for (const slot of uniqueTimeSlots) {
+        const rawH = parseInt(slot.value.split(':')[0], 10);
+        const dayOffset = rawH >= 24 ? 1 : 0;
+        const slotAbs = buildVNDateTime(fullDate, slot.value, 0); // fullDate 앵커 유지
+
+        let reason = null;
+
+        // ⬅️ 여기서 ‘오늘 취급(isActiveDay)’일 때만 지난 시간 컷
+        if (isActiveDay && slotAbs <= now) {
+          reason = 'past';
+        }
+        // 오늘 취급이면서, 1시간 이내 시간은 예약 불가능
+        else if (isActiveDay) {
+          const diffMs = slotAbs - now;            // 앞으로면 양수, 과거면 음수/0
+          const ONE_HOUR = 60 * 60 * 1000;
+          if (diffMs > 0 && diffMs < ONE_HOUR) {
+            reason = 'within_1h';
+          }
+        }
+        else if (expiredAtDate && slotAbs > expiredAtDate) {
+          reason = 'after_expired_time';
+        }
+        else if (!(slotAbs >= openAbs && slotAbs <= closeAbs)) {
+          reason = 'out_of_business_window';
+        } else {
+          const key = `${String(rawH % 24).padStart(2, '0')}:00|${dayOffset}`;
+          if (!availableSet.has(key)) {
+            reason = 'not_in_schedule';
+          } else if (checkDuplicateReserve(slotAbs, 1, userReservationList)) {
+            reason = 'conflict_user_reservation';
+          }
+        }
+
+        if (reason) nextDisabled.push(slot.value);
+      }
+
+      const finalDisabled = [...new Set(nextDisabled)].sort();
+      console.log('FINAL disabledTimes:', finalDisabled);
+      console.groupEnd();
+
+      setDisabledTimes(finalDisabled);
+    } catch (e) {
+      console.error('[handleDateSelect] error:', e);
+      const fallback = uniqueTimeSlots.map(s => s.value);
+      console.log('FINAL disabledTimes (fallback all):', fallback);
+      setDisabledTimes(fallback);
+    }
+  };
 
   
 
