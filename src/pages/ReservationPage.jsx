@@ -167,48 +167,87 @@ const isAllAgreed = () => {
   // scheduleData 업데이트 완료 후 실행
   useEffect(() => {
     const run = async () => {
-      if (shouldAutoSelect && Object.keys(scheduleData).length > 0) {
-        
-        
-        
-        if (!subscription?.started_at) return;
-
-
-        // "2025-08-04 14:46:55.516583" → "2025-08-04"
-        const startYmd = subscription.started_at.slice(0, 10);
-
-        const expired_at = subscription.expired_at;
-        
-        let _maxDay = 1;
-        if (expired_at) {
-          // 날짜 부분만 추출
-          const startYmd = subscription.started_at.slice(0, 10);
-          const expiredYmd = expired_at.slice(0, 10);
-        
-          // VN 자정 기준 Date 객체 생성
-          const startDate = new Date(`${startYmd}T00:00:00+07:00`);
-          const expiredDate = new Date(`${expiredYmd}T00:00:00+07:00`);
-        
-          // 날짜 차이 + 1 (양 끝 포함)
-          const diffDays = Math.floor((expiredDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-        
-          _maxDay = diffDays;
-        }
-
-    
-        // 달력 앵커: 베트남 정오로 고정 (경계 이슈 회피)
-        setBaseDate(new Date(`${startYmd}T12:00:00+07:00`));
-        setMaxDay(_maxDay);
-
-        console.log('DEFAULT SELECT with complete data:', scheduleData, subscription, _maxDay);
-    
-        handleDateSelect(startYmd, 1);
-        setShouldAutoSelect(false);
+      if (!shouldAutoSelect || Object.keys(scheduleData).length === 0) return;
+      if (!subscription?.started_at) return;
+  
+      // 1) 시작/만료일 파싱
+      const startYmd = subscription.started_at.slice(0, 10); // "YYYY-MM-DD"
+      const expired_at = subscription.expired_at;
+  
+     
+  
+      // 3) VN 오늘 날짜와 isDawn 판정 (00:00 ~ 05:59)
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false
+      }).formatToParts(new Date());
+  
+      const getPart = (type) => parts.find(p => p.type === type)?.value || '';
+      const todayYmd = `${getPart('year')}-${getPart('month')}-${getPart('day')}`;
+      const hourVN = parseInt(getPart('hour') || '0', 10);
+      const isDawn = hourVN < 6;
+  
+      // 4) baseCandidate = max(startYmd, todayYmd)
+      const baseCandidateYmd = (todayYmd > startYmd) ? todayYmd : startYmd;
+  
+      // 헬퍼들 (정오 앵커로 날짜 연산 → 하루 밀림 방지)
+      const ymdToDateVNNoon = (ymd) => new Date(`${ymd}T12:00:00+07:00`);
+      const addDays = (ymd, delta) => {
+        const t = ymdToDateVNNoon(ymd).getTime() + delta * 86400000;
+        const d = new Date(t);
+        const y = d.getUTCFullYear();
+        const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const da = String(d.getUTCDate()).padStart(2, '0');
+        return `${y}-${m}-${da}`;
+      };
+  
+      // 5) isDawn 규칙 적용
+      let anchorYmd = isDawn ? addDays(baseCandidateYmd, -1) : baseCandidateYmd;
+  
+      // (선택) 범위 클램핑: 시작일 미만/만료일 초과 방지
+      if (anchorYmd < startYmd) anchorYmd = startYmd;
+      if (expired_at) {
+        const expiredYmd = expired_at.slice(0, 10);
+        if (anchorYmd > expiredYmd) anchorYmd = expiredYmd;
       }
+
+
+       // 2) _maxDay 계산 (양끝 포함)
+       let _maxDay = 1;
+       if (expired_at) {
+         const expiredYmd = expired_at.slice(0, 10);
+         const startDate = new Date(`${anchorYmd}T00:00:00+07:00`);
+         const expiredDate = new Date(`${expiredYmd}T00:00:00+07:00`);
+         const diffDays = Math.floor((expiredDate - startDate) / 86400000) + 1;
+         _maxDay = diffDays;
+       }
+  
+      // 6) baseDate / maxDay 세팅 (baseDate는 시작일 정오로 고정)
+      setBaseDate(new Date(`${anchorYmd}T12:00:00+07:00`));
+      setMaxDay(_maxDay);
+  
+      // 7) dayIndex 계산: startYmd → anchorYmd 일수차 + 1
+      const dayIndex = Math.min(
+        _maxDay,
+        Math.max(
+          1,
+          Math.floor((ymdToDateVNNoon(anchorYmd) - ymdToDateVNNoon(startYmd)) / 86400000) + 1
+        )
+      );
+  
+      console.log('[AUTO SELECT with dawn rule]', {
+        startYmd, todayYmd, isDawn, anchorYmd, dayIndex, _maxDay
+      });
+  
+      handleDateSelect(anchorYmd, dayIndex);
+      setShouldAutoSelect(false);
     };
   
     run();
   }, [scheduleData, shouldAutoSelect]);
+  
   
 
   const getTargetLabel = () => {
@@ -935,6 +974,8 @@ const handleReserve = async () => {
           selectedEntrance={selectedEntrance}
           onEntranceChange={setSelectedEntrance}
           getTargetLabel={getTargetLabel}
+          navigateToPageWithData={navigateToPageWithData}
+          PAGES={PAGES}
         />
         {/* <div className='Important-info'>
     <div style={{ marginBottom: '1rem', fontWeight: 'bold' }}>

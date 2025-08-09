@@ -6,17 +6,18 @@ import { useAuth } from '@contexts/AuthContext';
 import { useMsg } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
-import { CreditCard} from 'lucide-react';
+import { CreditCard } from 'lucide-react';
 import SketchHeader from '@components/SketchHeader';
 
 
-const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage}) => {
+const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, ...otherProps}) => {
   const navigate = useNavigate();
   const { user, isActiveUser } = useAuth();
   const { get } = useMsg();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [mode, setMode] = useState(otherProps?.mode || 'daily');
 
-console.log('PAGES', user)
+  console.log('PAGES', user, otherProps)
 
   useEffect(() => {
   const resetContentAreaScroll = () => {
@@ -86,81 +87,152 @@ console.log('PAGES', user)
     
   };
 
-  useEffect(() => {
-  const handleMessage = async(event) => {
+  const handleExtendPurchase = async () => {
+    console.log('handleExtendPurchase', mode);
 
-    if (event.data === 'purchaseSuccess') {
-      console.log('✅ 결제 성공 메시지 수신');
-      // Swal.fire({
-      //   title: get('Menu1.7'),
-      //   text: get('daily.pass.payment.success.message'),
-      //   icon: 'success',
-      //   confirmButtonText: get('Common.Confirm')
-      // });
-
-      setIsProcessing(true);
-
-    try {
-      const response = await ApiClient.postForm('/api/buyCoupon', {
-        user_id: user.user_id
-      });
-
-      const { success = false } = response;
-
-      if (success) {
-        Swal.fire({
-          title: get('SWAL_DAILY_TICKET_SUCCESS_TITLE'),
-          text: get('SWAL_DAILY_TICKET_SUCCESS_TEXT'),
-          icon: 'success',
-          confirmButtonText: get('Common.Confirm')
-        }).then(() => {
-          navigate('/main');
-        });
-      } else {
-        throw new Error('구매 실패');
-      }
-    } catch (error) {
-      console.error('❌ 일일권 구매 실패:', error);
+    if (!user?.user_id || user.type !== 'user') {
       Swal.fire({
-        title: get('daily.pass.purchase.fail.title'),
-        text: get('daily.pass.purchase.fail.text'),
-        icon: 'error',
-        confirmButtonText: get('Common.Confirm')
+        title: get('SWAL_SIGNUP_REQUIRED_TITLE'),
+        text: get('SWAL_SIGNUP_REQUIRED_TEXT'),
+        icon: 'warning',
+        confirmButtonText: get('BUTTON_CONFIRM')
       });
-    } finally {
-      setIsProcessing(false);
+      return;
     }
 
-    } else if (event.data === 'purchaseCancelled') {
-      Swal.fire({
-        title: get('daily.pass.payment.cancel.title'),
-        text: get('daily.pass.payment.cancel.text'),
-        icon: 'info',
-        confirmButtonText: get('Common.Confirm')
-      });
-      setIsProcessing(false);
+    
+    // 인앱 결제 요청
+    const payload = 'buyItem';
+
+     const isAndroid = !!window.native;
+            const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
+
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.native) {
+      // ✅ iOS WebView
+      console.log('📱 iOS 인앱 결제 요청');
+
+    
+      window.webkit.messageHandlers.native.postMessage(payload);
+      
+    } else if (isAndroid) {
+      // ✅ Android WebView
+      console.log('🤖 Android 인앱 결제 요청');
+      window.native.postMessage(payload);
+
     } else {
+      console.warn('⚠️ 웹뷰 환경이 아님 - 인앱 결제 불가');
+      //alert('인앱 결제가 지원되지 않는 환경입니다.');
+
       Swal.fire({
-        title: get('daily.pass.payment.fail.title'),
-        text: get('daily.pass.payment.fail.text'),
+          title: get('daily.pass.notice.title'),
+          text: get('in.app.purchase.not.supported'),
+          icon: 'info',
+          confirmButtonText: get('Common.Confirm')
+        })
+    }
+
+  };
+
+  const buyCoupon = async () => {
+    const response = await ApiClient.postForm('/api/buyCoupon', {
+      user_id: user.user_id
+    });
+    const { success = false } = response;
+  
+    if (success) {
+      await Swal.fire({
+        title: get('SWAL_DAILY_TICKET_SUCCESS_TITLE'),
+        text: get('SWAL_DAILY_TICKET_SUCCESS_TEXT'),
         icon: 'success',
         confirmButtonText: get('Common.Confirm')
       });
-      setIsProcessing(false);
+      navigate('/main');
+    } else {
+      throw new Error('구매 실패');
     }
   };
+  
+  const extendCoupon = async () => {
 
-  window.addEventListener('message', handleMessage);
+    const { subscription = {}} = isActiveUser();
 
-  return () => {
-    window.removeEventListener('message', handleMessage);
+
+    const response = await ApiClient.postForm('/api/extendCoupon', {
+      user_id: subscription.user_id,
+      subscription_id: subscription.subscription_id
+    });
+    const { success = false } = response;
+  
+    if (success) {
+      await Swal.fire({
+        title: get('SWAL_DAILY_TICKET_SUCCESS_TITLE'),
+        text: get('SWAL_DAILY_TICKET_SUCCESS_TEXT'),
+        icon: 'success',
+        confirmButtonText: get('Common.Confirm')
+      });
+      navigate('/main');
+    } else {
+      throw new Error('구매 실패');
+    }
   };
-}, []);
+  
+  useEffect(() => {
+    const handleMessage = async (event) => {
+  
+      if (event.data === 'purchaseSuccess') {
+        console.log('✅ 결제 성공 메시지 수신');
+        setIsProcessing(true);
+  
+        try {
+          if (mode === 'extend') {
+            await extendCoupon();
+          } else {
+            await buyCoupon();
+          }
+        } catch (error) {
+          console.error('❌ 일일권 구매 실패:', error);
+          await Swal.fire({
+            title: get('daily.pass.purchase.fail.title'),
+            text: get('daily.pass.purchase.fail.text'),
+            icon: 'error',
+            confirmButtonText: get('Common.Confirm')
+          });
+        } finally {
+          setIsProcessing(false);
+        }
+      } else if (event.data === 'purchaseCancelled') {
+        await Swal.fire({
+          title: get('daily.pass.payment.cancel.title'),
+          text: get('daily.pass.payment.cancel.text'),
+          icon: 'info',
+          confirmButtonText: get('Common.Confirm')
+        });
+        setIsProcessing(false);
+      } else {
+        // 실패 케이스: icon 을 error 로 수정
+        await Swal.fire({
+          title: get('daily.pass.payment.fail.title'),
+          text: get('daily.pass.payment.fail.text'),
+          icon: 'error',
+          confirmButtonText: get('Common.Confirm')
+        });
+        setIsProcessing(false);
+      }
+    };
+  
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+    // ✅ 필요한 값들만 의존성에 넣어 리스너 재등록
+  }, [mode, user?.user_id, get, navigate]);
+
 
 
     const handleBack = () => {
     //navigate(-1); // 브라우저 히스토리 뒤로가기
-    navigate('/main'); // 메인으로 직접 이동
+    //navigate('/main'); // 메인으로 직접 이동
+    goBack();
   };
 
   // 일일권 혜택 목록
@@ -416,7 +488,7 @@ console.log('PAGES', user)
       <div className="purchase-page">
         {/* 헤더 */}
              <SketchHeader
-                 title='일일권 구매 안내'
+                 title={mode === 'extend' ? '이용권 연장 안내' : '일일권 구매 안내'}
                  showBack={true}
               onBack={handleBack}
                  rightButtons={[]}

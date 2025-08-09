@@ -98,7 +98,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
       const container = document.querySelector('.content-area');
 
       if (container) {
-        const scrollY = container.scrollTop + 350;
+        const scrollY = container.scrollTop;
         localStorage.setItem('discoverScrollY', scrollY.toString());
         console.log("✅ savedScrollY from .content-area:", scrollY);
       }
@@ -244,10 +244,11 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
 
       const savedScrollY = localStorage.getItem('discoverScrollY');
 
+      console.log("INIT savedScrollY", savedScrollY);
 
 
       if (savedScrollY !== null) {
-        const scrollY = parseInt(savedScrollY, 10);
+        const scrollY = parseInt(savedScrollY, 0);
         const container = document.querySelector('.content-area');
 
         let checkCount = 0;
@@ -265,8 +266,8 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
 
           if (scrollReady) {
             container.scrollTop = scrollY;
-            console.log('✅ 스크롤 복원 완료:', scrollY);
-            localStorage.removeItem('discoverScrollY');
+            console.log('✅ 스크롤 복원 완료 savedScrollY:', scrollY);
+            //localStorage.removeItem('discoverScrollY');
           } else {
             checkCount++;
             if (checkCount < maxChecks) {

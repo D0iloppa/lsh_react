@@ -261,9 +261,50 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
 
     const init = async () => {
       if (messages && Object.keys(messages).length > 0) {
-        window.scrollTo(0, 0);
+
+        if (!localStorage.getItem('rankScrollY')) {
+          window.scrollTo(0, 0);
+        }
+            
       }
       await fetchRankingData();
+
+      const savedScrollY = localStorage.getItem('rankScrollY');
+
+      if (savedScrollY !== null) {
+        const scrollY = parseInt(savedScrollY, 10);
+        const container = document.querySelector('.content-area');
+
+        let checkCount = 0;
+        const maxChecks = 30;
+
+        const checkReadyAndScroll = () => {
+          const container = document.querySelector('.content-area');
+          if (!container) {
+            console.log('⏳ .content-area 아직 없음');
+            requestAnimationFrame(checkReadyAndScroll);
+            return;
+          }
+
+          const scrollReady = container.scrollHeight > container.clientHeight + 10;
+
+          if (scrollReady) {
+            container.scrollTop = scrollY;
+            console.log('✅ 스크롤 복원 완료:', scrollY);
+            localStorage.removeItem('rankScrollY');
+          } else {
+            checkCount++;
+            if (checkCount < maxChecks) {
+              requestAnimationFrame(checkReadyAndScroll);
+            } else {
+              console.warn('⚠️ 스크롤 복원 실패: 조건 만족 못함');
+            }
+          }
+        };
+
+        requestAnimationFrame(checkReadyAndScroll);
+      }
+
     };
 
     init();
@@ -285,6 +326,18 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
   const handleDiscover = (item) => {
     console.log("item", item)
 
+
+    const container = document.querySelector('.content-area');
+
+     if (container) {
+        const scrollY = container.scrollTop;
+        localStorage.setItem('rankScrollY', scrollY.toString());
+        localStorage.setItem('discoverScrollY', '0');
+        console.log("✅ savedScrollY from .content-area:", scrollY);
+      }
+
+
+    
     if (rankingType === 'venue') {
       navigateToPageWithData(PAGES.DISCOVER, { venueId: item.id });
     } else {

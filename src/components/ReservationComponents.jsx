@@ -576,7 +576,9 @@ export const WeeklyTableComponent = ({
   selectedDate, 
   onDateSelect, 
   disabledDates = [],
-  messages = {} // 다국어 메시지 추가
+  messages = {}, // 다국어 메시지 추가
+  navigateToPageWithData,
+  PAGES
 }) => {
   const weekDays = generateWeeklyDays(baseDate, maxDay);
 
@@ -643,15 +645,34 @@ export const DurationBasedTimeSelector = ({
   disabledTimes = [],
   baseDate = new Date(),
   maxDuration = 6, // 최대 6시간까지 선택 가능
-  messages = {} // 다국어 메시지 추가
+  messages = {}, // 다국어 메시지 추가
+  navigateToPageWithData,
+  PAGES
 }) => {
+  
+  const { user, isActiveUser } = useAuth();
+
+
   const [startTime, setStartTime] = useState(selectedStartTime);
   const [duration, setDuration] = useState(selectedDuration);
+  const [active, setActive] = useState(false);
+  
+
+
 
   React.useEffect(() => {
     setStartTime(selectedStartTime);
     setDuration(selectedDuration);
   }, [selectedStartTime, selectedDuration]);
+
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const result = await isActiveUser();
+      if (mounted) setActive(result);
+    })();
+    return () => { mounted = false; };
+  }, [isActiveUser]);
 
   const handleTimeClick = (timeSlot) => {
     const time = typeof timeSlot === 'string' ? timeSlot : timeSlot.value;
@@ -727,6 +748,53 @@ export const DurationBasedTimeSelector = ({
 
 
 <div style={{ userSelect: 'none', width: '100%' }}>
+    {/*이용권 연장*/}
+    <div>
+    {(() => {
+      const { isActiveUser = false, subscription = {} } = active || {};
+      const expiredAtStr = subscription?.expired_at; // e.g. "2025-08-12 21:22:32.953"
+      if (!expiredAtStr || !baseDate) return null;
+
+      // 1) 만료일의 날짜 부분만 사용
+      const expiredYmd = expiredAtStr.slice(0, 10); // "YYYY-MM-DD"
+
+      // 2) baseDate를 VN 타임존 날짜(YYYY-MM-DD)로 변환
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour12: false
+      }).formatToParts(baseDate);
+      const getPart = (type) => parts.find(p => p.type === type)?.value || '';
+      const baseYmd = `${getPart('year')}-${getPart('month')}-${getPart('day')}`;
+
+      // 3) 규칙: baseDate >= expired_at(날짜)이면 연장 버튼 노출
+      const shouldShowButton = baseYmd >= expiredYmd;
+
+      console.log('[extend-check]', { baseYmd, expiredYmd, shouldShowButton, isActiveUser, navigateToPageWithData, PAGES });
+      // PURCHASEPAGE
+
+      if (shouldShowButton) {
+        return (
+          <SketchBtn
+            style={{ boxShadow: '4px 4px 0px #49dde4', marginBottom: '10px' }}
+            onClick={() => {
+              navigateToPageWithData(PAGES.PURCHASEPAGE, {
+                mode: 'extend'
+              });
+            }}
+          >
+            이용권 연장
+          </SketchBtn>
+        );
+      } else {
+        return null;
+      }
+    })()}
+  </div>
+
+
   {(() => {
     const result = [];
     let currentDate = null;
@@ -762,7 +830,7 @@ export const DurationBasedTimeSelector = ({
               marginBottom: '10px',
             }}
           >
-            {currentDate}
+            {displayDate}
           </div>
 
           {/* 버튼들 */}
@@ -893,7 +961,7 @@ export const TimeSlotSelector = ({
 
   const getTimeSlotVariant = (timeSlot) => {
     const time = typeof timeSlot === 'string' ? timeSlot : timeSlot.value;
-    if (disabledTimes.includes(time)) return 'accent';
+    if (disabledTimes.includes(time)) return 'disabled';
     if (currentSelectedTimes.includes(time)) return 'accent';
     return 'secondary';
   };
@@ -1208,7 +1276,9 @@ export const ReservationForm = ({
   setUseStaffService,
   selectedEntrance,
   onEntranceChange,
-  getTargetLabel = () => {}
+  getTargetLabel = () => {},
+  navigateToPageWithData,
+  PAGES
 }) => {
 
 
@@ -1238,6 +1308,8 @@ console.log("messages", messages)
         onDateSelect={onDateSelect}
         disabledDates={disabledDates}
         messages={messages}
+        navigateToPageWithData={navigateToPageWithData}
+        PAGES={PAGES}
       />
       
       {useDurationMode ? (
@@ -1250,6 +1322,8 @@ console.log("messages", messages)
           disabledTimes={disabledTimes}
           maxDuration={maxDuration}
           messages={messages}
+          navigateToPageWithData={navigateToPageWithData}
+          PAGES={PAGES}
         />
       ) : (
         <TimeSlotSelector
