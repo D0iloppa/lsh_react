@@ -491,7 +491,8 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
                 console.log("✅ savedScrollY from .content-area:", scrollY);
               }
 
-
+              localStorage.setItem('discoverScrollY', '0');
+              
               navigateToPageWithData(PAGES.DISCOVER, { venueId: venue.venue_id });
             }
 
