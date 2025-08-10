@@ -1,8 +1,12 @@
 // pageHook.js
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PAGES, DEFAULT_PAGE } from '../config/pages.config';
 
 const usePageNavigation = () => {
+
+    const navigate = useNavigate();
+    
     const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE);
     const [pageDataStack, setPageDataStack] = useState([]);
     const [pageHistory, setPageHistory] = useState([DEFAULT_PAGE]);
@@ -134,6 +138,9 @@ const usePageNavigation = () => {
         setPageDataStack(prev => 
             prev.filter(entry => entry.page !== currentPage)
         );
+    }
+    else{
+        navigate('/main');
     }
 };
 
