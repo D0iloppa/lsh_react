@@ -231,8 +231,13 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
 
     const handleBack = () => {
     //navigate(-1); // 브라우저 히스토리 뒤로가기
-    //navigate('/main'); // 메인으로 직접 이동
-    goBack();
+    
+
+    if(mode === 'extend'){
+      goBack();
+    }else{
+      navigate('/main'); // 메인으로 직접 이동
+    }
   };
 
   // 일일권 혜택 목록
