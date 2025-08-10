@@ -420,6 +420,8 @@ const MainApp = () => {
                                if(id === PAGES.RANKING) {
                                     console.log("activeUser", activeUser);
 
+                                    localStorage.setItem('rankingType', 'venue');
+
                                     // activeUser 상태가 빈 객체이거나 isActive가 false인 경우
                                     if (Object.keys(activeUser).length === 0) {
                                         

@@ -7,11 +7,15 @@ import { useMsg } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
 import ApiClient from '@utils/ApiClient';
 
+import Swal from 'sweetalert2';
+
+
+
 const Ranking = ({ navigateToPageWithData, PAGES }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [rankingData, setRankingData] = useState([]);
   const [originalData, setOriginalData] = useState([]);
-  const [rankingType, setRankingType] = useState('venue'); // 'venue' or 'staff'
+  const [rankingType, setRankingType] = useState('none'); // 'venue' or 'staff'
   const [timeFilter, setTimeFilter] = useState('week'); // 'day', 'week', 'month'
   const { messages, get, isLoading } = useMsg();
   const { user } = useAuth();
@@ -265,11 +269,19 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
         if (!localStorage.getItem('rankScrollY')) {
           window.scrollTo(0, 0);
         }
-            
+        //Swal.fire('UUID 에러', rankingType, 'error');
+        if ( rankingType != 'none'){
+            localStorage.setItem('rankingType', rankingType); // 필터 정보 저장
+        }        
       }
       await fetchRankingData();
 
       const savedScrollY = localStorage.getItem('rankScrollY');
+      const savedRankingType = localStorage.getItem('rankingType'); // 저장된 필터 정보 가져오기
+
+    if (savedRankingType) {
+      setRankingType(savedRankingType); // 필터 복원
+    }
 
       if (savedScrollY !== null) {
         const scrollY = parseInt(savedScrollY, 10);
