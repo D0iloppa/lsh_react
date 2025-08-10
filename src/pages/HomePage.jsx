@@ -81,13 +81,47 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
       }
     };
 
+    
+
     //alert(fcmToken);
     if (fcmToken) {
       upateAppId();
       // optional logging
       console.log('📲 HomePage에서 받은 FCM 토큰:', fcmToken, 'user_id:', user?.user_id || 1);
     }
+
+
+    
   }, [fcmToken, user]);
+
+
+  useEffect(() => {
+
+    const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+
+  const upateSetting = async () =>
+     {
+    try {
+      const res = await axios.get(`${API_HOST}/api/userSetting`, {
+        params: {
+          user_id: user?.user_id || 1,
+          lang: currentLang,
+          email: user?.email,
+          user_type: 'user',
+        },
+      });
+      return res.data || [];
+    } catch (err) {
+      console.error('즐겨찾기 실패:', err);
+      return [];
+    }
+  };
+
+  localStorage.setItem('lsh_language', currentLang);
+  // 페이지 로드 시 upateSetting 호출
+  upateSetting();
+}, [user, currentLang]);  // user와 currentLang이 변경될 때마다 호출됨
+
 
   useEffect(() => {
     if (window.testPopup) {

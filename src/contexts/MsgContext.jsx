@@ -11,6 +11,7 @@ export const MsgProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentLang, setCurrentLang] = useState(() => {
+    
   const savedLang = localStorage.getItem('lsh_language');
   if (savedLang) return savedLang;
 

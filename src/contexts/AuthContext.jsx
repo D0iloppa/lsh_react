@@ -22,6 +22,8 @@ export const AuthProvider = ({ children }) => {
   });
 
   const [loading, setLoading] = useState(false);
+const [isSettingChecked, setIsSettingChecked] = useState(false); // 추가: 설정 확인 상태
+const { currentLang, setLanguage } = useMsg();
 
   const { get } = useMsg();
 
@@ -295,10 +297,46 @@ const getUUID = () => {
   }
 };
 
+const updateSetting = async (currentLang) => {
+
+  if (isSettingChecked) {
+      // 이미 한 번 요청이 완료된 경우, 요청하지 않음
+      console.log('Setting check already completed.');
+      return user;  // 기존 사용자 그대로 반환
+    }
+  try {
+     setIsSettingChecked(true); 
+    const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+    const res = await axios.get(`${API_HOST}/api/checkSetting`, {
+      params: {
+        user_id: user?.user_id || 1,
+        lang: currentLang,
+        email: user?.email,
+        user_type: 'user',
+      },
+    });
+
+    if (res.data) {
+      const updatedUser = { ...user, language: res.data.language || currentLang };
+      // 로컬스토리지에 업데이트된 언어 값 저장
+      localStorage.setItem('user', updatedUser);
+      return updatedUser;
+    }
+
+    return user;  // 응답이 없다면 기존 user 반환
+
+  } catch (err) {
+    console.error('즐겨찾기 실패:', err);
+    return user;  // 오류가 발생하면 기존 user 반환
+  }finally {
+      //setIsSettingChecked(false);  // 요청 완료 후 상태 초기화
+    }
+};
+
 const deviceLogin = async () => {
   // 1. isLoggedIn 체크
   if (isLoggedIn) {
-    console.log('이미 로그인된 상태입니다.');
+    console.log('이미 로그인된 상태입니다.', user);
     return { success: true, user };
   }
 
