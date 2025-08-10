@@ -478,10 +478,24 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
           id={`venue-${venue.venue_id || venue.name}`}
           className="venue-list-item"
           onClick={() => {
+            
             // ✅ 입구인 경우 클릭 이벤트 처리 안함 또는 다른 처리
             if (!venue.isEntrance) {
+
+              const container = document.querySelector('.content-area');
+
+              if (container) {
+                const scrollY = container.scrollTop;
+                localStorage.setItem('homeScrollY', scrollY.toString());
+                localStorage.setItem('discoverScrollY', '0');
+                console.log("✅ savedScrollY from .content-area:", scrollY);
+              }
+
+
               navigateToPageWithData(PAGES.DISCOVER, { venueId: venue.venue_id });
             }
+
+            
           }}
           style={{
             display: 'flex',
