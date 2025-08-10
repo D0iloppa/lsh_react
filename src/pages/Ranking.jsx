@@ -264,62 +264,63 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
     };
 
     const init = async () => {
-      if (messages && Object.keys(messages).length > 0) {
+    if (messages && Object.keys(messages).length > 0) {
+      if (!localStorage.getItem('rankScrollY')) {
+        window.scrollTo(0, 0);
+      }
 
-        if (!localStorage.getItem('rankScrollY')) {
+      if (rankingType !== 'none') {
+       
+        
+        if (rankingType != localStorage.getItem('rankingType') ){
+          localStorage.setItem('rankScrollRatio',0);
           window.scrollTo(0, 0);
         }
-        //Swal.fire('UUID 에러', rankingType, 'error');
-        if ( rankingType != 'none'){
-            localStorage.setItem('rankingType', rankingType); // 필터 정보 저장
-        }        
-      }
-      await fetchRankingData();
 
-      const savedScrollY = localStorage.getItem('rankScrollY');
-      const savedRankingType = localStorage.getItem('rankingType'); // 저장된 필터 정보 가져오기
+         localStorage.setItem('rankingType', rankingType); // 필터 정보 저장
+
+      } 
+    }
+
+    await fetchRankingData();
+
+    const savedScrollY = localStorage.getItem('rankScrollY');
+    const savedRankingType = localStorage.getItem('rankingType'); // 저장된 필터 정보 가져오기
 
     if (savedRankingType) {
       setRankingType(savedRankingType); // 필터 복원
     }
 
-      if (savedScrollY !== null) {
-        const scrollY = parseInt(savedScrollY, 10);
-        const container = document.querySelector('.content-area');
+    if (savedScrollY !== null) {
+      const scrollY = parseInt(savedScrollY, 10);
+      const container = document.querySelector('.content-area');
 
-        let checkCount = 0;
-        const maxChecks = 30;
-
-        const checkReadyAndScroll = () => {
-          const container = document.querySelector('.content-area');
-          if (!container) {
-            console.log('⏳ .content-area 아직 없음');
-            requestAnimationFrame(checkReadyAndScroll);
-            return;
-          }
-
-          const scrollReady = container.scrollHeight > container.clientHeight + 10;
-
-          if (scrollReady) {
-            container.scrollTop = scrollY;
-            console.log('✅ 스크롤 복원 완료:', scrollY);
+      // scrollY 복원 시, 콘텐츠 로딩 완료 후 100ms 뒤에 복원하도록 설정
+      setTimeout(() => {
+        const checkScrollPosition = () => {
+          const scrollHeight = container.scrollHeight;
+          const clientHeight = container.clientHeight;
+          
+          if (scrollHeight > clientHeight) {
+            const ratio = parseFloat(localStorage.getItem('rankScrollRatio'), 10);
+            const scrollPosition = ratio * (scrollHeight - clientHeight);
+            container.scrollTop = scrollPosition;
+             console.log('✅ 스크롤 비율 복원 완료 ratio :', ratio);
+          console.log('✅ 스크롤 비율 복원 완료 scrollHeight:', scrollHeight);
+          console.log('✅ 스크롤 비율 복원 완료 clientHeight:', clientHeight);
+          console.log('✅ 스크롤 비율 복원 완료 scrollPosition:', scrollPosition);
             localStorage.removeItem('rankScrollY');
           } else {
-            checkCount++;
-            if (checkCount < maxChecks) {
-              requestAnimationFrame(checkReadyAndScroll);
-            } else {
-              console.warn('⚠️ 스크롤 복원 실패: 조건 만족 못함');
-            }
+            requestAnimationFrame(checkScrollPosition);
           }
         };
 
-        requestAnimationFrame(checkReadyAndScroll);
-      }
+        requestAnimationFrame(checkScrollPosition);
+      }, 200); // 100ms 대기 후 스크롤 복원
+    }
+  };
 
-    };
-
-    init();
+  init();
   }, [messages, rankingType, timeFilter]);
 
   // 검색 필터링
@@ -333,6 +334,7 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
     }
 
     setRankingData(filtered);
+    
   }, [searchQuery, originalData]);
 
   const handleDiscover = (item) => {
@@ -346,6 +348,14 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
         localStorage.setItem('rankScrollY', scrollY.toString());
         localStorage.setItem('discoverScrollY', '0');
         console.log("✅ savedScrollY from .content-area:", scrollY);
+
+
+         const scrollRatio = container.scrollTop / (container.scrollHeight - container.clientHeight);
+         localStorage.setItem('rankScrollRatio', scrollRatio);
+          console.log('스크롤 비율 저장됨 scrollTop:', container.scrollTop);
+           console.log('스크롤 비율 저장됨 scrollHeight :', container.scrollHeight);
+            console.log('스크롤 비율 저장됨 clientHeight:', container.clientHeight);
+         console.log('스크롤 비율 저장됨:', scrollRatio);
       }
 
 
