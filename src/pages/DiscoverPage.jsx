@@ -285,7 +285,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
     resetContentAreaScroll();
 
     // DOM 렌더링 완료 후 한 번 더
-    setTimeout(resetContentAreaScroll, 100);
+    setTimeout(resetContentAreaScroll, 500);
 
   }, [venueId]);
 
