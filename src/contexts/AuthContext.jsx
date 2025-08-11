@@ -116,7 +116,7 @@ const { currentLang, setLanguage } = useMsg();
   }
 
 const iauMasking = (iau, text, onPurchaseClick) => {
-  const { isActiveUser = false, subscription = {} } = iau;
+  const { isActiveUser = false, subscription = {}, onlyMasking = false } = iau;
 
   if (isActiveUser) {
     return text;
@@ -124,6 +124,36 @@ const iauMasking = (iau, text, onPurchaseClick) => {
     // 텍스트가 없거나 빈 문자열인 경우
     if (!text || text.length === 0) {
       return text;
+    }
+
+    if(onlyMasking){
+      return (
+        <span className="masked-text-wrapper">
+          <span className="first-char">{text[0]}</span>
+          <span className="masking-dots">***</span>
+          
+          <style jsx>{`
+            .masked-text-wrapper {
+              display: inline-flex;
+              align-items: center; /* 중앙 정렬 */
+              line-height: 1;
+            }
+
+            .first-char,
+            .masking-dots {
+              display: inline-block;
+              font-size: inherit;
+              line-height: 1;
+            }
+
+            .masking-dots {
+              margin-left: 2px;
+              position: relative;
+              top: 0.25em; /* 폰트 높이 대비 미세 보정 */
+            }
+        `}</style>
+        </span>
+      );
     }
     
     // 텍스트 길이의 절반을 계산

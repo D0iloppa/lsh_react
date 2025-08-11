@@ -20,7 +20,7 @@ import ApiClient from '@utils/ApiClient';
 import { useLoginOverlay } from '@hooks/useLoginOverlay.jsx';
 import { overlay } from 'overlay-kit';
 
-const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAGES, goBack }) => {
+const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAGES, goBack, showAdWithCallback }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [hotspots, setHotspots] = useState([]);
   const [originalHotspots, setOriginalHotspots] = useState([]);
@@ -304,8 +304,20 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
       localStorage.setItem('discoverScrollY', '0');
       console.log("✅ savedScrollY from .content-area:", scrollY);
     }
+
+    showAdWithCallback(
+      // 광고 완료 시 콜백
+      () => {
+        navigateToPageWithData(PAGES.DISCOVER, { venueId });
+      },
+      // fallback 콜백 (광고 응답 없을 때)
+      () => {
+        navigateToPageWithData(PAGES.DISCOVER, { venueId });
+      },
+      1000 // 1초 타임아웃
+    );
     
-    navigateToPageWithData(PAGES.DISCOVER, { venueId });
+    //navigateToPageWithData(PAGES.DISCOVER, { venueId });
   };
 
   const toggleFavorite = async (spotTmp) => {

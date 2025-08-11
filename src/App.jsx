@@ -756,70 +756,77 @@ const AppContent = () => {
   );
 };
 
+////////////////////////////////////////////////////////////
+// MAIN APP (ROOT)
 function App() {
   useEffect(() => {
 
+
+    // 0. 앱 시작시 스크롤 위치 초기화
+    localStorage.removeItem('homeScrollY');
+    localStorage.removeItem('discoverScrollY');
+
     // 1. 확대 기능 비활성화
     const disableZoom = () => {
-  const contentValue = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
-  const metaViewport = document.querySelector('meta[name="viewport"]');
+        const contentValue = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+        const metaViewport = document.querySelector('meta[name="viewport"]');
 
-  if (metaViewport) {
-    metaViewport.setAttribute('content', contentValue);
-  } else {
-    const meta = document.createElement('meta');
-    meta.name = 'viewport';
-    meta.content = contentValue;
-    document.head.appendChild(meta);
-  }
+        if (metaViewport) {
+          metaViewport.setAttribute('content', contentValue);
+        } else {
+          const meta = document.createElement('meta');
+          meta.name = 'viewport';
+          meta.content = contentValue;
+          document.head.appendChild(meta);
+        }
 
-  // CSS 및 이벤트 방지는 그대로 유지
-  const style = document.createElement('style');
-  style.textContent = `
-    * {
-      touch-action: manipulation;
-    }
+        // CSS 및 이벤트 방지는 그대로 유지
+        const style = document.createElement('style');
+        style.textContent = `
+          * {
+            touch-action: manipulation;
+          }
 
-    img, canvas, video {
-      pointer-events: auto;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-    }
+          img, canvas, video {
+            pointer-events: auto;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+          }
 
-    input, textarea, select {
-      touch-action: auto !important;
-    }
-  `;
-  document.head.appendChild(style);
+          input, textarea, select {
+            touch-action: auto !important;
+          }
+        `;
+        document.head.appendChild(style);
 
-  const preventZoomGestures = (e) => {
-    if (e.touches && e.touches.length > 1) {
-      const allowZoomElements = e.target.closest('[data-allow-zoom="true"]');
-      if (!allowZoomElements) {
-        e.preventDefault();
-      }
-    }
-  };
+        const preventZoomGestures = (e) => {
+          if (e.touches && e.touches.length > 1) {
+            const allowZoomElements = e.target.closest('[data-allow-zoom="true"]');
+            if (!allowZoomElements) {
+              e.preventDefault();
+            }
+          }
+        };
 
-  const preventDoubleTapZoom = (e) => {
-    const allowZoomElements = e.target.closest('[data-allow-zoom="true"]');
-    if (!allowZoomElements) {
-      e.preventDefault();
-    }
-  };
+        const preventDoubleTapZoom = (e) => {
+          const allowZoomElements = e.target.closest('[data-allow-zoom="true"]');
+          if (!allowZoomElements) {
+            e.preventDefault();
+          }
+        };
 
-  document.addEventListener('touchstart', preventZoomGestures, { passive: false });
-  document.addEventListener('touchmove', preventZoomGestures, { passive: false });
-  document.addEventListener('gesturestart', preventDoubleTapZoom, { passive: false });
+        document.addEventListener('touchstart', preventZoomGestures, { passive: false });
+        document.addEventListener('touchmove', preventZoomGestures, { passive: false });
+        document.addEventListener('gesturestart', preventDoubleTapZoom, { passive: false });
 
-  return () => {
-    document.removeEventListener('touchstart', preventZoomGestures);
-    document.removeEventListener('touchmove', preventZoomGestures);
-    document.removeEventListener('gesturestart', preventDoubleTapZoom);
-  };
-};
+        return () => {
+          document.removeEventListener('touchstart', preventZoomGestures);
+          document.removeEventListener('touchmove', preventZoomGestures);
+          document.removeEventListener('gesturestart', preventDoubleTapZoom);
+        };
+      };
 
 
     // 2. 뒤로가기 막기
@@ -857,44 +864,29 @@ function App() {
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 
+  // 모바일이 아닌 경우
   if (!isMobile) {
-    {/*
-    return (
-      <div style={{ textAlign: 'center', marginTop: '50px' }}>
-        <h2>모바일 앱에서만 접속 가능합니다.</h2>
-        <p>아래 QR코드를 모바일로 스캔해 앱에서 접속해주세요.</p>
-        <img
-          src="https://api.qrserver.com/v1/create-qr-code/?data=https://your-mobile-site-url.com&size=200x200"
-          alt="QR 코드"
-        />
-      </div>
-    );
-    */}
-    
     return (
       <LeTantonSheriffPage />
     )
-    
   }
 
-  // App.jsx 또는 main.jsx
-
-return (
-  <MsgProvider>
-    <OverlayProvider>
-      <FcmProvider>
-        <AuthProvider>
-            <PopupProvider>
-                <AppContent />
-            </PopupProvider>
-        </AuthProvider>
-      </FcmProvider>
-    </OverlayProvider>
-  </MsgProvider>
-);
-
+  // 모바일 환경 
+  return (
+    <MsgProvider>
+      <OverlayProvider>
+        <FcmProvider>
+          <AuthProvider>
+              <PopupProvider>
+                  <AppContent />
+              </PopupProvider>
+          </AuthProvider>
+        </FcmProvider>
+      </OverlayProvider>
+    </MsgProvider>
+  );
 }
-
+////////////////////////////////////////////////////////////
 
 export const getUUIDTmp = () => {
   return new Promise((resolve, reject) => {

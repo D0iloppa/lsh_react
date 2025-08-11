@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import {DoorOpen} from 'lucide-react';
+import { useAuth } from '@contexts/AuthContext';
 import Swal from 'sweetalert2';
 
 const GoogleMapComponent = ({
@@ -9,17 +10,28 @@ const GoogleMapComponent = ({
   onMapClick = () => {},
   disableInteraction = false,
   showEntrances = false,
-  showNearestEntranceConnection = false
+  showNearestEntranceConnection = false,
+  disablePOIZoom = false
 }) => {
+  
+  const apiKey = 'AIzaSyCXOZJxwzKKVlBJPfaDYRv4z_rQ2zOALZk';
+
+
   const mapRef = useRef(null);
+  const blurOverlayRef = useRef(null);
   const mapInstance = useRef(null);
   const markersRef = useRef([]);
   const myLocationMarker = useRef(null);
   const [mapReady, setMapReady] = useState(false);
+  const [googleReady, setGoogleReady] = useState(false);
+
   const markerClickFlag = useRef(false); // 마커 클릭 여부 추적
   const entranceMarkersRef = useRef([]);
   const [autoZoomDone, setAutoZoomDone] = useState(false);
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+
+  const { user, isActiveUser } = useAuth();
 
   const entrances = [
   {
@@ -119,7 +131,7 @@ useEffect(() => {
     }
   }, [messages, currentLang]);
 
-
+/*
   useEffect(() => {
     const loadGoogleMaps = () => {
       if (document.getElementById('google-maps-script')) {
@@ -138,9 +150,218 @@ useEffect(() => {
 
     loadGoogleMaps();
   }, []);
+  */
 
-  const initMap = () => {
+  // 앞의 loadGoogleMaps 대신 아래 코드 사용
+  useEffect(() => {
+    let cancelled = false;
+  
+    const tryInit = () => {
+      if (cancelled) return;
+  
+      // 스크립트 로드 확인
+      if (!window.google?.maps) return;
+  
+      // ref가 붙을 때까지 한 프레임씩 대기
+      if (!mapRef.current) {
+        requestAnimationFrame(tryInit);
+        return;
+      }
+  
+      // 중복 초기화 방지 (StrictMode 대비)
+      if (mapInstance.current) return;
+  
+      initMap();
+    };
+  
+    // 이미 로드되어 있으면 바로 진행
+    if (window.google?.maps) {
+      requestAnimationFrame(tryInit);
+    } else {
+      const exist = document.getElementById('google-maps-script');
+      if (exist) {
+        exist.addEventListener('load', tryInit, { once: true });
+      } else {
+        const script = document.createElement('script');
+        script.id = 'google-maps-script';
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
+        script.async = true;
+        script.defer = true;
+        script.onload = tryInit;
+        document.head.appendChild(script);
+      }
+    }
+  
+    return () => { cancelled = true; };
+  }, []);
+
+
+  // ON: Frosted + vignette + Liquid Glass plate + Dark glass message card
+const applyMapBlur = (opts = {}) => {
+  const el = mapRef.current;
+  if (!el) return;
+
+  const {
+    // 맵 자체는 얕게 (플레이트/카드에서 추가 보정)
+    blur = 1.6,
+    saturate = 1.02,
+    brightness = 1.02,
+
+    // frosted & vignette
+    dimWhite = 0.10,          // 0.08~0.12 권장
+    vignette = true,
+    vignetteInner = 0.62,     // 중앙 투명 비율(0~1)
+    vignetteStrength = 0.22,  // 가장자리 어둡게(0~0.35)
+
+    // 글래스 UI
+    glass = true,             // 중앙 카드 표시
+    message = '',             // 카드 문구
+    blockClicks = true,       // 잠금시 클릭 차단
+    duration = 220,           // 트랜지션
+  } = opts;
+
+  // 1) 맵 필터 (얕게)
+  el.style.transition = `filter ${duration}ms ease`;
+  el.style.willChange = 'filter';
+  el.style.setProperty(
+    'filter',
+    `blur(${blur}px) saturate(${saturate}) brightness(${brightness})`,
+    'important'
+  );
+  el.style.setProperty('transform', 'translateZ(0)', 'important');
+
+  // 2) 부모에 "리퀴드 글래스 플레이트" 전면 오버레이
+  const parent = el.parentElement;
+  if (getComputedStyle(parent).position === 'static') parent.style.position = 'relative';
+
+  let plate = parent.querySelector('#map-plate');
+  if (!plate) {
+    plate = document.createElement('div');
+    plate.id = 'map-plate';
+    Object.assign(plate.style, {
+      position: 'absolute',
+      inset: 0,
+      opacity: '0',
+      transition: `opacity ${duration}ms ease`,
+      zIndex: 1,
+      pointerEvents: blockClicks ? 'auto' : 'none',
+      borderRadius: 'inherit',
+
+      // Liquid glass 느낌 (배경 위에 유리판)
+      background: `
+        linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.10) 100%),
+        rgba(255,255,255,${dimWhite})
+      `,
+      border: '1px solid rgba(255,255,255,0.35)',
+      boxShadow: '0 10px 30px rgba(31,38,135,0.25), inset 0 1px 0 rgba(255,255,255,0.35)',
+      backdropFilter: 'blur(4px) saturate(1.35) brightness(1.02)',
+      WebkitBackdropFilter: 'blur(4px) saturate(1.35) brightness(1.02)',
+    });
+
+    // 상단 하이라이트(유리 반사 느낌)
+    const glare = document.createElement('div');
+    Object.assign(glare.style, {
+      position: 'absolute',
+      left: '10%',
+      right: '10%',
+      top: '10px',
+      height: '2px',
+      background:
+        'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 100%)',
+      pointerEvents: 'none',
+    });
+    plate.appendChild(glare);
+
+    parent.appendChild(plate);
+  }
+
+  // 비네트(가장자리 어둡게)
+  const vignetteBg = vignette
+    ? `radial-gradient(circle at 50% 50%,
+         rgba(0,0,0,0) ${Math.round(vignetteInner * 100)}%,
+         rgba(0,0,0,${Math.min(vignetteStrength, 0.15)}) 100%)`
+    : 'transparent';
+  plate.style.backgroundImage = `${vignetteBg}, linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.10) 100%)`;
+  plate.style.opacity = '1';
+
+  // 3) 중앙 "검은 리퀴드 글래스" 메시지 카드
+  const existing = parent.querySelector('#map-glass');
+  if (glass) {
+    let card = existing;
+    if (!card) {
+      card = document.createElement('div');
+      card.id = 'map-glass';
+      Object.assign(card.style, {
+        position: 'absolute',
+        left: '50%',
+        top: '50%',
+        transform: 'translate(-50%, -50%)',
+        minWidth: '260px',
+        maxWidth: 'min(92%, 520px)',
+        padding: '14px 16px',
+        borderRadius: '16px',
+        zIndex: 2,
+        pointerEvents: blockClicks ? 'auto' : 'none',
+        textAlign: 'center',
+
+        // Dark liquid glass
+        background: 'rgba(10,10,12,0.55)',
+        border: '1px solid rgba(255,255,255,0.18)',
+        boxShadow: '0 12px 36px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)',
+        backdropFilter: 'blur(14px) saturate(1.2)',
+        WebkitBackdropFilter: 'blur(14px) saturate(1.2)',
+        color: '#fff',
+      });
+
+      // 라벨
+      const label = document.createElement('div');
+      label.className = 'map-glass-msg';
+      Object.assign(label.style, {
+        fontWeight: 600,
+        fontSize: '14px',
+        lineHeight: 1.45,
+        whiteSpace: 'pre-line',
+      });
+      if (message) label.textContent = message;
+      card.appendChild(label);
+
+      parent.appendChild(card);
+    } else {
+      const label = card.querySelector('.map-glass-msg');
+      if (label && message) label.textContent = message;
+      card.style.display = 'block';
+    }
+  } else if (existing) {
+    existing.style.display = 'none';
+  }
+};
+
+// OFF: 모든 오버레이 제거 및 필터 복원
+const removeMapBlur = (duration = 220) => {
+  const el = mapRef.current;
+  if (el) {
+    el.style.transition = `filter ${duration}ms ease`;
+    el.style.filter = '';
+    el.style.transform = '';
+  }
+  const parent = el?.parentElement;
+  const plate = parent?.querySelector('#map-plate');
+  if (plate) {
+    plate.style.opacity = '0';
+    setTimeout(() => plate.remove(), duration);
+  }
+  parent?.querySelector('#map-glass')?.remove();
+};
+
+
+
+  const initMap = async () => {
     if (!window.google || !window.google.maps) return;
+
+    const checkActiveUser = await isActiveUser();
+    const {isActiveUser:iau, subscription = {} } = checkActiveUser;
+
+    console.log('initMap iau', checkActiveUser, iau);
 
     const baseOptions = {
       center: { lat: 10.782865, lng: 106.701439 },
@@ -172,6 +393,25 @@ useEffect(() => {
       }
       onMapClick(); // 실제 지도 클릭 처리
     });
+
+    //if (!iau) showBlurOverlay(mapInstance.current);
+    
+    if (!iau) {
+      //applyMapBlur();
+      applyMapBlur({
+        blur: 1.6,
+        dimWhite: 0.10,
+        vignette: true,
+        vignetteInner: 0.60,
+        vignetteStrength: 0.22,
+        glass: true,
+        message: get?.('MAP_PURCHASE_MESSAGE') || '지도 서비스를 이용하려면 이용권을 구매해야 합니다.',
+      });
+      //showBlurMessage(get?.('MAP_PURCHASE_MESSAGE') || '지도 서비스를 이용하려면 이용권을 구매해야 합니다.');
+    } else {
+      removeMapBlur();
+      //hideBlurMessage();
+    }
   };
 
   const createImageWithText = async (rating, isReservationAvailable = true) => {
@@ -339,16 +579,23 @@ useEffect(() => {
       });
 
       marker.addListener("click", () => {
+
+
+        // console.log('marker click', place);
+        
+
         markerClickFlag.current = true; // ✅ 마커 클릭으로 설정
-         mapInstance.current.setCenter({
-        lat: parseFloat(place.latitude),
-        lng: parseFloat(place.longitude)
-      });
-      
-      // ✅ 줌 레벨을 18로 확대 (또는 원하는 레벨)
-      mapInstance.current.setZoom(20);
-      
-      onMarkerClick(place);
+        mapInstance.current.setCenter({
+          lat: parseFloat(place.latitude),
+          lng: parseFloat(place.longitude)
+        });
+
+        if(!disablePOIZoom){      
+          // ✅ 줌 레벨을 18로 확대 (또는 원하는 레벨)
+          mapInstance.current.setZoom(20);
+        }
+
+        onMarkerClick(place);
       });
 
       markersRef.current.push(marker);

@@ -12,6 +12,7 @@ const ImagePlaceholder = ({
   fallbackClassName = '',
   style = {},
   placeholder = '',
+  noPopup = false
 }) => {
   const imageList = Array.isArray(fullList) && fullList.length > 0 ? fullList : [src];
 
@@ -36,6 +37,9 @@ const ImagePlaceholder = ({
 
      const isAndroid = !!window.native;
      const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
+
+
+     if (noPopup) return;
       
      if (isIOS) {
        try {

@@ -25,6 +25,8 @@ const ImagePlaceholder = ({
   const handleImageLoad = () => setImageError(false);
 
   const openViewer = (index) => {
+
+
     if (noPopup) return;
     
     setCurrentIndex(index);

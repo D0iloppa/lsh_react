@@ -417,7 +417,11 @@ const MainApp = () => {
                                     localStorage.setItem('homeScrollY', '0');
                                 }
 
-                               if(id === PAGES.RANKING) {
+
+                                const blockPage = [ PAGES.RANKING, PAGES.CHATTINGLIST, PAGES.BOOKINGHISTORY];
+
+
+                               if(blockPage.includes(id)) {
                                     console.log("activeUser", activeUser);
 
                                     localStorage.setItem('rankingType', 'venue');
@@ -433,9 +437,25 @@ const MainApp = () => {
 
                                             // API 결과에 따라 처리
                                             if (!isActive) {
+
+                                                let swalTitle = get('ranking_swal_title');
+                                                let swalText = get('RANKING_PURCHASE_MESSAGE');
+                                                
+                                                if(id === PAGES.RANKING){
+                                                    swalTitle = get('ranking_swal_title');
+                                                    swalText = get('RANKING_PURCHASE_MESSAGE');
+                                                }else if(id === PAGES.CHATTINGLIST){
+                                                    swalTitle = get('chatting_swal_title');
+                                                    swalText = get('CHATTING_PURCHASE_MESSAGE');
+                                                }else if(id === PAGES.BOOKINGHISTORY){
+                                                    swalTitle = get('booking_swal_title');
+                                                    swalText = get('BOOKING_PURCHASE_MESSAGE');
+                                                }
+
+
                                                 Swal.fire({
-                                                    title: get('ranking_swal_title'),
-                                                    text: get('RANKING_PURCHASE_MESSAGE'),
+                                                    title: swalTitle,
+                                                    text: swalText,
                                                     icon: 'question',
                                                     showCancelButton: true,
                                                     confirmButtonText: get('Popup.Button.TodayTrial'),

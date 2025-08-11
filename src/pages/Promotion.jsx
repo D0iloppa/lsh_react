@@ -9,7 +9,7 @@ import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 import SketchHeader from '@components/SketchHeaderMain';
 import { MapPin, Filter, Star } from 'lucide-react';
-
+import Swal from 'sweetalert2';
 import { useAuth } from '../contexts/AuthContext';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
@@ -66,6 +66,18 @@ const PromotionsPage = ({
   };
 
   const handleBookNow = (promotion) => {
+
+    if(promotion.target_type == 'admin') {
+        Swal.fire({
+              title: get('ADMIN_SWAL_TITLE'),
+              text: get('ADMIN_SWAL_CONTENT'),
+              icon: 'info',
+              confirmButtonText: get('INQUIRY_CONFIRM'),
+              confirmButtonColor: '#3085d6'
+          });
+
+          return;
+    }
 
      navigateToPageWithData && navigateToPageWithData(PAGES.DISCOVER, {
       venueId:promotion.venue_id

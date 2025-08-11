@@ -24,6 +24,10 @@ const FLAG_CODES = {
 };
 
 const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCallback, ...otherProps }) => {
+
+  // 이미지 확대 여부
+  const [noImagePopup, setNoImagePopup] = useState(true);
+
   const [date, setDate] = useState('');
   const [partySize, setPartySize] = useState('');
   const [availCnt, setAvailCnt] = useState(0);
@@ -32,13 +36,64 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
   const [loading, setLoading] = useState(false);
   const [girl, setGirl] = useState(otherProps || {});
   const [images, setImages] = useState([]);
+  const didOpenIOSViewerRef = useRef(false);
+
 
   const { get, currentLang, messages } = useMsg();
   const { isActiveUser } = useAuth();
   const { showPopup, closePopup } = usePopup();
 
+  const isAndroid = !!window.native;
+  const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
+
+  const openIOSImageViewer = (images = [], startIndex = 0) => {
+    try {
+
+      if(noImagePopup) return;
+
+        window.webkit.messageHandlers.native.postMessage(
+          JSON.stringify({
+            type: 'showImageViewer',
+            images: images,
+            startIndex: 0
+          })
+        );
+      } catch (e) {
+        console.error('iOS 메시지 전송 실패:', e);
+      }
+  };
+
+  const IOSImageViewer = ({ images = [] }) => {
+    const validImages = (images || []).filter(Boolean);
+    const slides = validImages.length > 0 ? validImages : [null];
+
+    return (
+      <div className="profile-rotation ios-native-image-viewer" style={{ padding: '0 16px' }}>
+        {slides.map((imageUrl, index) => (
+          <div key={index} className="profile-slide">
+            <div className="dual-image-container">
+              <div className="image-left">
+                <img
+                  src={imageUrl || '/img/no-image.png'}
+                  alt={`staff-${index}`}
+                  className="profile-image"
+                  onClick={() => openIOSImageViewer(validImages, index)}
+                  // iOS에서 네이티브 띄울 거라 로테이션/줌 없이 단순 이미지
+                  draggable={false}
+                  style={{ cursor: 'pointer' }}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+};
+
+
   const getAgeFromBirthYear = (birthYear) => {
     const currentYear = new Date().getFullYear();
+    
     return birthYear ? currentYear - parseInt(birthYear, 10) : null;
   };
 
@@ -98,6 +153,8 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
 
       if (isActive) {
         // Active User: 예약 페이지로 이동
+
+        12321123
         navigateToPageWithData(PAGES.RESERVATION, {
           target: 'staff',
           id: girl.staff_id || 123,
@@ -177,7 +234,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
       if (otherProps.fromReview && otherProps.staff_id) {
         setLoading(true);
         try {
-
+          
 
           const response = await ApiClient.get('/api/getStaffProfile', {
             params: { staff_id: otherProps.staff_id
@@ -220,6 +277,15 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
     if (!otherProps.staff_id) return;
 
     try {
+
+      const activeUser = await isActiveUser();
+      const { isActiveUser:iau = false} = activeUser;
+
+      console.log('noImagePopup-chk', iau);
+      // iau true -> 이미지 팝업, iau false -> 이미지 팝업 안함
+      setNoImagePopup(!iau);
+
+
       const res = await ApiClient.get('/api/getStaffPhotos', {
         params: { staff_id: otherProps.staff_id }
       });
@@ -243,6 +309,66 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
   fetchStaffPhotos();
 }, [otherProps.staff_id]);
 
+// RotationDiv가 올라갈 자리 요소
+const rotationHostRef = useRef(null);
+
+// viewport 기준 rect 반환
+const getViewportRect = (el) => {
+  if (!el) return null;
+  const r = el.getBoundingClientRect();
+  return {
+    x: r.left,
+    y: r.top,
+    width: r.width,
+    height: r.height,
+    dpr: window.devicePixelRatio || 1,
+  };
+};
+
+// iOS로 안전하게 postMessage
+const postIOS = (payload) => {
+  try {
+    window.webkit?.messageHandlers?.native?.postMessage(JSON.stringify(payload));
+  } catch (e) {
+    console.error('iOS postMessage 실패:', e);
+  }
+};
+
+useEffect(() => {
+  
+  if (!isIOS) return;
+  const valid = (images || []).filter(Boolean);
+  if (valid.length === 0) return;
+  if (didOpenIOSViewerRef.current) return;
+
+  let raf1, raf2;
+  // 레이아웃이 안정된 뒤 rect 측정
+  raf1 = requestAnimationFrame(() => {
+    raf2 = requestAnimationFrame(() => {
+      const rect = getViewportRect(rotationHostRef.current);
+      if (!rect) return;
+      postIOS({
+        type: 'showImageViewer', // 인라인 뷰어 호출
+        images: valid,
+        startIndex: 0,
+        noImagePopup:noImagePopup,
+        rect,
+      });
+      didOpenIOSViewerRef.current = true;
+    });
+  });
+
+  // 언마운트 시 정리
+  return () => {
+    if (raf1) cancelAnimationFrame(raf1);
+    if (raf2) cancelAnimationFrame(raf2);
+
+    if (!isIOS) return;
+    
+    postIOS({ type: 'deleteImageViewer' });
+    didOpenIOSViewerRef.current = false;
+  };
+}, [isIOS, images]);
 
   // availCnt 가져오기
   useEffect(() => {
@@ -393,37 +519,52 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           onBack={handleBack}
           rightButtons={[]}
         />
+<div className="profile-images-section">
+  <div
+    ref={rotationHostRef}                // ← 이 ref가 iOS 네이티브가 붙을 "자리"
+    className="profile-rotation"
+    style={{ position: 'relative' }}
+  >
+    {isIOS ? (
+      // iOS: 웹 이미지는 렌더링하지 않고, 자리만 유지(높이는 기존 이미지 높이와 동일하게)
+      <div style={{ width: '100%', height: 350 }} />
+    ) : (
+      <RotationDiv
+        interval={50000000}
+        swipeThreshold={50}
+        showIndicators={true}
+        pauseOnHover={true}
+        className="profile-rotation"
+      >
+        {(() => {
+          const validImages = images.filter(img => img && img.trim() !== '');
+          const slides = validImages.length > 0 ? validImages : [null];
 
-        <div className="profile-images-section">
-          <RotationDiv
-            interval={50000000}
-            swipeThreshold={50}
-            showIndicators={true}
-            pauseOnHover={true}
-            className="profile-rotation"
-          >
-            {(() => {
-              const validImages = images.filter(img => img && img.trim() !== '');
-              const slides = validImages.length > 0 ? validImages : [null];
 
-              return slides.map((imageUrl, index) => (
-                <div key={index} className="profile-slide">
-                  <div className="dual-image-container">
-                    <div className="image-left">
-                      <ImagePlaceholder
-                        src={imageUrl}  // 전체 이미지 리스트
-                        fullList={images}       
-                        initialIndex={index} // 클릭한 이미지의 index
-                        placeholder={true}
-                        className="profile-image"
-                      />
-                    </div>
-                  </div>
+
+          return slides.map((imageUrl, index) => (
+            <div key={index} className="profile-slide">
+              <div className="dual-image-container">
+                <div className="image-left">
+                  <ImagePlaceholder
+                    noPopup={noImagePopup}
+                    src={imageUrl}
+                    fullList={images}
+                    initialIndex={index}
+                    placeholder={true}
+                    className="profile-image"
+                  />
                 </div>
-              ));
-            })()}
-          </RotationDiv>
-        </div>
+              </div>
+            </div>
+          ));
+        })()}
+      </RotationDiv>
+    )}
+  </div>
+</div>
+
+
 
         <div className="staff-info-section">
           <div className="staff-name">{girl.name || 'Unknown Staff'}</div>

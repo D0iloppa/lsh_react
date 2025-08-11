@@ -380,13 +380,15 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
 
         venueViewCntUpsert();
 
-
+        const iau = await isActiveUser();
+        iau.onlyMasking = true;
 
         // 1. 먼저 staff 리스트를 가져옴
         const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
         const res = await axios.get(`${API_HOST}/api/getVenueStaffList`, {
-          params: { venue_id: venueId
-            ,lang:currentLang
+          params: { 
+            venue_id: venueId,
+            lang:currentLang
            },
         });
         const staffList = res.data || [];
@@ -445,7 +447,9 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
               return {
                 ...girl,
                 //displayName: `${girl.name} (${age})`,
-                displayName: `${girl.name}`,
+                //displayName: `${girl.name}`,
+                name: iauMasking(iau, girl.name || ''),
+                displayName: `${iauMasking(iau, girl.name || '')}`,
                 availCnt: availCnt
               };
             })
@@ -1336,6 +1340,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
             <GoogleMapComponent
               places={venueInfo ? [venueInfo] : []}
               disableInteraction={true}
+              disablePOIZoom={true}
               showEntrances={true} //입구 표시 활성화
               showNearestEntranceConnection={false}
             />
