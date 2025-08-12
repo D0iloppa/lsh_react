@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useCallback , useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
 import SketchSearch from '@components/SketchSearch';
@@ -7,10 +7,11 @@ import HatchPattern from '@components/HatchPattern';
 import GoogleMapComponent from '@components/GoogleMapComponent';
 import LoadingScreen from '@components/LoadingScreen';
 import SketchHeader from '@components/SketchHeaderMain'
+import SketchBtn from '@components/SketchBtn';
 
 import { useMsg } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
-import { Users, Star, Heart, ArrowRight, Clock, MapPin, CreditCard, Phone } from 'lucide-react';
+import { Users, Star, Heart, ArrowRight, Clock, MapPin, CreditCard, Phone, Locate  } from 'lucide-react';
 
 const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithData, PAGES, goBack, onSearch = () => {}, initialKeyword = '' }) => {
   const [searchQuery, setSearchQuery] = useState(initialKeyword);
@@ -28,7 +29,12 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
   const [isReservationOnly, setIsReservationOnly] = useState(false);
   const [staffLanguageFilter, setStaffLanguageFilter] = useState('ALL');
 
+  const [pressed, setPressed] = useState(false);
+
   const inputRef = useRef(null);
+
+  const mapRef = useRef(null);
+  
   const { messages, isLoading, get, currentLang } = useMsg();
   const { iauMasking, isActiveUser } = useAuth();
 
@@ -136,6 +142,11 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
       </div>
     );
   };
+
+  const handleMyPositionClick = useCallback(() => {
+    console.log('my position logic');
+    // 여기서 map recenter 등 필요한 로직 수행
+  }, []);
 
   return (
     <>
@@ -389,6 +400,8 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
               <GoogleMapComponent
                 places={places}
                 showEntrances={true}
+                ref={mapRef}
+                onMyPositionClick={handleMyPositionClick}
                 onMarkerClick={(venue) => {
                    if (venue.isEntrance) {
                     // 입구 클릭 시 처리 - 리스트만 표시하고 상세 정보는 표시하지 않음
@@ -444,6 +457,51 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
                   <option value="vi">{get('language.name.vietnamese')}</option>
                 </select>
               </div>
+              
+
+              {/* 내 위치로 이동 */}
+              <div
+                className="map-my-position-btn"
+                style={{
+                  position: 'fixed',                 // ✅ viewport 기준
+                  right: 10,
+                  bottom: 130,
+                  zIndex: 1000
+                }}
+              >
+                <SketchBtn
+                  aria-label="내 위치로 이동"
+                  onClick={() => mapRef.current?.focusMyPosition?.()}
+                  onMouseDown={() => setPressed?.(true)}
+                  onMouseUp={() => setPressed?.(false)}
+                  onMouseLeave={() => setPressed?.(false)}
+                  onTouchStart={() => setPressed?.(true)}
+                  onTouchEnd={() => setPressed?.(false)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 45, height: 45,            // 손가락에 적당한 히트 영역
+                    padding: 0,                        // 아이콘 전용
+                    borderRadius: 9999,                // 완전 둥근 버튼
+                    background: 'rgba(255,255,255,0.92)',
+                    border: '1px solid rgba(0,0,0,0.08)',
+                    boxShadow: pressed
+                      ? '0 1px 4px rgba(0,0,0,0.18)'
+                      : '0 4px 12px rgba(0,0,0,0.18)',
+                    backdropFilter: 'saturate(150%) blur(8px)',
+                    WebkitBackdropFilter: 'saturate(150%) blur(8px)',
+                    transform: pressed ? 'translateY(1px) scale(0.98)' : 'translateY(0)',
+                    transition: 'box-shadow 120ms ease, transform 120ms ease, background 120ms ease',
+                    color: '#111',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    touchAction: 'manipulation'
+                  }}
+                >
+                  <Locate size={18} strokeWidth={2} />
+                </SketchBtn>
+              </div>
 
                <label className="checkbox-label">
                   <input
@@ -492,7 +550,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
               }
 
               localStorage.setItem('discoverScrollY', '0');
-              
+
               navigateToPageWithData(PAGES.DISCOVER, { venueId: venue.venue_id });
             }
 

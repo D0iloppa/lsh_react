@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useCallback, useEffect, useRef, useState } from 'react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import {DoorOpen} from 'lucide-react';
 import { useAuth } from '@contexts/AuthContext';
@@ -11,9 +11,15 @@ const GoogleMapComponent = ({
   disableInteraction = false,
   showEntrances = false,
   showNearestEntranceConnection = false,
-  disablePOIZoom = false
-}) => {
-  
+  disablePOIZoom = false,
+  onMyPositionClick = () => {}
+}, ref) => {
+
+
+  const parentRef = useRef(null); // 구글맵/DOM 참조 등
+
+
+
   const apiKey = 'AIzaSyCXOZJxwzKKVlBJPfaDYRv4z_rQ2zOALZk';
 
 
@@ -29,6 +35,24 @@ const GoogleMapComponent = ({
   const entranceMarkersRef = useRef([]);
   const [autoZoomDone, setAutoZoomDone] = useState(false);
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+  const isDraggedRef = useRef(false);
+ const [isDragged, setIsDragged] = useState(false); // ✅
+
+  const focusMyPosition = useCallback(() => {
+    // 내부 로직: 지도 인스턴스 사용 등
+    
+    isDraggedRef.current = false;
+    setIsDragged(false);
+
+    positionToMyPosition();
+    
+    console.log('child: focus my position', isDraggedRef.current, isDragged);
+  }, []);
+
+  useImperativeHandle(ref, () => ({
+    focusMyPosition
+  }), [focusMyPosition]);
 
 
   const { user, isActiveUser } = useAuth();
@@ -394,6 +418,17 @@ const removeMapBlur = (duration = 220) => {
       onMapClick(); // 실제 지도 클릭 처리
     });
 
+
+    mapInstance.current.addListener('drag', () => {
+      
+    });
+
+   mapInstance.current.addListener('dragend', () => {
+    isDraggedRef.current = true;
+    setIsDragged(true);
+    console.log('drag end', isDraggedRef.current, 'error'); // ✅ 최신 값
+  });
+
     //if (!iau) showBlurOverlay(mapInstance.current);
     
     if (!iau) {
@@ -665,11 +700,7 @@ useEffect(() => {
 }, [mapReady, places]);
 
 
-  useEffect(() => {
-  if (!mapReady || !window.google || !mapInstance.current) return;
-  if (disableInteraction) return;
-
-  const interval = setInterval(async () => {
+  const positionToMyPosition = async () => {
     try {
       // ✅ 현재 위치 가져오기
       const coordString = await getMyLocation(); // 예: "37.2222,127.1232131"
@@ -683,20 +714,29 @@ useEffect(() => {
        if ( !isInVietnam  ) {
           latitude=10.7800125;
           longitude=106.7050903;
-          return;
+         // return;
        }
 
 
       // ✅ 랜덤 이동값 (약 ±1.5m 범위)
     
+      const latOffset = (Math.random() - 0.5) * 0.00003;
+      const lngOffset = (Math.random() - 0.5) * 0.00003;
+      /*
+      latitude += latOffset;
+      longitude += lngOffset;
+      */
 
       const newPos = { lat: latitude, lng: longitude };
 
       
       
       // 지도 중심 이동 (원하는 경우만)
-      //mapInstance.current.setCenter(newPos);
 
+      if ( isDraggedRef.current  == false ) {
+        mapInstance.current.setCenter(newPos);
+      }
+      
       // 기존 마커 위치 업데이트 (없으면 새로 생성)
       if (myLocationMarker.current) {
         myLocationMarker.current.setPosition(newPos);
@@ -715,6 +755,14 @@ useEffect(() => {
     } catch (error) {
       console.warn('위치 갱신 실패:', error);
     }
+  }
+
+  useEffect(() => {
+    if (!mapReady || !window.google || !mapInstance.current) return;
+    if (disableInteraction) return;
+
+  const interval = setInterval(async () => {
+    positionToMyPosition();
   }, 1000);
 
   return () => clearInterval(interval);
@@ -761,4 +809,4 @@ export const getMyLocation = () => {
   });
 };
 
-export default GoogleMapComponent;
+export default forwardRef(GoogleMapComponent);

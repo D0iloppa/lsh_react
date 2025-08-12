@@ -92,28 +92,72 @@ const { currentLang, setLanguage } = useMsg();
       }
   };
 
+
+  
+
   const isActiveUser = async () => {
+    const CACHE_KEY = 'cached-isActiveUser';
+  
+    function readCache() {
+      try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (typeof parsed.isActiveUser !== 'boolean') return null;
+        return {
+          isActiveUser: parsed.isActiveUser,
+          subscription: parsed.subscription || {}
+        };
+      } catch (e) {
+        return null;
+      }
+    }
+  
+    function writeCache(data) {
+      try {
+        localStorage.removeItem(CACHE_KEY); // 클리어 후 저장
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({
+            isActiveUser: !!data.isActiveUser,
+            subscription: data.subscription || {}
+          })
+        );
+      } catch (e) {
+        // quota 등 저장 실패는 무시
+      }
+    }
+  
     try {
       if (!user?.user_id) {
         console.log('❌ User not found, cannot check subscription');
         return { isActiveUser: false, subscription: {} };
       }
-
+  
       const response = await ApiClient.postForm('/api/getSubscriptionInfo', {
         user_id: user.user_id
       });
-
-      const { isActiveUser = false, subscription = {} } = response;
-      
-      console.log('✅ Subscription check result:', { isActiveUser, subscription });
-      
-      return { isActiveUser, subscription };
-      
+  
+      // ⚠️ 이름 충돌 피하기: active 로 받기
+      const { isActiveUser: active = false, subscription = {} } = response || {};
+  
+      console.log('✅ Subscription check result:', { isActiveUser: active, subscription });
+      writeCache({ isActiveUser: active, subscription }); // 성공 시 캐시 갱신
+  
+      return { isActiveUser: active, subscription };
     } catch (error) {
       console.error('❌ Failed to check subscription:', error);
+  
+      const cached = readCache();
+      if (cached) {
+        console.log('⚠️ Using cached subscription due to error:', cached);
+        return cached;
+      }
+  
       return { isActiveUser: false, subscription: {} };
     }
-  }
+  };
+  
 
 const iauMasking = (iau, text, onPurchaseClick) => {
   const { isActiveUser = false, subscription = {}, onlyMasking = false } = iau;
