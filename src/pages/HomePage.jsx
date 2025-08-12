@@ -12,6 +12,7 @@ import { useMsg } from '@contexts/MsgContext';
 import { useNavigate } from 'react-router-dom';
 import { useFcm } from '@contexts/FcmContext';
 import LoadingScreen from '@components/LoadingScreen';
+import NoticePopup from '@components/NoticePopup';
 
 
 import GlobalPopupManager from '@components/GlobalPopupManager';
@@ -37,6 +38,11 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   const [favorites, setFavorits] = useState([]);
   const { fcmToken } = useFcm();
   const [iauData, setIauData] = useState(null);
+
+  // 공지사항 상태
+  const [notice, setNotice] = useState(null);   // 공지사항 데이터
+  const [showNotice, setShowNotice] = useState(false); // 공지 표시 여부
+
 
     // 커스텀 훅 사용
   const navigationProps = { navigateToPageWithData, PAGES, goBack };
@@ -121,6 +127,41 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   // 페이지 로드 시 upateSetting 호출
   upateSetting();
 }, [user, currentLang]);  // user와 currentLang이 변경될 때마다 호출됨
+
+
+useEffect(() => {
+  const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+
+  const hasFetched = localStorage.getItem("hasFetchedNotice");
+  
+//  if (hasFetched == "true" ) return; // 이미 실행했으면 중단
+
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD 형식
+//  if (hasFetched === today) return;
+
+  
+  const fetchNotice = async () => {
+    try {
+      const res = await axios.get(`${API_HOST}/api/getNotice`, {
+          params: { lang: currentLang }
+        });
+
+      console.log("res", res);
+      if (res.data ) { 
+        const activeNotice = res.data;
+
+        setNotice(activeNotice);
+        setShowNotice(true);
+
+        localStorage.setItem("hasFetchedNotice", "true");
+      }
+    } catch (err) {
+      console.error("공지사항 불러오기 실패:", err);
+    }
+  };
+
+  fetchNotice();
+}, []);
 
 
   useEffect(() => {
@@ -886,6 +927,14 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
           isVisible={isLoading} 
         />
       </div>
+
+<NoticePopup
+  notice={notice}
+  showNotice={showNotice}
+  setShowNotice={setShowNotice}
+/>
+      
+
     </>
   );
 };

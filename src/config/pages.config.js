@@ -45,6 +45,7 @@ import PurchasePage from '@components/PurchasePage';
 
 import Ranking from '@pages/Ranking';
 
+import Notice from '@pages/Notice';
 
 // 페이지 상수
 export const PAGES = {
@@ -77,7 +78,8 @@ export const PAGES = {
     TERMS : 'TERMS',
     PRIVACY : 'PRIVACY',
     PURCHASEPAGE: 'PURCHASEPAGE',
-    RANKING: 'RANKING'
+    RANKING: 'RANKING',
+    NOTICE: 'NOTICE'
 };
 
 // 페이지 컴포넌트 매핑
@@ -111,7 +113,8 @@ export const PAGE_COMPONENTS = {
     [PAGES.TERMS]: Terms,
     [PAGES.PRIVACY]: Privacy,
     [PAGES.PURCHASEPAGE]: PurchasePage,
-    [PAGES.RANKING]: Ranking
+    [PAGES.RANKING]: Ranking,
+    [PAGES.NOTICE]: Notice
 };
 
 // 기본 페이지

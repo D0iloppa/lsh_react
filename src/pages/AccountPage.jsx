@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import SketchHeader from '@components/SketchHeaderMain'
 
-import { User, History, CreditCard, Bell, Heart, Settings, HelpCircle, LogOut, MessageCircle, Tag   } from 'lucide-react';
+import { User, History, CreditCard, Bell, Heart, Settings, HelpCircle, Megaphone, LogOut, MessageCircle, Tag   } from 'lucide-react';
 import LoadingScreen from '@components/LoadingScreen';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -79,7 +79,7 @@ useEffect(() => {
         navigateToPageWithData && navigateToPageWithData(PAGES.PROMOTION);
         break;
       case 4:
-        navigateToPageWithData && navigateToPageWithData(PAGES.PAYMENT);
+        navigateToPageWithData && navigateToPageWithData(PAGES.NOTICE);
         break;
       case 5:
         navigateToPageWithData && navigateToPageWithData(PAGES.NOTIFICATIONS);
@@ -118,15 +118,15 @@ useEffect(() => {
       isRead: true,
       hasArrow: false
     },
-    /*
-    {
-      id: 4,
-      icon: <CreditCard size={20} />,
-      name:  get('Menu1.7'),
-      isRead: true,
-      hasArrow: false
-    },
-    */
+    
+    // {
+    //   id: 4,
+    //   icon: <Megaphone size={20} />,
+    //   name:  get('Menu1.99'),
+    //   isRead: true,
+    //   hasArrow: false
+    // },
+    
     {
       id: 5,
       icon: <Bell size={20} />,

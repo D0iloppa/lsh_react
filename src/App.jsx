@@ -55,6 +55,19 @@ const AppRoutes = () => {
     const versionFromParam = params.get('version');
     const pathname = url.pathname;
 
+
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    let hasFetched = localStorage.getItem("hasFetchedNotice");
+
+    // hasFetched 값이 "true"가 아니고, 오늘 날짜도 아니면 false로 설정
+    if (hasFetched !== today) {
+      localStorage.setItem("hasFetchedNotice", "false");
+    }
+
+    hasFetched = localStorage.getItem('hasFetchedNotice');
+
+    
+
     // ✅ 저장된 버전이 있는 경우
     let version = versionFromParam || localStorage.getItem('app_version');
 
@@ -97,7 +110,7 @@ const AppRoutes = () => {
 
     } catch (err) {
       console.error('UUID 오류:', err);
-      Swal.fire('UUID 에러', err.toString(), 'error');
+      //Swal.fire('UUID 에러', err.toString(), 'error');
     }
 
     // ✅ 버전 분기 처리

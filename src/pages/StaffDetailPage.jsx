@@ -44,7 +44,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
   const { showPopup, closePopup } = usePopup();
 
   const isAndroid = !!window.native;
-//  const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
+ // const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
   const isIOS = false;
   const openIOSImageViewer = (images = [], startIndex = 0) => {
     try {

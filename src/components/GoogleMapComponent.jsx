@@ -602,6 +602,7 @@ useEffect(() => {
     });
   }, [places, mapReady]);
 
+  
 useEffect(() => {
   const init = async () => {
     if (!mapReady || !window.google || !mapInstance.current) return;
@@ -664,8 +665,66 @@ useEffect(() => {
 }, [mapReady, places]);
 
 
+  useEffect(() => {
+  if (!mapReady || !window.google || !mapInstance.current) return;
+  if (disableInteraction) return;
+
+  const interval = setInterval(async () => {
+    try {
+      // ✅ 현재 위치 가져오기
+      const coordString = await getMyLocation(); // 예: "37.2222,127.1232131"
+      const [latStr, lngStr] = coordString.split(',');
+      let latitude = parseFloat(latStr);
+      let longitude = parseFloat(lngStr);
+
+
+       const isInVietnam = latitude >= 8 && latitude <= 24 && longitude >= 102 && longitude <= 110;
+
+       if ( !isInVietnam  ) {
+          latitude=10.7800125;
+          longitude=106.7050903;
+          return;
+       }
+
+
+      // ✅ 랜덤 이동값 (약 ±1.5m 범위)
+    
+
+      const newPos = { lat: latitude, lng: longitude };
+
+      
+      
+      // 지도 중심 이동 (원하는 경우만)
+      //mapInstance.current.setCenter(newPos);
+
+      // 기존 마커 위치 업데이트 (없으면 새로 생성)
+      if (myLocationMarker.current) {
+        myLocationMarker.current.setPosition(newPos);
+      } else {
+        myLocationMarker.current = new window.google.maps.Marker({
+          position: newPos,
+          map: mapInstance.current,
+          icon: {
+            url: '/cdn/person_icon.png',
+            scaledSize: new window.google.maps.Size(48, 48),
+            anchor: new window.google.maps.Point(24, 48),
+          },
+          title: '내 위치',
+        });
+      }
+    } catch (error) {
+      console.warn('위치 갱신 실패:', error);
+    }
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, [mapReady, disableInteraction]);
+
+
   return <div id="map" ref={mapRef} style={{ width: '100%', height: '100%' }} />;
 };
+
+
 
 export const getMyLocation = () => {
 
