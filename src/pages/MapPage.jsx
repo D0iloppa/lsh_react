@@ -463,10 +463,10 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
               <div
                 className="map-my-position-btn"
                 style={{
-                  position: 'fixed',                 // ✅ viewport 기준
+                  position: 'absolute',                 // ✅ viewport 기준
                   right: 10,
-                  bottom: 130,
-                  zIndex: 1000
+                  top: 60,
+                  zIndex: 10
                 }}
               >
                 <SketchBtn
