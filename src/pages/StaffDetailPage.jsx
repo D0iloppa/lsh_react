@@ -288,6 +288,8 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
                     svg
                     style={{
                       fontSize: '1.5rem',
+                      height:'auto',
+                      border: '1px solid #ccc',       // 테두리 추가
                       lineHeight: '1.5rem'
                     }}
                     title={lang}
