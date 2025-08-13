@@ -3,7 +3,8 @@
 import React from 'react';
 
 const UpdateRequired = () => {
-  const downloadUrl = 'https://example.com/download'; // 실제 다운로드 링크로 변경하세요
+  const downloadUrl = 'https://play.google.com/store/apps/details?id=com.letanton.user'; // 실제 다운로드 링크로 변경하세요
+
 
   const handleUpdateClick = () => {
     window.location.href = downloadUrl;

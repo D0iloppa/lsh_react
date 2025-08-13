@@ -139,12 +139,12 @@ const { currentLang, setLanguage } = useMsg();
       });
   
       // ⚠️ 이름 충돌 피하기: active 로 받기
-      const { isActiveUser: active = false, subscription = {} } = response || {};
+      const { isActiveUser: active = false, subscription = {}, userState = 'active' } = response || {};
   
-      console.log('✅ Subscription check result:', { isActiveUser: active, subscription });
-      writeCache({ isActiveUser: active, subscription }); // 성공 시 캐시 갱신
+      console.log('✅ Subscription check result:', { isActiveUser: active, subscription, userState });
+      writeCache({ isActiveUser: active, subscription, userState }); // 성공 시 캐시 갱신
   
-      return { isActiveUser: active, subscription };
+      return { isActiveUser: active, subscription, userState };
     } catch (error) {
       console.error('❌ Failed to check subscription:', error);
   
@@ -154,7 +154,7 @@ const { currentLang, setLanguage } = useMsg();
         return cached;
       }
   
-      return { isActiveUser: false, subscription: {} };
+      return { isActiveUser: false, subscription: {}, userState: 'active' };
     }
   };
   
