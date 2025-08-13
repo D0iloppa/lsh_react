@@ -712,8 +712,8 @@ useEffect(() => {
        const isInVietnam = latitude >= 8 && latitude <= 24 && longitude >= 102 && longitude <= 110;
 
        if ( !isInVietnam  ) {
-          latitude=10.7800125;
-          longitude=106.7050903;
+          latitude=10.780037531310423;
+          longitude=106.70517814232926;
          // return;
        }
 
