@@ -110,23 +110,23 @@ const AppRoutes = () => {
 
     } catch (err) {
       console.error('UUID 오류:', err);
-      //Swal.fire('UUID 에러', err.toString(), 'error');
+      Swal.fire('UUID 에러', err.toString(), 'error');
     }
 
     // ✅ 버전 분기 처리
     if (version) {
-      if (compareVersions(version, '1.0.2') < 0) {
+      if (compareVersions(version, '1.0.5') < 0) {
         if (isAndroid) {
           // navigate('/downloadAndroid');
         } else if (isIOS) {
-          //navigate('/downloadIOS');
+          navigate('/downloadIOS');
         }
       }
     } else {
       if (isAndroid) {
         // navigate('/downloadAndroid');
       } else if (isIOS) {
-       // navigate('/downloadIOS');
+        navigate('/downloadIOS');
       }
     }
   };
