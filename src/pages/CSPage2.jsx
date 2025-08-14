@@ -13,7 +13,7 @@ import SketchDiv from '@components/SketchDiv'
 import { AlertCircle } from 'lucide-react';
 import SketchHeader from '@components/SketchHeader'
 
-import { CircleAlert  } from 'lucide-react';
+import { CircleAlert, ChevronDown, ChevronUp } from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
 
@@ -35,10 +35,12 @@ const CSPage2 = ({
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [expandedInquiry, setExpandedInquiry] = useState(null); // 펼쳐진 문의 ID
   const { user, isLoggedIn } = useAuth();
 
   const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
   const { messages, isLoading, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+  
   // 처음 로딩 시 데이터 가져오기
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -69,7 +71,8 @@ const CSPage2 = ({
           status: item.status || 'pending',
           statusLabel: getStatusLabel(item.status || 'pending'),
           contents: item.contents || '',
-          response: item.response || ''
+          response: item.response_contents || '', // 수정된 부분
+          responseDate: item.response_created_at ? formatDate(item.response_created_at) : null
         }));
         
         setInquiries(formattedInquiries);
@@ -109,6 +112,16 @@ const CSPage2 = ({
       year: 'numeric', month: 'long', day: 'numeric' 
     });
     
+    // timestamp인 경우 (숫자)
+    const timestamp = Number(dateString);
+    if (!isNaN(timestamp) && timestamp > 0) {
+      const date = new Date(timestamp);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', month: 'long', day: 'numeric' 
+      });
+    }
+    
+    // 일반 날짜 문자열인 경우
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
       year: 'numeric', month: 'long', day: 'numeric' 
@@ -124,7 +137,10 @@ const CSPage2 = ({
       title: 'Reservation Inquiry',
       date: 'October 5, 2023',
       status: 'processing',
-      statusLabel: 'Processing'
+      statusLabel: 'Processing',
+      contents: 'I would like to make a reservation for 4 people on Friday evening.',
+      response: 'Thank you for your inquiry. We have availability on Friday evening. Please call us to confirm your reservation.',
+      responseDate: 'October 6, 2023'
     },
     {
       id: 2,
@@ -133,7 +149,10 @@ const CSPage2 = ({
       title: 'Event Inquiry',
       date: 'September 30, 2023',
       status: 'answered',
-      statusLabel: 'Answered'
+      statusLabel: 'Answered',
+      contents: 'Do you host private events?',
+      response: 'Yes, we do host private events. Please contact our events team for more details about pricing and availability.',
+      responseDate: 'October 1, 2023'
     },
     {
       id: 3,
@@ -142,7 +161,10 @@ const CSPage2 = ({
       title: 'Other Inquiry',
       date: 'September 11, 2023',
       status: 'pending',
-      statusLabel: 'Pending'
+      statusLabel: 'Pending',
+      contents: 'What are your opening hours?',
+      response: '',
+      responseDate: null
     }
   ];
 
@@ -154,7 +176,7 @@ const CSPage2 = ({
 
   const handleInquiryClick = (inquiry) => {
     console.log('Inquiry clicked:', inquiry);
-    // 문의 상세 페이지로 이동하거나 상세 내용 표시
+    // 클릭 기능 비활성화 (답변이 있으면 항상 펼쳐져 있음)
   };
 
   // 새 문의하기 버튼 클릭 핸들러
@@ -247,6 +269,9 @@ const CSPage2 = ({
           font-weight: bold;
           color: #1f2937;
           margin: 0 0 0.25rem 0;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
         }
 
         .inquiry-date {
@@ -257,6 +282,64 @@ const CSPage2 = ({
 
         .inquiry-status {
           align-self: flex-start;
+        }
+
+        .expand-icon {
+          font-size: 1rem;
+          color: #6b7280;
+        }
+
+        /* 펼쳐진 내용 스타일 */
+        .inquiry-expanded {
+          margin-top: 1rem;
+          padding-top: 1rem;
+          border-top: 2px dashed #e5e7eb;
+        }
+
+        .inquiry-full-content {
+          background-color: #ffffff;
+          padding: 1rem;
+          margin-bottom: 1rem;
+          border-radius: 8px;
+          border: 2px solid #e5e7eb;
+        }
+
+        .content-label {
+          font-size: 0.9rem;
+          font-weight: bold;
+          color: #374151;
+          display: block;
+        }
+
+        .content-text {
+          font-size: 0.9rem;
+          color: #1f2937;
+          line-height: 1.5;
+          margin: 0;
+          white-space: pre-wrap;
+        }
+
+        .response-section {
+          margin-top: 1rem;
+        }
+
+        .no-response {
+          font-style: italic;
+          color: #9ca3af;
+        }
+
+        .response-date {
+          margin-top: 0.5rem;
+          padding-top: 0.5rem;
+          border-top: 1px solid #e5e7eb;
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
+        }
+
+        .date-text {
+          font-size: 0.8rem;
+          color: #6b7280;
         }
 
         .search-section {
@@ -348,11 +431,13 @@ const CSPage2 = ({
                 <div className="inquiry-content">
                   <div className="inquiry-header">
                     <div className="inquiry-icon">
-                      <CircleAlert  style={{opacity: '0.6', color: '#1f2937'}}/>
+                      <CircleAlert style={{opacity: '0.6', color: '#1f2937'}}/>
                     </div>
                     
                     <div className="inquiry-details">
-                      <h3 className="inquiry-title">{inquiry.title}</h3>
+                      <h3 className="inquiry-title">
+                        {inquiry.title}
+                      </h3>
                       <p className="inquiry-date">{inquiry.date}</p>
                     </div>
                     
@@ -369,6 +454,25 @@ const CSPage2 = ({
                       </SketchBtn>
                     </div>
                   </div>
+
+                  {/* 답변이 있는 경우 항상 펼쳐서 표시 */}
+                  {inquiry.response && (
+                    <div className="inquiry-expanded">
+                      {/* 답변 내용만 표시 */}
+                      <div className="response-section">
+                        <div className="inquiry-full-content">
+                          <span className="content-label">{get('REVIEW_RESPONSE_LABEL')}</span>
+                          <p className="content-text">{inquiry.response}</p>
+                          {inquiry.responseDate && (
+                            <div className="response-date">
+                              <span className="content-label">{get('REVIEW_ADD_RESPONSE_BUTTON')} {get('REVIEW_FILTER_DATE')}</span>
+                              <span className="date-text">{inquiry.responseDate}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
               </SketchDiv>
