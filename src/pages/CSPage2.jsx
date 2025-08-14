@@ -329,7 +329,7 @@ const CSPage2 = ({
         }
 
         .response-date {
-          margin-top: 0.5rem;
+          margin-top: 1.5rem;
           padding-top: 0.5rem;
           border-top: 1px solid #e5e7eb;
           display: flex;
