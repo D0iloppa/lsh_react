@@ -417,6 +417,11 @@ const MainApp = () => {
                                     localStorage.setItem('homeScrollY', '0');
                                 }
 
+                                  if (id === PAGES.RANKING) {
+                                    localStorage.setItem('rankScrollRatio',0);
+                                    localStorage.setItem('rankScrollY',0);
+                                }
+                               
 
                                 const blockPage = [ PAGES.RANKING, PAGES.CHATTINGLIST, PAGES.BOOKINGHISTORY];
 
@@ -442,6 +447,7 @@ const MainApp = () => {
                                                 let swalText = get('RANKING_PURCHASE_MESSAGE');
                                                 
                                                 if(id === PAGES.RANKING){
+                                                    
                                                     swalTitle = get('ranking_swal_title');
                                                     swalText = get('RANKING_PURCHASE_MESSAGE');
                                                 }else if(id === PAGES.CHATTINGLIST){
