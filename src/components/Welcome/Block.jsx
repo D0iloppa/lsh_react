@@ -9,13 +9,8 @@ const Block = () => {
       <h1 style={styles.title}>서비스 준비 중</h1>
       <p style={styles.message}>
         더 나은 서비스를 위해 열심히 준비하고 있습니다. <br />
-        <strong>2025년 8월 15일</strong>에 정식 오픈 예정입니다. <br />
         조금만 기다려 주세요!
       </p>
-      <div style={styles.dateBox}>
-        <div style={styles.dateLabel}>오픈 예정일</div>
-        <div style={styles.date}>2025. 08. 15</div>
-      </div>
     </div>
   );
 };
