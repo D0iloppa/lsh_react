@@ -14,7 +14,7 @@ const Block = () => {
       </p>
       <div style={styles.dateBox}>
         <div style={styles.dateLabel}>오픈 예정일</div>
-        <div style={styles.date}>2025. 08. 18</div>
+        <div style={styles.date}>2025. 08. 17</div>
       </div>
     </div>
   );
