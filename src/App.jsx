@@ -56,7 +56,7 @@ const AppRoutes = () => {
     const pathname = url.pathname;
 
 
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const today = new Date().toLocaleDateString('sv-SE');  // YYYY-MM-DD
     let hasFetched = localStorage.getItem("hasFetchedNotice");
 
     // hasFetched 값이 "true"가 아니고, 오늘 날짜도 아니면 false로 설정
@@ -65,8 +65,6 @@ const AppRoutes = () => {
     }
 
     hasFetched = localStorage.getItem('hasFetchedNotice');
-
-    
 
     // ✅ 저장된 버전이 있는 경우
     let version = versionFromParam || localStorage.getItem('app_version');
