@@ -26,6 +26,7 @@ const PromotionsPage = ({
   const [filterQuery, setFilterQuery] = useState(keyword);
   const { user } = useAuth();
   const [promotions, setPromotions] = useState([]);
+  const [venueId, setVenueId] = useState(otherProps?.venueId || null);
   const [originalPromotions, setOriginalPromotions] = useState([]);
   const API_HOST = import.meta.env.VITE_API_HOST;
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
@@ -45,8 +46,21 @@ const PromotionsPage = ({
       }
 
     const fetchPromotion = async () => {
+
+
+      const params = {
+        lang: currentLang,
+      }
+
+      if(venueId) {
+        params.venue_id = venueId;
+      }
+
+      console.log("getPromotion params", params);
       try {
-        const response = await axios.get(`${API_HOST}/api/getPromotion`);
+        const response = await axios.get(`${API_HOST}/api/getPromotion`,{
+          params: params
+        });
         const data = response.data || [];
         setOriginalPromotions(data);
          // ✅ keyword가 있으면 자동 검색 실행

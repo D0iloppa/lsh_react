@@ -1228,9 +1228,11 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
 {venueInfo?.has_promotion === 1 && (
   <div style={{ textAlign: 'center', marginTop: '8px' }}>
     <button
-      onClick={() => navigateToPageWithData && navigateToPageWithData(PAGES.PROMOTION, {
-  keyword: venueInfo?.name   // ✅ 가게 이름 전달
-})}
+      onClick={() => 
+        navigateToPageWithData && navigateToPageWithData(PAGES.PROMOTION, {
+                keyword: venueInfo?.name,
+                venueId: venueId,
+      })}
       style={{
         padding: '6px 12px',
         fontSize: '13px',
