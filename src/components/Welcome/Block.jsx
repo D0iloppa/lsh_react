@@ -1,7 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const Block = () => {
-  
+
+  useEffect(() => {
+    // 현재 상태를 강제로 push
+    window.history.pushState(null, '', window.location.href);
+
+    const handlePopState = () => {
+      // 뒤로가기를 눌러도 같은 주소로 다시 push
+      window.history.pushState(null, '', window.location.href);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
   return (
     <div style={styles.container}>
       <div style={styles.iconContainer}>

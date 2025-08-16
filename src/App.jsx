@@ -111,7 +111,7 @@ const AppRoutes = () => {
 
     } catch (err) {
       console.error('UUID 오류:', err);
-      Swal.fire('UUID 에러', err.toString(), 'error');
+      //Swal.fire('UUID 에러', err.toString(), 'error');
     }
 
     // ✅ 버전 분기 처리
