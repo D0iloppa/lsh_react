@@ -890,7 +890,7 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
                           <div
                             style={{
                               position: 'absolute',
-                              top: 0,
+                              top: 2,
                               left: -118,
                               zIndex: 11,
 
