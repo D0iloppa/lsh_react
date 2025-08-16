@@ -429,7 +429,11 @@ const PromotionsPage = ({
                           </span>
                         </div>
                         <div className="promotion-detail">
-                          <span className="detail-label">{get('Promotion1.2')} : </span>
+                          <span className="detail-label" 
+                            style={{alignSelf: 'flex-start'}}
+                          >
+                            {get('Promotion1.2')} : 
+                          </span>
                           <span>{promotion.description}</span>
                         </div>
                       </div>
