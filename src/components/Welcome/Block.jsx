@@ -1,6 +1,24 @@
 import React from 'react';
 
 const Block = () => {
+
+  useEffect(() => {
+    const handlePopState = (event) => {
+      // 뒤로가기 동작 막기
+      window.history.pushState(null, '', window.location.href);
+      //alert("해당 페이지에서는 뒤로가기를 사용할 수 없습니다.");
+    };
+
+    // 현재 상태를 하나 쌓아주고
+    window.history.pushState(null, '', window.location.href);
+    // popstate 이벤트 등록
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
   return (
     <div style={styles.container}>
       <div style={styles.iconContainer}>
