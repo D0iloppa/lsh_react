@@ -32,7 +32,8 @@ const PromotionsPage = ({
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
   const handleBack = () =>{
-    navigateToPage(PAGES.HOME);
+    //navigateToPage(PAGES.HOME);
+    goBack();
   }
 
   useEffect(() => {
