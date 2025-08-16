@@ -136,7 +136,7 @@ useEffect(() => {
   
   if (hasFetched == "true" ) return; // 이미 실행했으면 중단
 
-  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD 형식
+  const today = new Date().toLocaleDateString('sv-SE');  // YYYY-MM-DD 형식
 
   if (hasFetched === today) return;
 
