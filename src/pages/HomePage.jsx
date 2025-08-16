@@ -215,6 +215,7 @@ useEffect(() => {
           staff_cnt: item.staff_cnt || 0,
           is_reservation: item.is_reservation === true,
           schedule_status:item.schedule_status,
+          has_promotion:item.has_promotion,
           staff_languages: item.staff_languages || '',
         }));
 
@@ -786,29 +787,57 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
                     >
                       <Heart fill={spot.isFavorite ? '#f43f5e' : 'white'} color="white" />
                     </div>
+{spot.has_promotion === 1 && (
+  <div
+    style={{
+      position: 'absolute',
+      top: isNewSpot(spot.created_at) 
+        ? (isOverlayStyle ? '45%' : '65%')  // NEW STAFF 있는 경우 높이를 조금 위로
+        : (isOverlayStyle ? '70%' : '80%'), // NEW STAFF 없는 경우 기본값
+      left: '2%',
+      width: isOverlayStyle ? '98%' : '40%',
+      backgroundColor: '#007bff',
+      color: 'white',
+      fontSize: isOverlayStyle ? '11px' : '12px',
+      fontWeight: 'bold',
+      zIndex: 11,
+      padding: isOverlayStyle ? '6px 0' : '8px 0',
+      lineHeight: isOverlayStyle ? 1.2 : 1.4,
+      boxShadow: isOverlayStyle ? '0 2px 6px rgba(0,0,0,0.3)' : 'none',
+      borderRadius: isOverlayStyle ? '8px' : '4px',
 
-                    {isNewSpot(spot.created_at) && (
-                      <div style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        width: '100%',
-                        backgroundColor: '#ff4757',
-                        color: 'white',
-                        textAlign: 'center',
-                        fontSize: '11px',
-                        fontWeight: 'bold',
-                        zIndex: 10,
-                        padding: '6px 0',
-                        lineHeight: 1.2,
-                        boxShadow: '0 -2px 6px rgba(0,0,0,0.3)',
-                        borderBottomLeftRadius: '8px',
-                        borderBottomRightRadius: '8px'
-                      }}>
-                        {isOverlayStyle ? 'NEW STAFF' : 'NEW STAFF UPDATED!!'}
-                      </div>
-                    )}
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: isOverlayStyle ? '6px' : '4px'
+    }}
+  >
+    <Sparkles size={14} color="white" />
+    <span>PROMOTION</span>
+  </div>
+)}
 
+{isNewSpot(spot.created_at) && (
+  <div style={{
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    backgroundColor: '#ff4757',
+    color: 'white',
+    textAlign: 'center',
+    fontSize: '11px',
+    fontWeight: 'bold',
+    zIndex: 10,
+    padding: '6px 0',
+    lineHeight: 1.2,
+    boxShadow: '0 -2px 6px rgba(0,0,0,0.3)',
+    borderBottomLeftRadius: '8px',
+    borderBottomRightRadius: '8px'
+  }}>
+    {isOverlayStyle ? 'NEW STAFF' : 'NEW STAFF UPDATED!!'}
+  </div>
+)}
 
 
                     {!isOverlayStyle && (

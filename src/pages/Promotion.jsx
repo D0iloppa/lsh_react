@@ -20,9 +20,10 @@ const PromotionsPage = ({
   navigateToMap,
   PAGES,
   goBack,
+  keyword = '',
   ...otherProps
 }) => {
-  const [filterQuery, setFilterQuery] = useState('');
+  const [filterQuery, setFilterQuery] = useState(keyword);
   const { user } = useAuth();
   const [promotions, setPromotions] = useState([]);
   const [originalPromotions, setOriginalPromotions] = useState([]);
@@ -48,7 +49,17 @@ const PromotionsPage = ({
         const response = await axios.get(`${API_HOST}/api/getPromotion`);
         const data = response.data || [];
         setOriginalPromotions(data);
+         // ✅ keyword가 있으면 자동 검색 실행
+      if (keyword && keyword.trim() !== '') {
+        const lowerKeyword = keyword;
+        const filtered = data.filter(p =>
+          p.venue_name?.includes(lowerKeyword)
+        );
+        
+        setPromotions(filtered);
+      } else {
         setPromotions(data);
+      }
       } catch (error) {
         console.error('프로모션 정보 불러오기 실패:', error);
       }
@@ -400,7 +411,7 @@ const PromotionsPage = ({
                         <div className="promotion-detail">
                           <span className="detail-label">{get('BookingSum1.2')}:</span>
                           <span>
-                            {promotion.start_date}~{promotion.end_date}
+                            {promotion.start_date} ~
                           </span>
                         </div>
                         <div className="promotion-detail">

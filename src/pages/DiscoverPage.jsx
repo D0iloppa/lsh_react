@@ -1221,7 +1221,30 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
           )}
 
 
-          <div className="club-name">{venueInfo?.name || 'Lethanton Club'}</div>
+         {/* 클럽 이름 */}
+<div className="club-name">{venueInfo?.name || 'Lethanton Club'}</div>
+
+{/* 🔽 프로모션 버튼 (has_promotion === 1일 때만 보임) */}
+{venueInfo?.has_promotion === 1 && (
+  <div style={{ textAlign: 'center', marginTop: '8px' }}>
+    <button
+      onClick={() => navigateToPageWithData && navigateToPageWithData(PAGES.PROMOTION, {
+  keyword: venueInfo?.name   // ✅ 가게 이름 전달
+})}
+      style={{
+        padding: '6px 12px',
+        fontSize: '13px',
+        backgroundColor: '#007bff',
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer'
+      }}
+    >
+      {get('MENU_PROMOTIONS')}
+    </button>
+  </div>
+)}
 
           <div className='sum-info text-start'>
             <div className="club-location">{venueInfo?.address || venueInfo?.location || 'in Vietnam'}</div>
