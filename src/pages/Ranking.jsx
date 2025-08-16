@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
 
 
 
-const Ranking = ({ navigateToPageWithData, PAGES }) => {
+const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ...otherProps }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [rankingData, setRankingData] = useState([]);
   const [originalData, setOriginalData] = useState([]);
@@ -369,14 +369,51 @@ const Ranking = ({ navigateToPageWithData, PAGES }) => {
 
     
     if (rankingType === 'venue') {
-      navigateToPageWithData(PAGES.DISCOVER, { venueId: item.id });
+
+      showAdWithCallback(
+        // 광고 완료 시 콜백
+        () => {
+          navigateToPageWithData(PAGES.DISCOVER, { venueId: item.id });
+        },
+        // fallback 콜백 (광고 응답 없을 때)
+        () => {
+          navigateToPageWithData(PAGES.DISCOVER, { venueId: item.id });
+        },
+        1000 // 1초 타임아웃
+      );
+
+
+      // navigateToPageWithData(PAGES.DISCOVER, { venueId: item.id });
     } else {
+
+      showAdWithCallback(
+        // 광고 완료 시 콜백
+        () => {
+          navigateToPageWithData(PAGES.STAFFDETAIL, { 
+            staff_id: item.id,  // staffId → staff_id로 변경
+            venue_id:item.venue_id,
+            fromReview: true   // 데이터 fetch를 위해 필요
+          });
+        },
+        // fallback 콜백 (광고 응답 없을 때)
+        () => {
+          navigateToPageWithData(PAGES.STAFFDETAIL, { 
+            staff_id: item.id,  // staffId → staff_id로 변경
+            venue_id:item.venue_id,
+            fromReview: true   // 데이터 fetch를 위해 필요
+          });
+        },
+        1000 // 1초 타임아웃
+      );
+
+      /*
       // 스탭 상세 페이지로 이동
       navigateToPageWithData(PAGES.STAFFDETAIL, { 
         staff_id: item.id,  // staffId → staff_id로 변경
         venue_id:item.venue_id,
         fromReview: true   // 데이터 fetch를 위해 필요
       });
+      */
     }
   };
 
