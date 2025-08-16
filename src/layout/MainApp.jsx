@@ -423,7 +423,23 @@ const MainApp = () => {
                                 }
                                
 
-                                const blockPage = [ PAGES.RANKING, PAGES.CHATTINGLIST, PAGES.BOOKINGHISTORY];
+                                //const blockPage = [ PAGES.RANKING, PAGES.CHATTINGLIST, PAGES.BOOKINGHISTORY];
+                                const blockPage = [ PAGES.CHATTINGLIST, PAGES.BOOKINGHISTORY];
+
+                                if(id == PAGES.RANKING ){
+                                    showAdWithCallback(
+                                        // 광고 완료 시 콜백
+                                        () => {
+                                            navigateToPage(id);
+                                        },
+                                        // fallback 콜백 (광고 응답 없을 때)
+                                        () => {
+                                            navigateToPage(id);
+                                        },
+                                        1000 // 1초 타임아웃
+                                      );
+                                      return;
+                                }
 
 
                                if(blockPage.includes(id)) {
