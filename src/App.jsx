@@ -105,8 +105,8 @@ const AppRoutes = () => {
       ];
 
       if (!allowedUUIDs.includes(uuid)) {
-        navigate('/block');
-        return;
+        //navigate('/block');
+        //return;
       }
 
     } catch (err) {
@@ -117,15 +117,15 @@ const AppRoutes = () => {
     // ✅ 버전 분기 처리
     if (version) {
        if (isAndroid && compareVersions(version, '1.0.5 ') < 0) {
-          //navigate('/downloadAndroid');
+          navigate('/downloadAndroid');
        } else if (isIOS && compareVersions(version, '1.0.4 ') < 0) {
           navigate('/downloadIOS');
       }
     } else {
       if (isAndroid && compareVersions(version, '1.0.5 ') < 0) {
-         //navigate('/downloadAndroid');
+         navigate('/downloadAndroid');
        } else if (isIOS && compareVersions(version, '1.0.4 ') < 0) {
-          navigate('/downloadIOS');
+         navigate('/downloadIOS');
       }
     }
   };

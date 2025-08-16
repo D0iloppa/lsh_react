@@ -418,18 +418,18 @@ const PromotionsPage = ({
                     <div className="promotion-info">
                       <h3 className="promotion-title">{promotion.title}</h3>
                       <div className="promotion-detail">
-                        <span className="detail-label">{get('title.text.14')}:</span>
+                        <span className="detail-label">{get('title.text.14')} : </span>
                         <span>{promotion.venue_name}</span>
                       </div>
                       <div className="promotion-details">
                         <div className="promotion-detail">
-                          <span className="detail-label">{get('BookingSum1.2')}:</span>
+                          <span className="detail-label">{get('BookingSum1.2')} : </span>
                           <span>
                             {promotion.start_date} ~
                           </span>
                         </div>
                         <div className="promotion-detail">
-                          <span className="detail-label">{get('Promotion1.2')}:</span>
+                          <span className="detail-label">{get('Promotion1.2')} : </span>
                           <span>{promotion.description}</span>
                         </div>
                       </div>
