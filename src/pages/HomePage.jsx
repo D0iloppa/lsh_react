@@ -806,7 +806,7 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
       boxShadow: isOverlayStyle ? '0 2px 6px rgba(0,0,0,0.3)' : 'none',
       borderRadius: isOverlayStyle ? '8px' : '4px',
 
-      display: 'flex',
+      display: isOverlayStyle ? 'none' : 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       gap: isOverlayStyle ? '6px' : '4px'
@@ -851,7 +851,9 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
                   {/* 텍스트 영역 */}
                   <div style={{ flex: '1', position: 'relative' }}>
                     <div style={{ padding: isOverlayStyle ? '0' : '0.75rem 1rem' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{spot.name}</div>
+                      <div style={{ fontWeight: 'bold', fontSize: '16px', display: 'flex', alignItems: 'center' }}>
+                        {spot.name}
+                      </div>
                       <div
                         className="is-reservation"
                         style={{
@@ -882,18 +884,52 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
                       </div>
 
                       {isOverlayStyle && (
-                        <div
-                          style={{
-                            fontSize: '14px',
-                            marginTop: '4px',
-                            color: '#333',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                          }}
-                        >
-                          <Star size={14} style={{ fill: '#ffe800' }} />
-                          {spot.rating}
+                        <div style={{ position: 'relative' }}>
+
+                        {spot.has_promotion === 1 && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: 0,
+                              left: -118,
+                              zIndex: 11,
+
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+
+                              padding: '3px 8px',
+                              background: 'linear-gradient(180deg, #2d7ff9, #0a66ff)',
+                              color: '#fff',
+                              fontSize: 11,
+                              fontWeight: 700,
+                              lineHeight: 1,
+                              letterSpacing: '0.3px',
+                              borderRadius: 9999,
+                              boxShadow:
+                                '0 2px 6px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.35)',
+                              whiteSpace: 'nowrap',
+                              pointerEvents: 'none', // 클릭 방해 방지(필요시 제거)
+                            }}
+                          >
+                            <Sparkles size={14} color="white" />
+                            <span>PROMOTION</span>
+                          </div>
+                        )}
+                          
+                          <div
+                            style={{
+                              fontSize: '14px',
+                              marginTop: '4px',
+                              color: '#333',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                            }}
+                          >
+                            <Star size={14} style={{ fill: '#ffe800' }} />
+                            {spot.rating}
+                          </div>
                         </div>
                       )}
                     </div>
