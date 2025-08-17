@@ -9,7 +9,7 @@ import LoadingScreen from '@components/LoadingScreen';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 
 import ApiClient from '@utils/ApiClient';
-
+import Swal from 'sweetalert2';
 
 const ShareExpPage = ({ 
   navigateToPageWithData, 
@@ -58,7 +58,25 @@ const ShareExpPage = ({
     
     console.log('Review payload:', reviewPayload);
 
-    ApiClient.postForm('/api/admin/official_review', reviewPayload)
+    ApiClient.postForm('/api/admin/official_review', reviewPayload).then(response => {
+      console.log('Review submitted successfully:', response);
+      Swal.fire({
+        title: '리뷰 제출 완료',
+        text: '리뷰가 제출되었습니다.',
+        icon: 'success',
+        confirmButtonText: '확인'
+      }).then(() => {
+        goBack();
+      });
+    }).catch(error => {
+      console.error('Error submitting review:', error);
+      Swal.fire({
+        title: '리뷰 제출 실패',
+        text: '리뷰 제출에 실패했습니다.',
+        icon: 'error',
+        confirmButtonText: '확인'
+      });
+    });
     
   };
 
