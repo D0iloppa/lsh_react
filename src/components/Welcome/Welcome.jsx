@@ -17,7 +17,9 @@ import MessageFlag from '@components/MessageFlag';
 const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();    
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
 
+ 
   useEffect(() => {
     window.scrollTo(0, 0);
 
@@ -219,11 +221,58 @@ const CocktailIcon = () => (
           
           <SketchBtn 
             className="sketch-button" style={{ fontWeight: 'bold' }}
-            onClick={onNextScreen}
+            onClick={() => setIsVideoOpen(true)}
           >
             {get('Welcome1.3')}
           </SketchBtn>
         </div>
+
+        {isVideoOpen && (
+  <div 
+    className="video-modal" 
+    style={{
+      position: 'fixed',
+      top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.7)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 9999
+    }}
+  >
+    <div style={{ position: 'relative', width: '90%', maxWidth: '600px' }}>
+      {/* 닫기 버튼 */}
+      <button 
+        onClick={() => setIsVideoOpen(false)} 
+        style={{
+          position: 'absolute',
+          top: '-40px',
+          right: '0',
+          background: '#007bff',
+          color: '#fff',
+          border: 'none',
+          padding: '8px 12px',
+          borderRadius: '6px',
+          cursor: 'pointer'
+        }}
+      >
+        닫기
+      </button>
+
+      {/* 유튜브 iframe */}
+      <iframe
+        width="100%"
+        height="315"
+        src="https://www.youtube.com/embed/VpUULfYz9rY?autoplay=1"
+        title="YouTube video player"
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+        allowFullScreen
+      ></iframe>
+    </div>
+  </div>
+)}
+
 
          {/* <InitFooter 
                     className="custom-footer"
