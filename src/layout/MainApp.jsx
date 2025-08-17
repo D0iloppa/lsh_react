@@ -1,7 +1,7 @@
 // src/layout/MainApp.jsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@contexts/AuthContext';
-import { Home, Search, Trophy, Calendar, User, Map, ChevronUp, Star,Icon, History, MessagesSquare, Settings } from 'lucide-react';
+import { Home, Search, Trophy, Calendar, User, Map, ChevronUp, Star,Icon, History, MessagesSquare, Settings, Tag } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useLoginOverlay } from '@hooks/useLoginOverlay.jsx';
@@ -47,43 +47,7 @@ const MainApp = () => {
 
     console.log('welcome!', user);
 
-    // 채팅 개수 가져오기
-    const fetchUnreadChatCount = async () => {
-                if (!user?.user_id) return;
-        
-                try {
-                const response = await ApiClient.get('/api/getUnreadCountChat_mng', {
-                    params: {
-                    participant_type: 'user',
-                    participant_user_id: user.user_id
-                    }
-                });
-        
-                console.log("count", response)
     
-                // response가 직접 숫자로 온다면
-                const count = parseInt(response) || 0;
-                setUnreadChatCount(count);
-                
-                } catch (error) {
-                console.error('읽지 않은 채팅 개수 조회 실패:', error);
-                setUnreadChatCount(0);
-                }
-            };
-        
-            // 초기 로드 및 주기적 업데이트
-            useEffect(() => {
-                fetchUnreadChatCount();
-                
-                const interval = setInterval(fetchUnreadChatCount, 3000);
-                
-                return () => clearInterval(interval);
-            }, [user]);
-        
-            // 채팅 페이지 이동 시 개수 초기화 함수
-            const resetChatCount = () => {
-                //setUnreadChatCount(0);
-            };
 
 
     // user 상태 변화 감지 및 처리
@@ -378,12 +342,7 @@ const MainApp = () => {
         { id: PAGES.HOME, icon: Home, label: get('Footer1.3'), needLogin:false },
         // { id: PAGES.SEARCH, icon: Search, label: get('btn.searchMap.1.1'), needLogin:false },
         { id: PAGES.RANKING, icon: Trophy, label: get('TITLE_RANK'), needLogin:false },
-        { id: PAGES.CHATTINGLIST, icon: MessagesSquare, label: get('MENU_CHATTING'), 
-            needLogin:true,
-            data: { 
-                chatRoomType: 'user'
-            }   
-        },
+        { id: PAGES.PROMOTION, icon: Tag, label: get('btn.promotion.1'), needLogin:false },
         { id: PAGES.BOOKINGHISTORY, icon: History, label: get('menu.reserve.history') ,needLogin:true},
         { id: PAGES.ACCOUNT, icon: Settings, label: get('MENU_SETTINGS'), needLogin:true }
     ];
@@ -427,6 +386,9 @@ const MainApp = () => {
                                 const blockPage = [ PAGES.CHATTINGLIST, PAGES.BOOKINGHISTORY];
 
                                 if(id == PAGES.RANKING ){
+
+                                    localStorage.setItem('rankingType', 'venue');
+                                    
                                     showAdWithCallback(
                                         // 광고 완료 시 콜백
                                         () => {
@@ -440,12 +402,12 @@ const MainApp = () => {
                                       );
                                       return;
                                 }
-
+                                    
 
                                if(blockPage.includes(id)) {
                                     console.log("activeUser", activeUser);
 
-                                    localStorage.setItem('rankingType', 'venue');
+                                    
 
                                     // activeUser 상태가 빈 객체이거나 isActive가 false인 경우
                                     if (Object.keys(activeUser).length === 0) {
@@ -513,11 +475,7 @@ const MainApp = () => {
                             <div className="nav-icon-container">
                                 <Icon className="nav-icon" />
                                 {/* 채팅 버튼에만 뱃지 추가 */}
-                                {id === PAGES.CHATTINGLIST && unreadChatCount > 0 && (
-                                    <span className="chat-badge">
-                                        {unreadChatCount > 99 ? '99+' : unreadChatCount}
-                                    </span>
-                                )}
+                               
                             </div>
                             <span className="nav-label">{label}</span>
                         </button>

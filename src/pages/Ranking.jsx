@@ -312,7 +312,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
         
         if (rankingType != localStorage.getItem('rankingType') ){
           localStorage.setItem('rankScrollRatio',0);
-          localStorage.setItem('rankScroll',0);
+          localStorage.setItem('rankScrollY',0);
           window.scrollTo(0, 0);
         }
 

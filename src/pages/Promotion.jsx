@@ -81,6 +81,9 @@ const PromotionsPage = ({
     };
 
     fetchPromotion();
+    window.scrollTo(0, 0);
+      const container = document.querySelector('.content-area');
+      container.scrollTop=0;
   }, [user, messages, currentLang]);
 
   const handleApplyFilter = () => {

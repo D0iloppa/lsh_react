@@ -9,54 +9,95 @@ import { useNavigate } from 'react-router-dom';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import SketchHeader from '@components/SketchHeaderMain'
 
-import { User, History, CreditCard, Bell, Heart, Settings, HelpCircle, Megaphone, LogOut, MessageCircle, Tag   } from 'lucide-react';
+import { User, History, CreditCard, Bell, Heart, Settings, HelpCircle, Megaphone, LogOut, MessageCircle, Tag } from 'lucide-react';
 import LoadingScreen from '@components/LoadingScreen';
 import { useAuth } from '../contexts/AuthContext';
 
 import Swal from 'sweetalert2';
 import ApiClient from '@utils/ApiClient';
 
-const AccountPage = ({ 
-  navigateToPageWithData, 
+const AccountPage = ({
+  navigateToPageWithData,
   navigateToPage,
   PAGES,
   goBack,
-  ...otherProps 
+  ...otherProps
 }) => {
 
   const navigate = useNavigate();
 
-  const { user, logout } = useAuth();
+  const { user, logout, isActiveUser } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [showChatButton, setShowChatButton] = useState(true);
+  const [activeUser, setActiveUser] = useState({});
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
 
-useEffect(() => {
-  const resetContentAreaScroll = () => {
-    // 진짜 스크롤 컨테이너인 .content-area를 리셋
-    const contentArea = document.querySelector('.content-area');
-    if (contentArea) {
-      contentArea.scrollTop = 0;
-      console.log('content-area 스크롤이 0으로 리셋됨');
+
+  // 채팅 개수 가져오기
+  const fetchUnreadChatCount = async () => {
+    if (!user?.user_id) return;
+
+    try {
+      const response = await ApiClient.get('/api/getUnreadCountChat_mng', {
+        params: {
+          participant_type: 'user',
+          participant_user_id: user.user_id
+        }
+      });
+
+      console.log("count", response)
+
+      // response가 직접 숫자로 온다면
+      const count = parseInt(response) || 0;
+      setUnreadChatCount(count);
+
+    } catch (error) {
+      console.error('읽지 않은 채팅 개수 조회 실패:', error);
+      setUnreadChatCount(0);
     }
-    
-    // window도 함께 (혹시 모르니)
-    window.scrollTo(0, 0);
   };
 
-  resetContentAreaScroll();
-  
-  // DOM 렌더링 완료 후 한 번 더
-  setTimeout(resetContentAreaScroll, 100);
-  
-}, [user]);
+  // 초기 로드 및 주기적 업데이트
+  useEffect(() => {
+    fetchUnreadChatCount();
+
+    const interval = setInterval(fetchUnreadChatCount, 3000);
+
+    return () => clearInterval(interval);
+  }, [user]);
+
+  // 채팅 페이지 이동 시 개수 초기화 함수
+  const resetChatCount = () => {
+    //setUnreadChatCount(0);
+  };
 
   useEffect(() => {
-      if (messages && Object.keys(messages).length > 0) {
-        console.log('✅ Messages loaded:', messages);
-        console.log('Current language set to:', currentLang);
-        window.scrollTo(0, 0);
+    const resetContentAreaScroll = () => {
+      // 진짜 스크롤 컨테이너인 .content-area를 리셋
+      const contentArea = document.querySelector('.content-area');
+      if (contentArea) {
+        contentArea.scrollTop = 0;
+        console.log('content-area 스크롤이 0으로 리셋됨');
       }
-    }, [messages, currentLang]);
+
+      // window도 함께 (혹시 모르니)
+      window.scrollTo(0, 0);
+    };
+
+    resetContentAreaScroll();
+
+    // DOM 렌더링 완료 후 한 번 더
+    setTimeout(resetContentAreaScroll, 100);
+
+  }, [user]);
+
+  useEffect(() => {
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
+  }, [messages, currentLang]);
 
   const handleBack = () => {
     console.log('Back 클릭');
@@ -67,17 +108,44 @@ useEffect(() => {
     console.log('채팅 버튼 클릭');
   };
 
-  const menuBtnClick = (menu_id) => {
-    switch(menu_id) {
+  const menuBtnClick = async (menu_id) => {
+    switch (menu_id) {
       case 1:
         navigateToPageWithData && navigateToPageWithData(PAGES.PROFILE);
         break;
       case 2:
         navigateToPageWithData && navigateToPageWithData(PAGES.BOOKINGHISTORY);
         break;
-      case 3:
-        navigateToPageWithData && navigateToPageWithData(PAGES.PROMOTION);
-        break;
+      case 3:{
+
+        const {isActiveUser: isActive = false } = await isActiveUser();
+        console.log('isActive', isActive);
+
+        if(!isActive){
+            // 구매 유도 팝업
+            let swalTitle = get('chatting_swal_title');
+            let swalText = get('CHATTING_PURCHASE_MESSAGE');
+
+            Swal.fire({
+              title: swalTitle,
+              text: swalText,
+              icon: 'question',
+              showCancelButton: true,
+              confirmButtonText: get('Popup.Button.TodayTrial'),
+              cancelButtonText: get('Common.Cancel'),
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                navigate('/purchase');
+              }
+            });
+        }else{
+          navigateToPageWithData &&
+          navigateToPageWithData(PAGES.CHATTINGLIST, { chatRoomType: 'user' });
+        }
+        break; 
+      }
       case 4:
         navigateToPageWithData && navigateToPageWithData(PAGES.NOTICE);
         break;
@@ -111,14 +179,14 @@ useEffect(() => {
       isRead: true,
       hasArrow: false
     },
-     {
+    {
       id: 3,
-      icon: <Tag size={20} />,
-      name: get('btn.promotion.1'),
+      icon: <MessageCircle size={20} />,
+      name: get('MENU_CHATTING'),
       isRead: true,
       hasArrow: false
     },
-    
+
     // {
     //   id: 4,
     //   icon: <Megaphone size={20} />,
@@ -126,7 +194,7 @@ useEffect(() => {
     //   isRead: true,
     //   hasArrow: false
     // },
-    
+
     {
       id: 5,
       icon: <Bell size={20} />,
@@ -172,7 +240,7 @@ useEffect(() => {
     if (result.isConfirmed) {
       try {
         await ApiClient.get('/api/userDelete', {
-          params: { 
+          params: {
             user_id: user?.user_id,
             action: 'force'
           }
@@ -185,10 +253,10 @@ useEffect(() => {
           timer: 1500,
           showConfirmButton: false
         });
-        
+
         await logout();
         navigateToPage(PAGES.HOME);
-        
+
       } catch (e) {
         console.error('계정 탈퇴 중 오류:', e);
       }
@@ -308,30 +376,59 @@ useEffect(() => {
         .delete-container {
           margin-top: 20px;
         }
+        
+        .unread-badge {
+          position: absolute;
+          top: 15px;
+          right: 12px;
+          background-color: red;
+          color: white;
+          font-size: 12px;
+          font-weight: bold;
+          border-radius: 50%;
+          width: 20px;       /* 고정 크기 */
+          height: 20px;      /* 고정 크기 */
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          line-height: 1;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
       `}</style>
 
       <div className="page-wrapper">
         {/* 특별한 className을 추가하여 우선순위 높이기 */}
-        <SketchHeader 
-          title={get('MENU_SETTINGS')} 
+        <SketchHeader
+          title={get('MENU_SETTINGS')}
           showBack={true}
           onBack={goBack}
           sticky={true}
           className="account-page-header"
         />
 
+
         <div className="account-container">
           <div className="menu-section">
             {menus.map((menu) => (
-              <SketchMenuBtn
-                key={menu.id}
-                icon={menu.icon}
-                name={menu.name}
-                hasArrow={menu.hasArrow}
-                onClick={() => menuBtnClick(menu.id)}
-                className="menu-item"
-              />
+              <div key={menu.id} style={{ position: "relative" }}>
+                <SketchMenuBtn
+                  icon={menu.icon}
+                  name={menu.name}
+                  hasArrow={menu.hasArrow}
+                  onClick={() => menuBtnClick(menu.id)}
+                  className="menu-item"
+                />
+
+                {/* 채팅 메뉴(id === 3)이고 unreadChatCount > 0일 때만 표시 */}
+                {menu.id === 3 && unreadChatCount > 0 && (
+                  <span className="unread-badge">
+                    {unreadChatCount}
+                  </span>
+                )}
+              </div>
             ))}
+
 
             {/*
             <SketchMenuBtn
@@ -359,6 +456,7 @@ useEffect(() => {
             />
             */}
 
+
             <div className="delete-container">
               <div className="staff-delete" onClick={handleDelete}>
                 {get('account_page_delete_btn')}
@@ -370,10 +468,10 @@ useEffect(() => {
             <MessageCircle size={24} className="chat-icon" />
           </div> */}
 
-          <LoadingScreen 
+          <LoadingScreen
             variant="cocktail"
             loadingText="Loading..."
-            isVisible={isLoading} 
+            isVisible={isLoading}
           />
         </div>
       </div>
