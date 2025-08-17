@@ -184,20 +184,20 @@ const CocktailIcon = () => (
           
           {/* 기능 리스트 */}
           <div className="features-list">
-            <div className="feature-item">
-              {get('Intro.feature1')}
+            <div className="feature-item" style={{ color: 'rgb(202, 18, 18)', fontWeight: 'bold' }}>
+              {get('Intro.feature11')}
             </div>
             <div className="feature-item">
-              {get('Intro.feature2')}
+              {get('Intro.feature12')}
             </div>
             <div className="feature-item">
-              {get('Intro.feature3')}
+              {get('Intro.feature13')}
             </div>
             <div className="feature-item">
-              {get('Intro.feature4')}
+              {get('Intro.feature14')}
             </div>
             <div className="feature-item">
-              {get('Intro.feature5')}
+              {get('Intro.feature15')}
             </div>
           </div>
         </div>

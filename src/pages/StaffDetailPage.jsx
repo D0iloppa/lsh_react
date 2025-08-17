@@ -36,12 +36,14 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
   const [loading, setLoading] = useState(false);
   const [girl, setGirl] = useState(otherProps || {});
   const [images, setImages] = useState([]);
+
   const didOpenIOSViewerRef = useRef(false);
 
 
   const { get, currentLang, messages } = useMsg();
-  const { isActiveUser } = useAuth();
+  const { isActiveUser, iauMasking } = useAuth();
   const { showPopup, closePopup } = usePopup();
+
 
   const isAndroid = !!window.native;
   const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
@@ -154,7 +156,6 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
       if (isActive) {
         // Active User: 예약 페이지로 이동
 
-        12321123
         navigateToPageWithData(PAGES.RESERVATION, {
           target: 'staff',
           id: girl.staff_id || 123,
@@ -218,6 +219,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
   };
 
 
+
   const staffViewCntUpsert = () => {
     console.log('viewCountUpsert', girl);
 
@@ -234,7 +236,9 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
       if (otherProps.fromReview && otherProps.staff_id) {
         setLoading(true);
         try {
-          
+
+          const iau = await isActiveUser();
+          iau.onlyMasking = true;
 
           const response = await ApiClient.get('/api/getStaffProfile', {
             params: { staff_id: otherProps.staff_id
@@ -249,10 +253,19 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
               : [];
 
           const basicInfo = apiDataArray.length > 0 ? apiDataArray[0] : {};
-          setGirl({
+
+          const _girl ={
             ...otherProps,
             ...basicInfo,
-          });
+          }
+
+
+          _girl.name = iauMasking(iau, _girl.name || '');
+
+          console.log('girl-detail', _girl);
+
+
+          setGirl(_girl);
 
         } catch (error) {
           console.error('Staff 정보 로딩 실패:', error);
@@ -567,6 +580,9 @@ useEffect(() => {
 
 
         <div className="staff-info-section">
+          <div className="staff-photo-description" style={{display:noImagePopup ? 'block' : 'none', fontSize:'0.8rem'}}>
+              {`(${get('STAFF_PHOTO_DESC')})`}
+          </div>
           <div className="staff-name">{girl.name || 'Unknown Staff'}</div>
           {girl.languages && (
             <div

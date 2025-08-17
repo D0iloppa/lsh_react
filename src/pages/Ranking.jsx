@@ -18,7 +18,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
   const [rankingType, setRankingType] = useState('none'); // 'venue' or 'staff'
   const [timeFilter, setTimeFilter] = useState('week'); // 'day', 'week', 'month'
   const { messages, get, isLoading } = useMsg();
-  const { user } = useAuth();
+  const { user, isActiveUser, iauMasking } = useAuth();
   const [isApiLoading, setIsApiLoading] = useState(false);
 
    useEffect(() => {
@@ -70,181 +70,6 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
     return Math.round(score * 100) / 100;
   };
 
-  // 더미 데이터 생성
-  const generateDummyData = () => {
-    if (rankingType === 'venue') {
-      // 매장 더미 데이터
-      const venueData = [
-        {
-          venue_id: 1,
-          name: '럭셔리 라운지 바',
-          rating: 4.8,
-          image_url: 'https://picsum.photos/300/200?random=1',
-          address: '강남구 테헤란로 123',
-          open_time: '19:00',
-          close_time: '03:00',
-          schedule_status: 'open',
-          is_reservation: true,
-          reservation_count: 245,
-          view_count: 12580,
-          staff_cnt: 15
-        },
-        {
-          venue_id: 2,
-          name: '프리미엄 클럽',
-          rating: 4.9,
-          image_url: 'https://picsum.photos/300/200?random=2',
-          address: '강남구 논현로 456',
-          open_time: '20:00',
-          close_time: '04:00',
-          schedule_status: 'open',
-          is_reservation: true,
-          reservation_count: 189,
-          view_count: 18750,
-          staff_cnt: 22
-        },
-        {
-          venue_id: 3,
-          name: '엘리트 카페',
-          rating: 4.6,
-          image_url: 'https://picsum.photos/300/200?random=3',
-          address: '서초구 서초대로 789',
-          open_time: '18:30',
-          close_time: '02:30',
-          schedule_status: 'open',
-          is_reservation: false,
-          reservation_count: 156,
-          view_count: 9840,
-          staff_cnt: 8
-        },
-        {
-          venue_id: 4,
-          name: '로열 비스트로',
-          rating: 4.7,
-          image_url: 'https://picsum.photos/300/200?random=4',
-          address: '마포구 홍대입구로 321',
-          open_time: '19:30',
-          close_time: '03:30',
-          schedule_status: 'closed',
-          is_reservation: true,
-          reservation_count: 198,
-          view_count: 15420,
-          staff_cnt: 12
-        },
-        {
-          venue_id: 5,
-          name: '스카이 루프탑',
-          rating: 4.5,
-          image_url: 'https://picsum.photos/300/200?random=5',
-          address: '용산구 이태원로 654',
-          open_time: '20:30',
-          close_time: '04:30',
-          schedule_status: 'before_open',
-          is_reservation: true,
-          reservation_count: 134,
-          view_count: 7650,
-          staff_cnt: 18
-        },
-        {
-          venue_id: 6,
-          name: '골든 살롱',
-          rating: 4.4,
-          image_url: 'https://picsum.photos/300/200?random=6',
-          address: '강남구 신사동 987',
-          open_time: '19:00',
-          close_time: '03:00',
-          schedule_status: 'open',
-          is_reservation: false,
-          reservation_count: 167,
-          view_count: 11230,
-          staff_cnt: 9
-        },
-        {
-          venue_id: 7,
-          name: '다이아몬드 클럽',
-          rating: 4.3,
-          image_url: 'https://picsum.photos/300/200?random=7',
-          address: '송파구 잠실로 147',
-          open_time: '18:00',
-          close_time: '02:00',
-          schedule_status: 'open',
-          is_reservation: true,
-          reservation_count: 89,
-          view_count: 5420,
-          staff_cnt: 14
-        }
-      ];
-      return venueData;
-    } else {
-      // 스탭 더미 데이터
-      const staffData = [
-        {
-          staff_id: 1,
-          name: '김미나',
-          rating: 4.9,
-          image_url: 'https://picsum.photos/300/300?random=11',
-          venue_name: '럭셔리 라운지 바',
-          reservation_count: 89,
-          view_count: 3450
-        },
-        {
-          staff_id: 2,
-          name: '박소영',
-          rating: 4.8,
-          image_url: 'https://picsum.photos/300/300?random=12',
-          venue_name: '프리미엄 클럽',
-          reservation_count: 76,
-          view_count: 4120
-        },
-        {
-          staff_id: 3,
-          name: '이지은',
-          rating: 4.7,
-          image_url: 'https://picsum.photos/300/300?random=13',
-          venue_name: '엘리트 카페',
-          reservation_count: 65,
-          view_count: 2890
-        },
-        {
-          staff_id: 4,
-          name: '최유진',
-          rating: 4.6,
-          image_url: 'https://picsum.photos/300/300?random=14',
-          venue_name: '로열 비스트로',
-          reservation_count: 58,
-          view_count: 3670
-        },
-        {
-          staff_id: 5,
-          name: '정하늘',
-          rating: 4.5,
-          image_url: 'https://picsum.photos/300/300?random=15',
-          venue_name: '스카이 루프탑',
-          reservation_count: 72,
-          view_count: 2340
-        },
-        {
-          staff_id: 6,
-          name: '윤서연',
-          rating: 4.4,
-          image_url: 'https://picsum.photos/300/300?random=16',
-          venue_name: '골든 살롱',
-          reservation_count: 43,
-          view_count: 1890
-        },
-        {
-          staff_id: 7,
-          name: '강예린',
-          rating: 4.3,
-          image_url: 'https://picsum.photos/300/300?random=17',
-          venue_name: '다이아몬드 클럽',
-          reservation_count: 39,
-          view_count: 2150
-        }
-      ];
-      return staffData;
-    }
-  };
 
   useEffect(() => {
 
@@ -252,6 +77,10 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
    
     const fetchRankingData = async () => {
       try {
+
+        const iau = await isActiveUser();
+        // iau.onlyMasking = true;
+
         //실제 API 호출 (현재는 주석 처리)
         const res = await ApiClient.postForm('/api/getRank', {
           target_type: rankingType,
@@ -263,14 +92,13 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
         //const data = (res.data || []).slice(0, topRank);
         const data = res.data || []
 
-        console.log('rank', data);
 
         const transformed = data.map((item, index) => ({
           id: item.target_type == 'venue' ? item.venue_id : item.target_id,
-          name: item.name || 'Unknown',
+          name: rankingType === 'staff' ? iauMasking(iau, item.name || '') : item.name || 'Unknown',
           rating: parseFloat(item.rating || 0).toFixed(1),
           image: item.image_url,
-          address: item.address || '',
+          address: iauMasking(iau, item.address || ''),
           opening_hours: rankingType === 'venue' ? `${item.open_time}~${item.close_time}` : null,
           schedule_status: item.is_open,
           is_reservation: item.is_open === 'available',
@@ -282,6 +110,9 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
           rank: index + 1,
           score: calculateRankingScore(item)
         }));
+
+        
+        console.log('rank', transformed, data);
 
         // // 점수 기준으로 정렬
         // transformed.sort((a, b) => b.score - a.score);
@@ -343,7 +174,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
     
   }, [searchQuery, originalData]);
 
-  const handleDiscover = (item) => {
+  const handleDiscover = async (item) => {
     console.log("item", item)
 
 
@@ -385,6 +216,11 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
 
       // navigateToPageWithData(PAGES.DISCOVER, { venueId: item.id });
     } else {
+
+
+      
+      const iau = await isActiveUser();
+      iau.onlyMasking = true;
 
       showAdWithCallback(
         // 광고 완료 시 콜백
