@@ -23,11 +23,48 @@ const FLAG_CODES = {
   cn: 'CN',
 };
 
+const lastExpireMem = new Map();
+const KEY_PREFIX = 'viewcnt:exp:';
+
+function shouldSendView(staffId, ttlMs = 1000) {
+  const key = `${KEY_PREFIX}${staffId}`;
+  const now = Date.now();
+
+  // 1) 메모리 + 세션스토리지에서 만료시각 읽기
+  let exp = lastExpireMem.get(key) ?? 0;
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (raw) exp = Math.max(exp, parseInt(raw, 10) || 0);
+  } catch {
+    // sessionStorage 불가 시 메모리만 사용
+  }
+
+  // 2) 아직 만료 전이면 차단
+  if (now < exp) return false;
+
+  // 3) 다음 만료시각 갱신(호출 허용)
+  const newExp = now + ttlMs;
+  lastExpireMem.set(key, newExp);
+  try {
+    sessionStorage.setItem(key, String(newExp));
+  } catch {}
+
+  return true;
+}
+
+function clearThrottle(staffId) {
+  const key = `${KEY_PREFIX}${staffId}`;
+  lastExpireMem.delete(key);
+  try { sessionStorage.removeItem(key); } catch {}
+}
+
 const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCallback, ...otherProps }) => {
 
   // 이미지 확대 여부
   const [noImagePopup, setNoImagePopup] = useState(true);
 
+
+  const [viewCntUpdated, setViewCntUpdated] = useState(false);
   const [date, setDate] = useState('');
   const [partySize, setPartySize] = useState('');
   const [availCnt, setAvailCnt] = useState(0);
@@ -220,15 +257,21 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
 
 
 
-  const staffViewCntUpsert = () => {
+  const staffViewCntUpsert = async () => {
+
+    console.log('viewCntUpdated', viewCntUpdated);
+    if(viewCntUpdated) return;
+    
+
     console.log('viewCountUpsert', girl);
 
-    ApiClient.postForm('/api/viewCountUpsert', {
+    await ApiClient.postForm('/api/viewCountUpsert', {
       target_type: 'staff',
       target_id: girl.staff_id,
       venue_id: girl.venue_id,
     });
     
+    setViewCntUpdated(true);
   }
 
   useEffect(() => {
@@ -284,7 +327,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
   // 이미지 가져오기
   useEffect(() => {
 
-  staffViewCntUpsert();
+    //staffViewCntUpsert();
 
   const fetchStaffPhotos = async () => {
     if (!otherProps.staff_id) return;
@@ -321,6 +364,27 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
 
   fetchStaffPhotos();
 }, [otherProps.staff_id]);
+
+
+useEffect(() => {
+  const staffId = otherProps.staff_id ?? girl.staff_id;
+  const venueId = otherProps.venue_id ?? girl.venue_id;
+  if (!staffId || !venueId) return;
+
+  if (!shouldSendView(staffId, 3000)) return; // 3초 TTL
+
+  ApiClient.postForm('/api/viewCountUpsert', {
+    target_type: 'staff',
+    target_id: staffId,
+    venue_id: venueId,
+  }).catch((e) => {
+    // 실패 시 즉시 재시도 가능하도록 롤백(선택)
+    clearThrottle(staffId);
+    console.error(e);
+  });
+}, [otherProps.staff_id, otherProps.venue_id, girl.staff_id, girl.venue_id]);
+
+
 
 // RotationDiv가 올라갈 자리 요소
 const rotationHostRef = useRef(null);
