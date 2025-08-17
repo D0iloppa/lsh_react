@@ -13,6 +13,17 @@ import LoadingScreen from '@components/LoadingScreen';
 import { useAuth } from '@contexts/AuthContext';
 import Swal from 'sweetalert2';
 
+import {
+  getVietnamDate, 
+  getVietnamTime, 
+  getVietnamHour, 
+  isVietnamToday, 
+  getVietnamDateObject,
+  buildVNDateTime,
+  parseHHMM,
+  vnNow 
+} from '@utils/VietnamTime';
+
 
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; // ⬅ 요일 배열 추가
 
@@ -41,32 +52,39 @@ const BookingHistoryPage = ({
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
  // 전제: dayjs.extend(customParseFormat) 호출되어 있어야 함
-const isCancelable = (booking, now = dayjs()) => {
-  
-  if (!booking?.date || !booking?.time) return false;
+ const isCancelable = (booking, now = vnNow(), include070000 = true) => {
 
+  const parseToHMS = (t) => {
+    const m = /^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(t);
+    if (!m) return null;
+    const hh = m[1], mm = m[2], ss = m[3] ?? '00';
+    return { hh, mm, ss, h: +hh, m: +mm, s: +ss };
+  };
+
+  if (!booking?.date || !booking?.time) return false;
   const { status } = booking;
   if (status === 'canceled' || status === 'completed') return false;
 
-  // strict 파싱
-  let start = dayjs(`${booking.date} ${booking.time}`, 'YYYY-MM-DD HH:mm:ss', true);
-  if (!start.isValid()) return false;
+  const t = parseToHMS(booking.time);
+  if (!t) return false;
 
-  // 심야영업(00:00:00 ~ 07:00:00 포함) → 다음날로 보정
-  const h = start.hour(), m = start.minute(), s = start.second();
-  if (h < 7 || (h === 7 && m === 0 && s === 0)) {
-    start = start.add(1, 'day');
+  // 베트남 시간대 절대시각 생성 (환경 TZ 무관)
+  let start = new Date(`${booking.date}T${t.hh}:${t.mm}:${t.ss}+07:00`);
+
+  // 심야영업(00:00:00 ~ 07:00:00 포함 여부 옵션) → 다음날로 보정
+  const isNight = include070000
+    ? (t.h < 7 || (t.h === 7 && t.m === 0 && t.s === 0))
+    : (t.h < 7);
+
+  if (isNight) {
+    start = new Date(start.getTime() + 24 * 60 * 60 * 1000);
   }
 
-  
-  console.log('booking-isCancelable', booking, start);
-
-
   // 취소 마감 = 시작 1시간 전
-  const cancelDeadline = start.subtract(1, 'hour');
+  const cancelDeadline = new Date(start.getTime() - 60 * 60 * 1000);
 
-  // 지금(now)이 마감 이전이면 취소 가능
-  return now.isBefore(cancelDeadline);
+  // now는 vnNow()로 이미 +07:00 기준 절대시각
+  return now.getTime() < cancelDeadline.getTime();
 };
 
 

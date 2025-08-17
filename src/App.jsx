@@ -133,7 +133,6 @@ const AppRoutes = () => {
 
 
 
-
     useEffect(() => {
       deviceLogin();
     }, [deviceLogin]);

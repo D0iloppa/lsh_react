@@ -13,7 +13,7 @@ import HatchPattern from '@components/HatchPattern';
 import LoadingScreen from '@components/LoadingScreen';
 import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
-
+import { backHandlerRef } from '@hooks/backRef'; 
 
 
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -101,12 +101,28 @@ const MainApp = () => {
     const processedQueryRef = useRef(false);
     const lastProcessedQuery = useRef('');
 
-    useWebviewBackBlock(goBack);
-
-  // 라우트가 바뀔 때도 더미 state를 보강해 두면 안정적
-  useEffect(() => {
-    window.history.pushState({ wv: true }, '', window.location.href);
-  }, [location.pathname, location.search]);
+    
+    
+    useEffect(() => {
+      const handleMessage = (event) => {
+        // Android WebView → window.postMessage 로 보낸 데이터 받기
+        if (event.data === 'onBackPressed') {
+            alert(backHandlerRef.current);
+            if (backHandlerRef.current) {
+                backHandlerRef.current(); // 👈 SketchHeader의 onBack 실행
+            } 
+        }
+      };
+    
+      // 이벤트 리스너 등록
+      document.addEventListener("message", handleMessage); // Android WebView
+      window.addEventListener("message", handleMessage);   // iOS WebView 호환
+    
+      return () => {
+        document.removeEventListener("message", handleMessage);
+        window.removeEventListener("message", handleMessage);
+      };
+    }, []);
 
     // notification 클릭 url 링크
     useEffect(() => {
