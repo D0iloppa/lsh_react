@@ -43,6 +43,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
     password: '',
     contact: '',
     description:'',
+    languages:'',
     role: '',
   });
 
@@ -115,6 +116,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
         description: form.description,
         profile_content_id: profileContentIdToUse,
         contentIdString: contentIdString,
+        languages:form.languages
       };
 
       console.log('이미지 연결 payload:', payload);
@@ -309,6 +311,33 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
           gap: 1rem;
           margin: 1rem 0;
         }
+
+      .language-checkbox-wrapper {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr); /* 1줄에 3개 */
+          gap: 0.5rem 1rem;
+        }
+
+        .language-checkbox-wrapper label.language-checkbox-item {
+          display: flex;
+          align-items: center;
+          font-size: 0.85rem;
+          gap: 0.4rem;
+          cursor: pointer;
+          padding: 0.3rem 0.5rem;
+          border-radius: 4px;
+          transition: background-color 0.2s ease;
+        }
+
+        .language-checkbox-wrapper label.language-checkbox-item:hover {
+          background-color: #f0f0f0;
+        }
+
+        .language-checkbox-wrapper input[type="checkbox"] {
+          width: 16px;
+          height: 16px;
+        }
+        
       `}</style>
           <div className="create-container">
           <SketchHeader
@@ -417,6 +446,72 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
                 placeholder={get('STAFF_NAME_PLACEHOLDER')}
               />
             </div>
+
+
+
+
+
+
+
+<div className="input-row" style={{marginBottom: '0.3rem'}}>
+                      <div className="input-row" style={{ display: 'none' }}>
+                        <SketchInput
+                          name="languages"
+                          value={form.languages}
+                          onChange={handleChange}
+                          placeholder={get('LANGUAGES_PLACEHOLDER')}
+                        />
+                      </div>
+                      {/* 언어 선택 체크박스 */}
+                    <div className="input-row" style={{ marginBottom: '1rem' }}>
+              <div style={{ marginBottom: '0.5rem', fontWeight: '500' }}>{get('LANGUAGES_LABEL')}</div>
+              <div className="language-checkbox-wrapper">
+                {[
+                  { code: 'kr', label: get('language.name.korean') },
+                  { code: 'en', label: get('language.name.english') },
+                  { code: 'vi', label: get('language.name.vietnamese') },
+                  { code: 'ja', label: get('language.name.japanese') },
+                  { code: 'cn', label: get('LANGUAGE_CHINESE') },
+                ].map(lang => {
+                  const isChecked = form.languages.split(',').includes(lang.code);
+                  return (
+                    <label key={lang.code} className="language-checkbox-item">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={(e) => {
+                          const selected = form.languages ? form.languages.split(',') : [];
+                          let updated;
+                          if (e.target.checked) {
+                            updated = [...new Set([...selected, lang.code])];
+                          } else {
+                            updated = selected.filter(code => code !== lang.code);
+                          }
+                          const langStr = updated.join(',');
+                          setForm(prev => {
+                            const updatedForm = { ...prev, languages: langStr };
+                            return updatedForm;
+                          });
+                        }}
+                      />
+                      {lang.label}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+             </div>
+
+
+
+
+
+
+
+
+
+
+
             <div className="form-field">
               <div className="form-label">{get('STAFF_PASSWORD_LABEL')}</div>
               <SketchInput

@@ -182,6 +182,7 @@ const transformStaffData = (apiData) => {
       image_url:item.image_url,
       images: combinedImages, // image_url과 images를 합친 배열
       description:item.description,
+      languages:item.languages,
       // 여러 가능성을 체크해서 status 설정
       status: item.status || 
               (item.is_active ? 'active' : 'on_leave') || 
@@ -424,7 +425,7 @@ const loadStaffList = async () => {
               </span>
             }
             showBack={true}
-             onBack={() => window.history.back()}
+             onBack={goBack}
           />
           
           <div className="add-btn-row">

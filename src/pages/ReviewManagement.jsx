@@ -14,29 +14,6 @@ import { overlay } from 'overlay-kit';
 import axios from 'axios';
 import LoadingScreen from '@components/LoadingScreen';
 
-const mockReviews = [
-  {
-    id: 1,
-    name: 'Emily Tran',
-    rating: 5.0,
-    content: 'Amazing atmosphere and friendly staff. Will visit again!',
-    response: null // 기존 답변이 있으면 여기에 저장
-  },
-  {
-    id: 2,
-    name: 'Lucas Nguyen',
-    rating: 3.5,
-    content: 'Good service but the music was too loud.',
-    response: 'Thank you for your feedback! We\'ll work on adjusting the music volume.'
-  },
-  {
-    id: 3,
-    name: 'Sophie Le',
-    rating: 4.0,
-    content: 'Great place but the wait time was long.',
-    response: null
-  },
-];
 
 const ReviewManagement = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
   const [ratingFilter, setRatingFilter] = useState('All');
@@ -765,6 +742,11 @@ const handleSubmitResponse = async (reviewId) => {
             showBack={true}
             onBack={goBack}
           />
+          <div>
+            <SketchBtn variant="primary" size="small" onClick={() => handleAddReview()}>
+              공식 리뷰 추가
+            </SketchBtn>
+          </div>
           
           <div className="filter-row">
             <div style={{ display: 'flex', alignItems: 'center' }}>

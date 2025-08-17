@@ -12,6 +12,16 @@ import ApiClient from '@utils/ApiClient';
 import { useMsg } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
 import { usePopup } from '@contexts/PopupContext';
+import CountryFlag from 'react-country-flag';
+
+const FLAG_CODES = {
+  kr: 'KR',
+  en: 'US',
+  vi: 'VN',
+  ja: 'JP',
+  cn: 'CN',
+};
+
 
 const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCallback, ...otherProps }) => {
   const [date, setDate] = useState('');
@@ -254,6 +264,42 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
 
         <div className="staff-info-section">
           <div className="staff-name">{girl.name || 'Unknown Staff'}</div>
+
+           {girl.languages && (
+                      <div
+                        className="staff-languages"
+                        style={{
+                          marginTop: '0.5rem',
+                          fontSize: '0.9rem',
+                          color: '#555',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          flexWrap: 'wrap'
+                        }}
+                      >
+                        <span>{get('LANGUAGES_LABEL')}:</span>
+                        {girl.languages.split(',').map((lang) => {
+                          const code = FLAG_CODES[lang.trim()];
+                          return code ? (
+                            <CountryFlag
+                              key={lang}
+                              countryCode={code}
+                              svg
+                              style={{
+                                height:'auto',
+                                fontSize: '1.5rem',
+                                border: '1px solid #ccc',       // 테두리 추가
+                                lineHeight: '1.5rem'
+                              }}
+                              title={lang}
+                            />
+                          ) : null;
+                        })}
+                      </div>
+                    )}
+                    
           {/*
           <div className="staff-age">
             {girl.birth_year ? `Age ${getAgeFromBirthYear(girl.birth_year)}` : 'Age N/A'}

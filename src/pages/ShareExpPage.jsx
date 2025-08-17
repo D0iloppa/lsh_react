@@ -7,6 +7,10 @@ import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 import LoadingScreen from '@components/LoadingScreen';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+
+import ApiClient from '@utils/ApiClient';
+
+
 const ShareExpPage = ({ 
   navigateToPageWithData, 
   PAGES,
@@ -22,22 +26,40 @@ const ShareExpPage = ({
   const [cardNumber, setCardNumber] = useState('');
   const [venueRating, setVenueRating] = useState(0);
   const [girlRating, setGirlRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
 
-  const handleMyReviews = () => {
-    console.log('My Reviews 클릭');
-    navigateToPageWithData && navigateToPageWithData(PAGES.MY_REVIEWS);
-  };
+  const [venueInfo, setVenueInfo] = useState({});
+
+  useEffect(() => {
+    
+
+    console.log('venueData', venueData, otherProps);
+
+    setVenueInfo(venueData);
+  }, [venueData]);
 
   const handleSubmitReview = () => {
-    const reviewData = {
-      venue: venueData.name,
-      cardNumber,
-      venueRating,
-      girlRating,
-      timestamp: new Date().toISOString()
+    if (!reviewText.trim()) {
+      alert('리뷰 내용을 입력해주세요.');
+      return;
+    }
+    
+    if (venueRating === 0) {
+      alert('장소 별점을 선택해주세요.');
+      return;
+    }
+
+    const reviewPayload = {
+      venue_id: venueData.id || venueData.venue_id,
+      content: reviewText,
+      rating: venueRating,
+      target_type: 'venue'
     };
-    console.log('Review submitted:', reviewData);
-    // 리뷰 제출 로직
+    
+    console.log('Review payload:', reviewPayload);
+
+    ApiClient.postForm('/api/admin/official_review', reviewPayload)
+    
   };
 
   const StarRating = ({ rating, onRatingChange, label }) => (
@@ -207,20 +229,22 @@ const ShareExpPage = ({
             <div className="review-header">
               <div className="venue-image">
                 <ImagePlaceholder 
-                  src={venueData.image} 
+                  src={venueData.image_url} 
                   className="venue-image"
                 />
               </div>
               
               <div className="venue-info">
-                <div className="venue-name">{venueData.name}</div>
+                <div className="venue-name">{venueData.venue_name}</div>
                 
                 <div className="card-input-section">
-                  <SketchInput
-                    type="text"
-                    placeholder="Card Number"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
+                <SketchInput
+                    name="review"
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                    placeholder={'리뷰를 작성해주세요...'}
+                    as="textarea"
+                    rows={8}
                   />
                 </div>
               </div>
@@ -232,34 +256,19 @@ const ShareExpPage = ({
               onRatingChange={setVenueRating}
               label="Rate the venue"
             />
-            
-            <StarRating 
-              rating={girlRating}
-              onRatingChange={setGirlRating}
-              label="Rate the Girl"
-            />
           </div>
         </div>
 
         {/* My Review Button */}
         <div className="my-review-section">
-        <SketchBtn
+          <SketchBtn
             className="full-width"
-            onClick={() => {
-              //navigateToPageWithData(PAGES.RESERVATION, {});
-            }}
+            onClick={handleSubmitReview}
+            disabled={!reviewText.trim() || venueRating === 0}
           >
-            My reviews
+            리뷰 제출하기
             <HatchPattern opacity={0.4} />
           </SketchBtn>
-
-          {/* <SketchBtn 
-            variant="secondary" 
-            size="medium"
-            onClick={handleMyReviews}
-          >
-            My Review
-          </SketchBtn> */}
         </div>
          <LoadingScreen 
         isVisible={isLoading} 

@@ -70,7 +70,11 @@ export default function ManagerDashboard({ navigateToPage, navigateToPageWithDat
       });
 
       if (response) {
+        console.log('매장 정보 조회 성공:', response);
         setVenueInfo({
+          image_url: response.image_url || '',
+          venue_name: response.name || '',
+          venue_id: response.venue_id || -1,
           open_time: response.open_time || '',
           close_time: response.close_time || ''
         });
@@ -242,8 +246,10 @@ const getVenueStatusButtonVariant = () => {
       }
     };
 
+    /*
     fetchDashboardInfo();
     fetchNotificationCounts(); // 알림 개수도 함께 조회
+    */
     fetchVenueInfo();
 
   }, [messages, currentLang]);
@@ -348,6 +354,7 @@ const getVenueStatusButtonVariant = () => {
 
   // 대시보드 주요 메뉴 (뱃지 정보 추가)
   const menus = [
+    /*
     {
       id: 1,
       icon: <Calendar size={24} />,
@@ -361,6 +368,7 @@ const getVenueStatusButtonVariant = () => {
         navigateToPage(PAGES.RESERVATION_MANAGEMENT); 
       }
     },
+    */
     {
       id: 2,
       icon: <Users size={24} />,
@@ -374,6 +382,7 @@ const getVenueStatusButtonVariant = () => {
         navigateToPage(PAGES.STAFF_MANAGEMENT); 
       }
     },
+    /*
     {
       id: 3,
       icon: <ClipboardList size={24} />,
@@ -398,18 +407,23 @@ const getVenueStatusButtonVariant = () => {
         navigateToPage(PAGES.PROMOTION_MANAGEMENT); 
       }
     },
+    */
     { 
       id: 5, 
       icon: <Star size={24} />, 
       name: get('MENU_REVIEWS'), 
-      page: PAGES.REVIEW_MANAGEMENT,
+      page: PAGES.SHARE_EXP,
       badgeCount: notificationCounts.reviews, // 리뷰 관리 뱃지
       showBadge: true,
       menuEvent: () => { 
         if(!chkAlert()) return;
-        navigateToPage(PAGES.REVIEW_MANAGEMENT); 
+
+        navigateToPageWithData(PAGES.SHARE_EXP,{
+          venueData: venueInfo
+        }); 
       }
     },
+    /*
     { 
       id: 6, 
       icon: <MessagesSquare size={24} />, 
@@ -445,11 +459,12 @@ const getVenueStatusButtonVariant = () => {
         navigateToPage(PAGES.MANAGER_SETTINGS); 
       }
     }
+      */
   ];
 
   useEffect(() => {
-    navigateToPage(PAGES.STAFF_MANAGEMENT);
-  }, []);
+    //navigateToPage(PAGES.STAFF_MANAGEMENT);
+  }, [venueInfo]);
 
   return (
     <>
@@ -537,95 +552,20 @@ const getVenueStatusButtonVariant = () => {
       <div className="account-container">
         <SketchHeader 
           title={[<CocktailIcon key="icon" />, get('APP_TITLE')]}
-          showBack={false}
-          onBack={goBack}
+          showBack={true}
+          onBack={() => window.history.back()}
           rightButtons={[]}
         />
-
-        <div style={{ padding: '0.7rem 0 0 0' }}>
-          {summary.map((item, idx) => (
-            <div key={idx} style={{
-              background: 'white',
-              padding: '0.2rem 0.9rem',
-              borderRadius: '5px',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-              fontFamily: 'inherit',
-              transform: 'rotate(-0.2deg)'
-            }}>
-              <SketchDiv className="item-content">
-                <HatchPattern opacity={0.4} />
-                <div className="big-card" style={{padding: '0.9rem'}}>
-                  <div style={{ fontWeight: 600, fontSize: '0.98rem', marginBottom: 2 }}>{item.title}</div>
-                  <div style={{ color: '#555', fontSize: '0.92rem', lineHeight: 1.3 }}>{item.content}</div>
-                </div>
-              </SketchDiv>
-            </div>
-          ))}
-        </div>
-        
-        <div style={{
-          background: 'white',
-          padding: '0.2rem 0.9rem',
-          borderRadius: '5px',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-          fontFamily: 'inherit',
-          transform: 'rotate(-0.2deg)',
-          marginBottom: '0.5rem'
-        }}>
-          <SketchDiv className="item-content">
-            <HatchPattern opacity={0.4} />
-            <div className="big-card" style={{padding: '0.9rem'}}>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'space-between', 
-                marginBottom: '0.8rem' 
-              }}>
-                <div style={{minWidth: '56%'}}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                    <Briefcase size={14} opacity={0.5}/>
-                    <span style={{ fontWeight: 600, fontSize: '0.98rem' }}>
-                      {get('MANAGER_VENUE_SETTING')}
-                    </span>
-                  </div>
-                  {/* <div style={{ fontSize: '0.92rem', color: '#555', lineHeight: 1.3 }}>
-                    {venueInfo.open_time && venueInfo.close_time ? 
-                      `${venueInfo.open_time?.slice(0,5)} - ${venueInfo.close_time?.slice(0,5)}` : 
-                     '-'
-                    }
-                  </div> */}
-                </div>
-                <SketchBtn 
-                  variant={getVenueStatusButtonVariant()}
-                  style={{
-                    marginLeft: '0.5rem', 
-                    background: venueStatus === 'available' ? '#10b981' : 
-                              venueStatus === 'closed' ? '#ef4444' : '#5e656f',
-                    color: 'white'
-                  }}
-                  size="small"
-                  onClick={handleVenueStatusToggle}
-                >
-                  <HatchPattern opacity={0.6} />
-                  {venueStatus === 'available' ? <LogOut size={14}/> : <LogIn size={14}/>} 
-                  {getVenueStatusButtonText()}
-                </SketchBtn>
-              </div>
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                fontSize: '0.85rem', 
-                color: '#6b7280' 
-              }}>
-                <span style={{letterSpacing: '-0.5px'}}>
-                  {get('title.text.14')} {get('VENUE_START_TIME')}: {venueInfo.open_time?.slice(0,5) || '-'}
-                </span>
-                <span style={{letterSpacing: '-0.5px'}}>
-                 {get('title.text.14')} {get('VENUE_END_TIME')}: {venueInfo.close_time?.slice(0,5) || '-'}
-                </span>
-              </div>
-            </div>
-          </SketchDiv>
+        <div style={{ margin: '1rem 0'}}>
+          <h1 style={{
+          fontSize: '1.4rem',
+          textAlign: 'center',
+          margin: '1rem 0'
+        }}>레탄톤 보안관 ADMIN 페이지</h1>
+          <div style={{padding: '0.5rem 2rem'}}>
+            <span style={{fontWeight: 'bold'}}>매장명 : </span> {venueInfo.venue_name} (venue_id: {`${venueInfo.venue_id}`})
+          </div>
+          
         </div>
       
         <div className="menu-section" style={{ 
