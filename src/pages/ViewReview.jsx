@@ -11,9 +11,11 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import LoadingScreen from '@components/LoadingScreen';
 import { Filter, Martini, Store, User } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 import { Star, Edit3 } from 'lucide-react';
 import axios from 'axios';
+
 
 const ViewReviewPage = ({
   navigateToPageWithData,
@@ -42,7 +44,8 @@ const ViewReviewPage = ({
   const [originalReviews, setOriginalReviews] = useState([]); // 원본 데이터 보관
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const API_HOST = import.meta.env.VITE_API_HOST;
-
+  const { user, isActiveUser, iauMasking } = useAuth();
+  const [iauData, setIauData] = useState(null);
 
   
 
@@ -66,6 +69,22 @@ const ViewReviewPage = ({
   };
 
   const handleViewDetail = (review) => {
+
+      const container = document.querySelector('.content-area');
+
+    if (container) {
+      localStorage.setItem("viewReviewPageState", JSON.stringify({
+      scrollY: container.scrollTop,
+      sortOrder1,
+      sortOrder,
+      targetTypeFilter
+    }));
+    }
+
+    let savedState =localStorage.getItem("viewReviewPageState");
+    console.log("set scrollY",savedState);
+
+    
   console.log('View detail clicked:', review);
   
   if (review.target_type === 'venue') {
@@ -145,6 +164,12 @@ const ViewReviewPage = ({
         const response = await ApiClient.postForm('/api/getVenueReviewList', {
           venue_id: venueId || -1
         });
+        
+        
+        const iau = await isActiveUser();
+        console.log('IAU:', iau);
+        
+        setIauData(iau);
 
         const reviewsData = response.data || [];
         //console.log("reviewsData", reviewsData)
@@ -155,7 +180,7 @@ const ViewReviewPage = ({
         const userIds = [...new Set(reviewsData.map(review => review.user_id))];
 
         // 모든 유저 정보를 병렬로 요청
-        const userPromises = userIds.map(userId =>
+        /*const userPromises = userIds.map(userId =>
           axios.get(`${API_HOST}/api/getUserInfo`, {
             params: { user_id: userId }
           }).catch(error => {
@@ -174,7 +199,7 @@ const ViewReviewPage = ({
         console.log("userImagesData", userImagesData)
 
         setUserImages(userImagesData);
-
+*/
       } catch (error) {
         console.error('리뷰 로딩 실패:', error);
         setReviews([]);
@@ -187,7 +212,28 @@ const ViewReviewPage = ({
     loadVenueReviews();
   }, [venueId]);
 
+   useEffect(() => {
+    if (!loading && reviews.length > 0) {
+      const savedState = localStorage.getItem("viewReviewPageState");
 
+      console.log("load scrollY",savedState);
+
+      if (savedState) {
+        const { scrollY, sortOrder1, sortOrder, targetTypeFilter } = JSON.parse(savedState);
+
+        if (sortOrder1) setSortOrder1(sortOrder1);
+        if (sortOrder) setSortOrder(sortOrder);
+        if (targetTypeFilter) setTargetTypeFilter(targetTypeFilter);
+
+        
+        const container = document.querySelector('.content-area');
+        
+        if (container) {
+          container.scrollTop = scrollY;
+        }
+      }
+    }
+  }, [loading, reviews]);
 
   const handleNotifications = () => {
     console.log('Notifications 클릭');
@@ -525,6 +571,40 @@ const ViewReviewPage = ({
           .staff-response .response-text {
             color: #92400e;
           }
+
+          .review-meta-date {
+            position: relative;
+            top: -2px; /* 원하는 만큼 위로 조정 */
+          }
+
+           .notification-item {
+              background-color: white;
+              padding: 1rem;
+              margin-bottom: 0.75rem;
+              cursor: pointer;
+              transform: rotate(-0.1deg);
+              transition: all 0.2s;
+              position: relative;
+              overflow: hidden;
+            }
+
+            .empty-state {
+          text-align: center;
+          padding: 2rem 0;
+          color: #6b7280;
+        }
+
+        .empty-state h3 {
+          font-size: 1.1rem;
+          margin-bottom: 0.5rem;
+          color: #374151;
+        }
+
+        .empty-state p {
+          font-size: 0.83rem;
+        }
+
+
       `}</style>
 
       <div className="view-review-container">
@@ -540,30 +620,69 @@ const ViewReviewPage = ({
         {/* Search Section */}
         <div className="map-filter-selects">
           <select
-            className="select-box"
-            value={sortOrder1}
-            onChange={(e) => setSortOrder1(e.target.value)}
-          >
-            <option value="rating_high">{get('Sort.Rating.High')}</option>
-            <option value="rating_low">{get('Sort.Rating.Low')}</option>
-          </select>
-          <select
-            className="select-box"
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-          >
-            <option value="latest">{get('Newest.filter')}</option>
-            <option value="oldest">{get('Oldest.filter')}</option>
-          </select>
-          <select
-            className="select-box"
-            value={targetTypeFilter}
-            onChange={(e) => setTargetTypeFilter(e.target.value)}
-          >
-            <option value="ALL">{get('main.filter.category.all')}</option>
-            <option value="venue">{get('title.text.14')}</option>
-            <option value="staff">{get('title.text.16')}</option>
-          </select>
+  className="select-box"
+  value={sortOrder1}
+  onChange={(e) => {
+    const value = e.target.value;
+    setSortOrder1(value);
+    localStorage.setItem(
+      "viewReviewPageState",
+      JSON.stringify({
+        scrollY: 0,
+        sortOrder1: value,
+        sortOrder,
+        targetTypeFilter
+      })
+    );
+  }}
+>
+  <option value="rating_high">{get('Sort.Rating.High')}</option>
+  <option value="rating_low">{get('Sort.Rating.Low')}</option>
+</select>
+
+<select
+  className="select-box"
+  value={sortOrder}
+  onChange={(e) => {
+    const value = e.target.value;
+    setSortOrder(value);
+    localStorage.setItem(
+      "viewReviewPageState",
+      JSON.stringify({
+        scrollY: 0,
+        sortOrder1,
+        sortOrder: value,
+        targetTypeFilter
+      })
+    );
+  }}
+>
+  <option value="latest">{get('Newest.filter')}</option>
+  <option value="oldest">{get('Oldest.filter')}</option>
+</select>
+
+<select
+  className="select-box"
+  value={targetTypeFilter}
+  onChange={(e) => {
+    const value = e.target.value;
+    setTargetTypeFilter(value);
+    localStorage.setItem(
+      "viewReviewPageState",
+      JSON.stringify({
+        scrollY: 0,
+        sortOrder1,
+        sortOrder,
+        targetTypeFilter: value
+      })
+    );
+  }}
+>
+  <option value="ALL">{get('main.filter.category.all')}</option>
+  <option value="venue">{get('title.text.14')}</option>
+  <option value="staff">{get('title.text.16')}</option>
+</select>
+
         </div>
         {/* <div className="search-section">
           <form onSubmit={handleSearch}>
@@ -594,13 +713,13 @@ const ViewReviewPage = ({
             </div>
           ) : reviews.length > 0 ? (
             reviews.map((review, index) => (
-              <SketchDiv key={review.review_id} className="review-card">
+              <SketchDiv key={review.review_id} className="review-card" onClick={() => handleViewDetail(review)}>
                 <HatchPattern opacity={0.03} />
                 <div className="review-content">
                   <div className="review-header">
                     <ImagePlaceholder
                       //src={userImages[review.user_id] || '/placeholder-user.jpg'}
-                      src={review.targetImage || '/placeholder-user.jpg'}
+                      src={review.targetImage || '/cdn/defaultC/staff.png'}
                       className="user-avatar" alt="profile"
                     />
                     <div>
@@ -631,23 +750,31 @@ const ViewReviewPage = ({
                           fontWeight: '500',
                           color: '#333'
                         }}>
-                          {review.targetName}
+                            
+                              {review.target_type === 'staff' && !iauData.isActiveUser
+                                ? review.targetName
+                                    ? review.targetName.charAt(0) + '***'
+                                    : ''
+                                : review.targetName}
                         </span>
                       </div>
 
 
 
                       <div className="user-info"></div>
-                      <div style={{ 'display': 'flex' }}>
-                        <span style={{ marginRight: '5px', fontSize: '0.95rem' }}>{get('COMMON_AUTHOR') || '작성자'} :</span>
-                        <h3 className="user-name">{review.user_name}</h3>
-                      </div>
+                    
                       <p className="review-meta">
-                        {renderStars(review.rating)} stars - {new Date(review.created_at).toLocaleDateString()}
-                      </p>
+                      {renderStars(review.rating)}  
+                      <span className="review-meta-date">
+                        {new Date(review.created_at).toLocaleDateString()}
+                      </span>
+                    </p>
+
                     </div>
                   </div>
-                  <p className="review-text">{review.content}</p>
+                  {review.content !== '-' && (
+                    <p className="review-text">{review.content}</p>
+                  )}
 
                   {/* 매니저 답변 표시 */}
                   {review.reply_content && (
@@ -693,34 +820,17 @@ const ViewReviewPage = ({
 
                   </div> */}
 
-                  <div className="review-actions" style={{
-                    paddingTop: '1rem',
-                    borderTop: '1px solid #e5e7eb',
-                    display: 'flex',
-                    justifyContent: 'flex-end'
-                  }}>
-                  <SketchBtn 
-                    onClick={() => {
-                      //console.log('버튼 클릭됨!');
-                      handleViewDetail(review);
-                    }}
-                    style={{
-                        width: '30%',
-                        backgroundColor: review.is_reservation ? '#374151' : '#9ca3af', // 회색으로 비활성화 느낌
-                        color: '#fefefe',
-                        padding: '0.5rem 1rem',
-                        cursor: review.is_reservation ? 'pointer' : 'not-allowed',
-                        transition: 'all 0.2s ease'
-                      }}
-                  >
-                    {get('COMMON_VIEW_DETAILS') || '상세보기'}
-                  </SketchBtn>
-                  </div>
                 </div>
               </SketchDiv>
             ))
           ) : (
-            <div style={{ textAlign: 'center', color: 'gray' }}>{get('Review3.5')}</div>
+             <SketchDiv className="notification-item">
+              <HatchPattern opacity={0.02} />
+              <div className="empty-state">
+                <h3>{get('Review3.5')}</h3>
+                <p style={{fontSize: '0.83rem'}}>{get('REVIEW_NO_REVIEWS_MESSAGE')}</p>
+              </div>
+            </SketchDiv>
           )}
         </div>
       </div>

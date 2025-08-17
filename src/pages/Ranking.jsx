@@ -663,7 +663,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
                   {/* 주소 (매장만) */}
                   {rankingType === 'venue' && item.address && (
                     <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                      <MapPin size={12}/> {item.address}
+                       {item.address}
                     </div>
                   )}
 

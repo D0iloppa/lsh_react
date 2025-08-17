@@ -655,7 +655,10 @@ useEffect(() => {
       const longitude = parseFloat(lngStr);
 
       // ✅ 베트남 여부 판별
-      const isInVietnam = latitude >= 8 && latitude <= 24 && longitude >= 102 && longitude <= 110;
+      const isInVietnam = latitude >= 10.7790 &&
+        latitude <= 10.7810 &&
+        longitude >= 106.7045 &&
+        longitude <= 106.7060;
 
       const center = isInVietnam
         ? { lat: latitude, lng: longitude }
@@ -712,7 +715,10 @@ useEffect(() => {
       let longitude = parseFloat(lngStr);
 
 
-       const isInVietnam = latitude >= 8 && latitude <= 24 && longitude >= 102 && longitude <= 110;
+       const isInVietnam = latitude >= 10.7790 &&
+        latitude <= 10.7810 &&
+        longitude >= 106.7045 &&
+        longitude <= 106.7060;
 
        if ( !isInVietnam  ) {
           latitude=10.780037531310423;

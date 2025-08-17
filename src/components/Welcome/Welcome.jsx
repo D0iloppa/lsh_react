@@ -205,27 +205,32 @@ const CocktailIcon = () => (
         </div>
 
 
-       <div className="relative" style={{ marginTop: '1rem', margin: '1rem'}}>
-          <HatchPattern opacity={0.8} />
-          
-          <SketchBtn 
-            className="sketch-button"  
-            variant = 'event' 
-            onClick={onExpore}
-          >
-            {get('Welcome1.2')}
-          </SketchBtn>
-        </div>
-        <div className="relative" style={{ marginTop: '1rem', margin: '1rem' }}>
-          <HatchPattern opacity={0.4} />
-          
-          <SketchBtn 
-            className="sketch-button" style={{ fontWeight: 'bold' }}
-            onClick={() => setIsVideoOpen(true)}
-          >
-            {get('Welcome1.3')}
-          </SketchBtn>
-        </div>
+       <div 
+  className="relative" 
+  style={{ margin: '1rem', display: 'flex', gap: '1rem' }}
+>
+  <div style={{ flex: 1 }}>
+    <HatchPattern opacity={0.8} />
+    <SketchBtn 
+      className="sketch-button"  
+      variant='event' 
+      onClick={onExpore}
+    >
+      {get('Welcome1.2')}
+    </SketchBtn>
+  </div>
+
+  <div style={{ flex: 1 }}>
+    <HatchPattern opacity={0.4} />
+    <SketchBtn 
+      className="sketch-button" style={{ fontWeight: 'bold' }}
+      onClick={() => setIsVideoOpen(true)}
+    >
+      {get('Welcome1.3')}
+    </SketchBtn>
+  </div>
+</div>
+
 
         {isVideoOpen && (
   <div 

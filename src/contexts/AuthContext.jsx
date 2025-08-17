@@ -195,6 +195,7 @@ const iauMasking = (iau, text, onPurchaseClick) => {
               position: relative;
               top: 0.25em; /* 폰트 높이 대비 미세 보정 */
             }
+              
         `}</style>
         </span>
       );
@@ -204,22 +205,23 @@ const iauMasking = (iau, text, onPurchaseClick) => {
     const halfLength = Math.floor(text.length / 4);
     
     // 앞부분은 그대로 두고, 나머지는 ***로 마스킹
-    const visiblePart = text.substring(0, halfLength);
+    const visiblePart = text.substring(0, 1);
     
     // JSX 요소 반환 (마스킹된 텍스트 + 구매 버튼)
     return (
       <span className="masked-content-wrapper">
-        <span className="visible-text">{visiblePart}</span>
-        <span className="masked-section">
-          <span className="masked-dots"> ***</span>
-          <button 
-            className="daily-pass-btn"
-            onClick={onPurchaseClick}
-          >
-            {get('purchase.daily_pass.btn')}
-          </button>
-        </span>
-        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span className="visible-text">{visiblePart}</span>
+          <span className="masked-section">
+            <span className="masked-dots"> ***</span>
+            <button 
+              className="daily-pass-btn"
+              onClick={onPurchaseClick}
+            >
+              {get('purchase.daily_pass.btn')}
+            </button>
+          </span>
+        </div>
        <style jsx="true">{`
          
           

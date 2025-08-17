@@ -343,7 +343,7 @@ const MainApp = () => {
         // { id: PAGES.SEARCH, icon: Search, label: get('btn.searchMap.1.1'), needLogin:false },
         { id: PAGES.RANKING, icon: Trophy, label: get('TITLE_RANK'), needLogin:false },
         { id: PAGES.PROMOTION, icon: Tag, label: get('btn.promotion.1'), needLogin:false },
-        { id: PAGES.BOOKINGHISTORY, icon: History, label: get('menu.reserve.history') ,needLogin:true},
+        { id: PAGES.VIEWREVIEW, icon: Star, label: get('Profile1.1') ,needLogin:false},
         { id: PAGES.ACCOUNT, icon: Settings, label: get('MENU_SETTINGS'), needLogin:true }
     ];
 
@@ -386,9 +386,32 @@ const MainApp = () => {
                                 const blockPage = [ PAGES.CHATTINGLIST, PAGES.BOOKINGHISTORY];
 
                                 if(id == PAGES.RANKING ){
-
                                     localStorage.setItem('rankingType', 'venue');
                                     
+                                    showAdWithCallback(
+                                        // 광고 완료 시 콜백
+                                        () => {
+                                            navigateToPage(id);
+                                        },
+                                        // fallback 콜백 (광고 응답 없을 때)
+                                        () => {
+                                            navigateToPage(id);
+                                        },
+                                        1000 // 1초 타임아웃
+                                      );
+                                      return;
+                                }
+
+                                if(id == PAGES.VIEWREVIEW ){
+
+                                    const INITIAL_STATE = {
+                                    scrollY: 0,
+                                    sortOrder1: "rating_high",
+                                    sortOrder: "latest",
+                                    targetTypeFilter: "ALL"
+                                    };
+
+                                    localStorage.setItem("viewReviewPageState", JSON.stringify(INITIAL_STATE));
                                     showAdWithCallback(
                                         // 광고 완료 시 콜백
                                         () => {
