@@ -112,7 +112,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
     };
 
     // 플리킹 감지를 위한 useRef 선언
-      const touchStartXRef = useRef(null);
+     /* const touchStartXRef = useRef(null);
       const touchEndXRef = useRef(null);
 
        
@@ -143,7 +143,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
         }
       }
     };
-
+*/
   const handleBack = () => {
     goBack();
   };
@@ -439,7 +439,7 @@ useEffect(() => {
     window.scrollTo(0, 0);
   }, [messages, currentLang]);
 
-
+/*
   useEffect(() => {
   const container = document.querySelector('.staff-detail-container');
   if (!container) return;
@@ -452,7 +452,7 @@ useEffect(() => {
     container.removeEventListener('touchend', handleTouchEnd);
   };
 }, []);
-
+*/
 
   return (
     <>

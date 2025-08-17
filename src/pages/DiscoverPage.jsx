@@ -128,7 +128,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   // 스크롤 이벤트용 별도 useEffect
 
   const navigate = useNavigate();
-
+/*
   // 플리킹 감지를 위한 useRef 선언
   const touchStartXRef = useRef(null);
   const touchEndXRef = useRef(null);
@@ -177,7 +177,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
       }
     }
   };
-
+*/
 
   // useEffect(() => {
   //   const debugScroll = () => {
@@ -492,7 +492,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   }, [venueId]); // venueId가 변경될 때만 실행
 
 
-
+/*
   useEffect(() => {
     const container = document.querySelector('.discover-container');
     if (!container) return;
@@ -505,7 +505,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
       container.removeEventListener('touchend', handleTouchEnd);
     };
   }, []);
-
+*/
 
   const renderStars = (rating = 0) => {
     const stars = [];
@@ -1564,7 +1564,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                   }
                 } catch (error) {
                   console.error('채팅방 조회 실패:', error);
-                  alert('채팅방 정보를 불러오는 데 실패했습니다.');
+                  //alert('채팅방 정보를 불러오는 데 실패했습니다.');
                 }
               }}
             >
