@@ -50,8 +50,9 @@ const AppRoutes = () => {
     useEffect(() => {
     const handlePopState = (e) => {
       // 뒤로가기 발생 시 다시 앞으로 가게 막음
-      window.history.pushState(null, "", window.location.href);
+      //window.history.pushState(null, "", window.location.href);
       Swal.fire('알림', "뒤로가기 버튼을 사용할 수 없습니다.", 'info');
+      return;
     };
 
     // 현재 히스토리에 dummy state를 추가

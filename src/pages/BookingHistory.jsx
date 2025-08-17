@@ -13,6 +13,7 @@ import LoadingScreen from '@components/LoadingScreen';
 import { useAuth } from '@contexts/AuthContext';
 import Swal from 'sweetalert2';
 
+
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; // ⬅ 요일 배열 추가
 
 const BookingHistoryPage = ({ 
@@ -38,6 +39,30 @@ const BookingHistoryPage = ({
   const today = dayjs();
 
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
+
+  const isCancelable = (booking) => {
+    if (!booking.date || !booking.time) return false;
+
+    let startDateTime = dayjs(`${booking.date} ${booking.time}`, "YYYY-MM-DD HH:mm:ss");
+
+    // 예약 시간이 00:00:00 이면 다음날 0시로 보정
+    if (booking.time === "00:00:00") {
+      startDateTime = startDateTime.add(1, "day");
+    }
+
+    // 취소 마감 = 예약 시작 1시간 전
+    let cancelDeadline = startDateTime.subtract(1, "hour");
+
+    const now = dayjs();
+
+    // 남은 분(minute) 차이 반환
+    let tmp = startDateTime.diff(now, "minute")+120;
+
+    return tmp > 60;
+  };
+
+
+
 
   // ⬅ 달력 셀 생성 로직 (StaffSchedule에서 가져옴)
   const calendarCells = useMemo(() => {
@@ -344,7 +369,7 @@ const BookingHistoryPage = ({
     // 다음날 표시 처리
     if (endHours >= 24) {
       const nextDayHours = endHours - 24;
-      return `${nextDayHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}+1`;
+      return `${nextDayHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     } else {
       return `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
@@ -484,13 +509,15 @@ const BookingHistoryPage = ({
   };
 
   const calculateDuration = (startTime, endTime) => {
+
     if (!startTime || !endTime) return '';
     
     const start = new Date(`2000-01-01 ${startTime}`);
     const end = new Date(`2000-01-01 ${endTime}`);
     const diffMs = end - start;
-    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+    let diffHours = Math.round(diffMs / (1000 * 60 * 60));
     
+    if ( diffHours < 0 ) diffHours=24+diffHours;
     return `${diffHours}${get('Reservation.HourUnit') || '시간'}`;
   };
 
@@ -954,9 +981,8 @@ const getEntranceText = (entranceValue) => {
                     >
                       {booking.statusLabel}
                     </div>
-                    
                     <div className="action-buttons">
-                       {booking.cancelable && (
+                      {isCancelable(booking) && (
                           <SketchBtn 
                             variant="danger" 
                             size="small"
