@@ -391,7 +391,21 @@ useEffect(() => {
 
       try {
 
-        setVnScheduleStatus(girl.vn_schedule_status);
+        let vn_schedule_status = girl?.vn_schedule_status || false;
+        if(!vn_schedule_status){
+          const response = await ApiClient.get(`/api/getVenue`, {
+            params: { venue_id: girl.venue_id
+              ,lang:currentLang
+             },
+          });
+
+          console.log('venue-info', response);
+          vn_schedule_status = response.schedule_status;
+        }
+
+
+
+        setVnScheduleStatus(vn_schedule_status);
         
         const response = await ApiClient.get('/api/staffAvailCnt', {
           params: { staff_id: girl.staff_id }

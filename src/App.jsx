@@ -644,7 +644,7 @@ const LeTantonSheriffPage = () => {
                   <div className="feature-icon">
                     <Gift size={24} />
                   </div>
-                  <div className="feature-title">일일권 구매 혜택</div>
+                  <div className="feature-title">예약권 구매 혜택</div>
                 </div>
                 <div className="feature-content">
                   <p>안전한 픽업 서비스</p>

@@ -222,13 +222,17 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
       const iau = await isActiveUser();
       iau.onlyMasking = true;
 
+      
+
       showAdWithCallback(
         // 광고 완료 시 콜백
         () => {
           navigateToPageWithData(PAGES.STAFFDETAIL, { 
             staff_id: item.id,  // staffId → staff_id로 변경
             venue_id:item.venue_id,
+            vn_schedule_status:false,
             fromReview: true   // 데이터 fetch를 위해 필요
+            
           });
         },
         // fallback 콜백 (광고 응답 없을 때)
@@ -236,6 +240,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
           navigateToPageWithData(PAGES.STAFFDETAIL, { 
             staff_id: item.id,  // staffId → staff_id로 변경
             venue_id:item.venue_id,
+            vn_schedule_status:false,
             fromReview: true   // 데이터 fetch를 위해 필요
           });
         },

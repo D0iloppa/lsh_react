@@ -493,7 +493,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
       <div className="purchase-page">
         {/* 헤더 */}
              <SketchHeader
-                 title={mode === 'extend' ? '이용권 연장 안내' : '일일권 구매 안내'}
+                 title={mode === 'extend' ? '이용권 연장 안내' : '예약권 구매 안내'}
                  showBack={true}
               onBack={handleBack}
                  rightButtons={[]}
