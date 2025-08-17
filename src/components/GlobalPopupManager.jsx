@@ -147,8 +147,8 @@ const PopupModal = ({ popup, onClose, navigateToPageWithData, PAGES }) => {
     features: [
       get('Popup.Today.Benefit6'),
       get('Popup.Today.Benefit5'),
+      get('Popup.Today.Benefit2'),
       get('Popup.Today.Benefit3'),
-      get('Popup.Today.Benefit5'),
       get('Popup.Today.Benefit4'),
       get('Popup.Today.Benefit1')
     ],
