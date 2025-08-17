@@ -432,7 +432,9 @@ const removeMapBlur = (duration = 220) => {
     //if (!iau) showBlurOverlay(mapInstance.current);
     
     if (!iau) {
+      removeMapBlur();
       //applyMapBlur();
+      /*
       applyMapBlur({
         blur: 1.6,
         dimWhite: 0.10,
@@ -442,6 +444,7 @@ const removeMapBlur = (duration = 220) => {
         glass: true,
         message: get?.('MAP_PURCHASE_MESSAGE') || '지도 서비스를 이용하려면 이용권을 구매해야 합니다.',
       });
+      */
       //showBlurMessage(get?.('MAP_PURCHASE_MESSAGE') || '지도 서비스를 이용하려면 이용권을 구매해야 합니다.');
     } else {
       removeMapBlur();
