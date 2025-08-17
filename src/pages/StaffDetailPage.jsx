@@ -26,7 +26,7 @@ const FLAG_CODES = {
 const lastExpireMem = new Map();
 const KEY_PREFIX = 'viewcnt:exp:';
 
-function shouldSendView(staffId, ttlMs = 1000) {
+function shouldSendView(staffId, ttlMs = 300) {
   const key = `${KEY_PREFIX}${staffId}`;
   const now = Date.now();
 
