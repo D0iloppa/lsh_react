@@ -369,14 +369,31 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     }).format(date);
   }, []);
 
-  // 예약 정보 캐시 - 컴포넌트 외부로 이동
-  const reservationCacheRef = useRef({});
+  function calculateActualEndTime(startTime, durationHours) {
+    if (!startTime || !durationHours) return '';
+  
+    const [hoursStr = '00', minutesStr = '00', secondsStr = '00'] = startTime.split(':');
+    const hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+    const seconds = parseInt(secondsStr, 10);
+  
+    const totalStartMinutes = hours * 60 + minutes;
+    const totalEndMinutes = totalStartMinutes + (durationHours * 60);
+  
+    const endHours = Math.floor(totalEndMinutes / 60);
+    const endMinutes = totalEndMinutes % 60;
+    const isNextDay = endHours >= 24;
+    const displayHours = endHours % 24;
+  
+    const result = `${displayHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return isNextDay ? `${result}+1` : result;
+  }
+  
 
   // 예약 정보를 가져오는 함수 - 안정화
    const getReservationInfo = useCallback(async (reservationId) => {
-    if (reservationCache[reservationId]) {
-      return reservationCache[reservationId];
-    }
+
+
     try {
 
       const {type} = user;
@@ -386,18 +403,25 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         params: { user_id: login_id }
       });
       const resTmp = response.data; // ⬅️ 여기서 배열을 추출
+
+
+
+      
+
       const targetReservation = resTmp.find(item => item.reservation_id === reservationId);
+      console.log('getReservationInfo', reservationId, resTmp, targetReservation);
 
       if( targetReservation != null ){
+        
           targetReservation.res_start_time = targetReservation.time;
           const endTime = calculateActualEndTime(targetReservation.end_time || targetReservation.time, 1);
           targetReservation.res_end_time = endTime;
           targetReservation.target_name = targetReservation.venue_name;
-          reservationCache[reservationId] = targetReservation;
+          //reservationCache[reservationId] = targetReservation;
 
           
 
-        console.log('1111-00', targetReservation);
+          console.log('1111-00', targetReservation);
 
 
           return targetReservation;
@@ -441,6 +465,14 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     
     // 데이터가 없는 경우
     if (!reservationData) {
+
+      getReservationInfo(reservationId).then(reservationData => {
+        console.log('reservationData-1', reservationId, reservationData);
+      });
+
+      
+
+
       return (
         <div style={{
           background: '#fef2f2',
@@ -535,6 +567,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
   // getLinkTemplate 수정
   const getLinkTemplate = useCallback((msg) => {
+
+    console.log('getLinkTemplate', msg);
     switch(msg.link_type){
       case 'reservation':{
         return <ReservationLinkTemplate reservationData={msg.reservationData} reservationId={msg.link_target} />;
@@ -1153,7 +1187,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       //receiver_id: receiverId
     };
 
-    console.log('Sending chatData:', chatData);
+    console.log('Sending chatData:', chatData, reservationCardData);
 
     try {
       stopPolling();
@@ -1193,6 +1227,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     if (initType === 'booking' && !showReservationCard && !reservationCardData) {
       generateInitChatItem();
     }
+
   }, [initType, showReservationCard, reservationCardData, generateInitChatItem]);
 
   useEffect(() => {

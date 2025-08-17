@@ -107,10 +107,13 @@ const MainApp = () => {
       const handleMessage = (event) => {
         // Android WebView → window.postMessage 로 보낸 데이터 받기
         if (event.data === 'onBackPressed') {
-            alert(backHandlerRef.current);
             if (backHandlerRef.current) {
                 backHandlerRef.current(); // 👈 SketchHeader의 onBack 실행
             } 
+
+            if ( backHandlerRef.current == null ) {
+                navigateToPage(PAGES.HOME);
+            }
         }
       };
     

@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
-
+import { backHandlerRef } from '@hooks/backRef';
 import { ChevronLeft } from 'lucide-react';
 
 const SketchHeader = ({ 
@@ -13,6 +13,23 @@ const SketchHeader = ({
   className = '',
   sticky = true
 }) => {
+     useEffect(() => {
+
+    if (showBack) {
+      backHandlerRef.current = onBack;
+    } else {
+      backHandlerRef.current = null;
+    }
+
+    return () => {
+      // 페이지 언마운트 시 해제
+      if (backHandlerRef.current === onBack) {
+        backHandlerRef.current = null;
+      }
+    };
+  }, [showBack, onBack]);
+
+
   return (
     <>
       <style jsx>{`
