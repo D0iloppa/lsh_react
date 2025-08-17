@@ -3,6 +3,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@contexts/AuthContext';
 import { Home, Search, Trophy, Calendar, User, Map, ChevronUp, Star,Icon, History, MessagesSquare, Settings, Tag } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
+import useWebviewBackBlock from '@hooks/useWebviewBackBlock';
+
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useLoginOverlay } from '@hooks/useLoginOverlay.jsx';
 
@@ -12,7 +14,12 @@ import LoadingScreen from '@components/LoadingScreen';
 import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
 
+
+
 import { useLocation, useNavigate } from 'react-router-dom';
+
+
+
 
 import './MainApp.css';
 

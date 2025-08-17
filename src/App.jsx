@@ -45,27 +45,10 @@ const AppRoutes = () => {
   const { deviceLogin, isLoggedIn } = useAuth();
   const { currentLang, messages } = useMsg();
 
-    const [appVersion, setAppVersion] = useState(null); // 없을 때는 null 유지
-
-    useEffect(() => {
-    const handlePopState = (e) => {
-      // 뒤로가기 발생 시 다시 앞으로 가게 막음
-      //window.history.pushState(null, "", window.location.href);
-      Swal.fire('알림', "뒤로가기 버튼을 사용할 수 없습니다.", 'info');
-      return;
-    };
-
-    // 현재 히스토리에 dummy state를 추가
-    window.history.pushState(null, "", window.location.href);
-    window.addEventListener("popstate", handlePopState);
-
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
+  const [appVersion, setAppVersion] = useState(null); // 없을 때는 null 유지
 
   useEffect(() => {
-  const init = async () => {
+    const init = async () => {
     const currentQuery = window.location.href;
     const url = new URL(currentQuery);
     const params = new URLSearchParams(url.search);
@@ -718,9 +701,6 @@ const NotificationHandler = () => {
     window.ReactReady = true;
 
     window.onNotificationClick = (navigateTo, data) => {
-
-      alert("onNotificationClick");
-
       let prefix = '/main' ;
       // (data?.chatRoomType === 'staff') ? '/staff' : '/manager';
 

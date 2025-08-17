@@ -41,7 +41,14 @@ const BookingHistoryPage = ({
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
   const isCancelable = (booking) => {
+
+    console.log('booking-isCancelable', booking);
     if (!booking.date || !booking.time) return false;
+
+    const {status} = booking;
+    
+    if(status === 'canceled' || status === 'completed') return false;
+
 
     let startDateTime = dayjs(`${booking.date} ${booking.time}`, "YYYY-MM-DD HH:mm:ss");
 
