@@ -403,6 +403,13 @@ useEffect(() => {
           vn_schedule_status = response.schedule_status;
         }
 
+        if(vn_schedule_status === 'closed'){
+          setAvailCnt(0);
+          setVnScheduleStatus(vn_schedule_status);
+          setIsLoadingAvailCnt(false);
+          return;
+        }
+
 
 
         setVnScheduleStatus(vn_schedule_status);
