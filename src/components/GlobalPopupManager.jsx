@@ -145,12 +145,12 @@ const PopupModal = ({ popup, onClose, navigateToPageWithData, PAGES }) => {
     title: get('Popup.Today.Title') || '오늘 하루, 프리미엄 혜택을 모두 누려보세요! 단, 단 하루 $9.99로!',
     //description: get('Popup.Today.Description') || '정회원 가입 없이도 간편하게 프리미엄 일일권을 구매하고 모든 서비스를 체험해 보세요.',
     features: [
-      get('Popup.Today.Benefit1'),
-      get('Popup.Today.Benefit2'),
-      get('Popup.Today.Benefit3'),
-      get('Popup.Today.Benefit4'),
+      get('Popup.Today.Benefit6'),
       get('Popup.Today.Benefit5'),
-      get('Popup.Today.Benefit6')
+      get('Popup.Today.Benefit3'),
+      get('Popup.Today.Benefit5'),
+      get('Popup.Today.Benefit4'),
+      get('Popup.Today.Benefit1')
     ],
     buttons: [
       {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import HatchPattern from '@components/HatchPattern';
 import SketchInput from '@components/SketchInput';
 import ImagePlaceholder from '@components/ImagePlaceholder';
@@ -10,7 +10,7 @@ import SketchBtn from '@components/SketchBtn'
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import LoadingScreen from '@components/LoadingScreen';
-import { Filter, Martini, Store, User } from 'lucide-react';
+import { Filter, Martini, Store, User, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 import { Star, Edit3 } from 'lucide-react';
@@ -46,8 +46,54 @@ const ViewReviewPage = ({
   const API_HOST = import.meta.env.VITE_API_HOST;
   const { user, isActiveUser, iauMasking } = useAuth();
   const [iauData, setIauData] = useState(null);
+  
+
+  const [translationMap, setTranslationMap] = useState({});
+  const [showTranslateIcon, setShowTranslateIcon] = useState({});
+  
+  const longPressTimer = useRef(null);
 
   
+  // 번역 아이콘 표시 (꾹 눌렀을 때)
+const handleLongPress = useCallback((reviewId) => {
+  setShowTranslateIcon(prev => ({
+    ...prev,
+    [reviewId]: true,
+  }));
+}, []);
+
+// 번역 실행
+const handleTranslate = useCallback(async (reviewId, text) => {
+  if (translationMap[reviewId]) return; // 이미 번역됨
+
+  try {
+
+    console.log("1234", user);
+
+    let language=user.language;
+    if ( language == 'kr') language='ko';
+    
+    const response = await axios.post(
+      `https://translation.googleapis.com/language/translate/v2?key=AIzaSyAnvkb7_-zX-aI8WVw6zLMRn63yQQrss9c`,
+      {
+        q: text,
+        target: language || 'vi',  // 사용자 언어 기준 (없으면 베트남어)
+        format: 'text',
+      }
+    );
+
+    const translated = response.data.data.translations[0].translatedText;
+
+    setTranslationMap(prev => ({
+      ...prev,
+      [reviewId]: translated,
+    }));
+  } catch (error) {
+    console.error('❌ 번역 실패:', error);
+    Swal.fire('번역 오류', 'Google Translate API 호출에 실패했습니다.', 'error');
+  }
+}, [translationMap, user.language]);
+
 
   useEffect(() => {
 
@@ -770,26 +816,75 @@ const ViewReviewPage = ({
                       </span>
                     </p>
 
+                    <p className="review-meta">
+                    <span
+                      className="review-meta-date"
+                      style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      {review.user_name === '레탄톤 보안관' && <ShieldCheck size={14} />}
+                      {review.user_name === '레탄톤 보안관'
+                        ? review.user_name
+                        : review.user_name
+                          ? review.user_name.charAt(0) + '***'
+                          : ''}
+                    </span>
+                  </p>
+
+
                     </div>
                   </div>
                   {review.content !== '-' && (
-                    <p className="review-text">{review.content}</p>
-                  )}
+  <div 
+    style={{ 
+      border: 'none', 
+      boxShadow: 'none', 
+      marginBottom: 0, 
+      padding: '8px 0' 
+    }}
+    onClick={() => handleViewDetail(review)}
+  >
+    <HatchPattern opacity={0.03} />
+    <div className="review-content">
+      <p className="review-text">
+        {review.content}
+      </p>
+
+      {/* 번역된 결과 */}
+      {translationMap[review.review_id] && (
+        <div style={{ marginTop: 6, fontSize: 12, color: '#6b7280', fontStyle: 'italic' }}>
+          {translationMap[review.review_id]}
+          <span style={{ fontSize: 10, marginLeft: 4 }}>번역됨</span>
+        </div>
+      )}
+
+      {/* 번역 버튼 */}
+      <div style={{ marginTop: 8, textAlign: 'right' }}>
+        <button
+          style={{
+            background: '#3b82f6',
+            color: '#fff',
+            fontSize: 12,
+            padding: '4px 10px',
+            border: 'none',
+            borderRadius: 6,
+            cursor: 'pointer'
+          }}
+          onClick={(e) => {
+            e.stopPropagation(); // 상세보기 클릭 방지
+            handleTranslate(review.review_id, review.content);
+          }}
+        >
+          {get('Translation')}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
 
                   {/* 매니저 답변 표시 */}
-                  {review.reply_content && (
-                    <div className="manager-response">
-                      <div className="response-header">
-                        <span className="response-label">
-                          {get('REVIEW_MANAGER_RESPONSE')}
-                        </span>
-                        <span className="response-badge"><User size={14} /></span>
-                      </div>
-                      <div className="response-text">
-                        "{review.reply_content}"
-                      </div>
-                    </div>
-                  )}
+               
 
                   {/* 예약하기 버튼 */}
                   {/* <div className="review-actions" style={{
