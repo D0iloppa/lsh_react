@@ -54,6 +54,23 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
     // testPopup.emit('adViewCount'); 
   };
 
+
+  useEffect(() => {
+    // 현재 상태를 강제로 push
+    window.history.pushState(null, '', window.location.href);
+
+    const handlePopState = () => {
+      // 뒤로가기를 눌러도 같은 주소로 다시 push
+      window.history.pushState(null, '', window.location.href);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
   
 
   useEffect(() => {

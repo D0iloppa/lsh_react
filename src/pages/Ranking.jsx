@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useMsg } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
 import ApiClient from '@utils/ApiClient';
+import SketchHeader from '@components/SketchHeaderMain';
 
 import Swal from 'sweetalert2';
 
@@ -20,6 +21,11 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
   const { messages, get, isLoading } = useMsg();
   const { user, isActiveUser, iauMasking } = useAuth();
   const [isApiLoading, setIsApiLoading] = useState(false);
+
+  const handleBack = () => {
+    console.log('Back 클릭');
+    navigateToPageWithData(PAGES.HOME);
+  };
 
    useEffect(() => {
     if (!isApiLoading && rankingData.length > 0) {
@@ -517,11 +523,13 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
             border: 2px solid #ffab55;
             box-shadow: 0 2px 8px rgba(205, 127, 50, 0.3);
         }
-
-        
+        .page-header {
+            display: none !important;
+          }
       `}</style>
 
       <div className="ranking-container">
+       <SketchHeader onBack={handleBack} style={{ display: 'none' }} />
         {/* 헤더 섹션 */}
         <section className="hero-section">
           <HatchPattern opacity={0.3} />

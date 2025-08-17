@@ -40,33 +40,35 @@ const BookingHistoryPage = ({
 
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
-  const isCancelable = (booking) => {
+ // 전제: dayjs.extend(customParseFormat) 호출되어 있어야 함
+const isCancelable = (booking, now = dayjs()) => {
+  
+  if (!booking?.date || !booking?.time) return false;
 
-    console.log('booking-isCancelable', booking);
-    if (!booking.date || !booking.time) return false;
+  const { status } = booking;
+  if (status === 'canceled' || status === 'completed') return false;
 
-    const {status} = booking;
-    
-    if(status === 'canceled' || status === 'completed') return false;
+  // strict 파싱
+  let start = dayjs(`${booking.date} ${booking.time}`, 'YYYY-MM-DD HH:mm:ss', true);
+  if (!start.isValid()) return false;
+
+  // 심야영업(00:00:00 ~ 07:00:00 포함) → 다음날로 보정
+  const h = start.hour(), m = start.minute(), s = start.second();
+  if (h < 7 || (h === 7 && m === 0 && s === 0)) {
+    start = start.add(1, 'day');
+  }
+
+  
+  console.log('booking-isCancelable', booking, start);
 
 
-    let startDateTime = dayjs(`${booking.date} ${booking.time}`, "YYYY-MM-DD HH:mm:ss");
+  // 취소 마감 = 시작 1시간 전
+  const cancelDeadline = start.subtract(1, 'hour');
 
-    // 예약 시간이 00:00:00 이면 다음날 0시로 보정
-    if (booking.time === "00:00:00") {
-      startDateTime = startDateTime.add(1, "day");
-    }
+  // 지금(now)이 마감 이전이면 취소 가능
+  return now.isBefore(cancelDeadline);
+};
 
-    // 취소 마감 = 예약 시작 1시간 전
-    let cancelDeadline = startDateTime.subtract(1, "hour");
-
-    const now = dayjs();
-
-    // 남은 분(minute) 차이 반환
-    let tmp = startDateTime.diff(now, "minute")+120;
-
-    return tmp > 60;
-  };
 
 
 

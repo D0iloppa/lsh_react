@@ -101,6 +101,13 @@ const MainApp = () => {
     const processedQueryRef = useRef(false);
     const lastProcessedQuery = useRef('');
 
+    useWebviewBackBlock(goBack);
+
+  // 라우트가 바뀔 때도 더미 state를 보강해 두면 안정적
+  useEffect(() => {
+    window.history.pushState({ wv: true }, '', window.location.href);
+  }, [location.pathname, location.search]);
+
     // notification 클릭 url 링크
     useEffect(() => {
         const currentQuery = location.search;

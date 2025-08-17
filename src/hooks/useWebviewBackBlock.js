@@ -1,26 +1,22 @@
-// hooks/useWebviewBackBlock.js
+// hooks/useBlockBack.js
 import { useEffect } from 'react';
 
-export default function useWebviewBackBlock(goBack) {
+export default function useBlockBack() {
   useEffect(() => {
     const pushDummy = () => {
-      // 현재 URL로 더미 state 쌓기
-      window.history.pushState({ wv: true }, '', window.location.href);
+      if (window.history.state?.blockBack !== true) {
+        window.history.pushState({ blockBack: true }, '', window.location.href);
+      }
     };
 
-    // 진입 시 한 번 쌓아둔다
     pushDummy();
 
     const onPopState = (e) => {
-      e?.preventDefault?.();
-      // 원하는 동작 수행 (무조건 goBack)
-      goBack();
-
-      // 다시 더미 state를 쌓아서 실제 브라우저 back으로 빠져나가지 않게
-      pushDummy();
+      e.preventDefault();
+      pushDummy(); // 다시 state 쌓아서 실제 이동 방지
     };
 
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
-  }, [goBack]);
+  }, []);
 }

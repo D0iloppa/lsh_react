@@ -32,8 +32,8 @@ const PromotionsPage = ({
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
   const handleBack = () =>{
-    //navigateToPage(PAGES.HOME);
-    goBack();
+    navigateToPage(PAGES.HOME);
+    //goBack();
   }
 
   useEffect(() => {
@@ -81,6 +81,7 @@ const PromotionsPage = ({
     };
 
     fetchPromotion();
+
     window.scrollTo(0, 0);
       const container = document.querySelector('.content-area');
       container.scrollTop=0;

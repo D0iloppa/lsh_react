@@ -15,6 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 import Swal from 'sweetalert2';
 import ApiClient from '@utils/ApiClient';
+import useWebviewBackBlock from '@hooks/useWebviewBackBlock';
 
 const AccountPage = ({
   navigateToPageWithData,
@@ -99,6 +100,7 @@ const AccountPage = ({
     }
   }, [messages, currentLang]);
 
+  
   const handleBack = () => {
     console.log('Back 클릭');
     navigateToPage(PAGES.HOME);
@@ -402,7 +404,7 @@ const AccountPage = ({
         <SketchHeader
           title={get('MENU_SETTINGS')}
           showBack={true}
-          onBack={goBack}
+          onBack={handleBack}
           sticky={true}
           className="account-page-header"
         />
