@@ -817,18 +817,37 @@ const handleTranslate = useCallback(async (reviewId, text) => {
                     </p>
 
                     <p className="review-meta">
-                    <span
-                      className="review-meta-date"
-                      style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
-                    >
-                      {review.user_name === '레탄톤 보안관' && <ShieldCheck size={14} />}
-                      {review.user_name === '레탄톤 보안관'
-                        ? review.user_name
-                        : review.user_name
-                          ? review.user_name.charAt(0) + '***'
-                          : ''}
-                    </span>
-                  </p>
+  <span
+    className="review-meta-date"
+    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+  >
+    {review.user_name === '레탄톤 보안관'
+      ? (
+        <span
+  style={{
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    fontWeight: 300,
+    color: '#fff',
+    backgroundColor: '#374151',  // 어두운 회색 (Tailwind gray-700)
+    padding: '4px 10px',
+    borderRadius: '20px',
+    fontSize: '10px',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+  }}
+>
+  🎖️ 레탄톤 보안관 꿀팁
+</span>
+
+      ) : (
+        review.user_name
+          ? review.user_name.charAt(0) + '***'
+          : ''
+      )}
+  </span>
+</p>
+
 
 
                     </div>
