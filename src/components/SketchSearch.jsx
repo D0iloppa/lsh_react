@@ -42,7 +42,7 @@ const SketchSearch = ({
         .search-input {
            font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
 
-          width: 90%;
+          width: 100%;
           padding: 0.75rem 1rem;
           border: 1px solid #374151;
           background-color: white;
@@ -87,12 +87,18 @@ const SketchSearch = ({
 
       <div className="search-input-wrapper">
         <input
-          type="text"
+          type="search"                  // ✅ 키보드에 "검색" 버튼 표시
+          enterKeyHint="search"          // ✅ 안드로이드/아이폰 모두 지원
           placeholder={placeholder}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="search-input"
-          onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();        // 기본 submit 막기
+              handleSearch();
+            }
+          }}
         />
         <ArrowRight className="search-arrow" size={20} />
       </div>

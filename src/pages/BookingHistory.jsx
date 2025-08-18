@@ -80,8 +80,8 @@ const BookingHistoryPage = ({
     start = new Date(start.getTime() + 24 * 60 * 60 * 1000);
   }
 
-  // 취소 마감 = 시작 1시간 전
-  const cancelDeadline = new Date(start.getTime() - 60 * 60 * 1000);
+  // 취소 마감 = 시작 30 분전
+  const cancelDeadline = new Date(start.getTime() - 30 * 60 * 1000);
 
   // now는 vnNow()로 이미 +07:00 기준 절대시각
   return now.getTime() < cancelDeadline.getTime();
@@ -234,7 +234,7 @@ const BookingHistoryPage = ({
 
   const getReviewButtonState = (booking) => {
 
-//console.log("booking", booking)
+  console.log("booking", booking)
 
     if (booking.review_cnt > 0) {
       return {

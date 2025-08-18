@@ -66,7 +66,8 @@ const ShareExpPage = ({
     return;
   }
 
-  if (target !== 'staff' && !reviewText.trim()) {
+  const reviewValue = getReviewValue();
+  if(reviewValue.trim() === ''){
     Swal.fire({
       title: get('Review3.2'),
       icon: 'warning',
@@ -75,6 +76,18 @@ const ShareExpPage = ({
     return;
   }
 
+  /*
+  if (target !== 'staff' && !reviewText.trim()) {
+    Swal.fire({
+      title: get('Review3.2'),
+      icon: 'warning',
+      confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+    });
+    return;
+  }
+  */
+
+  
   const reviewData = {
     reservation_id,
     user_id,
