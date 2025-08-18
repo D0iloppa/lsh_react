@@ -14,9 +14,9 @@ const SketchHeader = ({
   sticky = true
 }) => {
      useEffect(() => {
-
     if (showBack) {
       backHandlerRef.current = onBack;
+      
     } else {
       backHandlerRef.current = null;
     }

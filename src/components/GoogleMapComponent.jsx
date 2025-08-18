@@ -74,6 +74,58 @@ const GoogleMapComponent = ({
   }
 ];
 
+
+const isInVietnamFnc = (latitude, longitude) =>{
+
+  const BOUNDS = {
+    // 베트남 (8~24, 101.8~110.3)
+    // https://www.google.com/maps/dir/8.000000,101.800000/24.000000,101.800000/24.000000,110.300000/8.000000,110.300000/16.000000,106.050000
+    vietnam: {
+      lat: [8.0, 24.0],
+      lon: [101.8, 110.3],
+    },
+  
+    // 호치민시
+    // https://www.google.com/maps/dir/10.369500,106.354983/11.163114,106.354983/11.163114,107.012085/10.369500,107.012085/10.766307,106.683534
+    hcmc: {
+      lat: [10.3695, 11.163114],
+      lon: [106.354983, 107.012085],
+    },
+  
+    // 호치민 1군 (근사)
+    // https://www.google.com/maps/dir/10.763000,106.682000/10.799000,106.682000/10.799000,106.720000/10.763000,106.720000/10.781000,106.701000
+    d1: {
+      lat: [10.763, 10.799],
+      lon: [106.682, 106.720],
+    },
+  
+    // 레탄톤 10km 포괄 BBox(반경 근사)
+    // https://www.google.com/maps/dir/10.689607,106.613656/10.870418,106.613656/10.870418,106.796525/10.689607,106.796525/10.7800125,106.7050903
+    ltt10km: {
+      lat: [10.689607, 10.870418],
+      lon: [106.613656, 106.796525],
+    },
+  
+    // 레탄톤 거리 작은 박스
+    // https://www.google.com/maps/dir/10.779000,106.704500/10.781000,106.704500/10.781000,106.706000/10.779000,106.706000/10.780000,106.705250
+    ltt: {
+      lat: [10.7790, 10.7810],
+      lon: [106.7045, 106.7060],
+    },
+  };
+  
+  const inBBox = (lat, lon, [latMin, latMax], [lonMin, lonMax]) =>
+    lat >= latMin && lat <= latMax && lon >= lonMin && lon <= lonMax;
+  
+
+  const { lat, lon } = BOUNDS.hcmc;
+  return inBBox(latitude, longitude, lat, lon);
+
+
+} 
+
+
+
 useEffect(() => {
   return () => {
     // 입구 마커 정리만
@@ -655,10 +707,8 @@ useEffect(() => {
       const longitude = parseFloat(lngStr);
 
       // ✅ 베트남 여부 판별
-      const isInVietnam = latitude >= 10.7790 &&
-        latitude <= 10.7810 &&
-        longitude >= 106.7045 &&
-        longitude <= 106.7060;
+      const isInVietnam = isInVietnamFnc(latitude, longitude)
+      
 
       const center = isInVietnam
         ? { lat: latitude, lng: longitude }
@@ -715,10 +765,7 @@ useEffect(() => {
       let longitude = parseFloat(lngStr);
 
 
-       const isInVietnam = latitude >= 10.7790 &&
-        latitude <= 10.7810 &&
-        longitude >= 106.7045 &&
-        longitude <= 106.7060;
+      const isInVietnam = isInVietnamFnc(latitude, longitude)
 
        if ( !isInVietnam  ) {
           latitude=10.780037531310423;

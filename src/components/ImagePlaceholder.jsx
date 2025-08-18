@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { backHandlerRef } from '@hooks/backRef'
+
 
 const ImagePlaceholder = ({
   src = [],
@@ -12,6 +14,8 @@ const ImagePlaceholder = ({
   placeholder = '',
   noPopup = false
 }) => {
+
+  
   const isArray = Array.isArray(src);
   const imageList = isArray ? src.filter(Boolean) : [src];
 
@@ -23,6 +27,44 @@ const ImagePlaceholder = ({
 
   const handleImageError = () => setImageError(true);
   const handleImageLoad = () => setImageError(false);
+
+
+
+
+const prevBackHandler = useRef(null); // 기존 핸들러 백업용
+
+    
+  // isViewerOpen이 true일 때 뒤로가기를 closeViewer로 연결
+  useEffect(() => {
+    if (isViewerOpen) {
+      // 기존 핸들러 저장
+      prevBackHandler.current = backHandlerRef.current;
+      // 뒤로가기는 closeViewer로 덮어쓰기
+      backHandlerRef.current = closeViewer;
+    } else {
+      // 닫히면 기존 핸들러 복원
+      if (backHandlerRef.current === closeViewer) {
+        backHandlerRef.current = prevBackHandler.current;
+      }
+      prevBackHandler.current = null;
+    }
+
+    return () => {
+      // 컴포넌트 언마운트 시에도 정리
+      if (backHandlerRef.current === closeViewer) {
+        backHandlerRef.current = prevBackHandler.current;
+      }
+      prevBackHandler.current = null;
+    };
+  }, [isViewerOpen]);
+
+
+
+
+
+
+
+
 
   const openViewer = (index) => {
 

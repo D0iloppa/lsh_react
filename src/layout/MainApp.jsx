@@ -107,12 +107,26 @@ const MainApp = () => {
       const handleMessage = (event) => {
         // Android WebView → window.postMessage 로 보낸 데이터 받기
         if (event.data === 'onBackPressed') {
+            
             if (backHandlerRef.current) {
                 backHandlerRef.current(); // 👈 SketchHeader의 onBack 실행
             } 
-
+            
             if ( backHandlerRef.current == null ) {
-                navigateToPage(PAGES.HOME);
+                Swal.fire({
+                    title: '앱종료',
+                    text: '앱을 종료하시겠습니까?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: get('PROMOTION_END_BUTTON_SHORT'),
+                    cancelButtonText: get('Common.Cancel'),
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.native.postMessage("exitApp");
+                    }
+                });
             }
         }
       };
@@ -172,12 +186,12 @@ const MainApp = () => {
 
     // 광고 호출 함수 (useCallback으로 메모이제이션)
     // 광고 호출 주기 설정 (N회마다 광고 호출)
-    const AD_CALL_INTERVAL = 10;
+    const AD_CALL_INTERVAL = 20;
 
     const showAdWithCallback = useCallback(async (onAdComplete, fallbackAction, timeoutMs = 4000) => {
         // 세션스토리지에서 광고 호출 횟수 관리
         const adCallCountKey = 'adCallCount';
-        let adCallCount = parseInt(sessionStorage.getItem(adCallCountKey) || '0');
+        let adCallCount = parseInt(sessionStorage.getItem(adCallCountKey) || '1');
         adCallCount++;
         sessionStorage.setItem(adCallCountKey, adCallCount.toString());
         
@@ -412,6 +426,10 @@ const MainApp = () => {
                                   if (id === PAGES.RANKING) {
                                     localStorage.setItem('rankScrollRatio',0);
                                     localStorage.setItem('rankScrollY',0);
+                                }
+
+                                if (id === PAGES.PROMOTION) {
+                                    localStorage.setItem('promotionScrollY',0);
                                 }
                                
 

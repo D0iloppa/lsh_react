@@ -119,6 +119,15 @@ const MainApp = () => {
     // 광고 호출 함수 (useCallback으로 메모이제이션)
     const showAdWithCallback = useCallback(async (onAdComplete, fallbackAction, timeoutMs = 4000) => {
 
+        // 한시적 광고 비활성화
+        let isAdDisabled = true;
+        if(isAdDisabled){
+            onAdComplete();
+            return;
+        }
+        
+
+
 
         if (Object.keys(activeUser).length === 0) {
             // 빈 객체인 경우

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { backHandlerRef } from '@hooks/backRef'
 
 const ImagePlaceholder = ({
   src = '',
@@ -14,6 +15,9 @@ const ImagePlaceholder = ({
   placeholder = '',
   noPopup = false
 }) => {
+
+  
+  
   const imageList = Array.isArray(fullList) && fullList.length > 0 ? fullList : [src];
 
   const [imageError, setImageError] = useState(false);
@@ -23,6 +27,34 @@ const ImagePlaceholder = ({
   const startX = useRef(0);
   const deltaX = useRef(0);
   const isDragging = useRef(false);
+
+    const prevBackHandler = useRef(null); // 기존 핸들러 백업용
+
+    
+  // isViewerOpen이 true일 때 뒤로가기를 closeViewer로 연결
+  useEffect(() => {
+    if (isViewerOpen) {
+      // 기존 핸들러 저장
+      prevBackHandler.current = backHandlerRef.current;
+      // 뒤로가기는 closeViewer로 덮어쓰기
+      backHandlerRef.current = closeViewer;
+    } else {
+      // 닫히면 기존 핸들러 복원
+      if (backHandlerRef.current === closeViewer) {
+        backHandlerRef.current = prevBackHandler.current;
+      }
+      prevBackHandler.current = null;
+    }
+
+    return () => {
+      // 컴포넌트 언마운트 시에도 정리
+      if (backHandlerRef.current === closeViewer) {
+        backHandlerRef.current = prevBackHandler.current;
+      }
+      prevBackHandler.current = null;
+    };
+  }, [isViewerOpen]);
+
 
   useEffect(() => {
     setCurrentIndex(initialIndex);

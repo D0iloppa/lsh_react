@@ -75,6 +75,18 @@ const PromotionsPage = ({
       } else {
         setPromotions(data);
       }
+
+
+
+
+
+
+
+
+
+
+
+
       } catch (error) {
         console.error('프로모션 정보 불러오기 실패:', error);
       }
@@ -86,6 +98,53 @@ const PromotionsPage = ({
       const container = document.querySelector('.content-area');
       container.scrollTop=0;
   }, [user, messages, currentLang]);
+
+  useEffect(() => {
+    const resetPromotionScroll = () => {
+      const savedScrollY = localStorage.getItem('promotionScrollY');
+      console.log("INIT promotionScrollY", savedScrollY);
+
+      if (savedScrollY !== null) {
+        const scrollY = parseInt(savedScrollY, 10);
+        const container = document.querySelector('.content-area');
+
+        let checkCount = 0;
+        const maxChecks = 30;
+
+        const checkReadyAndScroll = () => {
+          const container = document.querySelector('.content-area');
+          if (!container) {
+            console.log('⏳ .content-area 아직 없음');
+            requestAnimationFrame(checkReadyAndScroll);
+            return;
+          }
+
+          const scrollReady = container.scrollHeight > container.clientHeight + 10;
+
+          if (scrollReady) {
+            container.scrollTop = scrollY;
+            console.log('✅ promotionScrollY 복원 완료:', scrollY);
+            // localStorage.removeItem('promotionScrollY'); // 필요 시 제거
+          } else {
+            checkCount++;
+            if (checkCount < maxChecks) {
+              requestAnimationFrame(checkReadyAndScroll);
+            } else {
+              console.warn('⚠️ promotionScrollY 복원 실패: 조건 만족 못함');
+            }
+          }
+        };
+
+        requestAnimationFrame(checkReadyAndScroll);
+      }
+    };
+
+    resetPromotionScroll();
+
+    // DOM 렌더링 후 한 번 더 시도
+    setTimeout(resetPromotionScroll, 500);
+  }, []);
+
 
   const handleApplyFilter = () => {
     const keyword = filterQuery.toLowerCase();
@@ -109,7 +168,14 @@ const PromotionsPage = ({
           return;
     }
 
-     navigateToPageWithData && navigateToPageWithData(PAGES.DISCOVER, {
+    const container = document.querySelector('.content-area');
+
+    if (container) {
+      const scrollY = container.scrollTop;
+      localStorage.setItem('promotionScrollY', scrollY.toString());
+    }
+
+      navigateToPageWithData && navigateToPageWithData(PAGES.DISCOVER, {
       venueId:promotion.venue_id
     });
 
@@ -453,12 +519,7 @@ const PromotionsPage = ({
                             {get('COMMON_VIEW_DETAILS')}
                           </SketchBtn>
                         </div>
-                        <button
-                          className="share-btn"
-                          onClick={() => handleShare(promotion)}
-                        >
-                          <MapPin size={16} />
-                        </button>
+                        
                       </div>
                     </div>
                   </div>

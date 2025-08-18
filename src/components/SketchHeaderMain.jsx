@@ -3,7 +3,7 @@ import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
+import { backHandlerRef } from '@hooks/backRef';
 
 const SketchHeader = ({ 
   title, 
@@ -13,6 +13,22 @@ const SketchHeader = ({
   variant = 'primary',
   className = ''
 }) => {
+
+  useEffect(() => {
+      if (showBack) {
+        backHandlerRef.current = onBack;
+        
+      } else {
+        backHandlerRef.current = null;
+      }
+  
+      return () => {
+        // 페이지 언마운트 시 해제
+        if (backHandlerRef.current === onBack) {
+          backHandlerRef.current = null;
+        }
+      };
+    }, [showBack, onBack]);
 
   const navigate = useNavigate();
 
