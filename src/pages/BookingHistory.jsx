@@ -1007,7 +1007,7 @@ const getEntranceText = (entranceValue) => {
                       {booking.targetType === 'venue' 
                         ? get('RESERVATION_VENUE_LABEL') 
                         : booking.targetType === 'staff' 
-                          ? get('DiscoverPage1.3') 
+                          ? `${get('DiscoverPage1.3')} : `
                           : booking.targetType
                       }
                     </span>  {booking.targetName}
@@ -1019,7 +1019,7 @@ const getEntranceText = (entranceValue) => {
                             <MessageCircle size={14}/> {get('BUTTON_CHAT')}
                           </span>
                   </h3>
-                    <p className="host-info"><Edit size={12}/> {get('BookingHis1.1')}: {booking.hostName}</p>
+                    <p className="host-info"><Edit size={12}/> {get('title.text.14')}: {booking.hostName}</p>
 
                     <p className="booking-datetime">
                      <Edit size={12}/> {get('Reservation.ReservationTimeLabel')}: {booking.date}

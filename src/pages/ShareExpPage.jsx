@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect, useRef } from 'react'; 
 import SketchHeader from '@components/SketchHeader';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
 import SketchTextarea from '@components/SketchTextarea';
+import SketchInput from '@components/SketchInput';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 import LoadingScreen from '@components/LoadingScreen';
@@ -21,6 +22,12 @@ const ShareExpPage = ({
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();    
   const [venueRating, setVenueRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
+
+  const reviewRef = useRef();
+
+  const getReviewValue = () => reviewRef.current.value;
+
+
 
   // pageData에서 필요한 정보 추출
   const {
@@ -72,7 +79,8 @@ const ShareExpPage = ({
     reservation_id,
     user_id,
     rating: venueRating,
-    content: target === 'staff' ? '-' : reviewText
+    content: getReviewValue()
+    //content: target === 'staff' ? '-' : reviewText
   };
     
     console.log('📝 Review submitted:', reviewData);
@@ -349,7 +357,17 @@ const ShareExpPage = ({
             />
 
             {/* Review Text Section */}
-            {/* Review Text Section */}
+            <div className="card-input-section">
+                <SketchInput
+                    name="review"
+                    ref={reviewRef}
+                    placeholder={'리뷰를 작성해주세요...'}
+                    as="textarea"
+                    rows={8}
+                  />
+            </div>
+            {
+            /* Review Text Section
             {target !== 'staff' && (
               <div className="review-textarea-section">
                 <label className="textarea-label">{get('Review2.2')}</label>
@@ -361,6 +379,7 @@ const ShareExpPage = ({
                 />
               </div>
             )}
+            */}
 
           </div>
         </div>
