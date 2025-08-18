@@ -113,20 +113,7 @@ const MainApp = () => {
             } 
             
             if ( backHandlerRef.current == null ) {
-                /*Swal.fire({
-                    title: '앱종료',
-                    text: '앱을 종료하시겠습니까?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: get('PROMOTION_END_BUTTON_SHORT'),
-                    cancelButtonText: get('Common.Cancel'),
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.native.postMessage("exitApp");
-                    }
-                });*/
+                
             }
         }
       };
