@@ -113,7 +113,7 @@ const MainApp = () => {
             } 
             
             if ( backHandlerRef.current == null ) {
-                Swal.fire({
+                /*Swal.fire({
                     title: '앱종료',
                     text: '앱을 종료하시겠습니까?',
                     icon: 'question',
@@ -126,7 +126,7 @@ const MainApp = () => {
                     if (result.isConfirmed) {
                         window.native.postMessage("exitApp");
                     }
-                });
+                });*/
             }
         }
       };
