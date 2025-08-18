@@ -997,11 +997,12 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
           height: 250px;
           margin-top: 1rem;
           border: 1px solid #666;
-        }   
-          .reservation-footer {
-          height:60px;
+        }
+
+        .reservation-footer {
+          height:65px;
           position: fixed;
-          bottom: 80px;
+          bottom: calc(80px + var(--safe-bottom, 0px)); 
           left: 0;
           right: 0;
           background: white;
@@ -1199,7 +1200,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
             <div
               className="is-reservation"
               style={{
-                right: '-139px',
+                right: '-38%',
                 top: '-192px',
                 position: 'relative',
                 backgroundColor:

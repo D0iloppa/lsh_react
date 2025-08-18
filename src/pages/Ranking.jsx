@@ -108,7 +108,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
           opening_hours: rankingType === 'venue' ? `${item.open_time}~${item.close_time}` : null,
           schedule_status: item.is_open,
           is_reservation: item.is_open === 'available',
-          reservation_count: item.reservation_count || 0,
+          reservation_count: item.reservation_cnt || 0,
           view_cnt: item.view_cnt || 0,
           staff_cnt: rankingType === 'venue' ? item.staff_cnt : null,
           venue_name: rankingType === 'staff' ? item.venue_name : null,

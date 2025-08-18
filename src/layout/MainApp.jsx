@@ -103,6 +103,26 @@ const MainApp = () => {
 
     
     
+        useEffect(() => {
+            const width = window.screen.width;
+            const height = window.screen.height;
+            const ratio = (height / width).toFixed(2); // 소수점 2자리
+
+            // CSS 변수에 주입
+            document.documentElement.style.setProperty("--aspect-ratio", ratio);
+
+            // 조건에 따라 safe-bottom 조정
+            const isAndroid = !!window.native;
+
+            if (isAndroid && ratio <= 2.3) {
+            document.documentElement.style.setProperty("--safe-bottom", "48px");
+            } else {
+            document.documentElement.style.setProperty("--safe-bottom", "0px");
+            }
+        }, []);
+
+
+  
     useEffect(() => {
       const handleMessage = (event) => {
         // Android WebView → window.postMessage 로 보낸 데이터 받기

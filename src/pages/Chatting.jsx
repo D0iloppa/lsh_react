@@ -164,11 +164,14 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
     try {
       console.log('🔤 Google Translate API 호출 시작');
+
+      let language=user.language;
+    if ( language == 'kr') language='ko';
       const response = await axios.post(
         `https://translation.googleapis.com/language/translate/v2?key=AIzaSyAnvkb7_-zX-aI8WVw6zLMRn63yQQrss9c`,
         {
           q: text,
-          target: user.language || 'vi',
+          target: language || 'vi',
           format: 'text',
         }
       );
@@ -548,7 +551,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           </span>
         </div>
         <div style={{ fontSize: 14, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-          예약자: {reservationData.target_name || reservationData.client_name || 'N/A'}
+          {get('BookingSum.Target')}: {reservationData.target_name || reservationData.client_name || 'N/A'}
         </div>
         <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 6 }}>
           예약일시: {formatDate(reservationData.reserved_at)} {formatTime(reservationData.res_start_time)} - {formatTime(reservationData.res_end_time)}

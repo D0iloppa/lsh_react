@@ -26,12 +26,14 @@ img {
   flex-direction: column;
   font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
 }
-  .content-area {
-  flex: 1;
-  overflow-y: auto;
-  padding-bottom: calc(40px + env(safe-area-inset-bottom));
-  -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
-}
+.content-area {
+    flex: 1;
+    overflow-y: auto;
+    height: calc(100% - (0px + env(safe-area-inset-bottom)));
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+
+    -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
+  }
 
 .bottom-navigation {
   /* 기존 스타일 유지 */
@@ -49,8 +51,8 @@ img {
   /* 추가: 배경색 아래까지 확장 */
   box-shadow: inset 0 -9999px white;
   padding-bottom: calc(1rem + var(--safe-bottom, 0px));
-}
 
+}
 
   .nav-container {
     display: flex;
@@ -120,39 +122,41 @@ img {
 }
 
 .map-icon-container {
-    border: 1px solid #666;
-    border-radius: 20px;
-    width: 84px;
-    height: 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    background: #374151;
-    color:white;
-}
+  border: 1px solid #666;
+  border-radius: 20px;
+  width: 84px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #374151;
+  color: white;
 
+  /* 하단 네비게이션 피해서 위로 올리기 */
+  margin-bottom: var(--safe-bottom, 0px);
+}
 .map-icon-container:hover {
   background: #f3f4f6;
 }
 
 .scroll-up-btn {
-    position: fixed;
-    bottom: 100px;
-    right: 11px;
-    background: #374151;
-    color:white;
-    border: 1px solid #666;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    z-index: 1000;
+  position: fixed;
+  bottom: calc(100px + var(--safe-bottom, 0px));
+  right: 11px;
+  background: #374151;
+  color: white;
+  border: 1px solid #666;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
 }
 
 .scroll-up-btn:active {

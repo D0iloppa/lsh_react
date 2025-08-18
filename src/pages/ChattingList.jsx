@@ -163,7 +163,7 @@ useEffect(() => {
           max-width: 28rem;
           margin: 0 auto;
           background: #fff;
-          min-height: 100vh;
+          min-height: 80vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
         .staff-list {

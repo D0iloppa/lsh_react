@@ -287,49 +287,66 @@ export const generateTimeSlotsWithLabels = (startHour = 19, endHour = 3) => {
   const timeSlots = [];
   const usedValues = new Set();
 
+  const startTotalMinutes = startHour * 60;
+  const endTotalMinutes = endHour * 60;
+
   if (startHour < endHour) {
-    // 일반 영업: 09:00 ~ 18:00 같은 경우
-    for (let hour = startHour; hour <= endHour; hour++) {
-      const displayTime = hour.toString().padStart(2, '0') + ':00';
-      const actualTime = hour.toString().padStart(2, '0') + ':00';
-      
+    // 같은 날 안에서만 도는 경우 (예: 09:00 ~ 18:00)
+    for (let m = startTotalMinutes; m <= endTotalMinutes; m += 30) {
+      const hour = Math.floor(m / 60);
+      const minute = m % 60;
+      const displayTime = `${hour.toString().padStart(2, '0')}:${minute
+        .toString()
+        .padStart(2, '0')}`;
+      const actualTime = displayTime;
+
       if (!usedValues.has(actualTime)) {
         timeSlots.push({
           label: displayTime,
           value: actualTime,
-          isNextDay: false
+          isNextDay: false,
         });
         usedValues.add(actualTime);
       }
     }
   } else {
-    // 심야 영업: 19:00 ~ 03:00 같은 경우 (startHour > endHour)
-    
-    // 당일 시간대: startHour ~ 23:00
-    for (let hour = startHour; hour < 24; hour++) {
-      const displayTime = hour.toString().padStart(2, '0') + ':00';
-      const actualTime = hour.toString().padStart(2, '0') + ':00';
-      
+    // 자정을 넘어가는 경우 (예: 19:00 ~ 03:00)
+    // 1) 당일 구간
+    for (let m = startTotalMinutes; m < 24 * 60; m += 30) {
+      const hour = Math.floor(m / 60);
+      const minute = m % 60;
+      const displayTime = `${hour.toString().padStart(2, '0')}:${minute
+        .toString()
+        .padStart(2, '0')}`;
+      const actualTime = displayTime;
+
       if (!usedValues.has(actualTime)) {
         timeSlots.push({
           label: displayTime,
           value: actualTime,
-          isNextDay: false
+          isNextDay: false,
         });
         usedValues.add(actualTime);
       }
     }
 
-    // 다음날 시간대: 00:00 ~ endHour
-    for (let hour = 0; hour < endHour; hour++) {
-      const displayTime = hour.toString().padStart(2, '0') + ':00';
-      const actualTime = (hour + 24).toString().padStart(2, '0') + ':00';
-      
+    // 2) 다음날 구간
+    for (let m = 0; m <= endTotalMinutes; m += 30) {
+      const hour = Math.floor(m / 60);
+      const minute = m % 60;
+      const displayTime = `${hour.toString().padStart(2, '0')}:${minute
+        .toString()
+        .padStart(2, '0')}`;
+      // value는 24h 넘겨서 구분 가능하게
+      const actualTime = `${(hour + 24).toString().padStart(2, '0')}:${minute
+        .toString()
+        .padStart(2, '0')}`;
+
       if (!usedValues.has(actualTime)) {
         timeSlots.push({
           label: displayTime,
           value: actualTime,
-          isNextDay: true
+          isNextDay: true,
         });
         usedValues.add(actualTime);
       }
@@ -339,6 +356,7 @@ export const generateTimeSlotsWithLabels = (startHour = 19, endHour = 3) => {
   return timeSlots;
 };
 
+
 // Duration 관련 유틸리티 함수들
 const getEndTime = (startTime, duration) => {
   const [hour] = startTime.split(':').map(Number);
@@ -347,9 +365,25 @@ const getEndTime = (startTime, duration) => {
 };
 
 const getEndTimeDisplay = (startTime, duration) => {
-  const [hour] = startTime.split(':').map(Number);
-  const endHour = (hour + duration) % 24;
-  return `${endHour.toString().padStart(2, '0')}:00`;
+  // duration은 "시간 단위" (예: 1.5 = 1시간 30분)
+  const [hour, min] = startTime.split(':').map(Number);
+
+  // 시작 시각을 총 분으로 변환
+  const startTotalMinutes = hour * 60 + min;
+
+  // duration(시간)을 분으로 변환
+  const addMinutes = Math.round(duration * 60);
+
+  // 종료 시각(분 단위, 24시간 모듈러)
+  const endTotalMinutes = (startTotalMinutes + addMinutes) % (24 * 60);
+
+  // 다시 시:분으로 변환
+  const endHour = Math.floor(endTotalMinutes / 60);
+  const endMinute = endTotalMinutes % 60;
+
+  return `${endHour.toString().padStart(2, '0')}:${endMinute
+    .toString()
+    .padStart(2, '0')}`;
 };
 
 const canSelectDuration = (startTime, duration, disabledTimes) => {
@@ -381,11 +415,7 @@ const DurationSelector = ({
 }) => {
   if (!startTime) return null;
 
-
-  console.log(timeSlots, maxDuration, startTime);
-
-  
-  // startTime 기준으로 timeSlots에서 인덱스 찾기 (새로운 형식 지원)
+  // startTime 기준으로 timeSlots에서 인덱스 찾기
   const startTimeIndex = timeSlots.findIndex(slot => {
     if (typeof slot === 'string') {
       return slot === startTime;
@@ -393,41 +423,60 @@ const DurationSelector = ({
       return slot.value === startTime;
     }
   });
-  
+  if (startTimeIndex === -1) return null;
+
   // 남아있는 슬롯 수 계산
   const remainingSlots = timeSlots.length - startTimeIndex;
-  
-  // maxDuration과 남은 슬롯 수 중 최소값 선택
-  const availableDuration = Math.min(maxDuration, remainingSlots);
-  
+
+  // maxDuration(시간) → 슬롯 개수는 시간*2 (30분 단위라서)
+  const maxSlotsByDuration = maxDuration * 2;
+  const availableSlots = Math.min(maxSlotsByDuration, remainingSlots);
+
+  // 실제 표시할 duration (시간 단위)
   const durations = [];
-  for (let i = 1; i <= availableDuration; i++) {
-    durations.push(i);
+  for (let h = 1; h <= maxDuration; h++) {
+    const slotsNeeded = h * 2;
+    if (slotsNeeded <= availableSlots) {
+      durations.push(h);
+    }
   }
 
-  const convertTo12HourFormat = (time24) => {
+  // 24시간 형식 출력 (넘어가면 25:00 → 01:00 이런식으로 유지)
+  const formatTime = (time24) => {
     const [hours, minutes] = time24.split(':').map(Number);
-    const adjustedHours = hours % 24;
-    
-    
-    
-    const displayHours = adjustedHours.toString().padStart(2, '0');
-
-    //adjustedHours === 0 ? 12 : (adjustedHours > 12 ? adjustedHours - 12 : adjustedHours);
-
+    const displayHours = (hours % 24).toString().padStart(2, '0');
     return `${displayHours}:${minutes.toString().padStart(2, '0')}`;
   };
 
-  
+  // 특정 duration이 예약 가능한지 확인
+  const canSelectDuration = (start, duration) => {
+    const slotsNeeded = duration * 2;
+    for (let i = 0; i < slotsNeeded; i++) {
+      const slot = timeSlots[startTimeIndex + i];
+      if (!slot) return false;
+      const slotValue = typeof slot === 'string' ? slot : slot.value;
+      if (disabledTimes.includes(slotValue)) return false;
+    }
+    return true;
+  };
+
+  // 종료 시간 계산
+  const getEndTimeDisplay = (start, duration) => {
+    const [h, m] = start.split(':').map(Number);
+    const totalMinutes = h * 60 + m + duration * 60; // duration 시간(60분 단위)
+    const endHour = Math.floor(totalMinutes / 60);
+    const endMinute = totalMinutes % 60;
+    return `${(endHour % 24).toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div className="duration-selector">
       <div className="duration-label">
-        {startTime}{messages.durationSelectLabel || '부터 이용 시간 선택'}
+        {formatTime(startTime)}{messages.durationSelectLabel || '부터 이용 시간 선택'}
       </div>
       <div className="duration-grid">
         {durations.map(duration => {
-          const isDisabled = !canSelectDuration(startTime, duration, disabledTimes);
+          const isDisabled = !canSelectDuration(startTime, duration);
           return (
             <SketchBtn
               key={duration}
@@ -443,12 +492,13 @@ const DurationSelector = ({
       </div>
       {selectedDuration && (
         <div className="duration-info">
-          {messages.reservationTimeLabel || '예약 시간'}: {convertTo12HourFormat(startTime)} - {getEndTimeDisplay(startTime, selectedDuration)}
+          {messages.reservationTimeLabel || '예약 시간'}: {formatTime(startTime)} - {getEndTimeDisplay(startTime, selectedDuration)}
         </div>
       )}
     </div>
   );
 };
+
 
 // 시간 슬롯 필터링 함수 (특정 범위만 추출)
 export const filterTimeSlots = (allTimeSlots, startTime, endTime) => {

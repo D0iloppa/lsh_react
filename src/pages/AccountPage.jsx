@@ -60,6 +60,7 @@ const AccountPage = ({
 
   // 초기 로드 및 주기적 업데이트
   useEffect(() => {
+    
     fetchUnreadChatCount();
 
     const interval = setInterval(fetchUnreadChatCount, 3000);
@@ -72,7 +73,18 @@ const AccountPage = ({
     //setUnreadChatCount(0);
   };
 
+ 
+
   useEffect(() => {
+    if (messages && Object.keys(messages).length > 0) {
+      console.log('✅ Messages loaded:', messages);
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
+  }, [messages, currentLang]);
+
+  
+   useEffect(() => {
     const resetContentAreaScroll = () => {
       // 진짜 스크롤 컨테이너인 .content-area를 리셋
       const contentArea = document.querySelector('.content-area');
@@ -89,17 +101,9 @@ const AccountPage = ({
 
     // DOM 렌더링 완료 후 한 번 더
     setTimeout(resetContentAreaScroll, 100);
+    
 
   }, [user]);
-
-  useEffect(() => {
-    if (messages && Object.keys(messages).length > 0) {
-      console.log('✅ Messages loaded:', messages);
-      console.log('Current language set to:', currentLang);
-      window.scrollTo(0, 0);
-    }
-  }, [messages, currentLang]);
-
   
   const handleBack = () => {
     console.log('Back 클릭');
@@ -295,7 +299,7 @@ const AccountPage = ({
 
         .page-wrapper {
           position: relative;
-          min-height: 100vh;
+          height: 50vh;
           background: #fff;
         }
 
@@ -303,10 +307,11 @@ const AccountPage = ({
           max-width: 28rem;
           margin: 0 auto;
           background: #fff;
-          min-height: 100vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
           padding-top: 50px; /* 헤더 높이만큼 여백 */
           padding-bottom: 3rem;
+  overflow: hidden;        /* 스크롤 막기 */
+
         }
 
         @media (max-width: 480px) {

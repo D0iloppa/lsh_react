@@ -6,7 +6,7 @@ import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import dayjs from 'dayjs'; // ⬅ dayjs 추가
-import { Edit} from 'lucide-react';
+import { Edit, MessageCircle} from 'lucide-react';
 
 import ApiClient from '@utils/ApiClient';
 import LoadingScreen from '@components/LoadingScreen';
@@ -494,7 +494,9 @@ const BookingHistoryPage = ({
           is_reservation:item.is_reservation,
           clientId: item.client_id,
           cancelable:item.cancelable,
-          escort_entrance:item.escort_entrance
+          escort_entrance:item.escort_entrance,
+          venue_name: item.venue_name,
+          manager_id: item.manager_id
         }));
         
         setAllBookings(formattedBookings); // ⬅ 전체 데이터 저장
@@ -547,6 +549,33 @@ const BookingHistoryPage = ({
     if ( diffHours < 0 ) diffHours=24+diffHours;
     return `${diffHours}${get('Reservation.HourUnit') || '시간'}`;
   };
+
+  const chatting = async (booking) => {
+  try {
+    const chatRoom = await ApiClient.postForm('/api/getChatRoom', {
+      sender: user.user_id,
+      sender_type: 'user',
+      receiver_id: booking.manager_id,
+      send_to: 'manager'
+    });
+
+    let { room_sn = null } = chatRoom || {};
+
+    if (!room_sn) {
+      room_sn=null;
+    }
+
+    navigateToPageWithData(PAGES.CHATTING, {
+      name: booking.venue_name,
+      room_sn: room_sn,
+      send_to: 'manager',
+      receiver_id: booking.manager_id,
+    });
+  } catch (error) {
+    console.error("채팅방 생성 에러:", error);
+  }
+};
+
 
 
 const getEntranceText = (entranceValue) => {
@@ -844,6 +873,18 @@ const getEntranceText = (entranceValue) => {
             margin-left: 0.3rem;
             font-size: 14px;
           }
+
+           .chat-style {
+            padding: 0.05rem 0.3rem;  /* 위아래 0.1rem, 좌우 0.3rem */
+            background: #e2fffe;
+            color: #126d6a;
+            border: 1px solid #11a29d;
+            border-radius: 15px;
+            margin-top: -0.4rem;
+            margin-left: 5px;
+          }
+
+
       `}</style>
 
       <div className="booking-history-container">
@@ -969,7 +1010,14 @@ const getEntranceText = (entranceValue) => {
                           ? get('DiscoverPage1.3') 
                           : booking.targetType
                       }
-                    </span> : {booking.targetName}
+                    </span>  {booking.targetName}
+
+                    <span 
+                            className='chat-style' 
+                            onClick={() => chatting(booking)}
+                          >
+                            <MessageCircle size={14}/> {get('BUTTON_CHAT')}
+                          </span>
                   </h3>
                     <p className="host-info"><Edit size={12}/> {get('BookingHis1.1')}: {booking.hostName}</p>
 

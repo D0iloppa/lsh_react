@@ -254,10 +254,19 @@ const getEntranceText = (entranceValue) => {
       //alert(finalErrorMessage);
 
       Swal.fire({
+        title: get('RESERVE_INVALID_TITLE_1'),
+        text: `${get('RESERVE_INVALID_TEXT_1')}`,
+        icon: 'warning',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+      });
+
+      /*
+      Swal.fire({
         title: finalErrorMessage,
         icon: 'error',
         confirmButtonText: get('SWAL_CONFIRM_BUTTON')
       });
+      */
 
     } finally {
       setIsConfirming(false);
@@ -295,17 +304,24 @@ const getEntranceText = (entranceValue) => {
   const messages_summary = getSummaryMessages();
 
   const convertTo12HourFormat = (time24) => {
-    const [hours, minutes] = time24.split(':').map(Number);
-    const adjustedHours = hours % 24;
-    
-    
-    
-    const displayHours = adjustedHours.toString().padStart(2, '0');
-
-    //adjustedHours === 0 ? 12 : (adjustedHours > 12 ? adjustedHours - 12 : adjustedHours);
-
-    return `${displayHours}:00`;
+    if (!time24 || typeof time24 !== "string" || !time24.includes(":")) {
+      return ""; // 잘못된 값이면 빈 문자열 반환
+    }
+  
+    const [hours, minutes] = time24.split(":").map(Number);
+  
+    if (isNaN(hours) || isNaN(minutes)) {
+      return "";
+    }
+  
+    const adjustedHours = hours % 24; // 24시 → 0시 보정
+    const displayHours = adjustedHours.toString().padStart(2, "0");
+    const displayMinutes = minutes.toString().padStart(2, "0");
+  
+    return `${displayHours}:${displayMinutes}`;
   };
+  
+  
 
   return (
     <>
