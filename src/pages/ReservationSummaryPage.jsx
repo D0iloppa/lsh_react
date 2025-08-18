@@ -426,6 +426,7 @@ const getEntranceText = (entranceValue) => {
 
         .confirm-section {
           padding: 0 1.5rem 2rem;
+          margin-bottom: 3rem;
         }
 
         .step-number {

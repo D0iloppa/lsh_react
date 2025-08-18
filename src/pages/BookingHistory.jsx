@@ -63,7 +63,7 @@ const BookingHistoryPage = ({
 
   if (!booking?.date || !booking?.time) return false;
   const { status } = booking;
-  if (status === 'canceled' || status === 'completed') return false;
+  if (status === 'canceled' || status === 'completed' || status === 'confirmed') return false;
 
   const t = parseToHMS(booking.time);
   if (!t) return false;

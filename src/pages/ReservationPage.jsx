@@ -843,7 +843,7 @@ const handleReserve = async () => {
         }
 
         .attendee-select {
-          height: 40px;
+          height: 45px;
           border-top-left-radius: 12px 7px;
           border-top-right-radius: 6px 14px;
           border-bottom-right-radius: 10px 5px;
@@ -915,7 +915,7 @@ const handleReserve = async () => {
 
         .reserve-section {
           padding: 1rem 1.5rem 1.5rem;
-          margin-bottom: 1rem;
+          margin-bottom: 3rem;
         }
 
         .form-step-3 { 

@@ -113,7 +113,7 @@ useEffect(() => {
         id: item.user_id || index,
         creator_type: item.participant_type || item.creator_type,
         room_sn: item.room_sn,
-        name: item.room_name || '이름 없음',
+        name: item.venue_name ||item.room_name || '이름 없음',
         lastMessage: item.last_message_preview || `[${get('CHAT_PHOTO_LABEL')}]`,
         lastTime: item.last_message_at
           ? new Date(item.last_message_at).toLocaleTimeString('ko-KR', {
