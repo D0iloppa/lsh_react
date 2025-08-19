@@ -529,7 +529,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
       `}</style>
 
       <div className="ranking-container">
-       <SketchHeader onBack={handleBack} style={{ display: 'none' }} />
+       <SketchHeader onBack={handleBack} />
         {/* 헤더 섹션 */}
         <section className="hero-section">
           <HatchPattern opacity={0.3} />

@@ -121,6 +121,8 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
 
   const [timeSlots, setTimeSlots] = useState([]);
   const [disabledTimes, setDisabledTimes] = useState([]);
+  const [availableTimes, setAvailableTimes] = useState(new Set());
+
 
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
@@ -501,6 +503,11 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
         });
 
       const availableSet = new Set(availableArr);
+      const scheduleListSet = new Set(availableArr); // 이용가능시간 산정용
+      
+      console.log('availableSet:', availableSet);
+      
+
       /*
       const availableSet = new Set(
         scheduleList
@@ -559,10 +566,12 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
         // 구독 만료 컷
         else if (expiredAtDate && slotAbs > expiredAtDate) {
           reason = 'after_expired_time';
+          scheduleListSet.delete(key);
         }
         // 영업창 범위 밖
         else if (!(slotAbs >= openAbs && slotAbs <= closeAbs)) {
           reason = 'out_of_business_window';
+          scheduleListSet.delete(key);
         }
         // 예약 충돌
         /*
@@ -577,10 +586,12 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
 
         if (!reason && !availableSet.has(key)) {
           reason = 'not_in_schedule';
+          scheduleListSet.delete(key);
         }
 
         if (!reason && checkDuplicateReserve(slotAbs, 1, userReservationList)) {
           reason = 'conflict_user_reservation';
+          scheduleListSet.delete(key);
         }
 
         if (reason) {
@@ -588,6 +599,9 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
           nextDisabled.push(slot.value);
         }
       }
+
+    console.log('avail-scheduleListSet:', scheduleListSet);
+    setAvailableTimes(scheduleListSet);
 
 
     // ⑤ 2차: 최소 1시간(30분*2) 연속 가능성 체크
@@ -1188,6 +1202,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
           onBookerChange={setBookerName} // booker 변경 핸들러
           disabledDates={[]}
           disabledTimes={disabledTimes}
+          availableTimes={availableTimes}
           useDurationMode={true} // Duration 모드 활성화
           maxDuration={4} // 최대 4시간까지 선택 가능
           messages={getReservationMessages()} // 다국어 메시지 전달
