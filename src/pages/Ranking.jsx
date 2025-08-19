@@ -337,14 +337,14 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
         }
         .hero-title {
           text-align: center;
-          font-size: 1.55rem;
+          font-size: 1.5rem;
           font-weight: bold;
           color: #374151;
           margin-bottom: 1rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
+          white-space: normal;         /* 자동 줄바꿈 허용 */
+          overflow-wrap: break-word;   /* 단어 단위로 줄바꿈 (표준) */
+          word-wrap: break-word;       /* 구형 브라우저 호환 */
+          word-break: keep-all;   
         }
         
         .filter-tabs {
