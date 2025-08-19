@@ -266,6 +266,10 @@ export const PopupProvider = ({ children }) => {
       };
 
       
+      if(eventType == 'adViewCount'){
+        console.log('한시적 adViewCount 팝업 미호출');
+        return;
+      }
     
 
       const { isActive } = await updateUserStateIfNeeded();
