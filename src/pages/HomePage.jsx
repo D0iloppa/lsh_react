@@ -78,7 +78,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
     if (window.testPopup) {
       //console.log('✅ testPopup 사용 가능');
       
-      window.testPopup.emit('adViewCount');
+      // window.testPopup.emit('adViewCount');
       
     } else {
       console.log('❌ testPopup이 아직 생성되지 않음');
