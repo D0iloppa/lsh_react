@@ -209,14 +209,11 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
         });
         setIsProcessing(false);
       } else {
-        // 실패 케이스: icon 을 error 로 수정
-        await Swal.fire({
-          title: get('daily.pass.payment.fail.title'),
-          text: get('daily.pass.payment.fail.text'),
-          icon: 'error',
-          confirmButtonText: get('Common.Confirm')
-        });
-        setIsProcessing(false);
+        if(mode === 'extend'){
+          goBack();
+        }else{
+          navigate('/main'); // 메인으로 직접 이동
+        }
       }
     };
   

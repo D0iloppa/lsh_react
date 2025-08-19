@@ -16,7 +16,6 @@ const SketchHeader = ({
 
   useEffect(() => {
       if (showBack) {
-        alert("1234");
         backHandlerRef.current = onBack;
         
       } else {
