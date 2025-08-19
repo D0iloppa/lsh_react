@@ -102,7 +102,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
         const transformed = data.map((item, index) => ({
           id: item.target_type == 'venue' ? item.venue_id : item.target_id,
           name: rankingType === 'staff' ? iauMasking(iau, item.name || '') : item.name || 'Unknown',
-          rating: parseFloat(item.rating || 0).toFixed(1),
+          rating: parseFloat(item.avg_rating || 0).toFixed(1),
           image: item.image_url,
           address: iauMasking(iau, item.address || ''),
           opening_hours: rankingType === 'venue' ? `${item.open_time}~${item.close_time}` : null,
