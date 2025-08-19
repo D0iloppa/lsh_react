@@ -171,7 +171,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         `https://translation.googleapis.com/language/translate/v2?key=AIzaSyAnvkb7_-zX-aI8WVw6zLMRn63yQQrss9c`,
         {
           q: text,
-          target: language || 'vi',
+          target: language || 'ko',
           format: 'text',
         }
       );
