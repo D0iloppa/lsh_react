@@ -25,7 +25,9 @@ const ShareExpPage = ({
 
   const reviewRef = useRef();
 
-  const getReviewValue = () => reviewRef.current.value;
+  const getReviewValue = () => {
+    return reviewRef?.current?.value || ''; 
+  }
 
 
 
@@ -57,6 +59,10 @@ const ShareExpPage = ({
   }, [messages, currentLang, pageData]);
 
   const handleSubmitReview = () => {
+
+    console.log('🌐 target:', target);
+    console.log('🌐 venueRating:', venueRating);
+
   if (venueRating === 0) {
     Swal.fire({
       title: get('Review3.1'),
@@ -67,7 +73,7 @@ const ShareExpPage = ({
   }
 
   const reviewValue = getReviewValue();
-  if(reviewValue.trim() === ''){
+  if( target !== 'staff' && reviewValue.trim() === ''){
     Swal.fire({
       title: get('Review3.2'),
       icon: 'warning',
@@ -92,8 +98,8 @@ const ShareExpPage = ({
     reservation_id,
     user_id,
     rating: venueRating,
-    content: getReviewValue()
-    //content: target === 'staff' ? '-' : reviewText
+    //content: getReviewValue()
+    content: target === 'staff' ? '-' : getReviewValue()
   };
     
     console.log('📝 Review submitted:', reviewData);
@@ -370,6 +376,7 @@ const ShareExpPage = ({
             />
 
             {/* Review Text Section */}
+            {target !== 'staff' && (
             <div className="card-input-section">
                 <SketchInput
                     name="review"
@@ -379,6 +386,7 @@ const ShareExpPage = ({
                     rows={8}
                   />
             </div>
+            )}
             {
             /* Review Text Section
             {target !== 'staff' && (
