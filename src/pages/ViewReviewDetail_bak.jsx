@@ -1,21 +1,19 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import HatchPattern from '@components/HatchPattern';
 import SketchInput from '@components/SketchInput';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 
-import SketchHeader from '@components/SketchHeaderMain'
+import SketchHeader from '@components/SketchHeader'
 import SketchDiv from '@components/SketchDiv'
 import SketchBtn from '@components/SketchBtn'
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import LoadingScreen from '@components/LoadingScreen';
-import { Filter, Martini, Store, User, ShieldCheck } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { Filter, Martini, Store, User } from 'lucide-react';
 
 import { Star, Edit3 } from 'lucide-react';
 import axios from 'axios';
-
 
 const ViewReviewPage = ({
   navigateToPageWithData,
@@ -44,56 +42,9 @@ const ViewReviewPage = ({
   const [originalReviews, setOriginalReviews] = useState([]); // 원본 데이터 보관
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const API_HOST = import.meta.env.VITE_API_HOST;
-  const { user, isActiveUser, iauMasking } = useAuth();
-  const [iauData, setIauData] = useState(null);
-  
 
-  const [translationMap, setTranslationMap] = useState({});
-  const [showTranslateIcon, setShowTranslateIcon] = useState({});
-  
-  const longPressTimer = useRef(null);
 
   
-  // 번역 아이콘 표시 (꾹 눌렀을 때)
-const handleLongPress = useCallback((reviewId) => {
-  setShowTranslateIcon(prev => ({
-    ...prev,
-    [reviewId]: true,
-  }));
-}, []);
-
-// 번역 실행
-const handleTranslate = useCallback(async (reviewId, text) => {
-  if (translationMap[reviewId]) return; // 이미 번역됨
-
-  try {
-
-    console.log("1234", user);
-
-    let language=user.language;
-    if ( language == 'kr') language='ko';
-    
-    const response = await axios.post(
-      `https://translation.googleapis.com/language/translate/v2?key=AIzaSyAnvkb7_-zX-aI8WVw6zLMRn63yQQrss9c`,
-      {
-        q: text,
-        target: language || 'vi',  // 사용자 언어 기준 (없으면 베트남어)
-        format: 'text',
-      }
-    );
-
-    const translated = response.data.data.translations[0].translatedText;
-
-    setTranslationMap(prev => ({
-      ...prev,
-      [reviewId]: translated,
-    }));
-  } catch (error) {
-    console.error('❌ 번역 실패:', error);
-    Swal.fire('번역 오류', 'Google Translate API 호출에 실패했습니다.', 'error');
-  }
-}, [translationMap, user.language]);
-
 
   useEffect(() => {
 
@@ -113,40 +64,6 @@ const handleTranslate = useCallback(async (reviewId, text) => {
       staff: (review.target_type == 'staff') ? { name : review.targetName} : {}
     });
   };
-
-  const handleViewDetail = (review) => {
-
-      const container = document.querySelector('.content-area');
-
-    if (container) {
-      localStorage.setItem("viewReviewPageState", JSON.stringify({
-      scrollY: container.scrollTop,
-      sortOrder1,
-      sortOrder,
-      targetTypeFilter
-    }));
-    }
-
-    let savedState =localStorage.getItem("viewReviewPageState");
-    console.log("set scrollY",savedState);
-
-    
-  console.log('View detail clicked:', review);
-  
-  if (review.target_type === 'venue') {
-    // venue인 경우 VIEWREVIEW 페이지로 이동
-    navigateToPageWithData && navigateToPageWithData(PAGES.DISCOVER, {
-      venueId: review.venue_id
-    });
-  } else if (review.target_type === 'staff') {
-    // staff인 경우 STAFFDETAIL 페이지로 이동
-    navigateToPageWithData && navigateToPageWithData(PAGES.STAFFDETAIL, {
-      staff_id: review.target_id,
-      image_url: review.image_url,
-      fromReview: true
-    });
-  }
-};
 
   const applyFiltersAndSort = () => {
 
@@ -210,12 +127,6 @@ const handleTranslate = useCallback(async (reviewId, text) => {
         const response = await ApiClient.postForm('/api/getVenueReviewList', {
           venue_id: venueId || -1
         });
-        
-        
-        const iau = await isActiveUser();
-        console.log('IAU:', iau);
-        
-        setIauData(iau);
 
         const reviewsData = response.data || [];
         //console.log("reviewsData", reviewsData)
@@ -226,7 +137,7 @@ const handleTranslate = useCallback(async (reviewId, text) => {
         const userIds = [...new Set(reviewsData.map(review => review.user_id))];
 
         // 모든 유저 정보를 병렬로 요청
-        /*const userPromises = userIds.map(userId =>
+        const userPromises = userIds.map(userId =>
           axios.get(`${API_HOST}/api/getUserInfo`, {
             params: { user_id: userId }
           }).catch(error => {
@@ -245,7 +156,7 @@ const handleTranslate = useCallback(async (reviewId, text) => {
         console.log("userImagesData", userImagesData)
 
         setUserImages(userImagesData);
-*/
+
       } catch (error) {
         console.error('리뷰 로딩 실패:', error);
         setReviews([]);
@@ -258,28 +169,7 @@ const handleTranslate = useCallback(async (reviewId, text) => {
     loadVenueReviews();
   }, [venueId]);
 
-   useEffect(() => {
-    if (!loading && reviews.length > 0) {
-      const savedState = localStorage.getItem("viewReviewPageState");
 
-      console.log("load scrollY",savedState);
-
-      if (savedState) {
-        const { scrollY, sortOrder1, sortOrder, targetTypeFilter } = JSON.parse(savedState);
-
-        if (sortOrder1) setSortOrder1(sortOrder1);
-        if (sortOrder) setSortOrder(sortOrder);
-        if (targetTypeFilter) setTargetTypeFilter(targetTypeFilter);
-
-        
-        const container = document.querySelector('.content-area');
-        
-        if (container) {
-          container.scrollTop = scrollY;
-        }
-      }
-    }
-  }, [loading, reviews]);
 
   const handleNotifications = () => {
     console.log('Notifications 클릭');
@@ -386,7 +276,6 @@ const handleTranslate = useCallback(async (reviewId, text) => {
             margin-bottom: 10px;
             width: 100%;
           }
-
 
         .map-filter-selects::-webkit-scrollbar { display: none; }
 
@@ -553,8 +442,7 @@ const handleTranslate = useCallback(async (reviewId, text) => {
             color: #333;
             letter-spacing: 0.3px;
           }
-
-          /* 매니저 답변 스타일 (기존) */
+            /* 매니저 답변 스타일 추가 */
           .manager-response {
             background-color: #f0f9ff;
             border: 1px solid #e0f2fe;
@@ -617,40 +505,6 @@ const handleTranslate = useCallback(async (reviewId, text) => {
           .staff-response .response-text {
             color: #92400e;
           }
-
-          .review-meta-date {
-            position: relative;
-            top: -2px; /* 원하는 만큼 위로 조정 */
-          }
-
-           .notification-item {
-              background-color: white;
-              padding: 1rem;
-              margin-bottom: 0.75rem;
-              cursor: pointer;
-              transform: rotate(-0.1deg);
-              transition: all 0.2s;
-              position: relative;
-              overflow: hidden;
-            }
-
-            .empty-state {
-          text-align: center;
-          padding: 2rem 0;
-          color: #6b7280;
-        }
-
-        .empty-state h3 {
-          font-size: 1.1rem;
-          margin-bottom: 0.5rem;
-          color: #374151;
-        }
-
-        .empty-state p {
-          font-size: 0.83rem;
-        }
-
-
       `}</style>
 
       <div className="view-review-container">
@@ -659,76 +513,37 @@ const handleTranslate = useCallback(async (reviewId, text) => {
         <SketchHeader
           title={get('Profile1.1')}
           showBack={true}
-          onBack={handleBack}
+          onBack={goBack}
           rightButtons={[]}
         />
 
         {/* Search Section */}
         <div className="map-filter-selects">
           <select
-  className="select-box"
-  value={sortOrder1}
-  onChange={(e) => {
-    const value = e.target.value;
-    setSortOrder1(value);
-    localStorage.setItem(
-      "viewReviewPageState",
-      JSON.stringify({
-        scrollY: 0,
-        sortOrder1: value,
-        sortOrder,
-        targetTypeFilter
-      })
-    );
-  }}
->
-  <option value="rating_high">{get('Sort.Rating.High')}</option>
-  <option value="rating_low">{get('Sort.Rating.Low')}</option>
-</select>
-
-<select
-  className="select-box"
-  value={sortOrder}
-  onChange={(e) => {
-    const value = e.target.value;
-    setSortOrder(value);
-    localStorage.setItem(
-      "viewReviewPageState",
-      JSON.stringify({
-        scrollY: 0,
-        sortOrder1,
-        sortOrder: value,
-        targetTypeFilter
-      })
-    );
-  }}
->
-  <option value="latest">{get('Newest.filter')}</option>
-  <option value="oldest">{get('Oldest.filter')}</option>
-</select>
-
-<select
-  className="select-box"
-  value={targetTypeFilter}
-  onChange={(e) => {
-    const value = e.target.value;
-    setTargetTypeFilter(value);
-    localStorage.setItem(
-      "viewReviewPageState",
-      JSON.stringify({
-        scrollY: 0,
-        sortOrder1,
-        sortOrder,
-        targetTypeFilter: value
-      })
-    );
-  }}
->
-  <option value="ALL">{get('main.filter.category.all')}</option>
-  <option value="venue">{get('title.text.14')}</option>
-  <option value="staff">{get('title.text.16')}</option>
-</select>
-
+            className="select-box"
+            value={sortOrder1}
+            onChange={(e) => setSortOrder1(e.target.value)}
+          >
+            <option value="rating_high">{get('Sort.Rating.High')}</option>
+            <option value="rating_low">{get('Sort.Rating.Low')}</option>
+          </select>
+          <select
+            className="select-box"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+          >
+            <option value="latest">{get('Newest.filter')}</option>
+            <option value="oldest">{get('Oldest.filter')}</option>
+          </select>
+          <select
+            className="select-box"
+            value={targetTypeFilter}
+            onChange={(e) => setTargetTypeFilter(e.target.value)}
+          >
+            <option value="ALL">{get('main.filter.category.all')}</option>
+            <option value="venue">{get('title.text.14')}</option>
+            <option value="staff">{get('title.text.16')}</option>
+          </select>
         </div>
         {/* <div className="search-section">
           <form onSubmit={handleSearch}>
@@ -759,13 +574,13 @@ const handleTranslate = useCallback(async (reviewId, text) => {
             </div>
           ) : reviews.length > 0 ? (
             reviews.map((review, index) => (
-              <SketchDiv key={review.review_id} className="review-card" onClick={() => handleViewDetail(review)}>
+              <SketchDiv key={review.review_id} className="review-card">
                 <HatchPattern opacity={0.03} />
                 <div className="review-content">
                   <div className="review-header">
                     <ImagePlaceholder
                       //src={userImages[review.user_id] || '/placeholder-user.jpg'}
-                      src={review.targetImage || '/cdn/defaultC/staff.png'}
+                      src={review.targetImage || '/placeholder-user.jpg'}
                       className="user-avatar" alt="profile"
                     />
                     <div>
@@ -796,115 +611,38 @@ const handleTranslate = useCallback(async (reviewId, text) => {
                           fontWeight: '500',
                           color: '#333'
                         }}>
-                            
-                              {review.target_type === 'staff' && !iauData.isActiveUser
-                                ? review.targetName
-                                    ? review.targetName.charAt(0) + '***'
-                                    : ''
-                                : review.targetName}
+                          {review.targetName}
                         </span>
                       </div>
 
 
 
                       <div className="user-info"></div>
-                    
+                      <div style={{ 'display': 'flex' }}>
+                        <span style={{ marginRight: '5px', fontSize: '0.95rem' }}>{get('COMMON_AUTHOR') || '작성자'} :</span>
+                        <h3 className="user-name">{review.user_name}</h3>
+                      </div>
                       <p className="review-meta">
-                      {renderStars(review.rating)}  
-                      <span className="review-meta-date">
-                        {new Date(review.created_at).toLocaleDateString()}
-                      </span>
-                    </p>
-
-                    <p className="review-meta">
-  <span
-    className="review-meta-date"
-    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
-  >
-    {review.user_name === '레탄톤 보안관'
-      ? (
-        <span
-  style={{
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '4px',
-    fontWeight: 300,
-    color: '#fff',
-    backgroundColor: '#374151',  // 어두운 회색 (Tailwind gray-700)
-    padding: '4px 10px',
-    borderRadius: '20px',
-    fontSize: '10px',
-    boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
-  }}
->
-  🎖️ 레탄톤 보안관 꿀팁
-</span>
-
-      ) : (
-        review.user_name
-          ? review.user_name.charAt(0) + '***'
-          : ''
-      )}
-  </span>
-</p>
-
-
-
+                        {renderStars(review.rating)} stars - {new Date(review.created_at).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
-                  {review.content !== '-' && (
-  <div 
-    style={{ 
-      border: 'none', 
-      boxShadow: 'none', 
-      marginBottom: 0, 
-      padding: '8px 0' 
-    }}
-    onClick={() => handleViewDetail(review)}
-  >
-    <HatchPattern opacity={0.03} />
-    <div className="review-content">
-      <p className="review-text">
-        {review.content}
-      </p>
-
-      {/* 번역된 결과 */}
-      {translationMap[review.review_id] && (
-        <div style={{ marginTop: 6, fontSize: 12, color: '#6b7280', fontStyle: 'italic' }}>
-          {translationMap[review.review_id]}
-          <span style={{ fontSize: 10, marginLeft: 4 }}>번역됨</span>
-        </div>
-      )}
-
-      {/* 번역 버튼 */}
-      <div style={{ marginTop: 8, textAlign: 'right' }}>
-        <button
-          style={{
-            background: '#3b82f6',
-            color: '#fff',
-            fontSize: 12,
-            padding: '4px 10px',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer'
-          }}
-          onClick={(e) => {
-            e.stopPropagation(); // 상세보기 클릭 방지
-            handleTranslate(review.review_id, review.content);
-          }}
-        >
-          {get('Translation')}
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
-
+                  <p className="review-text">{review.content}</p>
 
                   {/* 매니저 답변 표시 */}
-               
-
+                  {review.reply_content && (
+                    <div className="manager-response">
+                      <div className="response-header">
+                        <span className="response-label">
+                          {get('REVIEW_MANAGER_RESPONSE')}
+                        </span>
+                        <span className="response-badge"><User size={14} /></span>
+                      </div>
+                      <div className="response-text">
+                        "{review.reply_content}"
+                      </div>
+                    </div>
+                  )}
                   {/* 예약하기 버튼 */}
                   {/* <div className="review-actions" style={{
                     paddingTop: '1rem',
@@ -913,38 +651,30 @@ const handleTranslate = useCallback(async (reviewId, text) => {
                     justifyContent: 'flex-end'
                   }}>
                     <SketchBtn
-                      className="reservation-btn"
-                      onClick={() => {
-                        if (review.is_reservation) {
-                          handleReservation(review);
-                        }
-                      }}
-                      disabled={!review.is_reservation}
-                      style={{
-                        width: '30%',
-                        backgroundColor: review.is_reservation ? '#10b981' : '#9ca3af', // 회색으로 비활성화 느낌
-                        color: '#fefefe',
-                        padding: '0.5rem 1rem',
-                        cursor: review.is_reservation ? 'pointer' : 'not-allowed',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      {review.is_reservation ? '예약하기' : '예약 마감'}
-                    </SketchBtn>
-
+                                          className="reservation-btn"
+                                          onClick={() => {
+                                            if (review.is_reservation) {
+                                              handleReservation(review);
+                                            }
+                                          }}
+                                          disabled={!review.is_reservation}
+                                          style={{
+                                            width: '30%',
+                                            backgroundColor: review.is_reservation ? '#10b981' : '#9ca3af', // 회색으로 비활성화 느낌
+                                            color: '#fefefe',
+                                            padding: '0.5rem 1rem',
+                                            cursor: review.is_reservation ? 'pointer' : 'not-allowed',
+                                            transition: 'all 0.2s ease'
+                                          }}
+                                        >
+                                          {review.is_reservation ? '예약하기' : '예약 마감'}
+                                        </SketchBtn>
                   </div> */}
-
                 </div>
               </SketchDiv>
             ))
           ) : (
-             <SketchDiv className="notification-item">
-              <HatchPattern opacity={0.02} />
-              <div className="empty-state">
-                <h3>{get('Review3.5')}</h3>
-                <p style={{fontSize: '0.83rem'}}>{get('REVIEW_NO_REVIEWS_MESSAGE')}</p>
-              </div>
-            </SketchDiv>
+            <div style={{ textAlign: 'center', color: 'gray' }}>{get('Review3.5')}</div>
           )}
         </div>
       </div>
