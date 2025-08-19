@@ -1258,30 +1258,52 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         .chat-container {
           display: flex;
           flex-direction: column;
-          height: 87vh;
-          background-color: #f2f2f2;
+          height: 80vh; /* 전체 화면 꽉 채움 */
+          overflow: hidden; /* 전체 스크롤 방지 */
         }
+
         .chat-messages {
-          flex: 1;
+          flex: 1; 
           padding: 1rem;
-          overflow-y: auto;
+          overflow-y: auto; /* 메시지만 스크롤 */
           display: flex;
           flex-direction: column;
           scroll-behavior: smooth;
         }
-        .chat-message-wrapper {
+
+        .chat-input-wrapper {
+          flex-shrink: 0; /* 크기 줄어들지 않도록 */
+          display: flex;
+          align-items: center;
+          padding: 0.8rem 1rem;
+          background-color: white;
+          border-top: 1px solid #e5e7eb; /* 위쪽 경계선 */
+          position: sticky;
+          bottom: 0;
+          height:40px;
+        }
+
+
+         .chat-message-wrapper {
             display: flex;
-            align-items: flex-end;
-            margin-bottom: 1rem;
+            margin: 0.3rem 0;
+            width: 100%;
           }
 
           .chat-message-wrapper.me {
-            justify-content: flex-end;
+            justify-content: flex-end;   /* 오른쪽 정렬 */
           }
 
           .chat-message-wrapper.other {
-            justify-content: flex-start;
+            justify-content: flex-start; /* 왼쪽 정렬 */
           }
+
+          .chat-content-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 70%;
+          }
+
 
           .chat-content-wrapper {
             display: flex;
@@ -1444,7 +1466,10 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           />
         )}
 
-        <div className="chat-input-wrapper">
+        
+      </div>
+
+<div className="chat-input-wrapper">
           <ImageUploader 
             apiClient={ApiClient}
             onUploadComplete={handleUploadComplete}
@@ -1468,8 +1493,6 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
             {get('CHAT_SEND_BUTTON')}
           </button>
         </div>
-      </div>
-
       {modalImage && (
         <div className="image-modal" onClick={() => setModalImage(null)}>
           <span className="image-modal-close">&times;</span>
