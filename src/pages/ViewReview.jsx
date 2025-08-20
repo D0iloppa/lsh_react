@@ -1028,7 +1028,7 @@ const handleTranslate = useCallback(async (reviewId, text) => {
     onClick={() => handleViewDetail(review)}
   >
     <HatchPattern opacity={0.03} />
-    <div className="review-content">
+    <div className="review-content" style={{minHeight: '25px'}}>
       <p className="review-text">
         {review.content}
       </p>
@@ -1048,7 +1048,6 @@ const handleTranslate = useCallback(async (reviewId, text) => {
           position: 'absolute',
           right: '0',
           top: 10,
-          marginBottom: '2px'
         }}>
           {review.user_id === user.user_id && (
             <div style={{ display: 'flex', gap: '3px', marginLeft: 'auto' }}>
