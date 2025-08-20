@@ -1048,6 +1048,7 @@ const handleTranslate = useCallback(async (reviewId, text) => {
           position: 'absolute',
           right: '0',
           top: 10,
+          marginBottom: '2px'
         }}>
           {review.user_id === user.user_id && (
             <div style={{ display: 'flex', gap: '3px', marginLeft: 'auto' }}>
