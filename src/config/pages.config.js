@@ -18,6 +18,10 @@ import Payment from '@pages/Payment';
 import MapPage from '@pages/MapPage';
 
 import ViewReview from '@pages/ViewReview';
+//import ViewReviewDetail from '@pages/ViewReviewDetail';
+import ViewReviewDetail from '@pages/ViewReview';
+
+
 import Notifications from '@pages/Notifications';
 
 import CSPage1 from '@pages/CSPage1';
@@ -29,7 +33,7 @@ import BookingHistory from '@pages/BookingHistory';
 import Favorites from '@pages/Favorites';
 
 import Setting from '@pages/Setting';
-import ViewReviewDetail from '@pages/ViewReviewDetail';
+
 
 
 import Chatting from '@pages/Chatting';

@@ -10,7 +10,7 @@ import SketchBtn from '@components/SketchBtn'
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import LoadingScreen from '@components/LoadingScreen';
-import { Filter, Martini, Store, User, ShieldCheck } from 'lucide-react';
+import { Filter, Martini, Store, User, ShieldCheck, Pencil, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 import { Star, Edit3 } from 'lucide-react';
@@ -173,6 +173,29 @@ const handleTranslate = useCallback(async (reviewId, text) => {
 
     // 날짜 정렬
     filtered.sort((a, b) => {
+
+
+      switch (sortOrder1) {
+        case 'rating_high':
+          return b.rating - a.rating;   // 평점 높은순
+        case 'rating_low':
+          return a.rating - b.rating;   // 평점 낮은순
+        case 'latest': {
+          const dateA = new Date(a.created_at);
+          const dateB = new Date(b.created_at);
+          return dateB - dateA;         // 최신순
+        }
+        case 'oldest': {
+          const dateA = new Date(a.created_at);
+          const dateB = new Date(b.created_at);
+          return dateA - dateB;         // 오래된순
+        }
+        default:
+          return 0;
+      }
+
+
+      /*
       // 1차 정렬: 평점
       let ratingSort = 0;
       if (sortOrder1 === 'rating_high') {
@@ -191,6 +214,8 @@ const handleTranslate = useCallback(async (reviewId, text) => {
       const dateB = new Date(b.created_at);
 
       return sortOrder === 'latest' ? dateB - dateA : dateA - dateB;
+      */
+
     });
 
     setReviews(filtered);
@@ -684,11 +709,14 @@ const handleTranslate = useCallback(async (reviewId, text) => {
 >
   <option value="rating_high">{get('Sort.Rating.High')}</option>
   <option value="rating_low">{get('Sort.Rating.Low')}</option>
+  <option value="latest">{get('Newest.filter')}</option>
+  <option value="oldest">{get('Oldest.filter')}</option>
 </select>
 
 <select
   className="select-box"
   value={sortOrder}
+  style={{display: 'none'}}
   onChange={(e) => {
     const value = e.target.value;
     setSortOrder(value);
@@ -803,6 +831,41 @@ const handleTranslate = useCallback(async (reviewId, text) => {
                                     : ''
                                 : review.targetName}
                         </span>
+
+                          {/* 수정/삭제 버튼 (작성자 본인일 때만) */}
+                          <div
+                          style={{
+                            position: 'absolute',
+                            right: '0',
+                            top: '3px',
+                          }}
+                          >
+                                {review.user_id === user.user_id && (
+                                              <div style={{ display: 'flex', gap: '3px', marginLeft: 'auto' }}>
+
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleEditReview(review);
+                                              }}
+                                              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                                            >
+                                              <Pencil size={14} color="#374151" />
+                                            </button>
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteReview(review.review_id);
+                                              }}
+                                              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                                            >
+                                              <Trash2 size={14} color="#ef4444" />
+                                            </button>
+                                          </div>
+                              )}
+                          </div>
+
+
                       </div>
 
 
@@ -815,6 +878,7 @@ const handleTranslate = useCallback(async (reviewId, text) => {
                         {new Date(review.created_at).toLocaleDateString()}
                       </span>
                     </p>
+
 
                     <p className="review-meta">
   <span

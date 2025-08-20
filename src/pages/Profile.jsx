@@ -69,8 +69,34 @@ const Profile = ({
 
     fetchUserInfo();
     fetchUserReviews();
-
   }, [user, messages, currentLang]);
+
+  // 1) 스크롤 복구: userReviews가 렌더링된 뒤에 적용
+useEffect(() => {
+  if (!userReviews || userReviews.length === 0) return;
+
+  const raw = localStorage.getItem('profileScrollY');
+  if (!raw) return;
+
+  const y = parseInt(raw, 10);
+  if (Number.isNaN(y)) return;
+
+  const container = document.querySelector('.content-area');
+  if (!container) return;
+
+  // 다음 페인트 시점에 한 번
+  requestAnimationFrame(() => {
+    container.scrollTop = y;
+  });
+
+  // 이미지/폰트 로딩 등으로 레이아웃이 변하는 경우를 위한 보정(선택)
+  const t = setTimeout(() => {
+    container.scrollTop = y;
+  }, 150);
+
+  return () => clearTimeout(t);
+}, [userReviews]);
+
 
   const handleDailyPassClick = () => {
   if (iauData?.isActiveUser) {
@@ -90,6 +116,31 @@ const Profile = ({
   const handleBack = () => {
     navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
   };
+
+const edeitReview = (review) => {
+
+  console.log('🌐 review:', review);
+
+  const container = document.querySelector('.content-area');
+
+      if (container) {
+        const scrollY = container.scrollTop;
+        localStorage.setItem('profileScrollY', scrollY.toString());
+      }
+
+
+    navigateToPageWithData && navigateToPageWithData(PAGES.SHARE_EXP, {
+      mode:'edit',
+      review:review,
+
+      reservation_id : review.reservation_id,
+      image : review.targetImage,
+      user_id : review.user_id,
+      target : review.target_type,
+      target_id : review.target_id,
+      targetName : review.targetName
+    });
+  }
 
 // 리뷰 삭제 함수
 const deleteReview = async (reviewId) => {
@@ -432,6 +483,18 @@ const deleteReview = async (reviewId) => {
           white-space: nowrap; 
         }
 
+        .edit-btn {
+          padding: 1px 7px;
+          background:rgb(84, 98, 223);
+          border-radius: 12px;
+          color: white;
+          font-size: 0.75rem;
+          cursor: pointer;
+          transition: background-color 0.2s;
+          border: none;
+          white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+        }
+
        .modify-btn {
           padding: 3px 10px;
           background: #ebebeb;
@@ -554,6 +617,12 @@ const deleteReview = async (reviewId) => {
                           <span>{review.venue_name}</span>
                         </div>
                         <div className='btn-set'>
+                          <button 
+                            style={{marginRight: '0.3rem'}}
+                            className='edit-btn' onClick={() => edeitReview(review)}>
+                            {get('PROMOTION_EDIT_BUTTON')}
+                          </button>
+
                           <button className='delete-btn' onClick={() => deleteReview(review.review_id)}>
                             {get('PROMOTION_DELETE_BUTTON')}
                           </button>

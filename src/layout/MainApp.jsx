@@ -476,7 +476,7 @@ const MainApp = () => {
 
                                     const INITIAL_STATE = {
                                     scrollY: 0,
-                                    sortOrder1: "rating_high",
+                                    sortOrder1: "latest",
                                     sortOrder: "latest",
                                     targetTypeFilter: "ALL"
                                     };

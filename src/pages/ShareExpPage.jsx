@@ -11,6 +11,9 @@ import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import Swal from 'sweetalert2';
 import ApiClient from '@utils/ApiClient';
 
+import { useAuth } from '@contexts/AuthContext';
+
+
 const ShareExpPage = ({ 
   navigateToPageWithData, 
   PAGES,
@@ -18,6 +21,28 @@ const ShareExpPage = ({
   goBack,
   ...otherProps 
 }) => {
+
+  const { user, isActiveUser } = useAuth();
+
+
+  const mode = otherProps?.mode || 'new';
+  const isEditMode = mode === 'edit';
+  const review = otherProps?.review || null;
+
+  console.log('🌐 mode:', mode, isEditMode);
+  console.log('🌐 review:', review);
+
+  useEffect(() => {
+    if (isEditMode && review) {
+      setVenueRating(review.rating || 0);
+      if (target !== 'staff') {
+        setReviewText(review.content || '');
+        if (reviewRef.current) {
+          reviewRef.current.value = review.content || '';
+        }
+      }
+    }
+  }, [isEditMode, review]);
 
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();    
   const [venueRating, setVenueRating] = useState(0);
@@ -92,6 +117,40 @@ const ShareExpPage = ({
     return;
   }
   */
+
+  if(isEditMode){
+
+    const reviewData = {
+      user_id: user.user_id,
+      review_id: review.review_id,
+      rating: venueRating,
+      content: getReviewValue()
+    };
+
+    console.log('🌐 isEditMode:', isEditMode, reviewData);
+
+    ApiClient.postForm('/api/updateReview', reviewData)
+      .then(response => {
+        Swal.fire({
+          title: get('Review_EDIT_TEXT'),
+          icon: 'success',
+          confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+        }).then(() => {
+          goBack && goBack();
+        });
+      })
+      .catch(error => {
+        console.error('❌ Failed to update Review:', error);
+        Swal.fire({
+          title: get('Review3.4'),
+          icon: 'error',
+          confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+        });
+      });
+
+    return;
+  }
+
 
   
   const reviewData = {
@@ -334,7 +393,7 @@ const ShareExpPage = ({
       `}</style>
 
       <SketchHeader
-        title={get('Review2.3')} // '리뷰 등록'
+        title={ isEditMode ? get('Review_EDIT_LABEL') : get('Review2.3') } // '리뷰 등록'
         showBack={true}
         onBack={goBack}
         rightButtons={[]}
@@ -378,12 +437,12 @@ const ShareExpPage = ({
             {/* Review Text Section */}
             {target !== 'staff' && (
             <div className="card-input-section">
-                <SketchInput
+                <SketchTextarea
                     name="review"
                     ref={reviewRef}
                     placeholder={'리뷰를 작성해주세요...'}
                     as="textarea"
-                    rows={8}
+                    rows={4}
                   />
             </div>
             )}
@@ -413,7 +472,7 @@ const ShareExpPage = ({
             onClick={handleSubmitReview}
           >
             <HatchPattern opacity={0.4} />
-            {get('Review2.3')} {/* '리뷰 등록' */}
+            {isEditMode ? get('Review_EDIT_LABEL') : get('Review2.3')} {/* '리뷰 등록' */}
           </SketchBtn>
         </div>
 

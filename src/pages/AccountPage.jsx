@@ -17,6 +17,10 @@ import Swal from 'sweetalert2';
 import ApiClient from '@utils/ApiClient';
 import useWebviewBackBlock from '@hooks/useWebviewBackBlock';
 
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
 const AccountPage = ({
   navigateToPageWithData,
   navigateToPage,
@@ -117,9 +121,26 @@ const AccountPage = ({
   const menuBtnClick = async (menu_id) => {
     switch (menu_id) {
       case 1:
+        localStorage.setItem('profileScrollY', 0);
         navigateToPageWithData && navigateToPageWithData(PAGES.PROFILE);
         break;
       case 2:
+
+        dayjs.extend(utc);
+        dayjs.extend(timezone);
+
+        const container = document.querySelector(".content-area");
+
+        // 오늘 날짜 (베트남 시간, YYYY-MM-DD)
+        const todayVN = dayjs().tz("Asia/Ho_Chi_Minh").format("YYYY-MM-DD");
+
+        // 초기화: 스크롤 0, 날짜는 오늘
+        localStorage.setItem("bookingState", JSON.stringify({
+          scrollY: 0,
+          selectedDate: todayVN
+        }));
+
+
         navigateToPageWithData && navigateToPageWithData(PAGES.BOOKINGHISTORY);
         break;
       case 3:{

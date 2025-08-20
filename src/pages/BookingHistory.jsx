@@ -145,18 +145,37 @@ const BookingHistoryPage = ({
   };
 
   // ⬅ 날짜 선택 핸들러 - 예약 내역 필터링
-  const handleDateSelect = (date) => {
-    setSelectedDate(date);
-    const selectedDateStr = date.format('YYYY-MM-DD');
-    
-    // 선택된 날짜의 예약만 필터링
-    const filteredBookings = allBookings.filter(booking => 
-      booking.date === selectedDateStr
-    );
-    
-    setBookings(filteredBookings);
-    console.log('Filtered bookings for date:', selectedDateStr, filteredBookings);
-  };
+  const handleDateSelect = (date, type) => {
+
+    if ( type==0 ){
+      const savedState = localStorage.getItem("bookingState");
+
+      if (savedState) {
+        const stateObj = JSON.parse(savedState);
+
+        // scrollY만 10으로 변경
+        stateObj.scrollY = 0;
+
+        // 다시 저장
+        localStorage.setItem("bookingState", JSON.stringify(stateObj));
+      }
+    }
+
+  const selectedDateStr = date.format('YYYY-MM-DD');
+  
+  
+  // 항상 bookings 갱신 실행
+  const filteredBookings = allBookings.filter(
+    (booking) => booking.date === selectedDateStr
+  );
+  setBookings(filteredBookings);
+
+  // 날짜 상태도 갱신 (같은 날짜라도 강제로 업데이트)
+  setSelectedDate(date);
+  
+  console.log('Filtered bookings for date:', selectedDateStr, filteredBookings);
+};
+
 
   // 상태 라벨 변환 함수
   const getStatusLabel = (status) => {
@@ -281,9 +300,32 @@ const BookingHistoryPage = ({
       return; // 비활성화된 경우 아무것도 하지 않음
     }
 
+    const INITIAL_STATE = {
+        scrollY: 0,
+        sortOrder1: "latest",
+        sortOrder: "latest",
+        targetTypeFilter: "ALL"
+      };
+      
+      localStorage.setItem("viewReviewPageState", JSON.stringify(INITIAL_STATE));
+
+
+       const container = document.querySelector('.content-area');
+
+        if (container) {
+          localStorage.setItem("bookingState", JSON.stringify({
+          scrollY: container.scrollTop,
+          selectedDate: selectedDate ? selectedDate.format("YYYY-MM-DD") : null
+        }));
+      }
+
     if (reviewState.action === 'view') {
       console.log('view', booking);
+
+      
+
       navigateToPageWithData && navigateToPageWithData(PAGES.VIEWREVIEW, {
+          fromMyReview:true,
           reservationId: booking.id,
           clientId: booking.clientId,
           target: booking.targetType,
@@ -503,6 +545,29 @@ const BookingHistoryPage = ({
         setBookings(formattedBookings); // 🔥 여기서 bookings 설정!
         setHistoryData(response.data || {});
         setIsLoadingHistory(false);
+
+
+        //스크롤복원
+
+        const savedState = localStorage.getItem("bookingState");
+
+      if (savedState) {
+        const { scrollY, selectedDate } = JSON.parse(savedState);
+        
+        const parsedDate = dayjs(selectedDate, "YYYY-MM-DD"); 
+        setSelectedDate(parsedDate);
+        handleDateSelect(parsedDate,1); // 예약내역도 필터링
+      }
+
+
+
+
+
+
+
+
+
+
         resolve(response); // 성공 시 resolve
       })
       .catch(error => {
@@ -515,6 +580,35 @@ const BookingHistoryPage = ({
       });
     });
   }
+
+  useEffect(() => {
+  if (selectedDate && allBookings.length > 0) {
+    const selectedDateStr = selectedDate.format("YYYY-MM-DD");
+    const filtered = allBookings.filter(b => b.date === selectedDateStr);
+    setBookings(filtered);
+  }
+}, [selectedDate, allBookings]);
+
+const savedState = localStorage.getItem("bookingState");
+useEffect(() => {
+  if (savedState) {
+    const { selectedDate } = JSON.parse(savedState);
+    if (selectedDate) {
+      setSelectedDate(dayjs(selectedDate, "YYYY-MM-DD"));
+    }
+  }
+}, []);
+
+useEffect(() => {
+  if (savedState && bookings.length > 0) {
+    const { scrollY } = JSON.parse(savedState);
+    const container = document.querySelector('.content-area');
+    if (container) {
+      container.scrollTop = scrollY;
+    }
+  }
+}, [bookings]);
+
 
   const getStatusColor = (status) => {
     switch(status) {
@@ -565,6 +659,16 @@ const BookingHistoryPage = ({
       room_sn=null;
     }
 
+      const container = document.querySelector('.content-area');
+
+        if (container) {
+          localStorage.setItem("bookingState", JSON.stringify({
+          scrollY: container.scrollTop,
+          selectedDate: selectedDate ? selectedDate.format("YYYY-MM-DD") : null
+        }));
+      }
+
+      
     navigateToPageWithData(PAGES.CHATTING, {
       name: booking.venue_name,
       room_sn: room_sn,
@@ -947,7 +1051,7 @@ const getEntranceText = (entranceValue) => {
                           (selectedDate && cell.date.isSame(selectedDate, 'date') ? ' selected' : '') +
                           (!cell.isCurrentMonth ? ' other-month' : '')
                         }
-                        onClick={() => handleDateSelect(cell.date)}
+                        onClick={() => handleDateSelect(cell.date, 0)}
                       >
                         <span className="calendar-date-number">{cell.date.date()}</span>
                         {bookingCount > 0 && (

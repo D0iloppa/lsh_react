@@ -10,11 +10,13 @@ import SketchBtn from '@components/SketchBtn'
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import LoadingScreen from '@components/LoadingScreen';
-import { Filter, Martini, Store, User, ShieldCheck } from 'lucide-react';
+import { Filter, Martini, Store, User, ShieldCheck, Pencil, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 import { Star, Edit3 } from 'lucide-react';
 import axios from 'axios';
+
+import Swal from 'sweetalert2';
 
 
 const ViewReviewPage = ({
@@ -32,12 +34,14 @@ const ViewReviewPage = ({
 }) => {
 
   const venueId = otherProps?.venueId || null;
+  const fromMyReview = otherProps?.fromMyReview || false;
+
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
   console.log("venueId", venueId)
   const [userImages, setUserImages] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortOrder1, setSortOrder1] = useState('rating_high'); // 정렬 순서
+  const [sortOrder1, setSortOrder1] = useState('latest'); // 정렬 순서
   const [sortOrder, setSortOrder] = useState('latest'); // 정렬 순서
 
   const [targetTypeFilter, setTargetTypeFilter] = useState('ALL'); // 타겟 타입 필터
@@ -173,6 +177,29 @@ const handleTranslate = useCallback(async (reviewId, text) => {
 
     // 날짜 정렬
     filtered.sort((a, b) => {
+
+
+      switch (sortOrder1) {
+        case 'rating_high':
+          return b.rating - a.rating;   // 평점 높은순
+        case 'rating_low':
+          return a.rating - b.rating;   // 평점 낮은순
+        case 'latest': {
+          const dateA = new Date(a.created_at);
+          const dateB = new Date(b.created_at);
+          return dateB - dateA;         // 최신순
+        }
+        case 'oldest': {
+          const dateA = new Date(a.created_at);
+          const dateB = new Date(b.created_at);
+          return dateA - dateB;         // 오래된순
+        }
+        default:
+          return 0;
+      }
+
+
+      /*
       // 1차 정렬: 평점
       let ratingSort = 0;
       if (sortOrder1 === 'rating_high') {
@@ -191,6 +218,8 @@ const handleTranslate = useCallback(async (reviewId, text) => {
       const dateB = new Date(b.created_at);
 
       return sortOrder === 'latest' ? dateB - dateA : dateA - dateB;
+      */
+
     });
 
     setReviews(filtered);
@@ -262,12 +291,10 @@ const handleTranslate = useCallback(async (reviewId, text) => {
     if (!loading && reviews.length > 0) {
       const savedState = localStorage.getItem("viewReviewPageState");
 
-      console.log("load scrollY",savedState);
-
       if (savedState) {
         const { scrollY, sortOrder1, sortOrder, targetTypeFilter } = JSON.parse(savedState);
-
-        if (sortOrder1) setSortOrder1(sortOrder1);
+        
+        if (sortOrder1) setSortOrder1(sortOrder1); 
         if (sortOrder) setSortOrder(sortOrder);
         if (targetTypeFilter) setTargetTypeFilter(targetTypeFilter);
 
@@ -281,14 +308,144 @@ const handleTranslate = useCallback(async (reviewId, text) => {
     }
   }, [loading, reviews]);
 
+
+  const handleEditReview = (review) => {
+    console.log('Edit review:', review);
+
+    navigateToPageWithData && navigateToPageWithData(PAGES.SHARE_EXP, {
+      mode:'edit',
+      review:review,
+
+      reservation_id:review.reservation_id,
+      image:review.targetImage,
+      user_id:review.user_id,
+      target:review.target_type,
+      target_id:review.target_id,
+      targetName:review.targetName
+    });
+
+
+
+    /*
+    Swal.fire({
+      title: '리뷰 수정',
+      html: `
+        <div style="display: flex; flex-direction: column; gap: 12px; text-align: left;">
+          <label style="font-size: 14px;">평점</label>
+          <div id="star-rating" style="display: flex; gap: 5px; font-size: 22px; cursor: pointer;">
+            ${[1,2,3,4,5].map(i => `
+              <span data-value="${i}" style="color: ${i <= review.rating ? '#facc15' : '#d1d5db'};">★</span>
+            `).join('')}
+          </div>
+          
+          <label style="font-size: 14px;">리뷰 내용</label>
+          <textarea id="review-content" 
+            class="swal2-textarea"
+            style="width: 82%; height: 80px; font-size: 14px;"
+          >${review.content !== '-' ? review.content : ''}</textarea>
+        </div>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: '수정하기',
+      cancelButtonText: '취소',
+      didOpen: () => {
+        const stars = Swal.getPopup().querySelectorAll('#star-rating span');
+        stars.forEach(star => {
+          star.addEventListener('click', () => {
+            const val = parseInt(star.getAttribute('data-value'));
+            stars.forEach((s, idx) => {
+              s.style.color = (idx < val) ? '#facc15' : '#d1d5db';
+            });
+            Swal.getPopup().setAttribute('data-rating', val);
+          });
+        });
+        // 초기 평점 저장
+        Swal.getPopup().setAttribute('data-rating', review.rating);
+      },
+      preConfirm: () => {
+        const rating = parseInt(Swal.getPopup().getAttribute('data-rating'), 10);
+        const content = Swal.getPopup().querySelector('#review-content').value.trim();
+  
+        if (!rating || !content) {
+          Swal.showValidationMessage(`평점과 리뷰 내용을 모두 입력해주세요.`);
+          return false;
+        }
+  
+        return { rating, content };
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const payload = {
+          review_id: review.review_id,
+          rating: result.value.rating,
+          content: result.value.content,
+        };
+        console.log('수정된 리뷰 payload:', payload);
+        // 👉 API 호출은 여기서 따로 구현하면 됨
+      }
+    });
+
+  */
+
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    console.log('Delete review:', reviewId);
+
+    try {
+      // 삭제 확인 다이얼로그
+      const result = await Swal.fire({
+        title: get('REVIEW_DELETE_CONFIRM'),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: get('PROMOTION_DELETE_BUTTON'),
+        cancelButtonText: get('Reservation.CancelButton')
+      });
+      
+      if (!result.isConfirmed) {
+        return; // 사용자가 취소한 경우
+      }
+  
+      const response = await ApiClient.postForm('/api/deleteReview', {
+        user_id: user.user_id,
+        review_id: reviewId
+      });
+      
+      if (response == 1) {
+        await Swal.fire({
+          title: get('REVIEW_DELETE_SUCCESS'),
+          icon: 'success',
+          confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+        });
+        goBack && goBack();
+      } else {
+        throw new Error(`서버 오류: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('리뷰 삭제 실패:', error);
+      await Swal.fire({
+        title: get('REVIEW_DELETE_ERROR'),
+        icon: 'error',
+        confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+      });
+    }
+    
+  };
+
   const handleNotifications = () => {
     console.log('Notifications 클릭');
     navigateToPageWithData && navigateToPageWithData(PAGES.NOTIFICATIONS);
   };
 
   const handleBack = () => {
-    
-    navigateToPage(PAGES.HOME);
+    if(fromMyReview){
+      goBack && goBack();
+    }else{
+      navigateToPage(PAGES.HOME);
+    }
   };
   
 
@@ -682,16 +839,21 @@ const handleTranslate = useCallback(async (reviewId, text) => {
     );
   }}
 >
+  <option value="latest">{get('Newest.filter')}</option>
+  <option value="oldest">{get('Oldest.filter')}</option>
   <option value="rating_high">{get('Sort.Rating.High')}</option>
   <option value="rating_low">{get('Sort.Rating.Low')}</option>
+  
 </select>
 
 <select
   className="select-box"
   value={sortOrder}
+  style={{display: 'none'}}
   onChange={(e) => {
     const value = e.target.value;
     setSortOrder(value);
+    /*
     localStorage.setItem(
       "viewReviewPageState",
       JSON.stringify({
@@ -701,6 +863,7 @@ const handleTranslate = useCallback(async (reviewId, text) => {
         targetTypeFilter
       })
     );
+    */
   }}
 >
   <option value="latest">{get('Newest.filter')}</option>
@@ -803,6 +966,7 @@ const handleTranslate = useCallback(async (reviewId, text) => {
                                     : ''
                                 : review.targetName}
                         </span>
+
                       </div>
 
 
@@ -815,6 +979,7 @@ const handleTranslate = useCallback(async (reviewId, text) => {
                         {new Date(review.created_at).toLocaleDateString()}
                       </span>
                     </p>
+
 
                     <p className="review-meta">
   <span
@@ -876,8 +1041,67 @@ const handleTranslate = useCallback(async (reviewId, text) => {
         </div>
       )}
 
+      {/* 수정/삭제 버튼 (작성자 본인일 때만) */}
+      <div
+        style={{
+          display: fromMyReview ? 'block' : 'none',
+          position: 'absolute',
+          right: '0',
+          top: 10,
+        }}>
+          {review.user_id === user.user_id && (
+            <div style={{ display: 'flex', gap: '3px', marginLeft: 'auto' }}>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditReview(review);
+                  }}
+                  style={{
+                    background: '#3b82f6',
+                    color: '#fff',
+                    fontSize: 12,
+                    padding: '4px 10px',
+                    border: 'none',
+                    borderRadius: 6,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {/*<Pencil size={14} color="#374151" />*/}
+
+                  {get('PROMOTION_EDIT_BUTTON')}
+                </button>
+                <button
+                  style={{
+                    background: 'rgb(194 44 51)',
+                    color: '#fff',
+                    fontSize: 12,
+                    padding: '4px 10px',
+                    border: 'none',
+                    borderRadius: 6,
+                    cursor: 'pointer'
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteReview(review.review_id);
+                  }}
+                  
+                >
+                  {/*<Trash2 size={14} color="#ef4444" />*/}
+
+                  {get('PROMOTION_DELETE_BUTTON')}
+                </button>
+              </div>
+              )}
+      </div>
+
       {/* 번역 버튼 */}
-      <div style={{ marginTop: 8, textAlign: 'right' }}>
+      <div style={{ 
+         display: fromMyReview ? 'none' : 'block',
+         marginTop: 8, textAlign: 'right' }}>
+
+
+        
         <button
           style={{
             background: '#3b82f6',
