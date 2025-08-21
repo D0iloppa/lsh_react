@@ -74,9 +74,9 @@ const FloatBottomButton = React.memo(({ isVisible, onClick }) => {
 });
 
 // 최적화된 입력 컴포넌트
-const ChatInput = React.memo(({ onSend, placeholder, onKeyDown, onRef }) => {
+const ChatInput = React.memo(({ onSend, placeholder, onKeyDown, onRef, onFocus }) => {
   const inputRef = useRef(null);
-  
+
   const handleSend = useCallback(() => {
     const inputValue = inputRef.current?.value?.trim();
     if (!inputValue) return;
@@ -85,20 +85,20 @@ const ChatInput = React.memo(({ onSend, placeholder, onKeyDown, onRef }) => {
       inputRef.current.value = '';
     }
   }, [onSend]);
-  
+
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter') {
       handleSend();
     }
     onKeyDown?.(e);
   }, [handleSend, onKeyDown]);
-  
+
   useEffect(() => {
     if (onRef) {
       onRef({ handleSend, inputRef });
     }
   }, [onRef, handleSend]);
-  
+
   return (
     <input
       ref={inputRef}
@@ -106,10 +106,12 @@ const ChatInput = React.memo(({ onSend, placeholder, onKeyDown, onRef }) => {
       type="text"
       placeholder={placeholder}
       onKeyDown={handleKeyDown}
+      onFocus={onFocus}   // ✅ props에서 받아서 적용
       style={{ width: '20px' }}
     />
   );
 });
+
 
 const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
@@ -188,6 +190,26 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       Swal.fire('번역 오류', 'Google Translate API 호출에 실패했습니다.', 'error');
     }
   }, [translationMap, user.language]);
+
+
+
+          useEffect(() => {
+              const width = window.screen.width;
+              const height = window.screen.height;
+              const ratio = (height / width).toFixed(2); // 소수점 2자리
+  
+              // CSS 변수에 주입
+              document.documentElement.style.setProperty("--aspect-ratio", ratio);
+  
+              // 조건에 따라 safe-bottom 조정
+              const isAndroid = !!window.native;
+  
+              if (isAndroid && ratio == 2.23) {
+              document.documentElement.style.setProperty("--safe-bottom", "38px");
+              } else {
+              document.documentElement.style.setProperty("--safe-bottom", "0px");
+              }
+          }, []);
 
   // ⭐ 인터벌 관리를 위한 ref 추가
   const intervalRef = useRef(null);
@@ -1233,32 +1255,6 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
   }, [initType, showReservationCard, reservationCardData, generateInitChatItem]);
 
-
-    useEffect(() => {
-              const width = window.screen.width;
-              const height = window.screen.height;
-              const ratio = (height / width).toFixed(2); // 소수점 2자리
-  
-              // CSS 변수에 주입
-              document.documentElement.style.setProperty("--aspect-ratio", ratio);
-  
-              // 조건에 따라 safe-bottom 조정
-              const isAndroid = !!window.native;
-  
-              if (isAndroid && ratio <= 2.23) {
-              document.documentElement.style.setProperty("--safe-bottom-chat", "75px");
-              } else {
-                const isAndroid = !!window.native;
-
-                if (isAndroid ) {
-                  document.documentElement.style.setProperty("--safe-bottom-chat", "30px");
-                } else {
-                  document.documentElement.style.setProperty("--safe-bottom-chat", "10px");
-                }
-              }
-          }, []);
-  
-
   useEffect(() => {
     // 탈퇴한 사용자 체크
     if (otherProps?.account_status === 'deleted') {
@@ -1280,148 +1276,160 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
 
 
+
   useEffect(() => {
-  // iOS WKWebView/Safari에서만 visualViewport 사용
-  const vv = window.visualViewport;
-  if (!vv) return;
+  if (window.visualViewport) {
+    const handleResize = () => {
+      // 키보드가 올라와서 viewport가 줄어든 경우
+      if (chatBoxRef.current) {
+        setTimeout(() => {
+          scrollToBottom('auto', true); // ✅ 약간 딜레이 후 실행
+        }, 150); // 키보드 애니메이션 끝날 시간 고려
+      }
+    };
 
-  const onResizeOrScroll = () => {
-    // 키보드가 올라오면 visual viewport height가 줄고, offsetTop이 양수로 바뀜
-    const keyboardHeight = Math.max(0, (window.innerHeight - vv.height - vv.offsetTop));
-    // 하단 입력창을 키보드 위로 올리고, 메시지 영역 padding을 늘림
-    document.documentElement.style.setProperty('--kb', keyboardHeight + 'px');
-  };
+    window.visualViewport.addEventListener("resize", handleResize);
+    return () => {
+      window.visualViewport.removeEventListener("resize", handleResize);
+    };
+  }
+}, [scrollToBottom]);
 
-  onResizeOrScroll();
-  vv.addEventListener('resize', onResizeOrScroll);
-  vv.addEventListener('scroll', onResizeOrScroll);
-  return () => {
-    vv.removeEventListener('resize', onResizeOrScroll);
-    vv.removeEventListener('scroll', onResizeOrScroll);
-    document.documentElement.style.setProperty('--kb', '0px');
-  };
-}, []);
 
 
   return (
     <>
       <style jsx="true">{`
-      
-      
+
+
+html, body {
+  height: 100%;
+  overflow: hidden; /* 외부 스크롤 방지 */
+}
+
+
         .chat-container {
           display: flex;
           flex-direction: column;
-          height: 78.4vh; /* 전체 화면 꽉 채움 */
-          overflow: hidden; /* 전체 스크롤 방지 */
+          /* 입력창을 제외한 높이 계산 */
+            height: calc(100dvh - 60px - 4rem - var(--safe-bottom, 0px));
+          margin-top: 4rem;   /* 또는 padding-top: 3rem */
+
+          overflow: hidden;
+          background: white;
         }
 
         .chat-messages {
-          flex: 1; 
+          flex: 1;
+          overflow-y: auto;
           padding: 1rem;
-          overflow-y: auto; /* 메시지만 스크롤 */
-          display: flex;
-          flex-direction: column;
-          scroll-behavior: smooth;
+          margin-top:-66px;
+           -webkit-overflow-scrolling: touch; /* iOS 스크롤 안정화 */
         }
 
+
+        .content-area {
+          flex: 1;               /* 남는 공간 채움 */
+          background: #fff;
+          overflow: hidden;       /* ✅ 스크롤 안되게 */
+        }
+
+
+
+        /* 기본 */
+        .chat-message-wrapper {
+          display: flex;
+          flex-direction: column;
+          margin: 4px 0;
+          max-width: 70%;   /* 기본 너비 줄임 */
+        }
+
+        /* 내가 보낸 메시지 */
+        .chat-message-wrapper.me {
+          align-self: flex-end;
+          text-align: right;
+          max-width: 60%;   /* 내 메시지는 더 좁게 */
+        }
+
+       /* 내가 보낸 메시지 */
+          .chat-message-wrapper.me {
+            margin-left: auto;   /* ✅ 오른쪽 끝으로 이동 */
+            max-width: 70%;      /* 최대 폭 제한 */
+          }
+
+          .chat-message-wrapper.me .chat-message {
+            background-color: #dcf8c6;
+            border-radius: 16px 16px 0 16px;
+            padding: 8px 12px;
+            display: inline-block;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #111;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+
+            text-align: left;
+            word-break: break-word;
+          }
+
+
+        .chat-message-wrapper.other .chat-message {
+          background-color: #fff;
+          border-radius: 16px 16px 16px 0;
+          padding: 8px 12px;
+          display: inline-block;
+          font-size: 14px;
+          line-height: 1.4;
+          color: #111;
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+        }
+
+        /* 이름 */
+        .chat-message-wrapper .chat-name {
+          font-size: 12px;
+          color: #888;
+          margin-bottom: 2px;
+        }
+
+        /* 시간 */
+        .chat-time {
+          font-size: 11px;
+          color: #aaa;
+          margin-top: 2px;
+        }
+
+
+
+
+
+
+
+
+
+
+
+          /* 입력창 */
         .chat-input-wrapper {
-          flex-shrink: 0; /* 크기 줄어들지 않도록 */
+          position: fixed;
+          bottom: var(--safe-bottom, 0px); /* 안전영역 반영 */
+
+          left: 4px;        /* 왼쪽 여백 */
+          right: 4px;       /* 오른쪽 여백 */
+          width: auto;       /* width 대신 auto */
+          max-width: 28rem;  /* 필요시 앱 화면 최대 폭 제한 */
+          height: 50px;
+
           display: flex;
           align-items: center;
           padding: 0.8rem 1rem;
+
           background-color: white;
-          border-top: 1px solid #e5e7eb; /* 위쪽 경계선 */
-          position: sticky;
-          bottom: 0;
-          height:40px;
-          display: flex;
-          background-color: white;
-          padding-bottom: var(--safe-bottom-chat, 0);
-          
+          border-top: 1px solid #e5e7eb;
+          z-index: 2000;
+          border-radius: 8px; /* 선택: 여백 줄 때 라운드주면 자연스러움 */
         }
 
-
-         .chat-message-wrapper {
-            display: flex;
-            margin: 0.3rem 0;
-            width: 100%;
-          }
-
-          .chat-message-wrapper.me {
-            justify-content: flex-end;   /* 오른쪽 정렬 */
-          }
-
-          .chat-message-wrapper.other {
-            justify-content: flex-start; /* 왼쪽 정렬 */
-          }
-
-          .chat-content-wrapper {
-            display: flex;
-            flex-direction: column;
-            max-width: 70%;
-          }
-
-
-          .chat-content-wrapper {
-            display: flex;
-            flex-direction: column;
-            max-width: 70%;
-          }
-
-          .chat-name {
-            font-size: 0.75rem;
-            color: #6b7280;
-            margin-bottom: 0.25rem;
-            padding: 0 0.5rem;
-          }
-
-          .chat-message-wrapper.me .chat-name {
-              text-align: right;
-            }
-
-            .chat-message-wrapper.other .chat-name {
-              text-align: left;
-            }
-              
-        .chat-time {
-          font-size: 0.75rem;
-          color: #6b7280;
-          margin: 0 0.4rem;
-          white-space: nowrap;
-          align-self: flex-end;
-        }
-
-        .chat-message {
-          padding: 0.75rem 0.5rem;
-          border-radius: 1rem;
-          word-break: break-word;
-        }
-
-        .chat-message div, .chat-message.me {text-align: center}
-
-        .chat-message.me {
-          background-color: #10b981;
-          color: white;
-          border-bottom-right-radius: 0;
-        }
-        .chat-message.has-image {
-          background-color: transparent !important;
-          color: inherit !important;
-          border-bottom-right-radius: 0 !important;
-        }
-
-        .chat-message.other {
-          background-color: #e5e7eb;
-          color: #111827;
-          border-bottom-left-radius: 0;
-        }
-        .chat-image {
-          max-width: 200px;
-          max-height: 200px;
-          border-radius: 1rem;
-          cursor: pointer;
-        }
-
+        /* 입력창 내부 input */
         .chat-input {
           flex: 1;
           padding: 0.5rem 1rem;
@@ -1430,6 +1438,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           margin: 0 0.5rem;
           font-size: 1rem;
         }
+
+        /* 전송 버튼 */
         .send-button {
           background-color: #10b981;
           color: white;
@@ -1439,43 +1449,66 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           cursor: pointer;
           font-weight: bold;
         }
+
+        /* 이미지 업로드 버튼 (선택사항) */
         .image-button {
           background: none;
           border: none;
           font-size: 1.3rem;
           cursor: pointer;
         }
-        .image-modal {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background-color: rgba(0, 0, 0, 0.85);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 9999;
-        }
-        .image-modal img {
-          max-width: 90%;
-          max-height: 90%;
-          border-radius: 1rem;
-        }
-        .image-modal-close {
-          position: absolute;
-          top: 1rem;
-          right: 1rem;
-          color: white;
-          font-size: 2rem;
-          cursor: pointer;
-        }
-        .loading-indicator {
-          text-align: center;
-          padding: 1rem;
-          color: #6b7280;
-          font-size: 0.875rem;
-        }
+
+        /* 채팅 이미지 */
+.chat-image {
+  width: 180px;       /* 원하는 고정 너비 */
+  height: 180px;      /* 원하는 고정 높이 */
+  border-radius: 8px; /* 모서리 둥글게 */
+  object-fit: cover;  /* 비율 유지하며 잘림 */
+  cursor: pointer;    /* 클릭 가능 */
+  display: block;
+  margin-top: 6px;
+}
+
+
+.image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85); /* 어두운 배경 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000; /* 최상위 */
+  cursor: zoom-out; /* 닫기 힌트 */
+}
+
+.image-modal img {
+  max-width: 95%;
+  max-height: 95%;
+  object-fit: contain; /* 원본 비율 유지 */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.image-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+}
+
+/* 부드럽게 나타나는 효과 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
       `}</style>
 
       <div className="chat-container">
@@ -1507,6 +1540,9 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
               scrollToBottom('smooth');
             }}
           />
+
+          
+
         </div>
 
         {/* 예약 카드 표시 */}
@@ -1519,9 +1555,11 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
         )}
 
         
+        
       </div>
 
-<div className="chat-input-wrapper">
+
+      <div className="chat-input-wrapper">
           <ImageUploader 
             apiClient={ApiClient}
             onUploadComplete={handleUploadComplete}
@@ -1531,12 +1569,16 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
             className="chat-image-uploader"
           />
           <ChatInput 
-            onSend={handleMessageSend}
-            placeholder={get('CHAT_INPUT_PLACEHOLDER')}
-            onRef={(refData) => {
-              chatInputRef.current = refData;
-            }}
-          />
+              onSend={handleMessageSend}
+              placeholder={get('CHAT_INPUT_PLACEHOLDER')}
+              onRef={(refData) => {
+                chatInputRef.current = refData;
+              }}
+              onFocus={() => {
+              
+              }}
+            />
+
           <button className="send-button" onClick={() => {
             if (chatInputRef.current?.handleSend) {
               chatInputRef.current.handleSend();
@@ -1545,6 +1587,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
             {get('CHAT_SEND_BUTTON')}
           </button>
         </div>
+        
+
       {modalImage && (
         <div className="image-modal" onClick={() => setModalImage(null)}>
           <span className="image-modal-close">&times;</span>

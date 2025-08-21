@@ -421,7 +421,8 @@ const MainApp = () => {
                 {renderCurrentPage()}
             </main>
 
-            {/* 하단 네비게이션 (고정) */}
+            {/* 하단 네비게이션 (고정) */}.
+            {currentPage !== 'CHATTING' && (
             <nav className="bottom-navigation">
                 <div className="nav-container">
                     {<HatchPattern opacity={0.3} />}
@@ -575,7 +576,7 @@ const MainApp = () => {
                     ))}
                 </div>
             </nav>
-
+            )}
             {currentPage == 'HOME' && (
                 <section className="bottom-map-section">
                     <div className="map-icon-container" onClick={handleMapClick}>
