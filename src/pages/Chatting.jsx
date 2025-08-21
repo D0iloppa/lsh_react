@@ -1233,6 +1233,26 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
 
   }, [initType, showReservationCard, reservationCardData, generateInitChatItem]);
 
+
+    useEffect(() => {
+              const width = window.screen.width;
+              const height = window.screen.height;
+              const ratio = (height / width).toFixed(2); // 소수점 2자리
+  
+              // CSS 변수에 주입
+              document.documentElement.style.setProperty("--aspect-ratio", ratio);
+  
+              // 조건에 따라 safe-bottom 조정
+              const isAndroid = !!window.native;
+  
+              if (isAndroid && ratio <= 2.23) {
+              document.documentElement.style.setProperty("--safe-bottom-chat", "75px");
+              } else {
+              document.documentElement.style.setProperty("--safe-bottom-chat", "10px");
+              }
+          }, []);
+  
+
   useEffect(() => {
     // 탈퇴한 사용자 체크
     if (otherProps?.account_status === 'deleted') {
@@ -1281,6 +1301,10 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           position: sticky;
           bottom: 0;
           height:40px;
+          display: flex;
+          background-color: white;
+          padding-bottom: var(--safe-bottom-chat, 0);
+    
         }
 
 
@@ -1364,12 +1388,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           border-radius: 1rem;
           cursor: pointer;
         }
-        .chat-input-wrapper {
-           display: flex;
-           align-items: center;
-          padding: 0.8rem 1rem 0.8rem 1rem;
-           background-color: white;
-        }
+
         .chat-input {
           flex: 1;
           padding: 0.5rem 1rem;
