@@ -74,7 +74,8 @@ const handleTranslate = useCallback(async (reviewId, text) => {
 
     console.log("1234", user);
 
-    let language=user.language;
+    let language=currentLang;
+    
     if ( language == 'kr') language='ko';
     
     const response = await axios.post(
@@ -1017,7 +1018,7 @@ const handleTranslate = useCallback(async (reviewId, text) => {
 
                     </div>
                   </div>
-                  {review.content !== '-' && (
+                  {review.content !== '-' && review.content !== '' && (
   <div 
     style={{ 
       border: 'none', 
