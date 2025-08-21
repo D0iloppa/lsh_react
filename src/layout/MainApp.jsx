@@ -114,10 +114,10 @@ const MainApp = () => {
             // 조건에 따라 safe-bottom 조정
             const isAndroid = !!window.native;
 
-            if (isAndroid && ratio <= 2.23) {
+            if (isAndroid && ratio == 2.23) {
             document.documentElement.style.setProperty("--safe-bottom", "48px");
             } else {
-            document.documentElement.style.setProperty("--safe-bottom", "10px");
+            document.documentElement.style.setProperty("--safe-bottom", "0px");
             }
         }, []);
 

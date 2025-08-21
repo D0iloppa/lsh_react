@@ -1248,7 +1248,13 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
               if (isAndroid && ratio <= 2.23) {
               document.documentElement.style.setProperty("--safe-bottom-chat", "75px");
               } else {
-              document.documentElement.style.setProperty("--safe-bottom-chat", "10px");
+                const isAndroid = !!window.native;
+
+                if (isAndroid ) {
+                  document.documentElement.style.setProperty("--safe-bottom-chat", "30px");
+                } else {
+                  document.documentElement.style.setProperty("--safe-bottom-chat", "10px");
+                }
               }
           }, []);
   
@@ -1272,13 +1278,40 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     }
   }, [otherProps?.account_status, get, goBack]); // account_status 변경 시만 실행
 
+
+
+  useEffect(() => {
+  // iOS WKWebView/Safari에서만 visualViewport 사용
+  const vv = window.visualViewport;
+  if (!vv) return;
+
+  const onResizeOrScroll = () => {
+    // 키보드가 올라오면 visual viewport height가 줄고, offsetTop이 양수로 바뀜
+    const keyboardHeight = Math.max(0, (window.innerHeight - vv.height - vv.offsetTop));
+    // 하단 입력창을 키보드 위로 올리고, 메시지 영역 padding을 늘림
+    document.documentElement.style.setProperty('--kb', keyboardHeight + 'px');
+  };
+
+  onResizeOrScroll();
+  vv.addEventListener('resize', onResizeOrScroll);
+  vv.addEventListener('scroll', onResizeOrScroll);
+  return () => {
+    vv.removeEventListener('resize', onResizeOrScroll);
+    vv.removeEventListener('scroll', onResizeOrScroll);
+    document.documentElement.style.setProperty('--kb', '0px');
+  };
+}, []);
+
+
   return (
     <>
       <style jsx="true">{`
+      
+      
         .chat-container {
           display: flex;
           flex-direction: column;
-          height: 80vh; /* 전체 화면 꽉 채움 */
+          height: 78.4vh; /* 전체 화면 꽉 채움 */
           overflow: hidden; /* 전체 스크롤 방지 */
         }
 
@@ -1304,7 +1337,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
           display: flex;
           background-color: white;
           padding-bottom: var(--safe-bottom-chat, 0);
-    
+          
         }
 
 
