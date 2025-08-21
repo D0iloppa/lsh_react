@@ -291,7 +291,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
           fontWeight: 'bold', 
           color: getRankColor(rank)
         }}>
-          {rank}{get('ranking_number')}
+          {rank}{/*get('ranking_number')*/}
         </span>
         <img 
           src={rankImgSrc} 
