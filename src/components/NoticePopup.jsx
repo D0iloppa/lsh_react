@@ -96,7 +96,7 @@ const NoticePopup = ({ notice, showNotice, setShowNotice }) => {
             <h3 className="notice-modal__title">{currentNotice.title}</h3>
           </div>
 
-          <div className="notice-modal__body" style={{height:'450px'}}>
+          <div className="notice-modal__body" style={{height:'440px'}}>
             <h3 className="notice-modal__title" style={{textAlign: 'center', marginBottom:'20px'}}>{currentNotice.title}</h3>
             <div
               className="notice-modal__desc"
