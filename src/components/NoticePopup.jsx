@@ -96,7 +96,7 @@ const NoticePopup = ({ notice, showNotice, setShowNotice }) => {
             <h3 className="notice-modal__title">{currentNotice.title}</h3>
           </div>
 
-          <div className="notice-modal__body" style={{height:'440px'}}>
+          <div className="notice-modal__body" style={{height:'450px'}}>
             <h3 className="notice-modal__title" style={{textAlign: 'center', marginBottom:'20px'}}>{currentNotice.title}</h3>
             <div
               className="notice-modal__desc"
@@ -216,7 +216,7 @@ const NoticePopup = ({ notice, showNotice, setShowNotice }) => {
           font-size: 0.9rem;
           color: #444;
           line-height: 1.4;
-          max-height: 410px;       /* 고정 높이 */
+          max-height: 380px;       /* 고정 높이 */
           overflow-y: auto;        /* 내용이 넘치면 세로 스크롤 */
           word-break: break-word; 
         }
