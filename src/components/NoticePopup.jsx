@@ -2,11 +2,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-const NoticePopup = ({ notice, showNotice, setShowNotice }) => {
+const NoticePopup = ({ notice, showNotice, setShowNotice, get }) => {
   const scrollYRef = useRef(0);
   const [dontShowToday, setDontShowToday] = useState(false);
   const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
 
+  
   // 디버깅용 로그
   console.log('NoticePopup props:', { notice, showNotice });
 
@@ -111,13 +112,13 @@ const NoticePopup = ({ notice, showNotice, setShowNotice }) => {
                 checked={dontShowToday}
                 onChange={(e) => setDontShowToday(e.target.checked)}
               />{' '}
-              오늘 하루 보지 않기
+              { get('don.show.today') || '오늘 하루 보지 않기' }
             </label>
             <button
               className="notice-modal__btn"
               onClick={handleClose}
             >
-              {'닫기'}
+              {get('Common.Close')}
             </button>
           </div>
         </div>

@@ -1039,6 +1039,7 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
   notice={notice}
   showNotice={showNotice}
   setShowNotice={setShowNotice}
+  get={get}
 />
       
 
