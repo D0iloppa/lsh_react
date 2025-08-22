@@ -151,7 +151,7 @@ useEffect(() => {
 
   const hasFetched = localStorage.getItem("hasFetchedNotice");
   
-  if (hasFetched == "true" ) return; // 이미 실행했으면 중단
+  // if (hasFetched == "true" ) return; // 이미 실행했으면 중단
 
   const today = new Date().toLocaleDateString('sv-SE');  // YYYY-MM-DD 형식
 
@@ -165,9 +165,12 @@ useEffect(() => {
 
       console.log("res", res);
       if (res.data ) { 
-        const activeNotice = res.data;
+        let activeNotice = res.data;
+        let noticeList = res.data;
+        // 
 
-        setNotice(activeNotice);
+        // setNotice(activeNotice[0]);
+        setNotice(noticeList);
         setShowNotice(true);
 
         localStorage.setItem("hasFetchedNotice", "true");

@@ -5,10 +5,6 @@ import { createPortal } from 'react-dom';
 const NoticePopup = ({ notice, showNotice, setShowNotice }) => {
   const scrollYRef = useRef(0);
   const [dontShowToday, setDontShowToday] = useState(false);
-  const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
-
-  // 디버깅용 로그
-  console.log('NoticePopup props:', { notice, showNotice });
 
   useEffect(() => {
     if (!showNotice) return;
@@ -44,45 +40,9 @@ const NoticePopup = ({ notice, showNotice, setShowNotice }) => {
       localStorage.setItem('hasFetchedNotice', `${yyyy}-${mm}-${dd}`);
     }
     setShowNotice(false);
-    setCurrentNoticeIndex(0); // 팝업 닫을 때 첫 번째 공지로 리셋
   };
 
-  const handlePrevNotice = () => {
-    setCurrentNoticeIndex(prev => 
-      prev > 0 ? prev - 1 : notice.length - 1
-    );
-  };
-
-  const handleNextNotice = () => {
-    setCurrentNoticeIndex(prev => 
-      prev < notice.length - 1 ? prev + 1 : 0
-    );
-  };
-
-  // 조건문 수정 - 더 명확하게 체크
-  if (!showNotice) {
-    console.log('showNotice가 false입니다');
-    return null;
-  }
-  
-  if (!notice) {
-    console.log('notice가 undefined입니다');
-    return null;
-  }
-  
-  if (!Array.isArray(notice) || notice.length === 0) {
-    console.log('notice가 빈 배열이거나 배열이 아닙니다:', notice);
-    return null;
-  }
-
-  const currentNotice = notice[currentNoticeIndex];
-  
-  if (!currentNotice) {
-    console.log('currentNotice가 없습니다:', currentNoticeIndex, notice);
-    return null;
-  }
-
-  console.log('팝업 렌더링:', currentNotice);
+  if (!showNotice || !notice) return null;
 
   const modal = (
     <div className="notice-modal">
@@ -96,39 +56,16 @@ const NoticePopup = ({ notice, showNotice, setShowNotice }) => {
           className="notice-modal__content"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="notice-modal__header" style={{display:'none'}}>
-            <h3 className="notice-modal__title">{currentNotice.title}</h3>
+          <div className="notice-modal__header">
+            <h3 className="notice-modal__title">{notice.title}</h3>
           </div>
 
-          <div className="notice-modal__body" style={{height:'450px'}}>
-            <h3 className="notice-modal__title" style={{textAlign: 'center', marginBottom:'20px'}}>{currentNotice.title}</h3>
+          <div className="notice-modal__body">
             <div
               className="notice-modal__desc"
-              dangerouslySetInnerHTML={{ __html: currentNotice.content }}
+              dangerouslySetInnerHTML={{ __html: notice.content }}
             />
           </div>
-
-          {notice.length > 1 && (
-            <div className="notice-modal__navigation">
-              <button
-                className="notice-modal__nav-btn"
-                onClick={handlePrevNotice}
-                aria-label="이전 공지"
-              >
-                ‹
-              </button>
-              <span className="notice-modal__counter">
-                {currentNoticeIndex + 1} / {notice.length}
-              </span>
-              <button
-                className="notice-modal__nav-btn"
-                onClick={handleNextNotice}
-                aria-label="다음 공지"
-              >
-                ›
-              </button>
-            </div>
-          )}
 
           <div className="notice-modal__footer">
             <label className="notice-modal__checkbox">
@@ -168,7 +105,7 @@ const NoticePopup = ({ notice, showNotice, setShowNotice }) => {
           border: 1px solid #666;
           border-radius: 8px 12px 6px 10px;
           max-width: 500px;
-          width: 95%;
+          width: 90%;
           position: relative;
           animation: popupSlide 0.3s ease-out;
           transform: rotate(-0.5deg);
@@ -188,49 +125,8 @@ const NoticePopup = ({ notice, showNotice, setShowNotice }) => {
         .notice-modal .notice-modal__title {
           font-size: 1.2rem;
           font-weight: 700;
-          margin: 0 0 0.5rem 0;
+          margin: 0;
           color: #333;
-          white-space: pre-wrap;
-          word-break: break-word;
-          line-height: 1.4;
-        }
-
-        .notice-modal .notice-modal__navigation {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 1rem;
-          padding: 1rem 1.5rem;
-          border-top: 1px solid #e0e0e0;
-          border-bottom: 1px solid #e0e0e0;
-          background-color: #f8f9fa;
-        }
-
-        .notice-modal .notice-modal__nav-btn {
-          background: none;
-          border: 1px solid #666;
-          border-radius: 50%;
-          width: 32px;
-          height: 32px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          font-size: 1.2rem;
-          font-weight: bold;
-          color: #333;
-          transition: all 0.2s ease;
-        }
-
-        .notice-modal .notice-modal__nav-btn:hover {
-          background-color: #e2e8f0;
-          transform: scale(1.1);
-        }
-
-        .notice-modal .notice-modal__counter {
-          font-size: 0.9rem;
-          color: #666;
-          font-weight: 500;
         }
 
         .notice-modal .notice-modal__body {
@@ -280,7 +176,7 @@ const NoticePopup = ({ notice, showNotice, setShowNotice }) => {
           font-size: 0.9rem;
           color: #444;
           line-height: 1.4;
-          max-height: 410px;       /* 고정 높이 */
+          max-height: 300px;       /* 고정 높이 */
           overflow-y: auto;        /* 내용이 넘치면 세로 스크롤 */
           word-break: break-word; 
         }
