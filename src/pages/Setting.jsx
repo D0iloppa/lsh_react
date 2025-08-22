@@ -92,6 +92,9 @@ console.log("language", language)
 
         console.log("data.language", data.language)
         console.log(data.update_alert);
+
+        localStorage.setItem('lsh_language', data.language);
+        
         
         setLanguage(data.language || 'ko');
         setReceiveUpdates(data.update_alert ?? true);

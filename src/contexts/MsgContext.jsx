@@ -13,6 +13,9 @@ export const MsgProvider = ({ children }) => {
   const [currentLang, setCurrentLang] = useState(() => {
     
   const savedLang = localStorage.getItem('lsh_language');
+  console.log('savedLang', savedLang);
+
+  
   if (savedLang) return savedLang;
 
     const browserLang = (navigator.language || navigator.languages?.[0] || '').toLowerCase();

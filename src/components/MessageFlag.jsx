@@ -25,6 +25,10 @@ const PADDING = 8;
 
 const MessageFlag = ({ style }) => {
   const { currentLang, setLanguage } = useMsg();
+
+
+  console.log('msgFlag currentLang', currentLang);
+
   const btnRef = useRef();
   const [position, setPosition] = useState({ x: window.innerWidth - 72, y: window.innerHeight - 72 });
   const dragging = useRef(false);
