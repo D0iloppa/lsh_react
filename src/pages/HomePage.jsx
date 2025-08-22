@@ -151,11 +151,11 @@ useEffect(() => {
 
   const hasFetched = localStorage.getItem("hasFetchedNotice");
   
-  if (hasFetched == "true" ) return; // 이미 실행했으면 중단
+  //
 
   const today = new Date().toLocaleDateString('sv-SE');  // YYYY-MM-DD 형식
 
-  if (hasFetched === today) return;
+  
 
   const fetchNotice = async () => {
     try {
@@ -167,7 +167,26 @@ useEffect(() => {
       if (res.data ) { 
         let activeNotice = res.data;
         let noticeList = res.data;
-        // 
+        let id = null;
+        let check=0;
+
+        if ( noticeList.length > 0 ) {
+          id = noticeList[0].notice_id;
+        }
+
+        const hasFetchedId = localStorage.getItem("hasFetchedNoticeId");
+
+        if ( hasFetchedId  === null || hasFetchedId === "" || hasFetchedId != id ) {
+          localStorage.setItem("hasFetchedNotice", "false");
+          localStorage.setItem("hasFetchedNoticeId", id);
+          check=1;
+        }
+
+
+        
+        if (hasFetched == "true" && check == 0 ) return; 
+
+        if (hasFetched === today && check == 0) return;
 
         // setNotice(activeNotice[0]);
         setNotice(noticeList);
