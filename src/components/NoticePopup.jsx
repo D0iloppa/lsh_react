@@ -4,12 +4,72 @@ import { createPortal } from 'react-dom';
 
 const NoticePopup = ({ notice, showNotice, setShowNotice, get }) => {
   const scrollYRef = useRef(0);
-  const [dontShowToday, setDontShowToday] = useState(false);
+  const [dontShowToday, setDontShowToday] = useState({}); // 객체로 변경: { notice_id: boolean }
   const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
+  const [filteredNotices, setFilteredNotices] = useState([]); // 필터링된 공지사항
 
   
   // 디버깅용 로그
   console.log('NoticePopup props:', { notice, showNotice });
+
+  // 공지사항 필터링 - "오늘 하루 보지 않기"로 설정된 것 제외
+  useEffect(() => {
+    if (!showNotice || !notice || !Array.isArray(notice) || notice.length === 0) {
+      setFilteredNotices([]);
+      return;
+    }
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
+    // "오늘 하루 보지 않기"로 설정되지 않은 공지사항만 필터링
+    const filtered = notice.filter(noticeItem => {
+      if (!noticeItem.notice_id) return true; // notice_id가 없으면 보여줌
+      
+      const storageKey = `hasFetchedNotice_${noticeItem.notice_id}`;
+      const storedDate = localStorage.getItem(storageKey);
+      
+      return storedDate !== todayStr; // 오늘 날짜와 다르면 보여줌
+    });
+
+    setFilteredNotices(filtered);
+    
+    // 필터링된 결과가 없으면 팝업 닫기
+    if (filtered.length === 0) {
+      setShowNotice(false);
+      setCurrentNoticeIndex(0);
+      setDontShowToday({});
+    } else {
+      // 필터링된 결과가 있으면 첫 번째 공지로 설정
+      setCurrentNoticeIndex(0);
+    }
+  }, [showNotice, notice]);
+
+  // 현재 공지사항의 "오늘 하루 보지 않기" 상태 확인
+  useEffect(() => {
+    if (!showNotice || !filteredNotices || !Array.isArray(filteredNotices) || filteredNotices.length === 0) return;
+    
+    const currentNotice = filteredNotices[currentNoticeIndex];
+    if (!currentNotice || !currentNotice.notice_id) return;
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+    
+    const storageKey = `hasFetchedNotice_${currentNotice.notice_id}`;
+    const storedDate = localStorage.getItem(storageKey);
+    
+    // 오늘 이미 "보지 않기"로 설정했는지 확인
+    setDontShowToday(prev => ({
+      ...prev,
+      [currentNotice.notice_id]: storedDate === todayStr
+    }));
+  }, [showNotice, filteredNotices, currentNoticeIndex]);
 
   useEffect(() => {
     if (!showNotice) return;
@@ -37,23 +97,48 @@ const NoticePopup = ({ notice, showNotice, setShowNotice, get }) => {
   }, [showNotice]);
 
   const handleClose = () => {
-    if (dontShowToday) {
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-      localStorage.setItem('hasFetchedNotice', `${yyyy}-${mm}-${dd}`);
+    if (filteredNotices && Array.isArray(filteredNotices) && filteredNotices.length > 0) {
+      const currentNotice = filteredNotices[currentNoticeIndex];
+      if (currentNotice && currentNotice.notice_id) {
+        const isChecked = dontShowToday[currentNotice.notice_id];
+        
+        if (isChecked) {
+          const today = new Date();
+          const yyyy = today.getFullYear();
+          const mm = String(today.getMonth() + 1).padStart(2, '0');
+          const dd = String(today.getDate()).padStart(2, '0');
+          const todayStr = `${yyyy}-${mm}-${dd}`;
+          
+          // notice_id별로 저장
+          const storageKey = `hasFetchedNotice_${currentNotice.notice_id}`;
+          localStorage.setItem(storageKey, todayStr);
+        }
+      }
     }
 
     // 다음 공지사항이 있는지 확인
-    if (currentNoticeIndex < notice.length - 1) {
+    if (currentNoticeIndex < filteredNotices.length - 1) {
       // 다음 공지사항으로 이동
       setCurrentNoticeIndex(prev => prev + 1);
     } else {
       // 모든 공지사항을 다 봤으면 팝업 닫기
       setShowNotice(false);
       setCurrentNoticeIndex(0); // 팝업 닫을 때 첫 번째 공지로 리셋
+      setDontShowToday({}); // 상태 초기화
     }
+  };
+
+  // 체크박스 변경 핸들러
+  const handleCheckboxChange = (e) => {
+    if (!filteredNotices || !Array.isArray(filteredNotices) || filteredNotices.length === 0) return;
+    
+    const currentNotice = filteredNotices[currentNoticeIndex];
+    if (!currentNotice || !currentNotice.notice_id) return;
+    
+    setDontShowToday(prev => ({
+      ...prev,
+      [currentNotice.notice_id]: e.target.checked
+    }));
   };
 
   // 조건문 수정 - 더 명확하게 체크
@@ -62,24 +147,24 @@ const NoticePopup = ({ notice, showNotice, setShowNotice, get }) => {
     return null;
   }
   
-  if (!notice) {
-    console.log('notice가 undefined입니다');
+  if (!filteredNotices) {
+    console.log('filteredNotices가 undefined입니다');
     return null;
   }
   
-  if (!Array.isArray(notice) || notice.length === 0) {
-    console.log('notice가 빈 배열이거나 배열이 아닙니다:', notice);
+  if (!Array.isArray(filteredNotices) || filteredNotices.length === 0) {
+    console.log('filteredNotices가 빈 배열이거나 배열이 아닙니다:', filteredNotices);
     return null;
   }
 
-  const currentNotice = notice[currentNoticeIndex];
+  const currentNotice = filteredNotices[currentNoticeIndex];
   
   if (!currentNotice) {
-    console.log('currentNotice가 없습니다:', currentNoticeIndex, notice);
+    console.log('currentNotice가 없습니다:', currentNoticeIndex, filteredNotices);
     return null;
   }
 
-  console.log('팝업 렌더링:', currentNotice, `(${currentNoticeIndex + 1}/${notice.length})`);
+  console.log('팝업 렌더링:', currentNotice, `(${currentNoticeIndex + 1}/${filteredNotices.length})`);
 
   const modal = (
     <div className="notice-modal">
@@ -109,8 +194,8 @@ const NoticePopup = ({ notice, showNotice, setShowNotice, get }) => {
             <label className="notice-modal__checkbox">
               <input
                 type="checkbox"
-                checked={dontShowToday}
-                onChange={(e) => setDontShowToday(e.target.checked)}
+                checked={dontShowToday[currentNotice?.notice_id] || false}
+                onChange={handleCheckboxChange}
               />{' '}
               { get('don.show.today') || '오늘 하루 보지 않기' }
             </label>
