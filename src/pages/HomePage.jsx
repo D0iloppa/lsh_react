@@ -151,7 +151,7 @@ useEffect(() => {
 
   const hasFetched = localStorage.getItem("hasFetchedNotice");
   
-  // if (hasFetched == "true" ) return; // 이미 실행했으면 중단
+  if (hasFetched == "true" ) return; // 이미 실행했으면 중단
 
   const today = new Date().toLocaleDateString('sv-SE');  // YYYY-MM-DD 형식
 
