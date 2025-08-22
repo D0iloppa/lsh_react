@@ -43,20 +43,16 @@ const NoticePopup = ({ notice, showNotice, setShowNotice }) => {
       const dd = String(today.getDate()).padStart(2, '0');
       localStorage.setItem('hasFetchedNotice', `${yyyy}-${mm}-${dd}`);
     }
-    setShowNotice(false);
-    setCurrentNoticeIndex(0); // 팝업 닫을 때 첫 번째 공지로 리셋
-  };
 
-  const handlePrevNotice = () => {
-    setCurrentNoticeIndex(prev => 
-      prev > 0 ? prev - 1 : notice.length - 1
-    );
-  };
-
-  const handleNextNotice = () => {
-    setCurrentNoticeIndex(prev => 
-      prev < notice.length - 1 ? prev + 1 : 0
-    );
+    // 다음 공지사항이 있는지 확인
+    if (currentNoticeIndex < notice.length - 1) {
+      // 다음 공지사항으로 이동
+      setCurrentNoticeIndex(prev => prev + 1);
+    } else {
+      // 모든 공지사항을 다 봤으면 팝업 닫기
+      setShowNotice(false);
+      setCurrentNoticeIndex(0); // 팝업 닫을 때 첫 번째 공지로 리셋
+    }
   };
 
   // 조건문 수정 - 더 명확하게 체크
@@ -82,7 +78,7 @@ const NoticePopup = ({ notice, showNotice, setShowNotice }) => {
     return null;
   }
 
-  console.log('팝업 렌더링:', currentNotice);
+  console.log('팝업 렌더링:', currentNotice, `(${currentNoticeIndex + 1}/${notice.length})`);
 
   const modal = (
     <div className="notice-modal">
@@ -108,28 +104,6 @@ const NoticePopup = ({ notice, showNotice, setShowNotice }) => {
             />
           </div>
 
-          {notice.length > 1 && (
-            <div className="notice-modal__navigation">
-              <button
-                className="notice-modal__nav-btn"
-                onClick={handlePrevNotice}
-                aria-label="이전 공지"
-              >
-                ‹
-              </button>
-              <span className="notice-modal__counter">
-                {currentNoticeIndex + 1} / {notice.length}
-              </span>
-              <button
-                className="notice-modal__nav-btn"
-                onClick={handleNextNotice}
-                aria-label="다음 공지"
-              >
-                ›
-              </button>
-            </div>
-          )}
-
           <div className="notice-modal__footer">
             <label className="notice-modal__checkbox">
               <input
@@ -143,7 +117,7 @@ const NoticePopup = ({ notice, showNotice, setShowNotice }) => {
               className="notice-modal__btn"
               onClick={handleClose}
             >
-              닫기
+              {'닫기'}
             </button>
           </div>
         </div>
@@ -193,44 +167,6 @@ const NoticePopup = ({ notice, showNotice, setShowNotice }) => {
           white-space: pre-wrap;
           word-break: break-word;
           line-height: 1.4;
-        }
-
-        .notice-modal .notice-modal__navigation {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 1rem;
-          padding: 1rem 1.5rem;
-          border-top: 1px solid #e0e0e0;
-          border-bottom: 1px solid #e0e0e0;
-          background-color: #f8f9fa;
-        }
-
-        .notice-modal .notice-modal__nav-btn {
-          background: none;
-          border: 1px solid #666;
-          border-radius: 50%;
-          width: 32px;
-          height: 32px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          font-size: 1.2rem;
-          font-weight: bold;
-          color: #333;
-          transition: all 0.2s ease;
-        }
-
-        .notice-modal .notice-modal__nav-btn:hover {
-          background-color: #e2e8f0;
-          transform: scale(1.1);
-        }
-
-        .notice-modal .notice-modal__counter {
-          font-size: 0.9rem;
-          color: #666;
-          font-weight: 500;
         }
 
         .notice-modal .notice-modal__body {
