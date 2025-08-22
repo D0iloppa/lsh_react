@@ -86,7 +86,6 @@ const Notice = ({
           background-color: #fff;
           min-height: 100vh;
           position: relative;
-          padding-bottom: 3rem;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
         .content-section { padding: 1.5rem; }

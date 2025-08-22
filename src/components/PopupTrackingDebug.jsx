@@ -238,7 +238,7 @@ const PopupTrackingDebug = () => {
           onClick={() => {
             localStorage.removeItem('lastPopupTime');
             console.log('⏰ 마지막 팝업 시간이 초기화되었습니다.');
-            alert('마지막 팝업 시간이 초기화되었습니다!');
+            //alert('마지막 팝업 시간이 초기화되었습니다!');
           }}
           style={{
             background: '#6f42c1',
@@ -258,7 +258,7 @@ const PopupTrackingDebug = () => {
             console.log('📋 팝업 히스토리:', getPopupHistory());
             console.log('🟡 현재 활성 팝업:', activePopups);
             console.log('⏰ 시간 조건 정보:', timeConditionInfo);
-            alert('콘솔에서 전체 통계를 확인하세요!');
+            //alert('콘솔에서 전체 통계를 확인하세요!');
           }}
           style={{
             background: '#17a2b8',

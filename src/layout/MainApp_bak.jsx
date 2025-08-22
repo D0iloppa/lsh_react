@@ -221,7 +221,7 @@ const MainApp = () => {
             }
         } catch (error) {
             console.error('광고 호출 중 예외 발생:', error);
-            alert(JSON.stringify(error));
+            //alert(JSON.stringify(error));
             fallbackAction();
         }
     }, []); 

@@ -191,8 +191,6 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
     }
   }, [translationMap, user.language]);
 
-
-
           useEffect(() => {
               const width = window.screen.width;
               const height = window.screen.height;
@@ -204,8 +202,8 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
               // 조건에 따라 safe-bottom 조정
               const isAndroid = !!window.native;
   
-              if (isAndroid && ratio == 2.23) {
-              document.documentElement.style.setProperty("--safe-bottom", "38px");
+              if (isAndroid && ratio <= 2.21) {
+              document.documentElement.style.setProperty("--safe-bottom", "0px");
               } else {
               document.documentElement.style.setProperty("--safe-bottom", "0px");
               }

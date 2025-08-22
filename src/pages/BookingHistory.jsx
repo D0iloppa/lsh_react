@@ -706,7 +706,7 @@ const getEntranceText = (entranceValue) => {
           background-color: white;
           position: relative;
           padding: 1rem;
-          padding-bottom: 3rem;
+          
         }
 
         .header {
@@ -939,7 +939,6 @@ const getEntranceText = (entranceValue) => {
             border-left: none;
             border-right: none;
             padding: 1rem;
-            padding-bottom: 3rem;
           }
 
           .booking-content {

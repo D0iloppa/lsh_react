@@ -324,7 +324,6 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
         .ranking-container {
           background: #f9fafb;
           font-family: 'BMHanna', 'Comic Sans MS';
-          padding-bottom: 3rem;
         }
 
         .search-container{margin-bottom: 1rem !important;}

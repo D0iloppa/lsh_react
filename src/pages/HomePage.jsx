@@ -504,7 +504,6 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
         .homepage-container {
           background: #f9fafb;
           font-family: 'BMHanna', 'Comic Sans MS';
-          padding-bottom: 3rem;
         }
         .hero-section {
           padding: 2rem 1.5rem 1.5rem;

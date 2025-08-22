@@ -1145,7 +1145,6 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
 
         .reserve-section {
           padding: 1rem 1.5rem 1.5rem;
-          margin-bottom: 3rem;
         }
 
         .form-step-3 { 

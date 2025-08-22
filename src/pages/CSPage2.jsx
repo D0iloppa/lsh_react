@@ -204,7 +204,7 @@ const CSPage2 = ({
           margin: 0 auto;
           background-color: white;
           position: relative;
-          padding-bottom: 3rem;
+          
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
 
@@ -370,7 +370,7 @@ const CSPage2 = ({
             max-width: 100%;
             border-left: none;
             border-right: none;
-            padding-bottom: 3rem;
+            
           }
 
           .inquiry-header {

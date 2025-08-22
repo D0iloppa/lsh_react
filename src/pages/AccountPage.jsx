@@ -330,7 +330,7 @@ const AccountPage = ({
           background: #fff;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
           padding-top: 50px; /* 헤더 높이만큼 여백 */
-          padding-bottom: 3rem;
+          
   overflow: hidden;        /* 스크롤 막기 */
 
         }
@@ -338,7 +338,7 @@ const AccountPage = ({
         @media (max-width: 480px) {
           .account-container {
             padding-top: 50px;
-            padding-bottom: 3rem;
+            
           }
         }
 

@@ -147,7 +147,6 @@ const FavoritesPage = ({
           min-height: 100vh;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
           position: relative;
-          padding-bottom: 3rem;
         }
 
         .header {
@@ -275,7 +274,6 @@ const FavoritesPage = ({
             max-width: 100%;
             border-left: none;
             border-right: none;
-            padding-bottom: 3rem;
           }
 
           .section-header {

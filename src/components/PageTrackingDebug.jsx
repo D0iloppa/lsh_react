@@ -154,7 +154,7 @@ const PageTrackingDebug = () => {
           onClick={() => {
             console.log('📊 전체 네비게이션 통계:', navigationStats);
             console.log('📈 세션 통계:', sessionStats);
-            alert('콘솔에서 전체 통계를 확인하세요!');
+            //alert('콘솔에서 전체 통계를 확인하세요!');
           }}
           style={{
             background: '#17a2b8',
