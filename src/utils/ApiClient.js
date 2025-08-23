@@ -13,6 +13,23 @@ const axiosInstance = axios.create({
 
 // 간단한 API 클라이언트
 const ApiClient = {
+
+  accessLog({user_id=null, page = false}){
+    if(user_id == null || page == false){
+      return;
+    }
+
+    // 비동기로 요청만 보냄
+    axiosInstance.get('/api/accessLog', {
+      params: {
+        user_id: user_id,
+        page: page
+      }
+    });
+
+    
+  },
+
   // GET 요청
   get(endpoint, config = {}) {
     return axiosInstance.get(endpoint, config).then(response => response.data);

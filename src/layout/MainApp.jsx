@@ -98,12 +98,16 @@ const MainApp = () => {
         PAGES
     } = usePageNavigation();
 
+    useEffect(() => {
+        ApiClient.accessLog({user_id: user.user_id, page: currentPage});
+    }, [currentPage]);
+
     const processedQueryRef = useRef(false);
     const lastProcessedQuery = useRef('');
 
     
     
-        useEffect(() => {
+    useEffect(() => {
             const width = window.screen.width;
             const height = window.screen.height;
             const ratio = (height / width).toFixed(2); // 소수점 2자리

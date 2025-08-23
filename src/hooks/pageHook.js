@@ -2,8 +2,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PAGES, DEFAULT_PAGE } from '../config/pages.config';
+import { useAuth } from '@contexts/AuthContext';
+
+import ApiClient from '@utils/ApiClient';
 
 const usePageNavigation = () => {
+    const { user } = useAuth();
 
     const navigate = useNavigate();
     
@@ -38,6 +42,11 @@ const usePageNavigation = () => {
 
     // 일반 페이지 이동
     const navigateToPage = (page) => {
+
+        console.log('navigateToPage', page, user);
+
+        ApiClient.accessLog({user_id: user.user_id, page: page});
+        
         setCurrentPage(page);
         setPageHistory(prev => [...prev, page]);
         setPageDataStack(prev => [...prev, { page, data: null }]);
@@ -46,6 +55,11 @@ const usePageNavigation = () => {
     };
     
     const navigateToPageWithData = (page, data) => {
+
+        console.log('navigateToPageWithData', page, user);
+        
+        ApiClient.accessLog({user_id: user.user_id, page: page});
+
         if(page == PAGES.LOGIN){
             setNobottom(true); 
         } else {

@@ -367,7 +367,7 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
                        <SketchBtn 
                          variant="secondary" 
                          size="small"
-                         onClick={() => handleFilterType("1")}
+                         onClick={() => handleFilterType("3")}
                        >
                          <HatchPattern opacity={0.4} />
                          {get('btn.booking.1')}
@@ -385,7 +385,7 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
                        <SketchBtn 
                          variant="secondary" 
                          size="small"
-                         onClick={() => handleFilterType("3")}
+                         onClick={() => handleFilterType("1")}
                        >
                          <HatchPattern opacity={0.4} />
                          {get('btn.alert.1')}
