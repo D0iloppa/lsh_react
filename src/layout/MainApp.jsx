@@ -99,7 +99,7 @@ const MainApp = () => {
     } = usePageNavigation();
 
     useEffect(() => {
-        ApiClient.accessLog({user_id: user.user_id, page: currentPage});
+        ApiClient.accessLog({user_id: user?.user_id, page: currentPage});
     }, [currentPage]);
 
     const processedQueryRef = useRef(false);
