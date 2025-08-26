@@ -112,20 +112,47 @@ const AppRoutes = () => {
       //Swal.fire('UUID 에러', err.toString(), 'error');
     }
 
+
+    const isNotNative = !isAndroid && !isIOS;
+
+    let vcObj = {
+      isLatestVersion: true,
+      isAndroid, isIOS, isNotNative
+    };
+
+
+
+    localStorage.setItem('versionCheck', JSON.stringify(vcObj));
+
+    const saveVersionCheck = (isLatest) => {
+      vcObj.isLatestVersion = isLatest;
+      localStorage.setItem('versionCheck', JSON.stringify(vcObj));
+    };
+
     // ✅ 버전 분기 처리
     if (version) {
        if (isAndroid && compareVersions(version, '1.0.8') < 0) {
+          saveVersionCheck(false);
           navigate('/downloadAndroid');
        } else if (isIOS && compareVersions(version, '1.0.4') < 0) {
+          saveVersionCheck(false);
           navigate('/downloadIOS');
       }
     } else {
       if (isAndroid && compareVersions(version, '1.0.8') < 0) {
+         saveVersionCheck(false);
          navigate('/downloadAndroid');
        } else if (isIOS && compareVersions(version, '1.0.4') < 0) {
+         saveVersionCheck(false);
          navigate('/downloadIOS');
       }
     }
+
+    if (isNotNative) {
+      saveVersionCheck(true);
+    }
+
+
   };
 
   init();

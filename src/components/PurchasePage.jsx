@@ -5,9 +5,14 @@ import HatchPattern from '@components/HatchPattern';
 import { useAuth } from '@contexts/AuthContext';
 import { useMsg } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
+import { getVersionCheck } from '@utils/storage';
+
+
 import Swal from 'sweetalert2';
 import { CreditCard } from 'lucide-react';
 import SketchHeader from '@components/SketchHeader';
+
+
 
 
 const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, ...otherProps}) => {
@@ -302,6 +307,11 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
   ];
 
 
+  const {isLatestVersion = true, isAndroid = false, isIOS = false} = getVersionCheck();
+
+  console.log('isLatestVersion', isLatestVersion, isAndroid, isIOS);
+
+
   const itemList = [
     {
       //1일권
@@ -333,7 +343,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
       price: 89.00,
       saleRate: 40,
       days: 15,
-      visible: true
+      visible: isLatestVersion ? false : true
     },
     {
       //1개월
@@ -341,7 +351,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
       price: 148.99,
       saleRate: 50,
       days: 30,
-      visible: true
+      visible: isLatestVersion ? false : true
     }
   ]
 
@@ -352,6 +362,12 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
           min-height: 100dvh;
           background: #f9fafb;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        @media (max-height: 640px) {
+          .purchase-page {
+            max-height: 50dvh;
+          }
         }
 
         .purchase-header {
