@@ -479,7 +479,7 @@ const MainApp = () => {
                                             navigateToPage(id);
                                         },
                                         1000, // 1초 타임아웃
-                                        true // 강제 광고 표시(광고 호출 주기 무시)
+                                        false // 강제 광고 표시(광고 호출 주기 무시)
                                       );
                                       return;
                                 }
