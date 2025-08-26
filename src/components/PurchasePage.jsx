@@ -746,7 +746,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
                       </div>
                       <div className="button-right">
                         <span className="price-currency">$</span>
-                        <span className="price-amount">{item.price}</span>
+                        <span className="price-amount">{item.price.toFixed(2)}</span>
                       </div>
                     </button>
                   )
