@@ -327,7 +327,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
       price: 26.00,
       saleRate: 12,
       days: 3,
-      visible: isLatestVersion
+      visible: true
     },
     {
       //7일권
@@ -335,7 +335,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
       price: 51.90,
       saleRate: 25,
       days: 7,
-      visible: isLatestVersion
+      visible: true
     },
     {
       //15일권
@@ -343,7 +343,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
       price: 89.00,
       saleRate: 40,
       days: 15,
-      visible: isLatestVersion
+      visible: false
     },
     {
       //1개월
@@ -351,7 +351,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
       price: 148.99,
       saleRate: 50,
       days: 30,
-      visible: isLatestVersion
+      visible: false
     }
   ]
 

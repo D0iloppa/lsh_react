@@ -131,15 +131,15 @@ const AppRoutes = () => {
 
     // ✅ 버전 분기 처리
     if (version) {
-       if (isAndroid && compareVersions(version, '1.0.8') < 0) {
+       if (isAndroid && compareVersions(version, '1.0.9') < 0) {
           navigate('/downloadAndroid');
-       } else if (isIOS && compareVersions(version, '1.0.4') < 0) {
+       } else if (isIOS && compareVersions(version, '1.0.6') < 0) {
           navigate('/downloadIOS');
       }
     } else {
-      if (isAndroid && compareVersions(version, '1.0.8') < 0) {
+      if (isAndroid && compareVersions(version, '1.0.9') < 0) {
          navigate('/downloadAndroid');
-       } else if (isIOS && compareVersions(version, '1.0.4') < 0) {
+       } else if (isIOS && compareVersions(version, '1.0.6') < 0) {
          navigate('/downloadIOS');
       }
     }
@@ -174,7 +174,7 @@ const AppRoutes = () => {
 */
 
     if (isNotNative) {
-      saveVersionCheck(true);
+      saveVersionCheck(false);
     }
 
 
