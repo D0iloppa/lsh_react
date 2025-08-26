@@ -324,7 +324,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
     {
       //3일권
       title: get('daily.pass.purchase.title.3'),
-      price: 25.99,
+      price: 26.00,
       saleRate: 12,
       days: 3,
       visible: true
@@ -332,7 +332,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
     {
       //7일권
       title: get('daily.pass.purchase.title.7'),
-      price: 51.99,
+      price: 51.90,
       saleRate: 25,
       days: 7,
       visible: true
