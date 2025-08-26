@@ -229,7 +229,7 @@ const MessageFlag = ({ style }) => {
       style={{
         position: 'fixed',
         left: position.x,
-        top: position.y,
+        bottom: 20,
         zIndex: 1000,
         background: '#fff',
         border: '1.5px solid #eee',

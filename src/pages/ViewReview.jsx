@@ -518,14 +518,12 @@ const handleTranslate = useCallback(async (reviewId, text) => {
           }
 
           .select-box {
-            padding: 8px 8px;
+            padding: 4px 6px;
             border: 1px solid #333;
             border-radius: 8px;
             background: white;
             font-size: 13px;
-            flex: 1;
-            min-width: 0;
-            max-width: none;
+            width: 40%;              
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg fill='black' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.5 7l4.5 4 4.5-4'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
@@ -806,6 +804,24 @@ const handleTranslate = useCallback(async (reviewId, text) => {
           font-size: 0.83rem;
         }
 
+        .filter-tab {
+          flex: 1;
+          text-align: center;
+          padding: 8px 12px;
+          border: 1px solid #333;
+          border-radius: 8px;
+          background: white;
+          font-size: 14px;
+          color: #333;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .filter-tab.active {
+          background: #333;
+          color: white;
+          font-weight: 600;
+          border: 2px solid #333;
+        }
 
       `}</style>
 
@@ -869,27 +885,51 @@ const handleTranslate = useCallback(async (reviewId, text) => {
   <option value="oldest">{get('Oldest.filter')}</option>
 </select>
 
-<select
-  className="select-box"
-  value={targetTypeFilter}
-  onChange={(e) => {
-    const value = e.target.value;
-    setTargetTypeFilter(value);
-    localStorage.setItem(
-      "viewReviewPageState",
-      JSON.stringify({
-        scrollY: 0,
-        sortOrder1,
-        sortOrder,
-        targetTypeFilter: value
-      })
-    );
-  }}
->
-  <option value="ALL">{get('main.filter.category.all')}</option>
-  <option value="venue">{get('title.text.14')}</option>
-  <option value="staff">{get('title.text.16')}</option>
-</select>
+<div className="filter-buttons" style={{ display: 'flex', gap: '8px', width: '60%' }}>
+  <div
+    className={`filter-tab ${targetTypeFilter === 'venue' ? 'active' : ''}`}
+    onClick={() => {
+      setTargetTypeFilter('venue');
+      localStorage.setItem(
+        "viewReviewPageState",
+        JSON.stringify({
+          scrollY: 0,
+          sortOrder1,
+          sortOrder,
+          targetTypeFilter: 'venue'
+        })
+      );
+    }}
+  >
+    {get('title.text.14')}
+  </div>
+
+  <div
+    className={`filter-tab ${targetTypeFilter === 'staff' ? 'active' : ''}`}
+    onClick={() => {
+      setTargetTypeFilter('staff');
+      localStorage.setItem(
+        "viewReviewPageState",
+        JSON.stringify({
+          scrollY: 0,
+          sortOrder1,
+          sortOrder,
+          targetTypeFilter: 'staff'
+        })
+      );
+    }}
+  >
+    {get('title.text.16')}
+  </div>
+</div>
+
+
+
+
+
+
+
+
 
         </div>
         {/* <div className="search-section">

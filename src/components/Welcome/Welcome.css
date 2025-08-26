@@ -18,7 +18,10 @@
   }
 
   .tutorial-container{
-        min-height: 97vh;
+        height: 100vh;
+        overflow-y: auto;  
+          -webkit-overflow-scrolling: touch; /* iOS에서 부드럽게 */
+
     /*min-height: 115vh;*/
   }
 

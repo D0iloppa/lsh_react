@@ -483,7 +483,7 @@ const MainApp = () => {
                                     scrollY: 0,
                                     sortOrder1: "latest",
                                     sortOrder: "latest",
-                                    targetTypeFilter: "ALL"
+                                    targetTypeFilter: "venue"
                                     };
 
                                     localStorage.setItem("viewReviewPageState", JSON.stringify(INITIAL_STATE));

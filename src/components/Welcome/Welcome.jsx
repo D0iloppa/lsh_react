@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';  // ⬅ useEffect 추가
+import React, { useState, useEffect, useRef  } from 'react';  // ⬅ useEffect 추가
 
 import { useNavigate } from 'react-router-dom';
 import SketchDiv from '@components/SketchDiv';
@@ -18,6 +18,7 @@ const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();    
   const [isVideoOpen, setIsVideoOpen] = useState(false);
+  const videoRef = useRef(null); // 🎯 video 제어용 ref 추가
 
  
   useEffect(() => {
@@ -71,6 +72,19 @@ const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
     navigate('/register');
   };
 
+    const handleOpenTutorial = () => {
+    if (videoRef.current) {
+      videoRef.current.pause(); // 🎯 튜토리얼 열릴 때 영상 멈춤
+    }
+    setIsVideoOpen(true);
+  };
+
+  const handleCloseTutorial = () => {
+    if (videoRef.current) {
+      videoRef.current.play(); // 🎯 닫을 때 다시 재생
+    }
+    setIsVideoOpen(false);
+  };
 
 
 const CocktailIcon = () => (
@@ -115,24 +129,33 @@ const CocktailIcon = () => (
 
 
       {/* 상단 회전 영역 */}
-      <div className="rotation-section">
-        <RotationDiv 
-          interval={4000} 
-          showIndicators={true}
-          pauseOnHover={true}
-          className="venue-rotation"
-        >
-          {popularVenues.map((venue, index) => (
-            <PopularVenue
-              key={index}
-              venueName={venue.venueName}
-              description={venue.description}
-              rating={venue.rating}
-              location={venue.location}
-              image={venue.image}
-            />
-          ))}
-        </RotationDiv>
+     <div 
+        className="video-section" 
+        style={{ 
+          position: 'relative', 
+          marginBottom: '20px', 
+          marginTop: '20px', 
+          maxHeight: '300px', // 세로 최대 높이 고정
+          overflow: 'hidden', // 넘치면 잘리게
+          borderRadius: '12px',
+          width:'95%',
+          marginLeft:'2.5%'
+        }}
+      >
+        <video 
+          ref={videoRef} // 🎯 ref 연결
+          src="/cdn/intro.mp4" 
+          autoPlay 
+          loop 
+          playsInline 
+          webkit-playsinline
+          style={{ 
+            width: '100%',   // 가로 화면 기준
+            height: 'auto',  // 세로 비율 유지
+            display: 'block',
+            objectFit: 'cover'
+          }}
+        />
       </div>
 
       {/* 브랜드 섹션 */}
@@ -145,8 +168,6 @@ const CocktailIcon = () => (
                 <span style={{ fontSize: '20px',  marginLeft: '-8px' }}><ImagePlaceholder src="/cdn/age.png" style={{lineHeight: '0.5', marginLeft: '5px', width:'26px'}}/></span>
               </div>
               </div>
-              
-              <h2 className="brand-subtitle">All TRENDY Venues Here</h2>
               
               <p className="brand-description">
                 {get('Welcome1.1')}
@@ -224,7 +245,7 @@ const CocktailIcon = () => (
     <HatchPattern opacity={0.4} />
     <SketchBtn 
       className="sketch-button" style={{ fontWeight: 'bold' }}
-      onClick={() => setIsVideoOpen(true)}
+      onClick={handleOpenTutorial} 
     >
       {get('Welcome1.3')}
     </SketchBtn>
@@ -248,7 +269,7 @@ const CocktailIcon = () => (
     <div style={{ position: 'relative', width: '90%', maxWidth: '600px' }}>
       {/* 닫기 버튼 */}
       <button 
-        onClick={() => setIsVideoOpen(false)} 
+        onClick={handleCloseTutorial} 
         style={{
           position: 'absolute',
           top: '-40px',
