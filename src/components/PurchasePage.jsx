@@ -296,8 +296,30 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
     }
   };
 
+  const highlightBenefit = (msg, highlightTexts = []) => {
+    let result = msg;
+    highlightTexts.forEach(text => {
+      result = result.replace(
+        text,
+        `<span class="highlighted-benefit">${text}</span>`
+      );
+    });
+    return result;
+  };
+  
+
+
+  const highlighted = highlightBenefit(get('Popup.Today.Benefit7'), [
+    '10% 추가 할인',
+    '10% additional discount',
+    'Giảm thêm 10%',
+    '追加割引',
+    '折优惠'
+  ]);
+
   // 일일권 혜택 목록
   const dailyBenefits = [
+    highlighted,
     get('Popup.Today.Benefit1'),
     get('Popup.Today.Benefit2'),
     get('Popup.Today.Benefit3'),
@@ -305,6 +327,10 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
     get('Popup.Today.Benefit5'),
     get('Popup.Today.Benefit6')
   ];
+
+  const asHtmlBlock = (htmlString) => {
+    return <span dangerouslySetInnerHTML={{ __html: htmlString }} />;
+  };
 
 
   const {isLatestVersion, isAndroid, isIOS} = getVersionCheck();
@@ -488,7 +514,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
           border-radius: 12px;
           padding: 1rem;
           margin-bottom: 1rem;
-          height: 150px;
+          height: 170px;
           overflow-y: hidden;
         }
 
@@ -654,6 +680,22 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
           animation: shimmer 2s infinite;
         }
 
+        .highlighted-benefit {
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+          color: #ffffff;
+          padding: 0.15rem 0.5rem;
+          border-radius: 12px;
+          font-size: 0.7rem;
+          font-weight: 600;
+          box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+          display: inline-flex;
+          align-items: center;
+          line-height: 1.2;
+          vertical-align: middle;
+          margin-left: 0.2rem;
+          margin-bottom: 3px;
+      }
+
         @keyframes shimmer {
           0% { left: -100%; }
           100% { left: 100%; }
@@ -725,7 +767,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
                 {dailyBenefits.map((benefit, index) => (
                   <div key={index} className="benefit-item">
                     <Check size={18} className="benefit-icon" />
-                    <span>{benefit}</span>
+                    {asHtmlBlock(benefit)}
                   </div>
                 ))}
               </div>
