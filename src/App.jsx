@@ -116,7 +116,7 @@ const AppRoutes = () => {
     const isNotNative = !isAndroid && !isIOS;
 
     let vcObj = {
-      isLatestVersion: true,
+      isLatestVersion: false,
       isAndroid, isIOS, isNotNative
     };
 
@@ -132,21 +132,46 @@ const AppRoutes = () => {
     // ✅ 버전 분기 처리
     if (version) {
        if (isAndroid && compareVersions(version, '1.0.8') < 0) {
-          saveVersionCheck(false);
           navigate('/downloadAndroid');
        } else if (isIOS && compareVersions(version, '1.0.4') < 0) {
-          saveVersionCheck(false);
           navigate('/downloadIOS');
       }
     } else {
       if (isAndroid && compareVersions(version, '1.0.8') < 0) {
-         saveVersionCheck(false);
          navigate('/downloadAndroid');
        } else if (isIOS && compareVersions(version, '1.0.4') < 0) {
-         saveVersionCheck(false);
          navigate('/downloadIOS');
       }
     }
+
+
+    if (version) {
+       if (isAndroid && compareVersions(version, '1.0.9') == 0) {
+          saveVersionCheck(true);
+       } else if (isIOS && compareVersions(version, '1.0.6') == 0) {
+          saveVersionCheck(true);
+      }
+    }
+
+
+
+
+
+/*
+      if (version) {
+       if (isAndroid && compareVersions(version, '1.0.9') < 0) {
+          saveVersionCheck(false);
+       } else if (isIOS && compareVersions(version, '1.0.6') < 0) {
+          saveVersionCheck(false);
+      }
+    } else {
+      if (isAndroid && compareVersions(version, '1.0.9') < 0) {
+         saveVersionCheck(false);
+       } else if (isIOS && compareVersions(version, '1.0.6') < 0) {
+         saveVersionCheck(false);
+      }
+    }
+*/
 
     if (isNotNative) {
       saveVersionCheck(true);
