@@ -212,6 +212,14 @@ const MainApp = () => {
     const AD_CALL_INTERVAL = 20;
 
     const showAdWithCallback = useCallback(async (onAdComplete, fallbackAction, timeoutMs = 4000) => {
+        
+        // 한시적 광고 비활성화
+        let isAdDisabled = true;
+        if(isAdDisabled){
+            onAdComplete();
+            return;
+        }
+        
         // 세션스토리지에서 광고 호출 횟수 관리
         const adCallCountKey = 'adCallCount';
         let adCallCount = parseInt(sessionStorage.getItem(adCallCountKey) || '1');
