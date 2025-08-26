@@ -469,6 +469,11 @@ const MainApp = () => {
                                 if(id == PAGES.RANKING ){
                                     localStorage.setItem('rankingType', 'venue');
                                     
+
+                                    navigateToPage(id);
+
+                                    
+                                    /*
                                     showAdWithCallback(
                                         // 광고 완료 시 콜백
                                         () => {
@@ -481,6 +486,9 @@ const MainApp = () => {
                                         1000, // 1초 타임아웃
                                         false // 강제 광고 표시(광고 호출 주기 무시)
                                       );
+                                      */
+
+
                                       return;
                                 }
 
