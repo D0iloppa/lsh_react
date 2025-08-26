@@ -327,7 +327,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
       price: 26.00,
       saleRate: 12,
       days: 3,
-      visible: true
+      visible: isLatestVersion
     },
     {
       //7일권
@@ -335,7 +335,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
       price: 51.90,
       saleRate: 25,
       days: 7,
-      visible: true
+      visible: isLatestVersion
     },
     {
       //15일권
