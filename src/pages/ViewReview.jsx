@@ -824,9 +824,9 @@ const handleTranslate = useCallback(async (reviewId, text) => {
         }
 
       `}</style>
+<div>
 
-      <div className="view-review-container">
-        {/* Header */}
+   {/* Header */}
 
         <SketchHeader
           title={get('Profile1.1')}
@@ -834,6 +834,8 @@ const handleTranslate = useCallback(async (reviewId, text) => {
           onBack={handleBack}
           rightButtons={[]}
         />
+      <div className="view-review-container">
+     
 
         {/* Search Section */}
         <div className="map-filter-selects">
@@ -1210,6 +1212,7 @@ const handleTranslate = useCallback(async (reviewId, text) => {
             </SketchDiv>
           )}
         </div>
+      </div>
       </div>
     </>
   );
