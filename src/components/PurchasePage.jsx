@@ -307,7 +307,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
   ];
 
 
-  const {isLatestVersion = true, isAndroid = false, isIOS = false} = getVersionCheck();
+  const {isLatestVersion, isAndroid, isIOS} = getVersionCheck();
 
   console.log('isLatestVersion', isLatestVersion, isAndroid, isIOS);
 
