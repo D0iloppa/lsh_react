@@ -209,12 +209,12 @@ const MainApp = () => {
 
     // 광고 호출 함수 (useCallback으로 메모이제이션)
     // 광고 호출 주기 설정 (N회마다 광고 호출)
-    const AD_CALL_INTERVAL = 20;
+    const AD_CALL_INTERVAL = 10;
 
-    const showAdWithCallback = useCallback(async (onAdComplete, fallbackAction, timeoutMs = 4000) => {
+    const showAdWithCallback = useCallback(async (onAdComplete, fallbackAction, timeoutMs = 4000, forceShow = false) => {
         
         // 한시적 광고 비활성화
-        let isAdDisabled = true;
+        let isAdDisabled = false;
         if(isAdDisabled){
             onAdComplete();
             return;
@@ -295,16 +295,14 @@ const MainApp = () => {
         
 
         if(_isActive) {
-
-
-
             console.warn('active user');
             onAdComplete();
             return;
         }
 
         // N회마다 광고 호출 (1, N+1, 2N+1... 회차에 광고 호출)
-        if (adCallCount % AD_CALL_INTERVAL !== 1) {
+        //if (adCallCount % AD_CALL_INTERVAL !== 1) {
+        if (!forceShow && adCallCount % AD_CALL_INTERVAL !== 1) {
             console.log(`${adCallCount}회차 - 광고 호출 건너뜀 (${AD_CALL_INTERVAL}회마다 호출)`);
             onAdComplete();
             return;
@@ -480,7 +478,8 @@ const MainApp = () => {
                                         () => {
                                             navigateToPage(id);
                                         },
-                                        1000 // 1초 타임아웃
+                                        1000, // 1초 타임아웃
+                                        true // 강제 광고 표시(광고 호출 주기 무시)
                                       );
                                       return;
                                 }
