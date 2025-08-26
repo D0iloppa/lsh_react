@@ -783,7 +783,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
                       <div className="button-left">
                         <span className="button-title">{item.title}</span>
                         {item.saleRate > 0 && (
-                          <span className="sale-badge">{item.saleRate}% 할인</span>
+                          <span className="sale-badge">{item.saleRate}% sale</span>
                         )}
                       </div>
                       <div className="button-right">
