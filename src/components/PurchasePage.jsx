@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star, ArrowLeft, Check, Zap } from 'lucide-react';
 import HatchPattern from '@components/HatchPattern';
@@ -16,6 +16,9 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
   const { get } = useMsg();
   const [isProcessing, setIsProcessing] = useState(false);
   const [mode, setMode] = useState(otherProps?.mode || 'daily');
+
+
+  const daysRef = useRef(1);
 
   console.log('PAGES', user, otherProps)
 
@@ -41,7 +44,13 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
 
 
   // 일일권 구매 함수
-  const handleDailyPurchase = async () => {
+  const handleDailyPurchase = async (item) => {
+
+
+    const { price, days = 1 } = item;
+    
+
+    daysRef.current = days;
 
     if (!user?.user_id || user.type !== 'user') {
       Swal.fire({
@@ -53,12 +62,25 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
       return;
     }
 
-    
-    // 인앱 결제 요청
-    const payload = 'buyItem';
+    let payload = 'buyItem';
 
-     const isAndroid = !!window.native;
-            const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
+    if(days > 1){
+      payload = payload + (days + "");
+    }
+
+
+    /*
+    if ( item == 0 ) payload=payload;
+    else if ( item == 1 ) payload=payload+"3";
+    else if ( item == 2 ) payload=payload+"7";
+    else if ( item == 3 ) payload=payload+"15";
+    else if ( item == 4 ) payload=payload+"30";
+    */
+
+    // 인앱 결제 요청
+
+    const isAndroid = !!window.native;
+    const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
 
     if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.native) {
       // ✅ iOS WebView
@@ -87,9 +109,15 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
     
   };
 
-  const handleExtendPurchase = async () => {
+  const handleExtendPurchase = async (item) => {
     console.log('handleExtendPurchase', mode);
 
+
+    const { price, days = 1 } = item;
+
+    
+    daysRef.current = days;
+
     if (!user?.user_id || user.type !== 'user') {
       Swal.fire({
         title: get('SWAL_SIGNUP_REQUIRED_TITLE'),
@@ -102,10 +130,14 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
 
     
     // 인앱 결제 요청
-    const payload = 'buyItem';
+    let payload = 'buyItem';
 
-     const isAndroid = !!window.native;
-            const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
+    if(days > 1){
+      payload = payload + (days + "");
+    }
+
+    const isAndroid = !!window.native;
+    const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
 
     if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.native) {
       // ✅ iOS WebView
@@ -133,10 +165,15 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
 
   };
 
-  const buyCoupon = async () => {
+  const buyCoupon = async (days=1) => {
+
+    Swal.fire(days);
+
     const response = await ApiClient.postForm('/api/buyCoupon', {
-      user_id: user.user_id
+      user_id: user.user_id,
+      days: days
     });
+
     const { success = false } = response;
   
     if (success) {
@@ -152,14 +189,15 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
     }
   };
   
-  const extendCoupon = async () => {
+  const extendCoupon = async (days=1) => {
 
     const { subscription = {}} = await isActiveUser();
-
+    
 
     const response = await ApiClient.postForm('/api/extendCoupon', {
       user_id: subscription.user_id,
-      subscription_id: subscription.subscription_id
+      subscription_id: subscription.subscription_id,
+      days: days
     });
     const { success = true } = response;
   
@@ -183,11 +221,15 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
         console.log('✅ 결제 성공 메시지 수신');
         setIsProcessing(true);
   
+
+        const days = daysRef.current;
+
+
         try {
           if (mode === 'extend') {
-            await extendCoupon();
+            await extendCoupon(days);
           } else {
-            await buyCoupon();
+            await buyCoupon(days);
           }
         } catch (error) {
           console.error('❌ 일일권 구매 실패:', error);
@@ -259,11 +301,55 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
     get('Popup.Today.Benefit6')
   ];
 
+
+  const itemList = [
+    {
+      //1일권
+      title: get('daily.pass.purchase.title.1'),
+      price: 9.99,
+      sale: 0,
+      days: 1,
+      visible: true
+    },
+    {
+      //3일권
+      title: get('daily.pass.purchase.title.3'),
+      price: 26.00,
+      saleRate: 12,
+      days: 3,
+      visible: true
+    },
+    {
+      //7일권
+      title: get('daily.pass.purchase.title.7'),
+      price: 51.90,
+      saleRate: 25,
+      days: 7,
+      visible: true
+    },
+    {
+      //15일권
+      title: get('daily.pass.purchase.title.15'),
+      price: 89.00,
+      saleRate: 40,
+      days: 15,
+      visible: true
+    },
+    {
+      //1개월
+      title: get('daily.pass.purchase.title.30'),
+      price: 148.99,
+      saleRate: 50,
+      days: 30,
+      visible: true
+    }
+  ]
+
   return (
     <>
       <style jsx="true">{`
         .purchase-page {
-          min-height: 100vh;
+          min-height: 100dvh;
           background: #f9fafb;
           font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
         }
@@ -319,14 +405,15 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
           background: white;
           border: 2px solid #707070;
           border-radius: 16px;
-          overflow: hidden;
+          overflow-x: hidden;
+          overflow-y: auto;
           position: relative;
           box-shadow: 6px 6px 0px #c1c1c1;
           margin-bottom: 2rem;
         }
 
         .card-header {
-          padding: 2rem 2rem 1rem;
+          padding: 0.5rem 2rem 0.5rem;
           text-align: center;
           position: relative;
           background: linear-gradient(135deg, #00f0ff, #fff0d8);
@@ -335,35 +422,36 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
         .plan-badge {
           display: inline-flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.25rem;
           background: rgba(255, 255, 255, 0.9);
-          padding: 0.5rem 1rem;
-          border-radius: 20px;
-          font-size: 0.9rem;
+          padding: 0.125rem 0.5rem;
+          border-radius: 12px;
+          font-size: 0.7rem;
           font-weight: 600;
           color: #333;
-          margin-bottom: 1rem;
+          margin-bottom: 0.25rem;
         }
 
         .price-section {
-          margin-bottom: 1rem;
+          margin-bottom: 0.25rem;
         }
 
         .price {
-          font-size: 3rem;
+          font-size: 1.5rem;
           font-weight: bold;
           color: #333;
           margin: 0;
         }
 
         .price-period {
-          font-size: 1.1rem;
+          font-size: 0.75rem;
           color: #555;
           margin: 0;
         }
 
         .card-body {
           padding: 0.5rem 0.5rem;
+          min-height: 200px;
         }
 
         .benefits-title {
@@ -384,16 +472,16 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
           border-radius: 12px;
           padding: 1rem;
           margin-bottom: 1rem;
-          height: 250px;
-          overflow-y: auto;
+          height: 150px;
+          overflow-y: hidden;
         }
 
         .benefit-item {
           display: flex;
           align-items: flex-start;
-          gap: 0.75rem;
-          margin-bottom: 1rem;
-          font-size: 15px;
+          gap: 0.3rem;
+          margin-bottom: 0.4rem;
+          font-size: 13px;
           line-height: 1.5;
           color: #374151;
           // letter-spacing: -1px;
@@ -438,6 +526,86 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
         .purchase-button:disabled {
           opacity: 0.6;
           cursor: not-allowed;
+        }
+
+        .compact-purchase-buttons {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          margin-bottom: 1rem;
+        }
+
+        .compact-purchase-button {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+          color: white;
+          border: 2px solid #1e40af;
+          padding: 0.5rem 1rem;
+          font-size: 0.7rem;
+          font-weight: 600;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 2px 2px 0px #1e40af;
+          width: 100%;
+        }
+
+        .compact-purchase-button:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: 4px 4px 0px #1e40af;
+        }
+
+        .compact-purchase-button:active:not(:disabled) {
+          transform: translateY(0);
+          box-shadow: 2px 2px 0px #1e40af;
+        }
+
+        .compact-purchase-button:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .button-left {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .button-title {
+          font-size: 1rem;
+          font-weight: 600;
+          margin: 0;
+        }
+
+        .sale-badge {
+          background: rgba(255, 255, 255, 0.2);
+          color: #fbbf24;
+          padding: 0.25rem 0.5rem;
+          border-radius: 6px;
+          font-size: 0.75rem;
+          font-weight: bold;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .button-right {
+          display: flex;
+          align-items: center;
+          gap: 0.1rem;
+        }
+
+        .price-amount {
+          font-size: 1.1rem;
+          font-weight: bold;
+          margin: 0;
+        }
+
+        .price-currency {
+          font-size: 0.9rem;
+          opacity: 0.9;
         }
 
         .premium-special {
@@ -501,30 +669,31 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
 
       <div className="purchase-page">
         {/* 헤더 */}
-             <SketchHeader
-                 title={mode === 'extend' ? '이용권 연장 안내' : get('daily.pass.purchase.title')}
-                 showBack={true}
-              onBack={handleBack}
-                 rightButtons={[]}
-               />
+        <SketchHeader
+            title={mode === 'extend' ? '이용권 연장 안내' : get('daily.pass.purchase.title')}
+            showBack={true}
+            onBack={handleBack}
+            rightButtons={[]}
+          />
 
         {/* 메인 콘텐츠 */}
         <div className="purchase-container">
           {/* 구매 카드 */}
           <div className="purchase-card">
-            <HatchPattern opacity={0.1} />
             
             {/* 카드 헤더 */}
             <div className="card-header">
               <div className="shimmer"></div>
-              <div className="plan-badge">
+              <div className="plan-badge" style={{display: 'none'}}>
                 <Zap size={16} />
                 {get('daily.pass.badge.title')}
               </div>
               
               <div className="price-section">
-                <h2 className="price">$9.99</h2>
-                <p className="price-period">{get('daily.pass.price.period')}</p>
+                <h2 className="price">
+                  $9.99 <span className="price-period">{get('daily.pass.price.period')}</span>
+                </h2>
+                
               </div>
             </div>
 
@@ -545,7 +714,31 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
                 ))}
               </div>
 
+              <div className="compact-purchase-buttons">
+                {itemList.map((item, index) => (
+                  item.visible && (
+                    <button key={index}
+                      className="compact-purchase-button"
+                      onClick={() => handleDailyPurchase(item)}
+                      disabled={isProcessing}
+                    >
+                      <div className="button-left">
+                        <span className="button-title">{item.title}</span>
+                        {item.saleRate > 0 && (
+                          <span className="sale-badge">{item.saleRate}% 할인</span>
+                        )}
+                      </div>
+                      <div className="button-right">
+                        <span className="price-currency">$</span>
+                        <span className="price-amount">{item.price}</span>
+                      </div>
+                    </button>
+                  )
+                ))}
+              </div>
+
               {/* 구매 버튼 */}
+              {/*
               <button
                 className="purchase-button daily-special"
                 onClick={handleDailyPurchase}
@@ -553,6 +746,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
               >
                 {isProcessing ? get('daily.pass.processing') : get('daily.pass.purchase.button')}
               </button>
+              */}
 
               {/* 안내 사항 */}
               <div className="notice-section">
