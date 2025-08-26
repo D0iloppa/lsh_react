@@ -15,6 +15,9 @@ import { usePopup } from '@contexts/PopupContext';
 
 import CountryFlag from 'react-country-flag';
 
+import Swal from 'sweetalert2';
+
+
 const FLAG_CODES = {
   kr: 'KR',
   en: 'US',
@@ -76,6 +79,7 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
 
   const didOpenIOSViewerRef = useRef(false);
 
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const { get, currentLang, messages } = useMsg();
   const { isActiveUser, iauMasking } = useAuth();
@@ -101,6 +105,32 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
         console.error('iOS 메시지 전송 실패:', e);
       }
   };
+
+  const hideIOSImageViewer = () => {
+  if (isIOS) {
+    postIOS({ type: "deleteImageViewer" });
+    didOpenIOSViewerRef.current = false; // 다시 띄울 수 있도록 reset
+  }
+};
+
+const showIOSImageViewer = () => {
+  if (isIOS) {
+    const valid = (images || []).filter(Boolean);
+    if (valid.length === 0) return;
+
+    const rect = getViewportRect(rotationHostRef.current);
+    if (!rect) return;
+    
+    postIOS({
+      type: "showImageViewer",
+      images: valid,
+      startIndex: currentIndex,
+      noImagePopup,
+      rect,
+    });
+    didOpenIOSViewerRef.current = true;
+  }
+};
 
   const IOSImageViewer = ({ images = [] }) => {
     const validImages = (images || []).filter(Boolean);
@@ -187,6 +217,9 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
 
   const handleReserve = async () => {
     try {
+
+      hideIOSImageViewer();
+
       // 구독 상태 확인
       const { isActiveUser: isActive = false } = await isActiveUser();
 
@@ -209,6 +242,9 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
           type: 'premium-tabs',
           title: '구독이 필요한 서비스입니다',
           content: '예약 서비스를 이용하시려면 구독이 필요합니다.',
+          onClose: () => {
+          showIOSImageViewer();
+        }
           /*
           onTodayTrial: () => {
 
@@ -651,6 +687,10 @@ useEffect(() => {
                     initialIndex={index}
                     placeholder={true}
                     className="profile-image"
+                     onClick={() => {
+                      setCurrentIndex(index);
+                      if (isIOS) showIOSImageViewer();
+                    }}
                   />
                 </div>
               </div>

@@ -350,15 +350,6 @@ const closePopup = (popupId) => {
   console.log(`❌ 팝업 닫기: ${popupId}`);
   dispatch({ type: 'CLOSE_POPUP', popupId });
 
-  const closedPopup = state.activePopups.find(p => p.id === popupId);
-
-  // 👇 onClose 콜백이 있으면 실행
-  if (closedPopup?.onClose && typeof closedPopup.onClose === 'function') {
-    closedPopup.onClose();
-  }
-
-  
-
   if (popupId === 'todayTrial') {
     // ✅ 오늘의 체험권 인앱결제 실행
     const payload = JSON.stringify({ action: 'buyItem' });
