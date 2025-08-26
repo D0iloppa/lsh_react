@@ -320,12 +320,12 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
   // 일일권 혜택 목록
   const dailyBenefits = [
     highlighted,
-    get('Popup.Today.Benefit1'),
-    get('Popup.Today.Benefit2'),
-    get('Popup.Today.Benefit3'),
-    get('Popup.Today.Benefit4'),
     get('Popup.Today.Benefit5'),
-    get('Popup.Today.Benefit6')
+    get('Popup.Today.Benefit6'),
+    get('Popup.Today.Benefit1'),
+    get('Popup.Today.Benefit3'),
+    get('Popup.Today.Benefit2'),
+    get('Popup.Today.Benefit4'),
   ];
 
   const asHtmlBlock = (htmlString) => {
