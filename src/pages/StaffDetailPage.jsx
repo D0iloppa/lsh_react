@@ -299,13 +299,15 @@ const showIOSImageViewer = () => {
     if(viewCntUpdated) return;
     
 
-    console.log('viewCountUpsert', girl);
+    console.log('viewCountUpsert-deprecated', girl);
 
+    /*
     await ApiClient.postForm('/api/viewCountUpsert', {
       target_type: 'staff',
       target_id: girl.staff_id,
       venue_id: girl.venue_id,
     });
+    */
     
     setViewCntUpdated(true);
   }
@@ -409,6 +411,7 @@ useEffect(() => {
 
   if (!shouldSendView(staffId, 3000)) return; // 3초 TTL
 
+  /*
   ApiClient.postForm('/api/viewCountUpsert', {
     target_type: 'staff',
     target_id: staffId,
@@ -418,6 +421,8 @@ useEffect(() => {
     clearThrottle(staffId);
     console.error(e);
   });
+  */
+
 }, [otherProps.staff_id, otherProps.venue_id, girl.staff_id, girl.venue_id]);
 
 

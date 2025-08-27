@@ -687,7 +687,11 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
                     </div>
                     <div className="stat-item">
                       <Calendar size={12} />
-                      {get('btn.booking.1')} {item.reservation_count}{get('text.cnt.1')}
+                        { 
+                        `${timeFilter == 'week' ? get('WORK_SCHEDULE_WEEK') : timeFilter == 'month' ? get('WORK_SCHEDULE_MONTH') : '' }` + ' ' + get('btn.booking.1') + ' '
+                        }
+                        {item.reservation_count}
+                        {' ' + get('text.cnt.1')}
                     </div>
                     <div className="stat-item">
                       <Eye size={12} />

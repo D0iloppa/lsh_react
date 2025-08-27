@@ -45,7 +45,7 @@ const usePageNavigation = () => {
 
         console.log('navigateToPage', page, user);
 
-        ApiClient.accessLog({user_id: user.user_id, page: page});
+        ApiClient.accessLog({user_id: user.user_id, page: page, data: null});
         
         setCurrentPage(page);
         setPageHistory(prev => [...prev, page]);
@@ -58,7 +58,7 @@ const usePageNavigation = () => {
 
         console.log('navigateToPageWithData', page, user);
         
-        ApiClient.accessLog({user_id: user.user_id, page: page});
+        ApiClient.accessLog({user_id: user.user_id, page: page, data: data});
 
         if(page == PAGES.LOGIN){
             setNobottom(true); 

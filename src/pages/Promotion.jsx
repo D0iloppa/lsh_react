@@ -221,21 +221,28 @@ const PromotionsPage = ({
           }
 
           .filter-content {
-            display: flex;
-            align-items: center;
-            position: relative;
-            z-index: 2;
-          }
+              display: flex;
+              align-items: center;
+              flex-direction: row;   /* ✅ 항상 가로 */
+              justify-content: space-between;
+              width:92%;
+              margin-left:3%;
+              margin-top:3%;
+              gap: 8px;              /* 입력창과 버튼 사이 여백 */
+            }
 
-          .filter-input {
-            flex: 1;
-          }
+            .filter-input {
+              flex: 8;               /* ✅ 입력창이 남는 공간을 차지 */
+            }
 
-          .filter-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-          }
+            .filter-btn {
+              flex: 2;               /* ✅ 비율 2 */
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height:45px;
+            }
+
 
           .promotion-card {
             padding: 0;
@@ -247,6 +254,8 @@ const PromotionsPage = ({
             transition: all 0.2s;
             margin-bottom: 20px;
           }
+
+          
 
           .promotion-card:nth-child(even) {
             transform: rotate(0.3deg);
@@ -278,8 +287,9 @@ const PromotionsPage = ({
 
           .promotion-image {
             width: 100%;
-            height: 100%;
-            object-fit: cover;
+            height: 200px;              /* 높이 고정 */
+            object-fit: cover;          /* 비율 유지하면서 잘림 */
+            object-position: center;    /* 가운데 기준 */
             border-bottom: 0.8px solid #666;
           }
 
@@ -298,6 +308,10 @@ const PromotionsPage = ({
           .promotion-details {
             margin-bottom: 1rem;
           }
+            
+        .sketch-input-group {
+          margin-bottom: 0rem; 
+        }
 
           .promotion-detail {
             font-size: 0.875rem;
@@ -393,15 +407,6 @@ const PromotionsPage = ({
               padding: 1rem;
             }
 
-            .filter-content {
-              flex-direction: column;
-              align-items: stretch;
-            }
-
-            .filter-btn {
-              justify-content: center;
-            }
-
             .promotion-info {
               padding: 1rem;
             }
@@ -430,8 +435,8 @@ const PromotionsPage = ({
         <SketchHeader title={get('btn.promotion.1')} showBack={true} onBack={handleBack}
           rightButtons={[]} />
 
-        <div className="content-section">
-          <SketchDiv className="filter-section">
+               <SketchDiv className="" style={{ border: "none" }}>
+
             <HatchPattern opacity={0.02} />
             <div className="filter-content">
               <div className="filter-input">
@@ -454,11 +459,14 @@ const PromotionsPage = ({
                 className="filter-btn"
               >
                 <HatchPattern opacity={0.8} />
-                <Filter size={16} />
+              
                 {get('btn.search.1')}
               </SketchBtn>
             </div>
           </SketchDiv>
+
+        <div className="content-section">
+     
 
           <div className="promotions-list">
             {promotions.length > 0 ? (

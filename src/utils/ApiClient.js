@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+
 const API_HOST = import.meta.env.VITE_API_HOST;
 
 // axios 인스턴스 생성
@@ -14,18 +15,48 @@ const axiosInstance = axios.create({
 // 간단한 API 클라이언트
 const ApiClient = {
 
-  accessLog({user_id=null, page = false}){
+  accessLog({user_id=null, page = false, data = null}){
     if(user_id == null || page == false){
       return;
     }
 
-    // 비동기로 요청만 보냄
-    axiosInstance.get('/api/accessLog', {
-      params: {
-        user_id: user_id,
-        page: page
+    let params = {
+      user_id: user_id,
+      page: page
+    }
+    if(data != null){
+
+      let _data = {
+        venue_id: data?.venue_id || data.venueId,
+        staff_id: data?.staff_id || data.staffId
       }
+
+      switch(page){
+        case "STAFFDETAIL":
+          _data.target_type = 'staff';
+          _data.target_id = _data.staff_id;
+          break;
+        case "DISCOVER":
+          _data.target_type = 'venue';
+          _data.target_id = _data.venue_id;
+          break;
+      }
+
+      
+
+
+      params.data = JSON.stringify(_data);
+    }
+
+    // 비동기로 요청만 보냄
+    /*
+    axiosInstance.get('/api/accessLog', {
+      params:params
     });
+    */
+
+    axiosInstance.post('/api/accessLog', params);
+
 
     
   },

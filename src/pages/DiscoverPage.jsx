@@ -362,12 +362,14 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
 
 
   const venueViewCntUpsert = () => {
-    console.log('viewCountUpsert', venueId);
+    console.log('viewCountUpsert-deprecated', venueId);
 
+    /*
     ApiClient.postForm('/api/viewCountUpsert', {
       target_type: 'venue',
       venue_id: venueId
     });
+    */
 
   }
 
