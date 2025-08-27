@@ -55,7 +55,11 @@ const ApiClient = {
     });
     */
 
-    axiosInstance.post('/api/accessLog', params);
+    axiosInstance
+      .post('/api/accessLog', params)
+      .catch(error => {
+        console.error('accessLog error:', error);
+      });
 
 
     
