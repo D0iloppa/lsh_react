@@ -625,6 +625,8 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
                     )}
                   </div>
 
+
+                  
                   {/* 영업 상태 (매장만) */}
                   {rankingType === 'venue' && (
                     /*
@@ -649,6 +651,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
                         : (item.is_reservation ? get('DiscoverPage1.1.able') || '예약가능' : get('DiscoverPage1.1.disable') || '예약불가')}
                     </div>
                     */
+                   <div style={{display:'flex'}}>
                     <div
                         className="is-reservation"
                         style={{
@@ -669,7 +672,21 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
                           ? get('DiscoverPage1.1.able')  // 예약가능
                           : get('VENUE_END') // 영업종료
                       }  
+
+
+
+                      
                       </div>
+
+
+                      <div className="stat-item" style={{marginLeft:'10%'}}>
+                        <Users size={12} />
+                        {get('title.text.16')} {item.staff_cnt}{get('Reservation.PersonUnit')}
+                      </div>
+                     
+                      </div>
+                     
+                      
                   )}
 
                   {/* 주소 (매장만) */}
@@ -700,12 +717,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
                       } 
                       {' ' + item.view_cnt.toLocaleString()}
                     </div>
-                    {rankingType === 'venue' && item.staff_cnt != null && (
-                      <div className="stat-item">
-                        <Users size={12} />
-                        {get('title.text.16')} {item.staff_cnt}{get('Reservation.PersonUnit')}
-                      </div>
-                    )}
+                    
                     {/* {rankingType === 'venue' && openHoursText && (
                       <div className="stat-item">
                         <Clock size={12} />
