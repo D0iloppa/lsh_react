@@ -274,31 +274,29 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
     }
   };
 
-  // 순위별 아이콘
-  const getRankIcon = (rank) => {
+const getRankIcon = (rank) => {
   if (rank <= 3) {
     const rankImgSrc = `/cdn/rank${rank}.png`;
 
     return (
       <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center',
-        gap: '2px'
+        
       }}>
-        <span style={{ 
-          fontSize: '18px', 
-          fontWeight: 'bold', 
-          color: getRankColor(rank)
-        }}>
-          {/*rank*/}{/*get('ranking_number')*/}
-        </span>
+        {/* 숫자 (숨겨도 되지만 DOM 유지) */}
+       
+        {/* 아이콘이 숫자를 덮는 오버레이 */}
         <img 
           src={rankImgSrc} 
           alt={`rank${rank}`} 
           style={{ 
-            width: '35px', 
-            height: '35px',
+            position: 'absolute',
+            top: '0%',
+            left: '0%',
+            transform: 'translate(-50%, -50%)',
+            width: '50Px',
+            height: '50px',
+            zIndex: 2,
+            opacity: 1,
             animation: rank === 1 ? 'goldTrophy 2s ease-in-out infinite' : 
                       rank === 2 ? 'silverTrophy 2.5s ease-in-out infinite' :
                       'bronzeTrophy 3s ease-in-out infinite'
@@ -306,10 +304,20 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
         />
       </div>
     );
+  } else {
+    // 4등 이상 → 숫자만
+    return (
+      <span style={{ 
+        fontSize: '18px',
+        fontWeight: 'bold',
+        color: getRankColor(rank)
+      }}>
+        {rank}
+      </span>
+    );
   }
-
-  return <span style={{ color: '#6B7280', fontWeight: 'bold', fontSize: '18px' }}>{rank}</span>;
 };
+
 
 
   const formatTime = (t) => {
@@ -428,6 +436,37 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
           position: relative;
           border: 1px solid #333;
         }
+
+
+        .ranking-card.rank-1 .image-container {
+          flex: 0 0 120px;
+          width: 120px;
+          height: 120px;
+          left : 0%;
+        }
+
+        .ranking-card.rank-2 .image-container {
+          flex: 0 0 120px;
+          width: 120px;
+          height: 120px;
+        }
+
+        .ranking-card.rank-3 .image-container {
+          flex: 0 0 120px;
+          width: 120px;
+          height: 120px;
+        }
+
+      .ranking-card.rank-1 .rank-number,
+      .ranking-card.rank-2 .rank-number,
+      .ranking-card.rank-3 .rank-number {
+        flex: 0 0 0;
+        width: 0;
+        margin: 0;
+        padding: 0;
+      }
+
+          
         .content-area {
           flex: 1;
           position: relative;
@@ -446,6 +485,14 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
           margin-top: 8px;
           flex-wrap: wrap;
         }
+
+        .stats-row-2 {
+          display: flex;
+          gap: 8px;
+          margin-top: 8px;
+          flex-wrap: wrap;
+        }
+
         .stat-item {
           display: flex;
           align-items: center;
@@ -677,13 +724,6 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
 
                       
                       </div>
-
-
-                      <div className="stat-item" style={{marginLeft:'5%'}}>
-                        <Users size={12} />
-                        {get('title.text.16')} {item.staff_cnt}{get('Reservation.PersonUnit')}
-                      </div>
-                     
                       </div>
                      
                       
@@ -698,10 +738,29 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
 
                   {/* 통계 정보 */}
                   <div className="stats-row">
+
+
+
+
+
+
+                     {rankingType === 'venue' && (
+                       <div className="stat-item">
+                        <Users size={12} />
+                        {get('title.text.16')} {item.staff_cnt}{get('Reservation.PersonUnit')}
+                      </div>
+                  )}
+
+
+
+                    
+                     
                     <div className="stat-item">
                       <Star size={12} style={{ fill: '#ffe800' }} />
                       {item.rating}
                     </div>
+                  </div>
+                   <div className="stats-row-2">
                     <div className="stat-item">
                       <Calendar size={12} />
                         { 
