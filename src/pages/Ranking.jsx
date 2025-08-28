@@ -679,7 +679,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
                       </div>
 
 
-                      <div className="stat-item" style={{marginLeft:'10%'}}>
+                      <div className="stat-item" style={{marginLeft:'5%'}}>
                         <Users size={12} />
                         {get('title.text.16')} {item.staff_cnt}{get('Reservation.PersonUnit')}
                       </div>
