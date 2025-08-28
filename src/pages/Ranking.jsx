@@ -695,7 +695,10 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
                     </div>
                     <div className="stat-item">
                       <Eye size={12} />
-                      {get('ranking_veiw_text')} {item.view_cnt.toLocaleString()}
+                      {
+                        `${timeFilter == 'week' ? get('WORK_SCHEDULE_WEEK') : timeFilter == 'month' ? get('WORK_SCHEDULE_MONTH') : '' }` + ' ' + get('ranking_veiw_text')
+                      } 
+                      {' ' + item.view_cnt.toLocaleString()}
                     </div>
                     {rankingType === 'venue' && item.staff_cnt != null && (
                       <div className="stat-item">
