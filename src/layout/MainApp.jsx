@@ -212,7 +212,7 @@ const MainApp = () => {
 
     // 광고 호출 함수 (useCallback으로 메모이제이션)
     // 광고 호출 주기 설정 (N회마다 광고 호출)
-    const AD_CALL_INTERVAL = 10;
+    const AD_CALL_INTERVAL = 5;
 
     const showAdWithCallback = useCallback(async (onAdComplete, fallbackAction, timeoutMs = 4000, forceShow = false) => {
         
