@@ -133,13 +133,13 @@ const AppRoutes = () => {
     if (version) {
        if (isAndroid && compareVersions(version, '1.0.10') < 0) {
           navigate('/downloadAndroid');
-       } else if (isIOS && compareVersions(version, '1.0.7') < 0) {
+       } else if (isIOS && compareVersions(version, '1.0.8') < 0) {
           navigate('/downloadIOS');
       }
     } else {
       if (isAndroid && compareVersions(version, '1.0.10') < 0) {
          navigate('/downloadAndroid');
-       } else if (isIOS && compareVersions(version, '1.0.7') < 0) {
+       } else if (isIOS && compareVersions(version, '1.0.8') < 0) {
          navigate('/downloadIOS');
       }
     }
@@ -148,7 +148,7 @@ const AppRoutes = () => {
     if (version) {
        if (isAndroid && compareVersions(version, '1.0.10') == 0) {
           saveVersionCheck(true);
-       } else if (isIOS && compareVersions(version, '1.0.7') == 0) {
+       } else if (isIOS && compareVersions(version, '1.0.8') == 0) {
           saveVersionCheck(true);
       }
     }
