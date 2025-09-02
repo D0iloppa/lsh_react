@@ -130,6 +130,25 @@ const showIOSImageViewer = async () => {
   try {
     const iau = await isActiveUser(); // ✅ async 호출
     const iauValue = iau?.isActiveUser ? 1 : 0;
+
+     let girlname = girl?.name;
+
+      if (girlname?.props?.className === "masked-text-wrapper") {
+  const children = girlname.props.children || [];
+
+  const firstCharObj = children.find(
+    (c) => c?.props?.className === "first-char"
+  );
+  const dotsObj = children.find(
+    (c) => c?.props?.className === "masking-dots"
+  );
+
+  const firstChar = firstCharObj?.props?.children || "";
+  const maskingDots = dotsObj?.props?.children || "";
+
+  girlname = firstChar + maskingDots;
+}
+
 hideIOSImageViewer();
     postIOS({
       type: "showImageViewer",
@@ -137,7 +156,7 @@ hideIOSImageViewer();
       startIndex: currentIndex,
       noImagePopup,
       staffInfo: JSON.stringify({
-        name: girl?.name || "Unknown Staff",
+        name: girlname || "Unknown Staff",
         languages: girl?.languages || "",
         description: girl?.description || "",
         msg1: get("LANGUAGES_LABEL"),
@@ -511,6 +530,25 @@ useEffect(() => {
     try {
       const iau = await isActiveUser(); // ✅ async 호출은 여기서
       const iauValue = iau?.isActiveUser ? 1 : 0;  
+
+      let girlname = girl?.name;
+
+      if (girlname?.props?.className === "masked-text-wrapper") {
+  const children = girlname.props.children || [];
+
+  const firstCharObj = children.find(
+    (c) => c?.props?.className === "first-char"
+  );
+  const dotsObj = children.find(
+    (c) => c?.props?.className === "masking-dots"
+  );
+
+  const firstChar = firstCharObj?.props?.children || "";
+  const maskingDots = dotsObj?.props?.children || "";
+
+  girlname = firstChar + maskingDots;
+}
+
 hideIOSImageViewer();
       postIOS({
         type: 'showImageViewer',
@@ -518,7 +556,7 @@ hideIOSImageViewer();
         startIndex: 0,
         noImagePopup,
         staffInfo: JSON.stringify({
-          name: girl?.name || 'Unknown Staff',
+          name: girlname || 'Unknown Staff',
           languages: girl?.languages || '',
           description: girl?.description || '',
           msg1: get('LANGUAGES_LABEL'),
