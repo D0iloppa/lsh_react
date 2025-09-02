@@ -21,7 +21,7 @@ import ApiClient from '@utils/ApiClient';
 import { useLoginOverlay } from '@hooks/useLoginOverlay.jsx';
 import { overlay } from 'overlay-kit';
 
-const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAGES, goBack, showAdWithCallback }) => {
+const HomePage = ({ pageHistory, navigateToMap, navigateToSearch, navigateToPageWithData, PAGES, goBack, showAdWithCallback }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [hotspots, setHotspots] = useState([]);
   const [originalHotspots, setOriginalHotspots] = useState([]);
@@ -44,6 +44,7 @@ const HomePage = ({ navigateToMap, navigateToSearch, navigateToPageWithData, PAG
   const [showNotice, setShowNotice] = useState(false); // 공지 표시 여부
 
 
+  console.log(pageHistory);
     // 커스텀 훅 사용
   const navigationProps = { navigateToPageWithData, PAGES, goBack };
   const { openLoginOverlay } = useLoginOverlay(navigationProps);
@@ -320,6 +321,8 @@ if (savedScrollY !== null) {
 
   }, [messages, currentLang]);
 
+
+  
   const handleGoBack = () => {
     navigate(-1);
   };
@@ -372,6 +375,7 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
     setHotspots(filtered);
   };
 
+  
   useEffect(() => {
     filterAndSortHotspots(searchQuery, categoryFilter, sortRating, sortPrice, sortStaff);
   }, [searchQuery, categoryFilter, sortRating, sortPrice, sortStaff, isReservationOnly,staffLanguageFilter]);

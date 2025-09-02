@@ -27,6 +27,27 @@ const MainApp = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
+
+     // ✅ iOS 판별 + 네이티브 메시지 함수
+    const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
+
+    const postIOS = (payload) => {
+        try {
+            window.webkit?.messageHandlers?.native?.postMessage(
+                JSON.stringify(payload)
+            );
+        } catch (e) {
+            console.error("iOS postMessage 실패:", e);
+        }
+    };
+
+    const hideIOSImageViewer = () => {
+        if (isIOS) {
+            postIOS({ type: "deleteImageViewer" });
+        }
+    };
+
+
     const scrollToTop = () => {
          console.log('올바른 스크롤 리셋');
   
@@ -84,6 +105,7 @@ const MainApp = () => {
     }, [user, messages, currentLang, activeUser, loginId]);
 
     const {
+        pageHistory,
         currentPage,
         navigateToPage,
         navigateToPageWithData,
@@ -97,6 +119,13 @@ const MainApp = () => {
         goBackParams,
         PAGES
     } = usePageNavigation();
+
+     useEffect(() => {
+        if (isIOS) {
+            console.log("페이지 진입 - iOS ImageViewer 초기화");
+            hideIOSImageViewer();
+        }
+    }, [currentPage]);
 
     useEffect(() => {
         ApiClient.accessLog({
@@ -363,6 +392,7 @@ const MainApp = () => {
     }, []); 
     
     const navigationProps = {
+        pageHistory,
         navigateToMap,
         navigateToSearch,
         navigateToEvents,

@@ -216,6 +216,7 @@ const usePageNavigation = () => {
     };
 
     return {
+        pageHistory,
         currentPage,
         navigateToPage,
         navigateToPageWithData,

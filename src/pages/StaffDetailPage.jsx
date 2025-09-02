@@ -13,6 +13,7 @@ import { useMsg } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
 import { usePopup } from '@contexts/PopupContext';
 
+
 import CountryFlag from 'react-country-flag';
 
 import Swal from 'sweetalert2';
@@ -61,7 +62,9 @@ function clearThrottle(staffId) {
   try { sessionStorage.removeItem(key); } catch {}
 }
 
-const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCallback, ...otherProps }) => {
+const StaffDetailPage = ({ pageHistory, navigateToPageWithData, goBack, PAGES, showAdWithCallback, ...otherProps }) => {
+
+  console.log('sd', pageHistory);
 
   // 이미지 확대 여부
   const [noImagePopup, setNoImagePopup] = useState(true);
@@ -94,6 +97,8 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
 
       if(noImagePopup) return;
 
+      hideIOSImageViewer();
+
         window.webkit.messageHandlers.native.postMessage(
           JSON.stringify({
             type: 'showImageViewer',
@@ -113,24 +118,43 @@ const StaffDetailPage = ({ navigateToPageWithData, goBack, PAGES, showAdWithCall
   }
 };
 
-const showIOSImageViewer = () => {
-  if (isIOS) {
-    const valid = (images || []).filter(Boolean);
-    if (valid.length === 0) return;
+const showIOSImageViewer = async () => {
+  if (!isIOS) return;
 
-    const rect = getViewportRect(rotationHostRef.current);
-    if (!rect) return;
-    
+  const valid = (images || []).filter(Boolean);
+  if (valid.length === 0) return;
+
+  const rect = getViewportRect(rotationHostRef.current);
+  if (!rect) return;
+
+  try {
+    const iau = await isActiveUser(); // ✅ async 호출
+    const iauValue = iau?.isActiveUser ? 1 : 0;
+hideIOSImageViewer();
     postIOS({
       type: "showImageViewer",
       images: valid,
       startIndex: currentIndex,
       noImagePopup,
+      staffInfo: JSON.stringify({
+        name: girl?.name || "Unknown Staff",
+        languages: girl?.languages || "",
+        description: girl?.description || "",
+        msg1: get("LANGUAGES_LABEL"),
+        iau: iauValue,
+        availCnt,
+        vnScheduleStatus,
+        photoDesc: get("STAFF_PHOTO_DESC"),
+      }),
       rect,
     });
+
     didOpenIOSViewerRef.current = true;
+  } catch (err) {
+    console.error("isActiveUser 체크 실패:", err);
   }
 };
+
 
   const IOSImageViewer = ({ images = [] }) => {
     const validImages = (images || []).filter(Boolean);
@@ -212,8 +236,22 @@ const showIOSImageViewer = () => {
     };
 */
   const handleBack = () => {
+    if (isIOS) {
+      hideIOSImageViewer();    
+    }
+
     goBack();
   };
+
+  useEffect(() => {
+  return () => {
+    // ✅ 페이지에서 벗어날 때 실행됨
+    if (isIOS) {
+      hideIOSImageViewer();
+    }
+  };
+}, []);
+
 
   const handleReserve = async () => {
     try {
@@ -243,7 +281,11 @@ const showIOSImageViewer = () => {
           title: '구독이 필요한 서비스입니다',
           content: '예약 서비스를 이용하시려면 구독이 필요합니다.',
           onClose: () => {
-          showIOSImageViewer();
+            setTimeout(() => {
+              console.log('on-close', pageHistory);
+              showIOSImageViewer();
+            }, 100);
+          
         }
           /*
           onTodayTrial: () => {
@@ -451,42 +493,65 @@ const postIOS = (payload) => {
     console.error('iOS postMessage 실패:', e);
   }
 };
-
 useEffect(() => {
-  
   if (!isIOS) return;
-  const valid = (images || []).filter(Boolean);
-  if (valid.length === 0) return;
-  if (didOpenIOSViewerRef.current) return;
 
-  let raf1, raf2;
-  // 레이아웃이 안정된 뒤 rect 측정
-  raf1 = requestAnimationFrame(() => {
-    raf2 = requestAnimationFrame(() => {
-      const rect = getViewportRect(rotationHostRef.current);
-      if (!rect) return;
+  hideIOSImageViewer();
+
+  const run = async () => {
+    const valid = (images || []).filter(Boolean);
+    if (valid.length === 0) return;
+
+    // staff 정보가 준비되지 않았다면 skip
+    if (!girl?.name && !girl?.description) return;
+
+    const rect = getViewportRect(rotationHostRef.current);
+    if (!rect) return;
+
+    try {
+      const iau = await isActiveUser(); // ✅ async 호출은 여기서
+      const iauValue = iau?.isActiveUser ? 1 : 0;  
+hideIOSImageViewer();
       postIOS({
-        type: 'showImageViewer', // 인라인 뷰어 호출
+        type: 'showImageViewer',
         images: valid,
         startIndex: 0,
-        noImagePopup:noImagePopup,
+        noImagePopup,
+        staffInfo: JSON.stringify({
+          name: girl?.name || 'Unknown Staff',
+          languages: girl?.languages || '',
+          description: girl?.description || '',
+          msg1: get('LANGUAGES_LABEL'),
+          iau:iauValue,
+          availCnt,
+          vnScheduleStatus,
+          photoDesc: get('STAFF_PHOTO_DESC')
+        }),
         rect,
       });
+
+      // ✅ 필요하다면 다시 열도록 reset
       didOpenIOSViewerRef.current = true;
-    });
-  });
-
-  // 언마운트 시 정리
-  return () => {
-    if (raf1) cancelAnimationFrame(raf1);
-    if (raf2) cancelAnimationFrame(raf2);
-
-    if (!isIOS) return;
-    
-    postIOS({ type: 'deleteImageViewer' });
-    didOpenIOSViewerRef.current = false;
+    } catch (err) {
+      console.error("isActiveUser 체크 실패:", err);
+    }
   };
-}, [isIOS, images]);
+
+  run();
+}, [
+  isIOS,
+  images,
+  girl?.name,
+  girl?.languages,
+  girl?.description,
+  availCnt,
+  vnScheduleStatus,
+  noImagePopup,
+  get
+]);
+
+
+
 
   // availCnt 가져오기
   useEffect(() => {
@@ -623,6 +688,25 @@ useEffect(() => {
           margin-top: 0.5rem;
           color: #555;
         }
+.fixed-bottom {
+  position: fixed;
+  bottom: 65px;              /* 항상 화면 최하단에 붙음 */
+  left: -15px;
+  width: 100%;
+  background: #fff;       /* 버튼 영역 배경 (스크롤 겹침 방지) */
+
+  display: flex;
+  justify-content: center;
+  z-index: 100;           /* 다른 요소 위로 */
+}
+
+.fixed-bottom .sketch-button {
+  width: 90%;             /* 버튼 크기 */
+  max-width: 500px;       /* (선택) 너무 커지지 않게 제한 */
+}
+
+
+
       `}</style>
 
       <div className="staff-detail-container">
@@ -666,7 +750,7 @@ useEffect(() => {
   >
     {isIOS ? (
       // iOS: 웹 이미지는 렌더링하지 않고, 자리만 유지(높이는 기존 이미지 높이와 동일하게)
-      <div style={{ width: '100%', height: 350 }} />
+      <div style={{ width: '100%', height: 530 }} />
     ) : (
       <RotationDiv
         interval={50000000}
@@ -708,7 +792,7 @@ useEffect(() => {
 </div>
 
 
-
+{!isIOS && (
         <div className="staff-info-section">
           <div className="staff-photo-description" style={{display:noImagePopup ? 'block' : 'none', fontSize:'0.8rem'}}>
               {`(${get('STAFF_PHOTO_DESC')})`}
@@ -761,23 +845,24 @@ useEffect(() => {
             }
           </div>
         </div>
+)}
+         <div className="booking-form-section fixed-bottom">
+  <SketchBtn
+    className="sketch-button enter-button"
+    variant="event"
+    disabled={availCnt <= 0 || vnScheduleStatus === 'closed'}
+    onClick={handleReserve}
+  >
+    <HatchPattern opacity={0.8} />
+    {vnScheduleStatus === 'closed'
+      ? get('DiscoverPage1.1.disable') || '예약 마감'
+      : availCnt > 0
+        ? get('DiscoverPage1.1') || '예약하기'
+        : get('DiscoverPage1.1.disable') || '예약 마감'}
+  </SketchBtn>
+</div>
 
-        <div className="booking-form-section">
-          <SketchBtn
-            className="sketch-button enter-button"
-            variant="event"
-            style={{ display: 'block' }}
-            disabled={availCnt <= 0 || vnScheduleStatus === 'closed'}
-            onClick={handleReserve}
-          >
-            <HatchPattern opacity={0.8} />
-            {vnScheduleStatus === 'closed'
-              ? get('DiscoverPage1.1.disable') || '예약 마감'
-              : availCnt > 0
-                ? get('DiscoverPage1.1') || '예약하기'
-                : get('DiscoverPage1.1.disable') || '예약 마감'}
-          </SketchBtn>
-        </div>
+
 
         <LoadingScreen
           variant="cocktail"
