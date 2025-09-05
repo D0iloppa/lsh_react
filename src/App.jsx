@@ -110,6 +110,7 @@ const AppRoutes = () => {
     } catch (err) {
       console.error('UUID 오류:', err);
       //Swal.fire('UUID 에러', err.toString(), 'error');
+      
     }
 
 
