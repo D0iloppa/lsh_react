@@ -525,7 +525,7 @@ const deleteReview = async (reviewId) => {
           margin: 0;
           font-style: italic;
         }
-          .daily-stats {margin-top: 1.5rem;     box-shadow: 4px 4px 0px #49dde4;}
+          .daily-stats {margin-top: 1.5rem;     box-shadow: 4px 4px 0px #49dde4; display:none;}
       `}</style>
 
       <div className="account-container">

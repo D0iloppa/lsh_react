@@ -1286,6 +1286,9 @@ const openMenuOverlay = (menuList) => {
                       let { isActiveUser = false } = response;
 
                       console.log('isActiveUser:', isActiveUser);
+                      
+                      // 한시적 무료
+                      isActiveUser = true;
 
                       if (isActiveUser === true) {
                         // 구독자인 경우 바로 예약 페이지로 이동

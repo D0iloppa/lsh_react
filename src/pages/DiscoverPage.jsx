@@ -1542,6 +1542,9 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                   });
                   let { isActiveUser = false } = response;
 
+                  // 한시적 무료
+                  isActiveUser = true;
+
                   if (isActiveUser === true) {
                     navigateToPageWithData(PAGES.CHATTING, {
                       name: venueInfo?.name,
@@ -1601,6 +1604,9 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                   });
                   let { isActiveUser = false } = response;
 
+                  // 한시적 무료
+                  isActiveUser = true;
+                  
                   if (isActiveUser === true) {
                     navigateToPageWithData(PAGES.RESERVATION, {
                       target: 'venue',

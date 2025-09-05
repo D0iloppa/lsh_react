@@ -324,7 +324,9 @@ const MainApp = () => {
 
         console.log('showAdWithCallback', activeUser);
 
-        
+        // 한시적 무료
+        // 모든이 광고 필수
+        _isActive = false;
 
         if(_isActive) {
             console.warn('active user');

@@ -12,6 +12,9 @@ import qs from 'qs';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+
+  const isFreeUse = true;
+
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return localStorage.getItem('isLoggedIn') === 'true';
   });
@@ -133,10 +136,39 @@ const { currentLang, setLanguage } = useMsg();
         console.log('❌ User not found, cannot check subscription');
         return { isActiveUser: false, subscription: {} };
       }
+
+
+
+
   
       const response = await ApiClient.postForm('/api/getSubscriptionInfo', {
         user_id: user.user_id
       });
+
+      if(isFreeUse){
+
+        const subscription = {
+          "subscription_id": 46,
+          "user_id": user.user_id,
+          "subscription_type": "daily",
+          "started_at": "2025-08-07 02:46:55.516",
+          "expired_at": "2125-08-10 21:22:32.953",
+          "canceled_at": null,
+          "status": "active",
+          "created_at": "2025-08-08 02:46:55.516",
+          "days": 1
+        };
+
+        const userState = 'active';
+
+        console.log('✅ 한시적 무료:', { isActiveUser: true, subscription, userState });
+        
+        writeCache({ isActiveUser: true, subscription, userState }); // 성공 시 캐시 갱신
+  
+
+        return { isActiveUser: true, subscription, userState };
+      }
+
   
       // ⚠️ 이름 충돌 피하기: active 로 받기
       const { isActiveUser: active = false, subscription = {}, userState = 'active' } = response || {};
