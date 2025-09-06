@@ -988,6 +988,25 @@ const getEntranceText = (entranceValue) => {
           }
 
 
+          .btn-disabled {
+            background-color: #e0e0e0 !important;
+            color: #9e9e9e !important;
+            border: 1px solid #ccc !important;
+            cursor: not-allowed !important;
+            opacity: 0.7;
+            pointer-events: auto !important; /* 클릭 허용 */
+          }
+            
+          .action-buttons {
+            width:52%;
+            display: flex;
+            flex-direction: row;   /* 🔥 세로 → 가로 */
+            gap: 0.5rem;
+            flex-wrap: nowrap;     /* 🔥 줄바꿈 방지 */
+            align-items: center;   /* 높이 맞춤 */
+          }
+
+
       `}</style>
 
       <div className="booking-history-container">
@@ -1160,6 +1179,27 @@ const getEntranceText = (entranceValue) => {
                       {booking.statusLabel}
                     </div>
                     <div className="action-buttons">
+
+                      {booking.status != 'completed' && booking.status != 'canceled' && (
+                          <SketchBtn
+                              variant="event"
+                              size="small"
+                              onClick={() => {
+                                Swal.fire({
+                                  icon: 'info',
+                                  title: get('RESERVATION_SWAL_1'),
+                                  text: get('RESERVATION_SWAL_2'),
+                                  confirmButtonText: '확인'
+                                });
+                              }}
+                              className="btn-disabled"
+                            >
+                              <HatchPattern opacity={0.4} />
+                              {getReviewButtonState(booking).text}
+                            </SketchBtn>
+
+                        )}
+
                       {isCancelable(booking) && (
                           <SketchBtn 
                             variant="danger" 
@@ -1170,7 +1210,6 @@ const getEntranceText = (entranceValue) => {
                             {get('RESERVATION_CANCELED_BUTTON')}
                           </SketchBtn>
                         )}
-
 
                         {booking.status === 'completed' && (
                           <SketchBtn 
