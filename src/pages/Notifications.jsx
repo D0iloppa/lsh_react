@@ -17,7 +17,7 @@ const NotificationsPage = ({
   goBack,
   ...otherProps
 }) => {
-  const [selectedFilter, setSelectedFilter] = useState('all');
+  const [selectedFilter, setSelectedFilter] = useState('ALL');
 
 const getIcon = () => {
     switch (type) {
@@ -342,6 +342,12 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
 
           
         }
+
+        .filter-buttons .active-filter {
+        background-color: #000 !important; /* 검정색 배경 */
+        color: #fff !important;           /* 흰색 글씨 */
+        border: 1px solid #000 !important;
+      }
       `}</style>
 
       <div className="notifications-container">
@@ -353,46 +359,61 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
         />
 
         {/* Filter Section */}
-        <div className="filter-section">
-          <div className="filter-label"></div>
-         <div className="filter-buttons">
-                         <SketchBtn 
-                         variant="secondary" 
-                         size="small"
-                         onClick={() => handleFilterType("ALL")}
-                       >
-                         <HatchPattern opacity={0.4} />
-                         {get('btn.all.1')}
-                       </SketchBtn>
-                       <SketchBtn 
-                         variant="secondary" 
-                         size="small"
-                         onClick={() => handleFilterType("3")}
-                       >
-                         <HatchPattern opacity={0.4} />
-                         {get('btn.booking.1')}
-                       </SketchBtn>
-                       
-                       <SketchBtn 
-                         variant="secondary" 
-                         size="small"
-                         onClick={() => handleFilterType("2")}
-                       >
-                         <HatchPattern opacity={0.4} />
-                         {get('btn.promotion.1')}
-                       </SketchBtn>
-                       
-                       <SketchBtn 
-                         variant="secondary" 
-                         size="small"
-                         onClick={() => handleFilterType("1")}
-                       >
-                         <HatchPattern opacity={0.4} />
-                         {get('btn.alert.1')}
-                       </SketchBtn>
-                     </div>
-         
-        </div>
+       {/* Filter Section */}
+<div className="filter-section">
+  <div className="filter-label"></div>
+  <div className="filter-buttons">
+    <SketchBtn 
+      className={selectedFilter === "ALL" ? "active-filter" : ""}
+      size="small"
+      onClick={() => {
+        handleFilterType("ALL");
+        setSelectedFilter("ALL");
+      }}
+    >
+      <HatchPattern opacity={0.4} />
+      {get('btn.all.1')}
+    </SketchBtn>
+
+    <SketchBtn 
+      className={selectedFilter === "3" ? "active-filter" : ""}
+      size="small"
+      onClick={() => {
+        handleFilterType("3");
+        setSelectedFilter("3");
+      }}
+    >
+      <HatchPattern opacity={0.4} />
+      {get('btn.booking.1')}
+    </SketchBtn>
+
+    <SketchBtn 
+      className={selectedFilter === "2" ? "active-filter" : ""}
+      size="small"
+      onClick={() => {
+        handleFilterType("2");
+        setSelectedFilter("2");
+      }}
+    >
+      <HatchPattern opacity={0.4} />
+      {get('btn.promotion.1')}
+    </SketchBtn>
+
+    <SketchBtn 
+      className={selectedFilter === "1" ? "active-filter" : ""}
+      size="small"
+      onClick={() => {
+        handleFilterType("1");
+        setSelectedFilter("1");
+      }}
+    >
+      <HatchPattern opacity={0.4} />
+      {get('btn.alert.1')}
+    </SketchBtn>
+  </div>
+</div>
+
+
 
         {/* Notifications List */}
         <div className="notifications-list">
