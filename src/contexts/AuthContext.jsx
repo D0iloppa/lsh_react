@@ -1,5 +1,5 @@
 // src/contexts/AuthContext.jsx
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useRef } from 'react';
 import { loginPost, validateForm } from '@components/Login/login'; // ← 로그인 로직 재활용
 
 import { useMsg } from './MsgContext';
@@ -15,6 +15,8 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
 
   const isFreeUse = true;
+
+  const invokeCntRef = useRef(0);
 
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return localStorage.getItem('isLoggedIn') === 'true';
@@ -447,11 +449,18 @@ const deviceLogin = async () => {
   if (isLoggedIn) {
     console.log('이미 로그인된 상태입니다.', user);
 
-    // device_login -> 이력 추가
-    ApiClient.accessLog({
-      user_id : user.user_id,
-      page : "intro"
-    });
+
+    if(invokeCntRef.current < 3) {
+      
+      invokeCntRef.current += 1;
+      // device_login -> 이력 추가
+      ApiClient.accessLog({
+        user_id : user.user_id,
+        page : "INTRO"
+      });
+    }
+
+
 
     return { success: true, user };
   }
@@ -541,12 +550,15 @@ const deviceLogin = async () => {
         setIsLoggedIn(true);
         setUser(loginUser);
 
-
-       // device_login -> 이력 추가
-        ApiClient.accessLog({
-          user_id : user.user_id,
-          page : "intro"
-        });
+        if(invokeCntRef.current < 3) {
+      
+          invokeCntRef.current += 1;
+          // device_login -> 이력 추가
+            ApiClient.accessLog({
+              user_id : user.user_id,
+              page : "INTRO"
+            });
+        }
 
 
         

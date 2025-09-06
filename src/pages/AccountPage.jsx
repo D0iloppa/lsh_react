@@ -282,10 +282,13 @@ const AccountPage = ({
         });
 
         await logout();
-        navigateToPage(PAGES.HOME);
+        //navigateToPage(PAGES.HOME);
+        navigate('/');
 
       } catch (e) {
         console.error('계정 탈퇴 중 오류:', e);
+
+        // Swal.fire(JSON.stringify(e));
       }
     }
   };
