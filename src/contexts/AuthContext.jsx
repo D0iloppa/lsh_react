@@ -8,6 +8,7 @@ import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import qs from 'qs';
+import { PAGES } from '../config/pages.config';
 
 const AuthContext = createContext();
 
@@ -162,7 +163,7 @@ const { currentLang, setLanguage } = useMsg();
         const userState = 'active';
 
         console.log('✅ 한시적 무료:', { isActiveUser: true, subscription, userState });
-        
+
         writeCache({ isActiveUser: true, subscription, userState }); // 성공 시 캐시 갱신
   
 
@@ -445,6 +446,13 @@ const deviceLogin = async () => {
   // 1. isLoggedIn 체크
   if (isLoggedIn) {
     console.log('이미 로그인된 상태입니다.', user);
+
+    // device_login -> 이력 추가
+    ApiClient.accessLog({
+      user_id : user.user_id,
+      page : "intro"
+    });
+
     return { success: true, user };
   }
 
@@ -532,6 +540,15 @@ const deviceLogin = async () => {
 
         setIsLoggedIn(true);
         setUser(loginUser);
+
+
+       // device_login -> 이력 추가
+        ApiClient.accessLog({
+          user_id : user.user_id,
+          page : "intro"
+        });
+
+
         
         console.log('디바이스 로그인 성공:', loginUser);
 
