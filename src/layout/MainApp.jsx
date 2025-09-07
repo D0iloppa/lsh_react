@@ -257,6 +257,9 @@ const MainApp = () => {
         let adCallCount = parseInt(localStorage.getItem(adCallCountKey) || '1');
         adCallCount++;
         localStorage.setItem(adCallCountKey, adCallCount.toString());
+
+        // 롤백을 위한 이전 값
+        const prevAdCallCount = Math.max(1, adCallCount - 1);
         
         console.log(`광고 호출 횟수: ${adCallCount}`);
 
@@ -346,14 +349,18 @@ const MainApp = () => {
 
 
         try {
+            
+            
+            localStorage.setItem(adCallCountKey, prevAdCallCount);
+
             // 광고 응답 대기 타이머 (기본 4초)
             const fallbackTimer = setTimeout(() => {
                 console.warn('광고 응답 없음 - fallback 실행');
-                // 광고 실패 시에도 카운터 리셋
-                adCallCount = adCallCount - 1;
-                // localStorage.setItem(adCallCountKey, adCallCount);
+
+                localStorage.setItem(adCallCountKey, prevAdCallCount);
                 fallbackAction();
             }, timeoutMs);
+
 
             // 광고 성공 시 타임아웃 제거 후 콜백 실행
             const handleAdComplete = (event) => {
