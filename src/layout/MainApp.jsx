@@ -351,7 +351,7 @@ const MainApp = () => {
         try {
             
             
-            localStorage.setItem(adCallCountKey, prevAdCallCount);
+            // localStorage.setItem(adCallCountKey, prevAdCallCount);
 
             // 광고 응답 대기 타이머 (기본 4초)
             const fallbackTimer = setTimeout(() => {
