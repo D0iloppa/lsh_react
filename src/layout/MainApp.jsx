@@ -348,7 +348,7 @@ const MainApp = () => {
         console.log(`${adCallCount}회차 - 광고 호출 실행`);
 
         // 광고 호출 직전 → 무조건 AD_CALL_INTERVAL로 세팅
-        localStorage.setItem(adCallCountKey, String(AD_CALL_INTERVAL));
+        localStorage.setItem(adCallCountKey, String(AD_CALL_INTERVAL + 1));
 
         try {
             
