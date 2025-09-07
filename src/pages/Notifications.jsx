@@ -400,11 +400,11 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
     </SketchBtn>
 
     <SketchBtn 
-      className={selectedFilter === "1" ? "active-filter" : ""}
+      className={selectedFilter === "6" ? "active-filter" : ""}
       size="small"
       onClick={() => {
-        handleFilterType("1");
-        setSelectedFilter("1");
+        handleFilterType("6");
+        setSelectedFilter("6");
       }}
     >
       <HatchPattern opacity={0.4} />

@@ -243,6 +243,7 @@ const MainApp = () => {
     // 광고 호출 주기 설정 (N회마다 광고 호출)
     const AD_CALL_INTERVAL = 5;
 
+    /*
     const showAdWithCallback = useCallback(async (onAdComplete, fallbackAction, timeoutMs = 4000, forceShow = false) => {
         
         // 한시적 광고 비활성화
@@ -254,9 +255,9 @@ const MainApp = () => {
         
         // 세션스토리지에서 광고 호출 횟수 관리
         const adCallCountKey = 'adCallCount';
-        let adCallCount = parseInt(sessionStorage.getItem(adCallCountKey) || '1');
+        let adCallCount = parseInt(localStorage.getItem(adCallCountKey) || '1');
         adCallCount++;
-        sessionStorage.setItem(adCallCountKey, adCallCount.toString());
+        localStorage.setItem(adCallCountKey, adCallCount.toString());
         
         console.log(`광고 호출 횟수: ${adCallCount}`);
 
@@ -350,7 +351,8 @@ const MainApp = () => {
             const fallbackTimer = setTimeout(() => {
                 console.warn('광고 응답 없음 - fallback 실행');
                 // 광고 실패 시에도 카운터 리셋
-                sessionStorage.setItem(adCallCountKey, '1');
+                adCallCount = adCallCount - 1;
+                localStorage.setItem(adCallCountKey, adCallCount);
                 fallbackAction();
             }, timeoutMs);
 
@@ -360,7 +362,7 @@ const MainApp = () => {
                     clearTimeout(fallbackTimer);
                     window.removeEventListener('message', handleAdComplete);
                     // 광고 성공 시 카운터 리셋
-                    sessionStorage.setItem(adCallCountKey, '1');
+                    localStorage.setItem(adCallCountKey, '1');
                     console.log('광고 완료 - 카운터 리셋');
                     onAdComplete();
                 }
@@ -381,17 +383,19 @@ const MainApp = () => {
                 console.warn('웹뷰 환경이 아님 - 바로 fallback 실행');
                 clearTimeout(fallbackTimer);
                 // 웹뷰 환경이 아닐 때도 카운터 리셋
-                sessionStorage.setItem(adCallCountKey, '1');
+                localStorage.setItem(adCallCountKey, '1');
                 fallbackAction();
             }
         } catch (error) {
             console.error('광고 호출 중 예외 발생:', error);
             //alert(JSON.stringify(error));
             // 예외 발생 시에도 카운터 리셋
-            sessionStorage.setItem(adCallCountKey, '1');
+            localStorage.setItem(adCallCountKey, '1');
             fallbackAction();
         }
     }, []); 
+    */
+
     
     const navigationProps = {
         pageHistory,
