@@ -243,163 +243,6 @@ const MainApp = () => {
     // 광고 호출 주기 설정 (N회마다 광고 호출)
     const AD_CALL_INTERVAL = 5;
 
-    const showAdWithCallback = useCallback(async (
-        onAdComplete,
-        fallbackAction,
-        timeoutMs = 4000,
-        forceShow = false
-      ) => {
-        // ---- helpers: persistent counter ----
-        const KEY = 'adCallCount';
-        const getCount = () => {
-          const raw = localStorage.getItem(KEY);
-          const n = parseInt(raw ?? 'NaN', 10);
-          if (!Number.isFinite(n) || n < 1) {
-            localStorage.setItem(KEY, '1');
-            return 1;
-          }
-          return n;
-        };
-        const setCount = (n) => localStorage.setItem(KEY, String(n));
-        const resetCount = () => setCount(1);
-        const incCount = () => setCount(getCount() + 1);
-      
-        // ---- 최초 보정: 항상 최소 1 ----
-        let adCallCount = getCount(); // 보정된 값
-        console.log(`광고 호출 횟수(로드): ${adCallCount}`);
-      
-        // ---- (선택) 사용자 활성 상태 확인 로직 (원본 유지) ----
-        let _isActive = false;
-        try {
-          if (Object.keys(activeUser).length === 0) {
-            console.log('need to init');
-            const { isActiveUser: isActive = false } = await isActiveUser();
-            setActiveUser({ isActive, lastChecked: new Date().toISOString() });
-            _isActive = isActive;
-            console.log('사용자 상태 초기화 완료:', { isActive });
-          } else {
-            const today = new Date().toDateString();
-            const lastCheckedDate = activeUser.lastChecked
-              ? new Date(activeUser.lastChecked).toDateString()
-              : null;
-            if (!lastCheckedDate || lastCheckedDate !== today) {
-              console.log('날짜가 변경되어 재검증합니다.');
-              const { isActiveUser: isActive = false } = await isActiveUser();
-              setActiveUser({ isActive, lastChecked: new Date().toISOString() });
-              _isActive = isActive;
-              console.log('사용자 상태 재검증 완료:', { isActive });
-            } else {
-              _isActive = !!activeUser.isActive;
-              console.log('오늘 이미 체크됨:', activeUser);
-            }
-          }
-        } catch (e) {
-          console.error('사용자 상태 확인 실패:', e);
-          setActiveUser({ isActive: false, lastChecked: new Date().toISOString() });
-        }
-      
-        console.log('showAdWithCallback', activeUser);
-      
-        // 한시적 무료 강제 (원본 로직 유지)
-        _isActive = false;
-        if (_isActive) {
-          console.warn('active user');
-          onAdComplete();
-          return;
-        }
-      
-        // ---- 트리거 판정 ----
-        // 규칙: 1, N+1, 2N+1 ... 회차에 광고
-        const needAd = forceShow || (adCallCount % AD_CALL_INTERVAL === 1);
-      
-        // 트리거가 아닐 때: 정상 흐름이므로 ++ 후 곧바로 onAdComplete
-        if (!needAd) {
-          incCount(); // ✅ 광고 없음 → 증가
-          adCallCount = getCount();
-          console.log(`${adCallCount}회차 - 광고 호출 건너뜀 (${AD_CALL_INTERVAL}회마다 호출). 카운터 증가됨.`);
-          onAdComplete();
-          return;
-        }
-      
-        console.log(`${adCallCount}회차 - 광고 호출 실행`);
-      
-        // ---- 중복 실행 가드 (필요 시 전역/Ref로 유지) ----
-        if (window.__adShowing) {
-          console.warn('이미 광고 진행 중입니다.');
-          return;
-        }
-        window.__adShowing = true;
-      
-        try {
-          // 타임아웃 설정: 실패 간주 시 카운터 변경 없음(규칙)
-          const fallbackTimer = setTimeout(() => {
-            console.warn('광고 응답 없음 - fallback 실행 (카운터 변경 없음)');
-            window.removeEventListener('message', handleAdEvent);
-            window.__adShowing = false;
-            // ❌ 증가 금지, ❌ 리셋 금지 → 다음 호출에도 동일 회차로 광고 재시도
-            fallbackAction?.();
-          }, timeoutMs);
-      
-          const completeAndClear = () => {
-            clearTimeout(fallbackTimer);
-            window.removeEventListener('message', handleAdEvent);
-            window.__adShowing = false;
-          };
-      
-          // 네이티브로부터 이벤트 수신
-          const handleAdEvent = (event) => {
-            // 메시지 스펙은 환경에 맞게 조정(문자열/객체)
-            const data = typeof event.data === 'string' ? event.data : event.data?.type;
-      
-            if (data === 'adCompleted') {
-              // ✅ 광고 완료 → 리셋(=1)
-              resetCount();
-              console.log('광고 완료 - 카운터 리셋(1)');
-              completeAndClear();
-              onAdComplete();
-            } else if (data === 'adClosed' || data === 'adFailed') {
-              // ❌ 미완료(닫힘/실패) → 카운터 변경 없음
-              console.warn(`광고 미완료(${data}) - 카운터 변경 없음`);
-              completeAndClear();
-              fallbackAction?.();
-            }
-          };
-      
-          window.addEventListener('message', handleAdEvent);
-      
-          // 웹뷰 판단 및 광고 호출
-          const isAndroid = !!window.native?.postMessage || !!window.native;
-          const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
-      
-          if (isAndroid) {
-            // 안드: 문자열 대신 구조화 권장
-            try {
-              // window.native.postMessage("showAd");
-              window.native.postMessage(JSON.stringify({ type: 'showAd' }));
-            } catch {
-              // 일부 환경은 문자열만 지원
-              window.native.postMessage('showAd');
-            }
-          } else if (isIOS) {
-            window.webkit.messageHandlers.native.postMessage({ type: 'showAd' });
-          } else {
-            console.warn('웹뷰 환경이 아님 - fallback 실행 (카운터 변경 없음)');
-            completeAndClear();
-            fallbackAction?.();
-          }
-        } catch (error) {
-          console.error('광고 호출 중 예외 발생:', error);
-          // ❌ 예외 시에도 카운터 변경 없음
-          window.__adShowing = false;
-          fallbackAction?.();
-        }
-      }, []);
-      
-
-
-
-
-    /*
     const showAdWithCallback = useCallback(async (onAdComplete, fallbackAction, timeoutMs = 4000, forceShow = false) => {
         
         // 한시적 광고 비활성화
@@ -508,7 +351,7 @@ const MainApp = () => {
                 console.warn('광고 응답 없음 - fallback 실행');
                 // 광고 실패 시에도 카운터 리셋
                 adCallCount = adCallCount - 1;
-                localStorage.setItem(adCallCountKey, adCallCount);
+                // localStorage.setItem(adCallCountKey, adCallCount);
                 fallbackAction();
             }, timeoutMs);
 
@@ -550,8 +393,6 @@ const MainApp = () => {
             fallbackAction();
         }
     }, []); 
-    */
-
     
     const navigationProps = {
         pageHistory,
