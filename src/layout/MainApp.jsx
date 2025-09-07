@@ -352,7 +352,7 @@ const MainApp = () => {
 
         try {
             
-            // 광고 성공시에만 초기화.
+            // 광고 성공시에만 초기화필요, 여기서는 롤백
             localStorage.setItem(adCallCountKey, prevAdCallCount);
 
             // 광고 응답 대기 타이머 (기본 4초)
@@ -398,7 +398,7 @@ const MainApp = () => {
             console.error('광고 호출 중 예외 발생:', error);
             //alert(JSON.stringify(error));
             // 예외 발생 시에도 카운터 리셋
-            localStorage.setItem(adCallCountKey, '1');
+            // localStorage.setItem(adCallCountKey, '1');
             fallbackAction();
         }
     }, []); 
