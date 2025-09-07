@@ -347,17 +347,19 @@ const MainApp = () => {
 
         console.log(`${adCallCount}회차 - 광고 호출 실행`);
 
+        // 광고 호출 직전 → 무조건 AD_CALL_INTERVAL로 세팅
+        localStorage.setItem(adCallCountKey, String(AD_CALL_INTERVAL));
 
         try {
             
-            
+            // 광고 성공시에만 초기화.
             // localStorage.setItem(adCallCountKey, prevAdCallCount);
 
             // 광고 응답 대기 타이머 (기본 4초)
             const fallbackTimer = setTimeout(() => {
                 console.warn('광고 응답 없음 - fallback 실행');
 
-                localStorage.setItem(adCallCountKey, prevAdCallCount);
+                // localStorage.setItem(adCallCountKey, prevAdCallCount);
                 fallbackAction();
             }, timeoutMs);
 
