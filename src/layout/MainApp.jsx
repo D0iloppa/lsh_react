@@ -243,7 +243,6 @@ const MainApp = () => {
     // 광고 호출 주기 설정 (N회마다 광고 호출)
     const AD_CALL_INTERVAL = 5;
 
-    /*
     const showAdWithCallback = useCallback(async (onAdComplete, fallbackAction, timeoutMs = 4000, forceShow = false) => {
         
         // 한시적 광고 비활성화
@@ -394,8 +393,6 @@ const MainApp = () => {
             fallbackAction();
         }
     }, []); 
-    */
-
     
     const navigationProps = {
         pageHistory,
