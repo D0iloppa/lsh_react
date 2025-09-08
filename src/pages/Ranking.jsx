@@ -359,7 +359,7 @@ const getRankIcon = (rank) => {
           gap: 12px;
         }
         .filter-tab {
-          padding: 8px 16px;
+          padding: 8px 10px;
           border: 1px solid #333;
           border-radius: 8px;
           background: white;
