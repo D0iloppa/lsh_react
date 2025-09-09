@@ -228,7 +228,7 @@ const CocktailIcon = () => (
 
        <div 
   className="relative" 
-  style={{ margin: '1rem', display: 'flex', gap: '1rem' }}
+  style={{ margin: '2rem', gap: '0.5rem' }}
 >
   <div style={{ flex: 1 }}>
     <HatchPattern opacity={0.8} />
@@ -241,10 +241,12 @@ const CocktailIcon = () => (
     </SketchBtn>
   </div>
 
-  <div style={{ flex: 1 }}>
+  <div style={{ flex: 1}}>
     <HatchPattern opacity={0.4} />
     <SketchBtn 
-      className="sketch-button" style={{ fontWeight: 'bold' }}
+      className="sketch-button" style={{ 
+        marginTop: '10px'
+      }}
       onClick={handleOpenTutorial} 
     >
       {get('Welcome1.3')}
