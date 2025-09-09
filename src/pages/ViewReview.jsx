@@ -1133,7 +1133,7 @@ const renderUserName = (userName) => {
       {translationMap[review.review_id] && (
         <div style={{ marginTop: 6, fontSize: 12, color: '#6b7280', fontStyle: 'italic' }}>
           {translationMap[review.review_id]}
-          <span style={{ fontSize: 10, marginLeft: 4 }}>( {get('trans_1')})</span>
+          <span style={{ fontSize: 10, marginLeft: 4 }}>({get('trans_1')})</span>
         </div>
       )}
 
