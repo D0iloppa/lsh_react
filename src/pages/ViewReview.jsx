@@ -1133,9 +1133,12 @@ const renderUserName = (userName) => {
       {translationMap[review.review_id] && (
         <div style={{ marginTop: 6, fontSize: 12, color: '#6b7280', fontStyle: 'italic' }}>
           {translationMap[review.review_id]}
-          <span style={{ fontSize: 10, marginLeft: 4 }}>번역됨</span>
+          <span style={{ fontSize: 10, marginLeft: 4 }}>( {get('trans_1')})</span>
         </div>
       )}
+
+
+      
 
       {/* 수정/삭제 버튼 (작성자 본인일 때만) */}
       <div

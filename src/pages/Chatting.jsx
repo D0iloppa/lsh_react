@@ -170,6 +170,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
       let language=user.language;
     if ( language == 'kr') language='ko';
     if ( language == 'cn') language='zh';
+    
       const response = await axios.post(
         `https://translation.googleapis.com/language/translate/v2?key=AIzaSyAnvkb7_-zX-aI8WVw6zLMRn63yQQrss9c`,
         {
@@ -664,7 +665,7 @@ const Chatting = ({ navigateToPageWithData, PAGES, goBack, ...otherProps }) => {
               )}
               {isTranslated && (
                 <div style={{ marginTop: 6, fontSize: 12, color: '#6b7280', fontStyle: 'italic' }}>
-                  {isTranslated} <span style={{ fontSize: 10, marginLeft: 4 }}>번역됨</span>
+                  {isTranslated} <span style={{ fontSize: 10, marginLeft: 4 }}>({get('trans_1')})</span>
                 </div>
               )}
               {!isMine && !isTranslated && msg.text && (
