@@ -13,6 +13,8 @@ import { useMsg } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
 import { usePopup } from '@contexts/PopupContext';
 
+import { Star, Clock, Users, Phone, CreditCard, MessageCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
+
 
 import CountryFlag from 'react-country-flag';
 
@@ -91,6 +93,29 @@ const StaffDetailPage = ({ pageHistory, navigateToPageWithData, goBack, PAGES, s
 
   const isAndroid = !!window.native;
   const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
+
+
+  const renderStars = (rating = 0) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      let color = '#d1d5db'; // 기본 회색 (gray-300)
+      if (rating >= i) {
+        color = '#fbbf24'; // 노란색 (yellow-400)
+      } else if (rating >= i - 0.5) {
+        color = '#fde68a'; // 연노란색 (yellow-200)
+      }
+
+      stars.push(
+        <span key={i}>
+          <Star color={color} fill={color} size={20} />
+        </span>
+      );
+    }
+    return stars;
+  };
+
+
+
 //  const isIOS = false;
   const openIOSImageViewer = (images = [], startIndex = 0) => {
     try {
@@ -421,6 +446,7 @@ hideIOSImageViewer();
     };
 
     fetchStaffData();
+
   }, [otherProps.fromReview, otherProps.staff_id]);
 
   // 이미지 가져오기
@@ -469,6 +495,8 @@ useEffect(() => {
   const staffId = otherProps.staff_id ?? girl.staff_id;
   const venueId = otherProps.venue_id ?? girl.venue_id;
   if (!staffId || !venueId) return;
+
+  
 
   if (!shouldSendView(staffId, 3000)) return; // 3초 TTL
 
@@ -743,6 +771,11 @@ hideIOSImageViewer();
   max-width: 500px;       /* (선택) 너무 커지지 않게 제한 */
 }
 
+.top-sum {
+  padding: 0px 20px;
+  margin-top: 25px; display: flex; justify-content: space-between; border-bottom: 1px solid #cecece;
+  }
+
 
 
       `}</style>
@@ -836,6 +869,7 @@ hideIOSImageViewer();
               {`(${get('STAFF_PHOTO_DESC')})`}
           </div>
           <div className="staff-name">{girl.name || 'Unknown Staff'}</div>
+          
           {girl.languages && (
             <div
               className="staff-languages"
@@ -870,6 +904,44 @@ hideIOSImageViewer();
               })}
             </div>
           )}
+
+        <div className="top-sum" style={{display:'none'}}>
+            <div className="stars">
+              {renderStars(5)}
+              <span style={{
+                 position: 'relative',
+                 top: '-3px',
+                 left: '6px'
+              }}>
+                {/* 리뷰 건수*/}
+                {`5.0 (${1})`}
+              </span>
+            </div>
+            <div
+              style={{
+                color: girl?.reviewCount > 0 ? '#0072ff' : '#999999',
+                cursor: girl?.reviewCount > 0 ? 'pointer' : 'default'
+              }}
+              onClick={async () => {
+                if (girl?.reviewCount > 0) {
+
+                  showAdWithCallback(
+                    // 광고 완료 시 콜백
+                    () => {
+                      navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
+                    },
+                    // fallback 콜백 (광고 응답 없을 때)
+                    () => {
+                      navigateToPageWithData(PAGES.VIEWREVIEWDETAIL, { venueId });
+                    },
+                    1000 // 1초 타임아웃
+                  );
+                }
+              }}
+            >
+              {get('nav.review.1')} <span className='reviewCnt'>{1}</span>{get('text.cnt.1')} {get('text.cnt.2')} &gt;
+            </div>
+          </div>
 
 
           {/*

@@ -18,6 +18,10 @@ import axios from 'axios';
 
 import Swal from 'sweetalert2';
 
+// Font Awesome (FaGoogle)
+import { FaGoogle } from 'react-icons/fa';
+// 또는 Simple Icons (브랜드 로고에 더 충실)
+import { SiGoogle } from 'react-icons/si';
 
 const ViewReviewPage = ({
   navigateToPageWithData,
@@ -308,6 +312,79 @@ const handleTranslate = useCallback(async (reviewId, text) => {
       }
     }
   }, [loading, reviews]);
+
+  // utils.js 같은 곳에 빼도 되고, 컴포넌트 안에 선언해도 됨
+const renderUserName = (userName) => {
+  if (userName === '레탄톤 보안관') {
+    return (
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '4px',
+          fontWeight: 300,
+          color: '#fff',
+          backgroundColor: '#374151',  // Tailwind gray-700
+          padding: '4px 10px',
+          borderRadius: '20px',
+          fontSize: '10px',
+          boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+        }}
+      >
+        🎖️ 레탄톤 보안관 꿀팁
+      </span>
+    );
+  }
+
+  const GoogleG = ({ size = 12 }) => (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 256 262"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      focusable="false"
+      style={{ display: 'block' }}
+    >
+      <path fill="#4285F4" d="M255.88 133.51c0-10.6-.86-18.34-2.73-26.37H130.5v47.9h71.88c-1.45 12.3-9.3 30.78-26.76 43.23l-.24 1.62 38.86 30.12 2.69.27c24.72-22.8 38.95-56.45 38.95-97.77"/>
+      <path fill="#34A853" d="M130.5 261.1c35.27 0 64.94-11.64 86.59-31.74l-41.27-32.03c-11.04 7.76-25.83 13.18-45.32 13.18-34.62 0-64-22.73-74.45-54.29l-1.54.13-40.35 31.23-.53 1.47C34.13 231.8 78.54 261.1 130.5 261.1"/>
+      <path fill="#FBBC05" d="M56.05 155.22c-2.78-8.03-4.38-16.64-4.38-25.44 0-8.8 1.6-17.41 4.25-25.44l-.07-1.7-40.78-31.65-1.33.63C4.98 88.31 0 109.15 0 129.78c0 20.63 4.98 41.47 13.74 58.16l42.31-32.72"/>
+      <path fill="#EA4335" d="M130.5 50.52c24.56 0 41.1 10.62 50.54 19.5l36.84-35.97C195.39 12.6 165.77 0 130.5 0 78.54 0 34.13 29.3 13.74 71.62l42.31 32.72C66.5 73.25 95.88 50.52 130.5 50.52"/>
+    </svg>
+  );
+
+  if(userName === 'GOOGLE REVIEW'){
+    return (
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '4px 10px',
+          borderRadius: 20,
+          backgroundColor: '#fff',             // ✅ 흰색 배지
+          color: '#111827',                    // gray-900 계열 텍스트
+          border: '1px solid #E5E7EB',         // gray-200 보더
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+          fontSize: 10,
+          fontWeight: 500,
+          lineHeight: 1,
+        }}
+      >
+          <GoogleG size={12} />
+         {/* <SiGoogle size={12} /> */}
+         GOOGLE REVIEW
+      </span>
+    );
+  }
+
+  if (userName) {
+    return userName.charAt(0) + '***';
+  }
+
+  return '';
+};
+
 
 
   const handleEditReview = (review) => {
@@ -1027,30 +1104,7 @@ const handleTranslate = useCallback(async (reviewId, text) => {
     className="review-meta-date"
     style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
   >
-    {review.user_name === '레탄톤 보안관'
-      ? (
-        <span
-  style={{
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '4px',
-    fontWeight: 300,
-    color: '#fff',
-    backgroundColor: '#374151',  // 어두운 회색 (Tailwind gray-700)
-    padding: '4px 10px',
-    borderRadius: '20px',
-    fontSize: '10px',
-    boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
-  }}
->
-  🎖️ 레탄톤 보안관 꿀팁
-</span>
-
-      ) : (
-        review.user_name
-          ? review.user_name.charAt(0) + '***'
-          : ''
-      )}
+    {renderUserName(review.user_name)}
   </span>
 </p>
 

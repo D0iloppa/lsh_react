@@ -27,39 +27,39 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
     navigateToPageWithData(PAGES.HOME);
   };
 
-   useEffect(() => {
+  useEffect(() => {
     if (!isApiLoading && rankingData.length > 0) {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-           const savedScrollY = localStorage.getItem('rankScrollY');
-    const savedRankingType = localStorage.getItem('rankingType'); // 저장된 필터 정보 가져오기
+          const savedScrollY = localStorage.getItem('rankScrollY');
+          const savedRankingType = localStorage.getItem('rankingType'); // 저장된 필터 정보 가져오기
 
-    if (savedRankingType) {
-      setRankingType(savedRankingType); // 필터 복원
-    }
+          if (savedRankingType) {
+            setRankingType(savedRankingType); // 필터 복원
+          }
 
-    if (savedScrollY !== null) {
-      const scrollY = parseInt(savedScrollY, 10);
-      const container = document.querySelector('.content-area');
+          if (savedScrollY !== null) {
+            const scrollY = parseInt(savedScrollY, 10);
+            const container = document.querySelector('.content-area');
 
-      // scrollY 복원 시, 콘텐츠 로딩 완료 후 100ms 뒤에 복원하도록 설정
-      setTimeout(() => {
-        const checkScrollPosition = () => {
-          const scrollHeight = container.scrollHeight;
-          const clientHeight = container.clientHeight;
-          
-         // if (scrollHeight > clientHeight) {
-            const ratio = parseFloat(localStorage.getItem('rankScrollY'), 10);
-            container.scrollTop = ratio;
-             console.log('✅ 스크롤 비율 복원 완료 ratio :', ratio);
-        //  } else {
-       //    requestAnimationFrame(checkScrollPosition);
-        //  }
-        };
+            // scrollY 복원 시, 콘텐츠 로딩 완료 후 100ms 뒤에 복원하도록 설정
+            setTimeout(() => {
+              const checkScrollPosition = () => {
+                const scrollHeight = container.scrollHeight;
+                const clientHeight = container.clientHeight;
 
-        requestAnimationFrame(checkScrollPosition);
-      }, 200); // 100ms 대기 후 스크롤 복원
-    }
+                // if (scrollHeight > clientHeight) {
+                const ratio = parseFloat(localStorage.getItem('rankScrollY'), 10);
+                container.scrollTop = ratio;
+                console.log('✅ 스크롤 비율 복원 완료 ratio :', ratio);
+                //  } else {
+                //    requestAnimationFrame(checkScrollPosition);
+                //  }
+              };
+
+              requestAnimationFrame(checkScrollPosition);
+            }, 200); // 100ms 대기 후 스크롤 복원
+          }
         });
       });
     }
@@ -70,7 +70,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
     const rating = parseFloat(item.rating || 0);
     const reservationCount = parseInt(item.reservation_count || 0);
     const viewCount = parseInt(item.view_count || 0);
-    
+
     // 가중치를 적용한 점수 계산
     const score = (rating * 30) + (reservationCount * 2) + (viewCount * 0.1);
     return Math.round(score * 100) / 100;
@@ -80,7 +80,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
   useEffect(() => {
 
     setIsApiLoading(true)
-   
+
     const fetchRankingData = async () => {
       try {
 
@@ -92,8 +92,8 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
           target_type: rankingType,
           timeFilter: timeFilter
         });
-       
-       // 최대 랭킹
+
+        // 최대 랭킹
         const topRank = 10;
         //const data = (res.data || []).slice(0, topRank);
         const data = res.data || []
@@ -112,17 +112,19 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
           view_cnt: item.view_cnt || 0,
           staff_cnt: rankingType === 'venue' ? item.staff_cnt : null,
           venue_name: rankingType === 'staff' ? item.venue_name : null,
-          venue_id : item.venue_id,
+          venue_id: item.venue_id,
           rank: index + 1,
+          latest_staff_created_at: item.latest_staff_created_at,
+          isUpdated : isUpdated(item.latest_staff_created_at),
           score: calculateRankingScore(item)
         }));
 
-        
+
         console.log('rank', transformed, data);
 
         // // 점수 기준으로 정렬
         // transformed.sort((a, b) => b.score - a.score);
-        
+
         // // 순위 재설정
         // transformed.forEach((item, index) => {
         //   item.rank = index + 1;
@@ -130,7 +132,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
 
         setOriginalData(transformed);
         setRankingData(transformed);
-        
+
       } catch (err) {
         console.error('랭킹 데이터 가져오기 실패:', err);
       } finally {
@@ -139,31 +141,31 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
     };
 
     const init = async () => {
-    if (messages && Object.keys(messages).length > 0) {
-      if (!localStorage.getItem('rankScrollY')) {
-        window.scrollTo(0, 0);
-      }
-
-      if (rankingType !== 'none') {
-       
-        
-        if (rankingType != localStorage.getItem('rankingType') ){
-          localStorage.setItem('rankScrollRatio',0);
-          localStorage.setItem('rankScrollY',0);
+      if (messages && Object.keys(messages).length > 0) {
+        if (!localStorage.getItem('rankScrollY')) {
           window.scrollTo(0, 0);
         }
 
-         localStorage.setItem('rankingType', rankingType); // 필터 정보 저장
+        if (rankingType !== 'none') {
 
-      } 
-    }
 
-    await fetchRankingData();
+          if (rankingType != localStorage.getItem('rankingType')) {
+            localStorage.setItem('rankScrollRatio', 0);
+            localStorage.setItem('rankScrollY', 0);
+            window.scrollTo(0, 0);
+          }
 
-   
-  };
+          localStorage.setItem('rankingType', rankingType); // 필터 정보 저장
 
-  init();
+        }
+      }
+
+      await fetchRankingData();
+
+
+    };
+
+    init();
   }, [messages, rankingType, timeFilter]);
 
   // 검색 필터링
@@ -177,8 +179,30 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
     }
 
     setRankingData(filtered);
-    
+
   }, [searchQuery, originalData]);
+
+
+  const isUpdated = (created_at) => {
+    try {
+      // 문자열 → Date 변환
+      const parsedDate = new Date(created_at.replace(" ", "T"));
+      if (isNaN(parsedDate.getTime())) {
+        return false; // 파싱 실패
+      }
+
+      // 현재 시각
+      const now = Date.now();
+      // 7일(ms 단위)
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+
+      // 최신 여부 판단
+      return (now - parsedDate.getTime()) <= sevenDays;
+    } catch (e) {
+      return false; // 예외 발생 시 false
+    }
+  };
+
 
   const handleDiscover = async (item) => {
     console.log("item", item)
@@ -186,25 +210,25 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
 
     const container = document.querySelector('.content-area');
 
-     if (container) {
-        const scrollY = container.scrollTop;
-        localStorage.setItem('rankScrollY', scrollY.toString());
-        localStorage.setItem('discoverScrollY', '0');
-        console.log("✅ savedScrollY from .content-area:", scrollY);
+    if (container) {
+      const scrollY = container.scrollTop;
+      localStorage.setItem('rankScrollY', scrollY.toString());
+      localStorage.setItem('discoverScrollY', '0');
+      console.log("✅ savedScrollY from .content-area:", scrollY);
 
 
-         const scrollRatio = container.scrollTop / (container.scrollHeight - container.clientHeight);
-         localStorage.setItem('rankScrollRatio', scrollRatio);
-
-         
-          console.log('스크롤 비율 저장됨 scrollTop:', container.scrollTop);
-           console.log('스크롤 비율 저장됨 scrollHeight :', container.scrollHeight);
-            console.log('스크롤 비율 저장됨 clientHeight:', container.clientHeight);
-         console.log('스크롤 비율 저장됨:', scrollRatio);
-      }
+      const scrollRatio = container.scrollTop / (container.scrollHeight - container.clientHeight);
+      localStorage.setItem('rankScrollRatio', scrollRatio);
 
 
-    
+      console.log('스크롤 비율 저장됨 scrollTop:', container.scrollTop);
+      console.log('스크롤 비율 저장됨 scrollHeight :', container.scrollHeight);
+      console.log('스크롤 비율 저장됨 clientHeight:', container.clientHeight);
+      console.log('스크롤 비율 저장됨:', scrollRatio);
+    }
+
+
+
     if (rankingType === 'venue') {
 
       showAdWithCallback(
@@ -224,29 +248,29 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
     } else {
 
 
-      
+
       const iau = await isActiveUser();
       iau.onlyMasking = true;
 
-      
+
 
       showAdWithCallback(
         // 광고 완료 시 콜백
         () => {
-          navigateToPageWithData(PAGES.STAFFDETAIL, { 
+          navigateToPageWithData(PAGES.STAFFDETAIL, {
             staff_id: item.id,  // staffId → staff_id로 변경
-            venue_id:item.venue_id,
-            vn_schedule_status:false,
+            venue_id: item.venue_id,
+            vn_schedule_status: false,
             fromReview: true   // 데이터 fetch를 위해 필요
-            
+
           });
         },
         // fallback 콜백 (광고 응답 없을 때)
         () => {
-          navigateToPageWithData(PAGES.STAFFDETAIL, { 
+          navigateToPageWithData(PAGES.STAFFDETAIL, {
             staff_id: item.id,  // staffId → staff_id로 변경
-            venue_id:item.venue_id,
-            vn_schedule_status:false,
+            venue_id: item.venue_id,
+            vn_schedule_status: false,
             fromReview: true   // 데이터 fetch를 위해 필요
           });
         },
@@ -274,49 +298,49 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
     }
   };
 
-const getRankIcon = (rank) => {
-  if (rank <= 3) {
-    const rankImgSrc = `/cdn/rank${rank}.png`;
+  const getRankIcon = (rank) => {
+    if (rank <= 3) {
+      const rankImgSrc = `/cdn/rank${rank}.png`;
 
-    return (
-      <div style={{ 
-        
-      }}>
-        {/* 숫자 (숨겨도 되지만 DOM 유지) */}
-       
-        {/* 아이콘이 숫자를 덮는 오버레이 */}
-        <img 
-          src={rankImgSrc} 
-          alt={`rank${rank}`} 
-          style={{ 
-            position: 'absolute',
-            top: '0%',
-            left: '0%',
-            transform: 'translate(-50%, -50%)',
-            width: '50Px',
-            height: '50px',
-            zIndex: 2,
-            opacity: 1,
-            animation: rank === 1 ? 'goldTrophy 2s ease-in-out infinite' : 
-                      rank === 2 ? 'silverTrophy 2.5s ease-in-out infinite' :
-                      'bronzeTrophy 3s ease-in-out infinite'
-          }} 
-        />
-      </div>
-    );
-  } else {
-    // 4등 이상 → 숫자만
-    return (
-      <span style={{ 
-        fontSize: '18px',
-        fontWeight: 'bold',
-        color: getRankColor(rank)
-      }}>
-        {rank}
-      </span>
-    );
-  }
-};
+      return (
+        <div style={{
+
+        }}>
+          {/* 숫자 (숨겨도 되지만 DOM 유지) */}
+
+          {/* 아이콘이 숫자를 덮는 오버레이 */}
+          <img
+            src={rankImgSrc}
+            alt={`rank${rank}`}
+            style={{
+              position: 'absolute',
+              top: '0%',
+              left: '0%',
+              transform: 'translate(-50%, -50%)',
+              width: '50Px',
+              height: '50px',
+              zIndex: 2,
+              opacity: 1,
+              animation: rank === 1 ? 'goldTrophy 2s ease-in-out infinite' :
+                rank === 2 ? 'silverTrophy 2.5s ease-in-out infinite' :
+                  'bronzeTrophy 3s ease-in-out infinite'
+            }}
+          />
+        </div>
+      );
+    } else {
+      // 4등 이상 → 숫자만
+      return (
+        <span style={{
+          fontSize: '18px',
+          fontWeight: 'bold',
+          color: getRankColor(rank)
+        }}>
+          {rank}
+        </span>
+      );
+    }
+  };
 
 
 
@@ -575,7 +599,7 @@ const getRankIcon = (rank) => {
       `}</style>
 
       <div className="ranking-container">
-       <SketchHeader onBack={handleBack} style={{ display: 'none' }} />
+        <SketchHeader onBack={handleBack} style={{ display: 'none' }} />
         {/* 헤더 섹션 */}
         <section className="hero-section">
           <HatchPattern opacity={0.3} />
@@ -585,13 +609,13 @@ const getRankIcon = (rank) => {
           <SketchSearch
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
-            placeholder={rankingType === 'venue' ? get('ranking_search_venue')  : get('ranking_search_staff')}
+            placeholder={rankingType === 'venue' ? get('ranking_search_venue') : get('ranking_search_staff')}
           />
           <div className="filter-tabs">
             {/* 기간 필터 */}
             <div className="filter-selects">
-              <select 
-                className="select-box" 
+              <select
+                className="select-box"
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value)}
               >
@@ -601,13 +625,13 @@ const getRankIcon = (rank) => {
               </select>
             </div>
 
-            <div 
+            <div
               className={`filter-tab ${rankingType === 'venue' ? 'active' : ''}`}
               onClick={() => setRankingType('venue')}
             >
               {get('ranking.venue.title') || '매장 랭킹'}
             </div>
-            <div 
+            <div
               className={`filter-tab ${rankingType === 'staff' ? 'active' : ''}`}
               onClick={() => setRankingType('staff')}
             >
@@ -617,12 +641,12 @@ const getRankIcon = (rank) => {
         </section>
 
         {/* 필터 섹션 */}
-        
+
         <section className="filter-section">
           <HatchPattern opacity={0.2} />
-          
+
           {/* 랭킹 타입 선택 */}
-          
+
         </section>
 
         {/* 랭킹 리스트 */}
@@ -644,7 +668,9 @@ const getRankIcon = (rank) => {
                 </div>
 
                 {/* 이미지 영역 */}
-                <div className="image-container">
+                <div className="image-container"
+                  style={{ position: 'relative' }}
+                >
                   <img
                     src={item.image}
                     alt={item.name}
@@ -652,11 +678,37 @@ const getRankIcon = (rank) => {
                       width: '100%',
                       height: '100%',
                       objectFit: 'cover',
+                      display: 'block', // ✅ 인라인 이미지 하단 공백 방지
                     }}
                   />
 
+                {/* 스태프 컨텐츠 업데이트 여부: 하단 띠 오버레이 */}
+                {item.isUpdated && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      right: 0,
+                      bottom: 0,                 // ✅ 하단에 딱 붙이기
+                      padding: '6px 8px',
+                      backgroundColor: 'rgba(255, 0, 0, 0.7)', // 살짝 투명 추천
+                      color: '#fff',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      textAlign: 'center',       // 가운데 정렬
+                      borderBottomLeftRadius: '4px',
+                      borderBottomRightRadius: '4px',
+                      zIndex: 2,
+                      pointerEvents: 'none',     // 오버레이가 클릭 가로막지 않도록 (필요 시)
+                    }}
+                  >
+                    UPDATED!!
+                  </div>
+                )}
+
+
                   {/* 점수 배지 */}
-                  <div className="score-badge" style={{display: 'none'}}>
+                  <div className="score-badge" style={{ display: 'none' }}>
                     {item.score}점
                   </div>
                 </div>
@@ -673,7 +725,7 @@ const getRankIcon = (rank) => {
                   </div>
 
 
-                  
+
                   {/* 영업 상태 (매장만) */}
                   {rankingType === 'venue' && (
                     /*
@@ -698,14 +750,14 @@ const getRankIcon = (rank) => {
                         : (item.is_reservation ? get('DiscoverPage1.1.able') || '예약가능' : get('DiscoverPage1.1.disable') || '예약불가')}
                     </div>
                     */
-                   <div style={{display:'flex'}}>
-                    <div
+                    <div style={{ display: 'flex' }}>
+                      <div
                         className="is-reservation"
                         style={{
                           backgroundColor:
-                          item.schedule_status === 'available'
-                            ? 'rgb(11, 199, 97)'  // 예약가능 - 초록색
-                            : 'rgb(107, 107, 107)', // 영업종료 - 회색
+                            item.schedule_status === 'available'
+                              ? 'rgb(11, 199, 97)'  // 예약가능 - 초록색
+                              : 'rgb(107, 107, 107)', // 영업종료 - 회색
                           color: '#fff',
                           padding: '5px 7px',
                           borderRadius: '3px',
@@ -715,24 +767,24 @@ const getRankIcon = (rank) => {
                         }}
                       >
 
-                      {item.schedule_status === 'available'
+                        {item.schedule_status === 'available'
                           ? get('DiscoverPage1.1.able')  // 예약가능
                           : get('VENUE_END') // 영업종료
-                      }  
+                        }
 
 
 
-                      
+
                       </div>
-                      </div>
-                     
-                      
+                    </div>
+
+
                   )}
 
                   {/* 주소 (매장만) */}
                   {rankingType === 'venue' && item.address && (
                     <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                       {item.address}
+                      {item.address}
                     </div>
                   )}
 
@@ -744,39 +796,39 @@ const getRankIcon = (rank) => {
 
 
 
-                     {rankingType === 'venue' && (
-                       <div className="stat-item">
+                    {rankingType === 'venue' && (
+                      <div className="stat-item">
                         <Users size={12} />
                         {get('title.text.16')} {item.staff_cnt}{get('Reservation.PersonUnit')}
                       </div>
-                  )}
+                    )}
 
 
 
-                    
-                     
+
+
                     <div className="stat-item">
                       <Star size={12} style={{ fill: '#ffe800' }} />
                       {item.rating}
                     </div>
                   </div>
-                   <div className="stats-row-2">
+                  <div className="stats-row-2">
                     <div className="stat-item">
                       <Calendar size={12} />
-                        { 
-                        `${timeFilter == 'week' ? get('WORK_SCHEDULE_WEEK') : timeFilter == 'month' ? get('WORK_SCHEDULE_MONTH') : '' }` + ' ' + get('btn.booking.1') + ' '
-                        }
-                        {item.reservation_count}
-                        {' ' + get('text.cnt.1')}
+                      {
+                        `${timeFilter == 'week' ? get('WORK_SCHEDULE_WEEK') : timeFilter == 'month' ? get('WORK_SCHEDULE_MONTH') : ''}` + ' ' + get('btn.booking.1') + ' '
+                      }
+                      {item.reservation_count}
+                      {' ' + get('text.cnt.1')}
                     </div>
                     <div className="stat-item">
                       <Eye size={12} />
                       {
-                        `${timeFilter == 'week' ? get('WORK_SCHEDULE_WEEK') : timeFilter == 'month' ? get('WORK_SCHEDULE_MONTH') : '' }` + ' ' + get('ranking_veiw_text')
-                      } 
+                        `${timeFilter == 'week' ? get('WORK_SCHEDULE_WEEK') : timeFilter == 'month' ? get('WORK_SCHEDULE_MONTH') : ''}` + ' ' + get('ranking_veiw_text')
+                      }
                       {' ' + item.view_cnt.toLocaleString()}
                     </div>
-                    
+
                     {/* {rankingType === 'venue' && openHoursText && (
                       <div className="stat-item">
                         <Clock size={12} />
@@ -790,26 +842,26 @@ const getRankIcon = (rank) => {
           })}
 
           {rankingData.length === 0 && (
-            <div style={{ 
-              textAlign: 'center', 
-              padding: '2rem', 
+            <div style={{
+              textAlign: 'center',
+              padding: '2rem',
               color: '#666',
               background: 'white',
               borderRadius: '8px',
               border: '1px solid #ddd'
             }}>
-               {get('title.text.17')}
+              {get('title.text.17')}
             </div>
           )}
         </section>
 
-         <LoadingScreen 
+        <LoadingScreen
           variant="cocktail"
           loadingText="Loading..."
-          isVisible={isApiLoading} 
+          isVisible={isApiLoading}
         />
       </div>
-      
+
     </>
   );
 };

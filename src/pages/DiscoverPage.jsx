@@ -452,12 +452,34 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                 //displayName: `${girl.name}`,
                 name: iauMasking(iau, girl.name || ''),
                 displayName: `${iauMasking(iau, girl.name || '')}`,
-                availCnt: availCnt
+                availCnt: availCnt,
+                isNew: (() => {
+                  if (!girl.created_at) return false;
+                  const createdAt = new Date(girl.created_at);
+                  const now = new Date();
+                  const diffDays = (now - createdAt) / (1000 * 60 * 60 * 24);
+                  return diffDays <= 7;
+                })()
               };
             })
           );
 
-          setTopGirls(top3WithAvailCnt);
+          const sortedByRank = top3WithAvailCnt.sort((a, b) => {
+            const scoreA = a.rank_score ?? 0;
+            const scoreB = b.rank_score ?? 0;
+
+            if (scoreB !== scoreA) {
+              return scoreB - scoreA; // 높은 점수 우선
+            }
+
+            // rank_score 같으면 created_at 최신순
+            const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+            const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+            return dateB - dateA;
+          });
+
+
+          setTopGirls(sortedByRank);
         }
       } catch (error) {
         console.error('Staff 데이터 가져오기 실패:', error);
@@ -1407,7 +1429,22 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
 
                         {/* 상태 텍스트 */}
                         {staffStatus(topGirls[0])}
-                        <div className="girl-name">{topGirls[0].name}</div>
+                        <div className="girl-name">
+                          {topGirls[0].isNew && (
+                            <div style={{
+                              backgroundColor: 'red',
+                              color: 'white',
+                              fontSize: '11px',
+                              fontWeight: 'bold',
+                              padding: '2px 6px',
+                              borderRadius: '3px',
+                              marginBottom: '3px'
+                            }}>
+                              UPDATED!!
+                            </div>
+                          )}
+                          
+                          {topGirls[0].name}</div>
                       </div>
                     </div>
                   );
@@ -1432,7 +1469,22 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                           {/* 상태 텍스트 */}
                           {staffStatus(girl)}
 
-                          <div className="girl-name">{girl.name}</div>
+                          <div className="girl-name">
+                            
+                            {girl.isNew && (
+                            <div style={{
+                              backgroundColor: 'red',
+                              color: 'white',
+                              fontSize: '11px',
+                              fontWeight: 'bold',
+                              padding: '2px 6px',
+                              borderRadius: '3px',
+                              marginBottom: '3px'
+                            }}>
+                              UPDATED!!
+                            </div>
+                          )}
+                            {girl.name}</div>
                         </div>
                       </div>
                     );
@@ -1453,7 +1505,21 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
 
                         {staffStatus(girl)}
                         {/* ✅ 이름 텍스트: 이미지 내부로 이동 */}
-                        <div className="girl-name">{girl.name}</div>
+                        <div className="girl-name">
+                          {girl.isNew && (
+                            <div style={{
+                              backgroundColor: 'red',
+                              color: 'white',
+                              fontSize: '11px',
+                              fontWeight: 'bold',
+                              padding: '2px 6px',
+                              borderRadius: '3px',
+                              marginBottom: '3px'
+                            }}>
+                              UPDATED!!
+                            </div>
+                          )}
+                          {girl.name}</div>
                       </div>
                     </div>
                   );
