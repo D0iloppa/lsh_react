@@ -118,7 +118,8 @@ body[data-lang="vi"] .reservation-footer-content button.sketch-button:nth-of-typ
     letter-spacing: -1px;
     width: 170px !important;
     margin-left: 0px !important;}
-body[data-lang="vi"] .is-reservation {right: -110px !important; font-size: 0.7rem; height: auto !important;}
+body[data-lang="vi"] .is-reservation {font-size: 0.7rem; height: auto !important;}
+body[data-lang="vi"] .is-reservation  {font-size: 0.7rem; height: auto !important;}
 body[data-lang="vi"] .map-container .daily-pass-btn{ max-width: 190px; white-space: normal; text-align: left; white-space: normal; line-height: 1.2; vertical-align: top;} 
 body[data-lang="vi"] .daily-pass-btn {letter-spacing: -1px;}
 body[data-lang="vi"] .map-container .venue-details{display: flex; justify-content: flex-start; gap: 0.5rem; margin-bottom: 0.8rem !important;} 

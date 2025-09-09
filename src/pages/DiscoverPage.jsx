@@ -1177,8 +1177,9 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   background-image: url('/cdn/rank3.png');
 }
 
-
-
+.is-reservation.reserv-bottom {
+  right: 0px !important;
+}
 
       `}</style>
 
@@ -1531,6 +1532,9 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
         </div>
 
 
+
+
+
       </div>
       {/* === Footer 추가 위치 === */}
       <div className={`reservation-footer ${showFooter ? '' : 'hidden'}`}>
@@ -1548,7 +1552,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
               {/* 영업 상태 */}
               {venueInfo && (
                 <div
-                  className="is-reservation"
+                  className="is-reservation reserv-bottom"
                   style={{
                     position: 'relative',
                     backgroundColor:
