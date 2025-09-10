@@ -408,6 +408,19 @@ const getUUID = () => {
   }
 };
 
+
+const fetchFavorits = async () => {
+  try {
+    const res = await ApiClient.get(`${API_HOST}/api/getMyFavoriteList`, {
+      params: { user_id: user?.user_id || 1 }
+    });
+    return res.data || [];
+  } catch (err) {
+    console.error('즐겨찾기 실패:', err);
+    return [];
+  }
+ }
+
 const updateSetting = async (currentLang) => {
 
   if (isSettingChecked) {
@@ -604,6 +617,7 @@ const deviceLogin = async () => {
     loading,
     login,
     logout,
+    fetchFavorits,
     isActiveUser,
     iauMasking,
     verifyPassword,

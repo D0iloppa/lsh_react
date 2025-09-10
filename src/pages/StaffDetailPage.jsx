@@ -13,7 +13,8 @@ import { useMsg } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
 import { usePopup } from '@contexts/PopupContext';
 
-import { Star, Clock, Users, Phone, CreditCard, MessageCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
+
+import { Star, Heart, Clock, Users, Phone, CreditCard, MessageCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 
 import CountryFlag from 'react-country-flag';
@@ -87,12 +88,40 @@ const StaffDetailPage = ({ pageHistory, navigateToPageWithData, goBack, PAGES, s
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const { get, currentLang, messages } = useMsg();
-  const { isActiveUser, iauMasking } = useAuth();
+  const { user, isActiveUser, iauMasking } = useAuth();
   const { showPopup, closePopup } = usePopup();
 
 
   const isAndroid = !!window.native;
   const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
+
+  const [isFavorite, setIsFavorite] = useState(false);
+
+// StaffDetailPage 내부
+
+const toggleFavorite = async () => {
+  const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+  const isNowFavorite = !isFavorite;
+
+  // UI 즉시 반영
+  setIsFavorite(isNowFavorite);
+
+  try {
+    const url = `${API_HOST}/api/${isNowFavorite ? 'insertFavorite' : 'deleteFavorite'}`;
+    await ApiClient.get(url, {
+      params: {
+        user_id: user?.user_id || 1,   // ✅ 로그인 사용자
+        target_type: 'staff',          // ✅ 스태프 즐겨찾기
+        target_id: girl.staff_id,      // ✅ staff_id
+      },
+    });
+  } catch (error) {
+    console.error('즐겨찾기 API 호출 실패:', error);
+
+    // 실패 시 롤백 (UI 다시 원래대로)
+    setIsFavorite(!isNowFavorite);
+  }
+};
 
 
   const renderStars = (rating = 0) => {
@@ -185,6 +214,8 @@ hideIOSImageViewer();
         languages: girl?.languages || "",
         description: girl?.description || "",
         msg1: get("LANGUAGES_LABEL"),
+        is_favorite: girl?.is_favorite || 0,
+        avg_rating: girl?.avg_rating || 0.0,
         iau: iauValue,
         availCnt,
         vnScheduleStatus,
@@ -408,8 +439,10 @@ hideIOSImageViewer();
           iau.onlyMasking = true;
 
           const response = await ApiClient.get('/api/getStaffProfile', {
-            params: { staff_id: otherProps.staff_id
-              ,lang:currentLang
+            params: {
+              user_id: user?.user_id || 1, 
+              staff_id: otherProps.staff_id,
+              lang:currentLang
              }
           });
 
@@ -426,6 +459,9 @@ hideIOSImageViewer();
             ...basicInfo,
           }
 
+          _girl.rating = parseFloat(basicInfo.avg_rating || 0);
+
+          _girl.is_favorite = basicInfo.is_favorite || 0;
 
           _girl.name = iauMasking(iau, _girl.name || '');
 
@@ -433,6 +469,9 @@ hideIOSImageViewer();
 
 
           setGirl(_girl);
+
+          setIsFavorite(_girl.is_favorite === 1);
+
 
         } catch (error) {
           console.error('Staff 정보 로딩 실패:', error);
@@ -442,6 +481,9 @@ hideIOSImageViewer();
         }
       } else {
         setGirl(otherProps);
+        if (otherProps.is_favorite !== undefined) {
+          setIsFavorite(otherProps.is_favorite === 1);
+        }
       }
     };
 
@@ -588,6 +630,8 @@ hideIOSImageViewer();
           languages: girl?.languages || '',
           description: girl?.description || '',
           msg1: get('LANGUAGES_LABEL'),
+          is_favorite: girl?.is_favorite || 0,
+        avg_rating: girl?.avg_rating || 0.0,
           iau:iauValue,
           availCnt,
           vnScheduleStatus,
@@ -868,9 +912,57 @@ hideIOSImageViewer();
           <div className="staff-photo-description" style={{display:noImagePopup ? 'block' : 'none', fontSize:'0.8rem'}}>
               {`(${get('STAFF_PHOTO_DESC')})`}
           </div>
-          <div className="staff-name">{girl.name || 'Unknown Staff'}</div>
+          <div 
+            className="staff-name"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'   // 이름과 하트 사이 간격
+            }}
+          >
+            <span>{girl.name || 'Unknown Staff'}</span>
+
+            {/* 즐겨찾기 버튼 */}
+            <button
+              onClick={toggleFavorite}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                marginTop:'7px'
+              }}
+            >
+              <Heart
+                size={22}
+                color={isFavorite ? 'red' : '#999'}
+                fill={isFavorite ? 'red' : 'none'}
+              />
+            </button>
+          </div>
           
+          {/* ⭐ 별점 + 즐겨찾기 */}
+<div style={{
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  gap: '12px',
+  marginTop: '0.5rem'
+}}>
+  {/* 별점 */}
+  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+    {renderStars(girl.rating)}   {/* ✅ avg_rating 기반 별표 */}
+    <span style={{ fontSize: '0.9rem', color: '#555' }}>
+      ({girl.rating ? girl.rating.toFixed(1) : '0.0'})
+    </span>
+  </div>
+
+
+</div>
+
           {girl.languages && (
+            
             <div
               className="staff-languages"
               style={{

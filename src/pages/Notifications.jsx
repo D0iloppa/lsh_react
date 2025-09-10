@@ -344,7 +344,7 @@ const { messages, isLoading, error, get, currentLang, setLanguage, availableLang
         }
 
         .filter-buttons .active-filter {
-        background-color: #000 !important; /* 검정색 배경 */
+        background-color: #1f2937 !important; /* 검정색 배경 */
         color: #fff !important;           /* 흰색 글씨 */
         border: 1px solid #000 !important;
       }

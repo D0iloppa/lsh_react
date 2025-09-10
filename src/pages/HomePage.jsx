@@ -937,12 +937,12 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
                             style={{
                               position: 'absolute',
                               top: 2,
-                              left: -118,
+                              left: -122,
                               zIndex: 11,
 
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: 6,
+                              gap: 5,
 
                               padding: '3px 8px',
                               background: 'linear-gradient(180deg, #2d7ff9, #0a66ff)',
@@ -958,7 +958,7 @@ const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort
                               pointerEvents: 'none', // 클릭 방해 방지(필요시 제거)
                             }}
                           >
-                            <Sparkles size={14} color="white" />
+                            <Sparkles size={13} color="white" />
                             <span>PROMOTION</span>
                           </div>
                         )}

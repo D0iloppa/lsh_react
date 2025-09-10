@@ -393,7 +393,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
           transition: all 0.2s;
         }
         .filter-tab.active {
-          background: #333;
+          background: #374151;
           color: white;
         }
         .filter-selects {

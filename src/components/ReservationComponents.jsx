@@ -3,6 +3,8 @@ import SketchBtn from '@components/SketchBtn';
 import SketchDiv from '@components/SketchDiv';
 import HatchPattern from '@components/HatchPattern';
 import { useAuth } from '../contexts/AuthContext';
+import { useMsg } from "@contexts/MsgContext";
+
 
 import {
   getVietnamDate,
@@ -209,22 +211,33 @@ export const weeklyTableStyles = `
     color: #92400e;
   }
 `;
-
+  
+const dayKeys = [
+  "day_sun", // 일요일
+  "day_mon", // 월요일
+  "day_tue", // 화요일
+  "day_wed", // 수요일
+  "day_thu", // 목요일
+  "day_fri", // 금요일
+  "day_sat"  // 토요일
+];
 
 // 주간 테이블 생성 유틸리티 함수 (오늘부터 7일간)
 export const generateWeeklyDays = (baseDate, maxDay = 1) => {
   const today = new Date(baseDate);
   const weekDays = [];
-  const dayHeaders = ['일', '월', '화', '수', '목', '금', '토'];
+  //const dayHeaders = ['일', '월', '화', '수', '목', '금', '토'];
+
 
   for (let i = 0; i < 7; i++) {
     const currentDate = new Date(today);
     currentDate.setDate(today.getDate() + i);
 
     const dayOfWeek = currentDate.getDay();
+    const dayKey = dayKeys[dayOfWeek];
 
     weekDays.push({
-      dayName: dayHeaders[dayOfWeek],
+      dayName: dayKey,
       date: currentDate.getDate(),
       fullDate: currentDate.toISOString().split('T')[0],
       disabled: i >= maxDay,
@@ -717,6 +730,7 @@ export const WeeklyTableComponent = ({
   navigateToPageWithData,
   PAGES
 }) => {
+  const { get } = useMsg();
   const weekDays = generateWeeklyDays(baseDate, maxDay);
 
   console.log('WeeklyTableComponent', weekDays);
@@ -764,7 +778,7 @@ export const WeeklyTableComponent = ({
               cursor: isDateDisabled(dayInfo) ? 'not-allowed' : 'pointer'
             }}
           >
-            <div className="day-name">{dayInfo.dayName}</div>
+            <div className="day-name">{get(dayInfo.dayName)}</div>
             <div className="day-date">{dayInfo.date}</div>
           </div>
         ))}
@@ -794,7 +808,7 @@ export const DurationBasedTimeSelector = ({
   const [startTime, setStartTime] = useState(selectedStartTime);
   const [duration, setDuration] = useState(selectedDuration);
   const [active, setActive] = useState(false);
-
+  const { get } = useMsg();
 
 
 
@@ -939,14 +953,28 @@ export const DurationBasedTimeSelector = ({
           let buttonGroup = [];
 
           const pushGroup = () => {
+            
+
             if (!currentDate || buttonGroup.length === 0) return;
 
 
-            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            //const days = ['일', '월', '화', '수', '목', '금', '토'];
+            const dayKeys = [
+              "day_sun", // 0: 일요일
+              "day_mon", // 1: 월요일
+              "day_tue", // 2: 화요일
+              "day_wed", // 3: 수요일
+              "day_thu", // 4: 목요일
+              "day_fri", // 5: 금요일
+              "day_sat", // 6: 토요일
+            ];
 
             // currentDate가 "YYYY-MM-DD" 문자열
             const dateObj = new Date(currentDate);
-            const dayName = days[dateObj.getDay()];
+            const dayOfWeek = dateObj.getDay();
+            const dayKey = dayKeys[dayOfWeek];
+            const dayName = get(dayKey);
+
             const displayDate = `${currentDate} (${dayName})`;
 
             result.push(
@@ -1192,6 +1220,7 @@ export const MemoSelector = ({ value, onChange, messages = {} }) => {
 export const PickupSelector = ({ value, onChange, messages = {}, onBookerChange, onEntranceChange, selectedEntrance = '' }) => {
 
   const { user } = useAuth();
+  const { get } = useMsg();
 
   // booker 값을 별도 state로 관리 (초기값은 user.nickname)
   const [bookerValue, setBookerValue] = useState(user?.nickname || '');
@@ -1291,7 +1320,7 @@ export const PickupSelector = ({ value, onChange, messages = {}, onBookerChange,
               gap: '10px',
               marginTop: '8px'
             }}>
-              <span className="summary-label">{messages['entranceLabel'] || '장소'}:</span>
+              <span className="summary-label">{get('entranceLabel') || '장소'}:</span>
               <select
                 value={selectedEntrance}
                 onChange={handleEntranceChange}
@@ -1305,9 +1334,9 @@ export const PickupSelector = ({ value, onChange, messages = {}, onBookerChange,
                   boxSizing: 'border-box'
                 }}
               >
-                <option value="">{messages['entranceSelect'] || '선택하세요'}</option>
-                <option value="1">{messages['ENTRANCE_MARKER_1'] || '1번 입구'}</option>
-                <option value="2">{messages['ENTRANCE_MARKER_2'] || '2번 입구'}</option>
+                <option value="">{get('entranceSelect') || '선택하세요'}</option>
+                <option value="1">{get('ENTRANCE_MARKER_1') || '1번 입구'}</option>
+                <option value="2">{get('ENTRANCE_MARKER_2')|| '2번 입구'}</option>
               </select>
             </div>
           </SketchDiv>

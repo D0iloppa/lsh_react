@@ -126,8 +126,19 @@ body[data-lang="vi"] .map-container .venue-details{display: flex; justify-conten
 body[data-lang="vi"] .password-section button{width: 35% !important;}
 body[data-lang="vi"] .attendee-select{height: 50px !important;}
 body[data-lang="vi"] .top-girls-section .girls-rotation .rotation-content .rotation-items-container .rotation-item .girl-slide button{width: 100% !important;}
-body[data-lang="vi"] .filter-tab{letter-spacing: -1px; width: 28%;}
+body[data-lang="vi"] .filter-tab{letter-spacing: -1px; width: 100%; padding: 8px 4px;}
 body[data-lang="vi"] .select-box{min-width: 65px;}
+
+body[data-lang="vi"] .venue-name{letter-spacing: -1px !important; min-width: 365px !important;}
+body[data-lang="vi"] .booking-escort {min-width: 365px !important;}
+body[data-lang="vi"] .booking-actions{justify-content: start !important;}
+body[data-lang="vi"] .action-buttons {width: 100%;}
+body[data-lang="vi"] .action-buttons button {letter-spacing: -0.5px;}
+body[data-lang="vi"] .booking-status{margin-bottom: 0px; min-width: 63px; padding: 0.5rem;}
+body[data-lang="vi"] .month-row button{letter-spacing: -0.5px;}
+body[data-lang="vi"] .filter-tabs{gap: 2px;}
+body[data-lang="vi"] .filter-selects{gap: 0px; overflow-x: inherit !important;}
+
 
 
 
@@ -136,6 +147,9 @@ body[data-lang="vi"] .select-box{min-width: 65px;}
 body[data-lang="en"] .scroll-up-btn, body[data-lang="en"] .bottom-map-section {bottom: 115px;}
 body[data-lang="en"] .girls-rotation{margin-bottom: 5rem;}
 body[data-lang="en"] .filter-tab{letter-spacing: -1px;}
+body[data-lang="en"] .booking-actions {justify-content: start;} 
+body[data-lang="en"] .action-buttons{width: 80%;}
+body[data-lang="en"] .booking-status{padding: 1rem 0.5rem; margin-bottom: 0;}
 
 
 /* 일본어일 경우 */

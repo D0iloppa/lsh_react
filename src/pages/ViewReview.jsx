@@ -895,7 +895,7 @@ const renderUserName = (userName) => {
           transition: all 0.2s;
         }
         .filter-tab.active {
-          background: #333;
+          background: #374151;
           color: white;
           font-weight: 600;
           border: 2px solid #333;

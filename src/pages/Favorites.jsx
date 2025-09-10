@@ -85,19 +85,42 @@ const FavoritesPage = ({
     // 필터 옵션 토글 또는 모달
   };
 
-  const handleBook = (venue) => {
-    console.log('Book clicked:', venue);
+  const handleBook = (item) => {
+
+    handleDiscover(item);
+
+    /*
     navigateToPageWithData && navigateToPageWithData(PAGES.DISCOVER, {
-      venueId:venue.target_id
+      venueId:item.target_id
     });
+    */
   };
 
-  const handleDiscover = (venue) => {
-    console.log("venueId", venue.target_id)
+  const handleDiscover = (item) => {
 
-    let venueId = venue.target_id;
+    const {target_type='venue', target_id = -1} = item;
 
-    navigateToPageWithData(PAGES.DISCOVER, { venueId });
+    if(!target_id) return;
+    
+    switch(target_type){
+      case 'venue':
+        navigateToPageWithData && navigateToPageWithData(PAGES.DISCOVER, {
+          venueId:target_id
+        });
+        break;
+
+      case 'staff':
+        navigateToPageWithData && navigateToPageWithData(PAGES.STAFFDETAIL, {
+          staff_id: item.target_id,  // staffId → staff_id로 변경
+          venue_id: null,
+          vn_schedule_status: false,
+          fromReview: true   // 데이터 fetch를 위해 필요
+        });
+        break;
+    }
+    
+
+    //navigateToPageWithData(PAGES.DISCOVER, { venueId });
   };
 
   const ShareIcon = ({ 
