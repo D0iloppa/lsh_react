@@ -25,6 +25,10 @@ const FavoritesPage = ({
   const [userInfo, setUserInfo] = useState({});
   const [favorites, setFavorits] = useState([]);
   const [filteredFavorites, setFilteredFavorites] = useState([]); // 초기 빈 배열로
+
+  const [targetTypeFilter, setTargetTypeFilter] = useState("ALL"); // 전체 / venue / staff
+
+
   const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
 
   // 버튼 클릭 시 필터링
@@ -58,6 +62,9 @@ const FavoritesPage = ({
           params: { user_id: user?.user_id || 1 }
         });
         const data = response.data || [];
+
+        data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
         setFavorits(data);
         setFilteredFavorites(data); // 추가
       } catch (error) {
@@ -68,7 +75,18 @@ const FavoritesPage = ({
     fetchFavorits();
   }, [messages, currentLang]);
 
+ useEffect(() => {
+    let filtered = [...favorites];
 
+    if (targetTypeFilter !== "ALL") {
+      filtered = filtered.filter(item => item.target_type === targetTypeFilter.toLowerCase());
+    }
+
+    // 항상 최신순
+    filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    setFilteredFavorites(filtered);
+  }, [targetTypeFilter, favorites]);
 
   const handleProfile = () => {
     console.log('Profile 클릭');
@@ -338,6 +356,25 @@ const FavoritesPage = ({
           margin: 0;
         }
       }
+
+      .filter-tab {
+    flex: 1;
+    text-align: center;
+    padding: 6px 10px;
+    border: 1px solid #333;
+    border-radius: 6px;
+    background: white;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-tab.active {
+    background: #374151;
+    color: white;
+    font-weight: 600;
+    border: 2px solid #333;
+  }
         
     `}</style>
 
@@ -354,7 +391,29 @@ const FavoritesPage = ({
         <div className="content-section">
           {/* Section Header */}
           <div className="section-header">
-            <h1 className="section-title">{get('Menu1.8')}</h1>
+
+             <div className="filter-buttons" style={{ display: 'flex', gap: '8px' }}>
+              <div
+                className={`filter-tab ${targetTypeFilter === 'ALL' ? 'active' : ''}`}
+                onClick={() => setTargetTypeFilter('ALL')}
+              >
+                {get('btn.all.1')}
+              </div>
+              <div
+                className={`filter-tab ${targetTypeFilter === 'venue' ? 'active' : ''}`}
+                onClick={() => setTargetTypeFilter('venue')}
+              >
+                {get('title.text.14')}
+              </div>
+              <div
+                className={`filter-tab ${targetTypeFilter === 'staff' ? 'active' : ''}`}
+                onClick={() => setTargetTypeFilter('staff')}
+              >
+                {get('title.text.16')}
+              </div>
+            </div>
+
+            
             {/* <div className="filter-buttons">
               <SketchBtn 
                 variant="secondary" 

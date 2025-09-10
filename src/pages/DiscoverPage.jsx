@@ -8,7 +8,7 @@ import GoogleMapComponent from '@components/GoogleMapComponent';
 import SketchBtn from '@components/SketchBtn';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
-import { Star, Clock, Users, Phone, CreditCard, MessageCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, Heart, Clock, Users, Phone, CreditCard, MessageCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import ApiClient from '@utils/ApiClient';
 import { useAuth } from '../contexts/AuthContext';
 import { useLoginOverlay } from '@hooks/useLoginOverlay.jsx';
@@ -32,7 +32,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
     const handleDetail = (girl) => {
       navigateToPageWithData(PAGES.STAFFDETAIL, girl);
     };*/
-  const { user, isActiveUser, iauMasking } = useAuth();
+  const { user, isActiveUser, iauMasking, filterFavorits } = useAuth();
 
   
   const staffStatus = (staff) => {
@@ -61,7 +61,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
       style={{
         position: 'absolute',
         top: '8px',
-        right: '8px',
+        right: '10px',
         backgroundColor: statusBackgroundColor,
         color: 'white',
         padding: '3px 6px',
@@ -373,6 +373,60 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
 
   }
 
+  const toggleFavorite = async (staff) => {
+
+    return;
+
+    /*
+    console.log('toggle', staff);
+
+    const isNowFavorite = !staff.isFavorite;
+  
+    try {
+
+      await ApiClient.get(`/api/${isNowFavorite ? 'insertFavorite' : 'deleteFavorite'}`, {
+        params: {
+          user_id: user?.user_id || 1,
+          target_type: 'staff',
+          target_id: staff.staff_id,
+        },
+      });
+  
+      // ✅ UI 업데이트: state 갱신
+      setStaffList(prev => {
+        const updated = prev.map(item => {
+          if (item.staff_id === staff.staff_id) {
+            const toggled = !item.isFavorite; // prev 기준으로 계산
+            console.log('🔄 토글됨', {
+              staff_id: item.staff_id,
+              before: item.isFavorite,
+              after: toggled,
+            });
+            return { ...item, isFavorite: toggled };
+          }
+          return item;
+        });
+  
+        console.log('✅ staffList 업데이트 완료');
+        console.table(
+          updated.map(item => ({
+            staff_id: item.staff_id,
+            isFavorite: item.isFavorite,
+          }))
+        );
+  
+        return updated;
+      });
+  
+    } catch (error) {
+      console.error('즐겨찾기 API 호출 실패:', error);
+    }
+    */
+  };
+
+
+
+
   useEffect(() => {
     const fetchAllData = async () => {
       if (!venueId) return;
@@ -385,6 +439,15 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
         const iau = await isActiveUser();
         iau.onlyMasking = true;
 
+
+        // 0. 즐겨찾기 리스트를 가져옴
+        const fvrs = (await filterFavorits('staff')).map(item => item.target_id);
+        const fvrsSet = new Set(fvrs);
+
+
+        
+
+
         // 1. 먼저 staff 리스트를 가져옴
         const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
         const res = await axios.get(`${API_HOST}/api/getVenueStaffList`, {
@@ -393,7 +456,19 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
             lang:currentLang
            },
         });
-        const staffList = res.data || [];
+        let staffList = res.data || [];
+
+        staffList = staffList.map(staff => ({
+          ...staff,
+          isFavorite: fvrsSet.has(staff.staff_id)
+        }));
+
+        console.log('fetchAllData', fvrs, staffList);
+
+
+
+
+
         //console.log("staffList", staffList)
         setStaffList(staffList);
         // 2. staff 리스트가 있을 때만 availCnt 호출
@@ -1181,6 +1256,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   right: 0px !important;
 }
 
+
       `}</style>
 
       <div className="discover-container">
@@ -1252,7 +1328,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
 
 {/* 🔽 프로모션 버튼 (has_promotion === 1일 때만 보임) */}
 {venueInfo?.has_promotion === 1 && (
-  <div style={{ textAlign: 'center', marginTop: '8px' }}>
+  <div style={{ textAlign: 'center', margin: '8px' }}>
     <button
       onClick={() => 
         navigateToPageWithData && navigateToPageWithData(PAGES.PROMOTION, {
@@ -1422,6 +1498,8 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
               {/* 1등 단독 */}
               <div className="first-place-container">
                 {topGirls[0] && (() => {
+
+                  const item = topGirls[0];
                   return (
                     <div className="podium-rank rank-1" onClick={() => handleDetail(topGirls[0])}>
                       <div className="badge-rank1"></div>
@@ -1445,7 +1523,24 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                             </div>
                           )}
                           
-                          {topGirls[0].name}</div>
+                          
+                              {topGirls[0].name}
+                              
+                              <span
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleFavorite(item);
+                                  }}
+                                  style={{
+                                    marginLeft:'5px',
+                                    cursor: 'pointer',
+                                  }}
+                                >
+                                  <Heart size={14} fill={item.isFavorite ? '#f43f5e' : 'none'} color="white" />
+                                </span>
+
+
+                          </div>
                       </div>
                     </div>
                   );
@@ -1464,6 +1559,10 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                         onClick={() => handleDetail(girl)}
                       >
                         <div className={`badge-rank${i + 2}`}></div>
+
+
+
+                        
                         <div className="girl-image-box" style={{ position: 'relative' }}>
                           <img src={girl.image_url} className="girl-img" alt={`${i + 2}위`} />
 
@@ -1485,7 +1584,23 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                               UPDATED!!
                             </div>
                           )}
-                            {girl.name}</div>
+                            {girl.name}
+
+                            <span
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleFavorite(girl);
+                                  }}
+                                  style={{
+                                    marginLeft:'5px',
+                                    cursor: 'pointer',
+                                  }}
+                                >
+                                  <Heart size={14} fill={girl.isFavorite ? '#f43f5e' : 'none'} color="white" />
+                                </span>
+
+                            
+                            </div>
                         </div>
                       </div>
                     );
@@ -1501,6 +1616,9 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
 
                   return (
                     <div key={girl.staff_id} className="girl-slide" onClick={() => handleDetail(girl)}>
+
+
+
                       <div className="girl-image-box" style={{ position: 'relative' }}>
                         <img src={girl.image_url} className="girl-img" alt="girl" />
 
@@ -1520,7 +1638,22 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                               UPDATED!!
                             </div>
                           )}
-                          {girl.name}</div>
+                          {girl.name}
+
+                          <span
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleFavorite(girl);
+                                  }}
+                                  style={{
+                                    marginLeft:'5px',
+                                    cursor: 'pointer',
+                                  }}
+                                >
+                                  <Heart size={14} fill={girl.isFavorite ? '#f43f5e' : 'none'} color="white" />
+                                </span>
+
+                          </div>
                       </div>
                     </div>
                   );
@@ -1647,7 +1780,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
               <MessageCircle size={16} />
             </SketchBtn>
             <SketchBtn
-              className="sketch-button enter-button"
+              className="reservation-btn sketch-button enter-button"
               variant="event"
               style={{ width: '90px', marginTop: '0px' }}
               disabled={

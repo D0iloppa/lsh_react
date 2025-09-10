@@ -411,15 +411,25 @@ const getUUID = () => {
 
 const fetchFavorits = async () => {
   try {
-    const res = await ApiClient.get(`${API_HOST}/api/getMyFavoriteList`, {
+    const res = await ApiClient.get(`/api/getMyFavoriteList`, {
       params: { user_id: user?.user_id || 1 }
     });
-    return res.data || [];
+    return res || [];
   } catch (err) {
     console.error('즐겨찾기 실패:', err);
     return [];
   }
  }
+
+ const filterFavorits = async (type='venue') => {
+ 
+  const list = await fetchFavorits();
+  
+  const filtered = list.filter(item => item.target_type === type);
+
+  return filtered;
+ }
+
 
 const updateSetting = async (currentLang) => {
 
@@ -618,6 +628,7 @@ const deviceLogin = async () => {
     login,
     logout,
     fetchFavorits,
+    filterFavorits,
     isActiveUser,
     iauMasking,
     verifyPassword,

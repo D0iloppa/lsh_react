@@ -10,7 +10,7 @@ import SketchBtn from '@components/SketchBtn'
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import LoadingScreen from '@components/LoadingScreen';
-import { Filter, Martini, Store, User, ShieldCheck, Pencil, Trash2 } from 'lucide-react';
+import { Heart, Filter, Martini, Store, User, ShieldCheck, Pencil, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 import { Star, Edit3 } from 'lucide-react';
@@ -52,7 +52,7 @@ const ViewReviewPage = ({
   const [originalReviews, setOriginalReviews] = useState([]); // 원본 데이터 보관
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const API_HOST = import.meta.env.VITE_API_HOST;
-  const { user, isActiveUser, iauMasking } = useAuth();
+  const { user, isActiveUser, iauMasking, fetchFavorits } = useAuth();
   const [iauData, setIauData] = useState(null);
   
 
@@ -242,6 +242,22 @@ const handleTranslate = useCallback(async (reviewId, text) => {
 
       try {
         setLoading(true);
+
+
+        const fvrs = (await fetchFavorits()).map(item => ({
+          target_type: item.target_type,
+          target_id: item.target_id
+        }));
+        
+
+        const vnFvrs = fvrs.filter(item => item.target_type === 'venue').map(item => item.target_id);
+        const stfFvrs = fvrs.filter(item => item.target_type === 'staff').map(item => item.target_id);
+
+        const vnFvrsSet = new Set(vnFvrs);
+        const staffFvrsSet = new Set(stfFvrs);
+
+
+
         const response = await ApiClient.postForm('/api/getVenueReviewList', {
           venue_id: venueId || -1
         });
@@ -252,8 +268,19 @@ const handleTranslate = useCallback(async (reviewId, text) => {
         
         setIauData(iau);
 
-        const reviewsData = response.data || [];
-        //console.log("reviewsData", reviewsData)
+        let reviewsData = response.data || [];
+        
+        reviewsData = reviewsData.map(item => ({
+          ...item,
+          isFavorite: item.target_type == 'venue' ? 
+                    vnFvrsSet.has(item.venue_id) : 
+                    staffFvrsSet.has(item.target_id)
+        }));
+
+
+
+        console.log("reviewsData", reviewsData, vnFvrsSet, staffFvrsSet);
+
         setOriginalReviews(reviewsData);
         setReviews(reviewsData);
 
@@ -522,7 +549,9 @@ const renderUserName = (userName) => {
   const handleBack = () => {
     if(fromMyReview){
       goBack && goBack();
-    }else{
+    } else if (venueId) {
+      goBack && goBack();
+    } else{
       navigateToPage(PAGES.HOME);
     }
   };
@@ -1085,6 +1114,16 @@ const renderUserName = (userName) => {
                                     : ''
                                 : review.targetName}
                         </span>
+
+                        <span
+                          style={{
+                            display:'none'
+                          }}
+                        >
+                          <Heart size={12} fill={review.isFavorite ? '#f43f5e' : 'none'} color="black" />
+                        </span>
+
+                        
 
                       </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Star, Clock, MapPin, Trophy, Eye, Calendar } from 'lucide-react';
+import { Heart, Users, Star, Clock, MapPin, Trophy, Eye, Calendar } from 'lucide-react';
 import SketchSearch from '@components/SketchSearch';
 import HatchPattern from '@components/HatchPattern';
 import { useAuth } from '../contexts/AuthContext';
@@ -19,7 +19,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
   const [rankingType, setRankingType] = useState('none'); // 'venue' or 'staff'
   const [timeFilter, setTimeFilter] = useState('week'); // 'day', 'week', 'month'
   const { messages, get, isLoading } = useMsg();
-  const { user, isActiveUser, iauMasking } = useAuth();
+  const { user, isActiveUser, iauMasking, filterFavorits } = useAuth();
   const [isApiLoading, setIsApiLoading] = useState(false);
 
   const handleBack = () => {
@@ -87,6 +87,10 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
         const iau = await isActiveUser();
         // iau.onlyMasking = true;
 
+        const fvrs = (await filterFavorits(rankingType)).map(item => item.target_id);
+        const fvrsSet = new Set(fvrs);
+
+
         //실제 API 호출 (현재는 주석 처리)
         const res = await ApiClient.postForm('/api/getRank', {
           target_type: rankingType,
@@ -116,11 +120,12 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
           rank: index + 1,
           latest_staff_created_at: item.latest_staff_created_at,
           isUpdated : isUpdated(item.latest_staff_created_at),
+          isFavorite: fvrsSet.has(item.target_type == 'venue' ? item.venue_id : item.target_id),
           score: calculateRankingScore(item)
         }));
 
 
-        console.log('rank', transformed, data);
+        console.log('rank', fvrsSet, transformed, data);
 
         // // 점수 기준으로 정렬
         // transformed.sort((a, b) => b.score - a.score);
@@ -202,6 +207,35 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
       return false; // 예외 발생 시 false
     }
   };
+
+
+  const toggleFavorite = async (item) => {
+
+    setRankingData((prev) =>
+      prev.map((spot) =>
+        spot.id === item.id ? { ...spot, isFavorite: !spot.isFavorite } : spot
+      )
+    );
+
+    console.log('toggle', item);
+
+    const isNowFavorite = !item.isFavorite;
+  
+    try {
+
+      await ApiClient.get(`/api/${isNowFavorite ? 'insertFavorite' : 'deleteFavorite'}`, {
+        params: {
+          user_id: user?.user_id || 1,
+          target_type: rankingType,
+          target_id: item.id
+        },
+      });
+  
+    } catch (error) {
+      console.error('즐겨찾기 API 호출 실패:', error);
+    }
+  };
+
 
 
   const handleDiscover = async (item) => {
@@ -682,6 +716,21 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
                     }}
                   />
 
+                    <div
+                     onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(item);
+                    }}
+                      style={{
+                        position: 'absolute',
+                        right:3,
+                        top:3,
+                      }}
+                    >
+                      <Heart size={22} fill={item.isFavorite ? '#f43f5e' : 'none'} color="white" />
+                    </div>
+
+                    
                 {/* 스태프 컨텐츠 업데이트 여부: 하단 띠 오버레이 */}
                 {item.isUpdated && (
                   <div

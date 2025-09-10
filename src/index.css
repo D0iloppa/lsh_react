@@ -89,13 +89,16 @@ body[data-lang="cn"] * {
   font-family: var(--font-chinese) !important;
 }
 
-/* 더 구체적으로 */
+/* 중국어 */
 body[data-lang="cn"] .settings-container,
 body[data-lang="cn"] .sketch-btn,
 body[data-lang="cn"] .page-title,
 body[data-lang="cn"] .center-section {
   font-family: var(--font-chinese) !important;
 }
+body[data-lang="cn"]  .booking-status {margin-bottom: 0; padding: 0.5rem;}
+
+
 
 body[data-lang="vi"] * {
   font-family: var(--font-vi) !important;
@@ -150,10 +153,20 @@ body[data-lang="en"] .filter-tab{letter-spacing: -1px;}
 body[data-lang="en"] .booking-actions {justify-content: start;} 
 body[data-lang="en"] .action-buttons{width: 80%;}
 body[data-lang="en"] .booking-status{padding: 1rem 0.5rem; margin-bottom: 0;}
+body[data-lang="en"] .girl-image-box div{letter-spacing: -1px;}
+
 
 
 /* 일본어일 경우 */
-body[data-lang="ja"] .select-box{min-width: 65px;}
-body[data-lang="ja"] .filter-tab{letter-spacing: -1px; width: 28%;}
+body[data-lang="ja"] .select-box{min-width: 75px;}
+body[data-lang="ja"] .filter-tab{letter-spacing: -1px; width: 100%; text-align: center;}
 body[data-lang="ja"] .reservation-footer-content{letter-spacing: -1px;}
 body[data-lang="ja"] .filter-tabs .filter-tab:nth-of-type(2) {letter-spacing: -1px;}
+body[data-lang="ja"] .reservation-btn {width: 100% !important; letter-spacing: -1px;}
+body[data-lang="ja"] .filter-selects{gap: 0px; overflow-x: inherit !important;}
+body[data-lang="ja"] .filter-tabs{gap: 2px;}
+body[data-lang="ja"] .filter-content .filter-btn{letter-spacing: -1.5px; flex: 4 !important;}
+body[data-lang="ja"] .booking-actions{justify-content: start !important;}
+body[data-lang="ja"] .action-buttons {width: 100%;}
+body[data-lang="ja"] .action-buttons button{letter-spacing: -1px;}
+body[data-lang="ja"] .booking-status{margin-bottom: 0px; min-width: 63px; padding: 0.5rem;}

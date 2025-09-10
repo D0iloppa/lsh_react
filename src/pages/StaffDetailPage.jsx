@@ -99,29 +99,68 @@ const StaffDetailPage = ({ pageHistory, navigateToPageWithData, goBack, PAGES, s
 
 // StaffDetailPage 내부
 
-const toggleFavorite = async () => {
+// 공통 함수: 네이티브/버튼 양쪽에서 사용
+const applyFavorite = async (newFavorite) => {
   const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
-  const isNowFavorite = !isFavorite;
 
   // UI 즉시 반영
-  setIsFavorite(isNowFavorite);
+  setIsFavorite(newFavorite);
+
+
+  
 
   try {
-    const url = `${API_HOST}/api/${isNowFavorite ? 'insertFavorite' : 'deleteFavorite'}`;
+    const url = `${API_HOST}/api/${newFavorite ? 'insertFavorite' : 'deleteFavorite'}`;
+
+    //Swal.fire('UUID 에러', url+newFavorite, 'error');
+
     await ApiClient.get(url, {
       params: {
-        user_id: user?.user_id || 1,   // ✅ 로그인 사용자
-        target_type: 'staff',          // ✅ 스태프 즐겨찾기
-        target_id: girl.staff_id,      // ✅ staff_id
+        user_id: user?.user_id || 1,
+        target_type: 'staff',
+        target_id: girl.staff_id,
       },
     });
   } catch (error) {
-    console.error('즐겨찾기 API 호출 실패:', error);
-
-    // 실패 시 롤백 (UI 다시 원래대로)
-    setIsFavorite(!isNowFavorite);
+    console.error("즐겨찾기 API 호출 실패:", error);
+    // 실패 시 롤백
+    setIsFavorite(!newFavorite);
   }
 };
+
+// 버튼 클릭 → 기존 토글 동작
+const toggleFavorite = () => {
+  applyFavorite(!isFavorite);
+};
+
+// 네이티브 메시지 수신 → 받은 값 그대로 적용
+useEffect(() => {
+  const handleMessage = (event) => {
+    console.log("📩 받은 메시지:", event.data);
+
+    let data;
+    try {
+      data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+    } catch (e) {
+      console.warn("메시지 파싱 실패:", e);
+      return;
+    }
+
+    if (data.type === "toggleFavorite") {
+      console.log("네이티브에서 보낸 isFavorite:", data.is_favorite);
+      applyFavorite(!!data.is_favorite);
+    }
+  };
+
+  document.addEventListener("message", handleMessage);
+  window.addEventListener("message", handleMessage);
+
+  return () => {
+    document.removeEventListener("message", handleMessage);
+    window.removeEventListener("message", handleMessage);
+  };
+}, []);
+
 
 
   const renderStars = (rating = 0) => {
