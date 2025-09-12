@@ -130,26 +130,30 @@ const AppRoutes = () => {
       localStorage.setItem('versionCheck', JSON.stringify(vcObj));
     };
 
+    // 분기 기준 버전
+    const andVersion = '1.0.10';
+    const iosVersion = '1.0.9';
+
     // ✅ 버전 분기 처리
     if (version) {
-       if (isAndroid && compareVersions(version, '1.0.10') < 0) {
+       if (isAndroid && compareVersions(version, andVersion) < 0) {
           navigate('/downloadAndroid');
-       } else if (isIOS && compareVersions(version, '1.0.8') < 0) {
+       } else if (isIOS && compareVersions(version, iosVersion) < 0) {
           navigate('/downloadIOS');
       }
     } else {
-      if (isAndroid && compareVersions(version, '1.0.10') < 0) {
+      if (isAndroid && compareVersions(version, andVersion) < 0) {
          navigate('/downloadAndroid');
-       } else if (isIOS && compareVersions(version, '1.0.8') < 0) {
+       } else if (isIOS && compareVersions(version, iosVersion) < 0) {
          navigate('/downloadIOS');
       }
     }
 
 
     if (version) {
-       if (isAndroid && compareVersions(version, '1.0.10') == 0) {
+       if (isAndroid && compareVersions(version, andVersion) == 0) {
           saveVersionCheck(true);
-       } else if (isIOS && compareVersions(version, '1.0.8') == 0) {
+       } else if (isIOS && compareVersions(version, iosVersion) == 0) {
           saveVersionCheck(true);
       }
     }
