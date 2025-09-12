@@ -64,7 +64,7 @@ const MainApp = () => {
             document.body.scrollTop = 0;
     };
     
-    const { user, isLoggedIn, isActiveUser } = useAuth();
+    const { user, isLoggedIn, isActiveUser, exts } = useAuth();
     const msgContext = useMsg();
     const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = msgContext;
 
@@ -74,6 +74,7 @@ const MainApp = () => {
     const [unreadChatCount, setUnreadChatCount] = useState(0);
 
     console.log('welcome!', user);
+
 
     
 

@@ -467,155 +467,214 @@ const updateSetting = async (currentLang) => {
     }
 };
 
-const deviceLogin = async () => {
-  // 1. isLoggedIn 체크
-  if (isLoggedIn) {
-    console.log('이미 로그인된 상태입니다.', user);
+  const deviceLogin = async () => {
+    // 1. isLoggedIn 체크
+    if (isLoggedIn) {
+      console.log('이미 로그인된 상태입니다.', user);
 
 
-    if(invokeCntRef.current < 3) {
-      
-      invokeCntRef.current += 1;
-      // device_login -> 이력 추가
-      ApiClient.accessLog({
-        user_id : user.user_id,
-        page : "INTRO"
-      });
+      if(invokeCntRef.current < 3) {
+        
+        invokeCntRef.current += 1;
+        // device_login -> 이력 추가
+        ApiClient.accessLog({
+          user_id : user.user_id,
+          page : "INTRO"
+        });
+      }
+
+
+
+      return { success: true, user };
     }
 
+    // 2. UUID 요청 및 응답 대기
+    return new Promise((resolve) => {
+      const handleMessage = async (event) => {
+        try {
+          const uuid = event.data;
+          console.log('받은 UUID:', uuid);
 
-
-    return { success: true, user };
-  }
-
-  // 2. UUID 요청 및 응답 대기
-  return new Promise((resolve) => {
-    const handleMessage = async (event) => {
-      try {
-        const uuid = event.data;
-        console.log('받은 UUID:', uuid);
-
-        // UUID를 SweetAlert로 표시
-       
-        /*
-        Swal.fire({
-          title: 'UUID 수신 완료!',
-          text: `디바이스 UUID: ${uuid}`,
-          icon: 'success',
-          confirmButtonText: '확인',
-        });
-       */
+          // UUID를 SweetAlert로 표시
         
-        if (!uuid) {
-          console.error('UUID를 받지 못했습니다.');
           /*
           Swal.fire({
-            title: 'UUID 오류',
-            text: '디바이스 UUID를 받지 못했습니다.',
-            icon: 'error',
-            confirmButtonText: '확인'
+            title: 'UUID 수신 완료!',
+            text: `디바이스 UUID: ${uuid}`,
+            icon: 'success',
+            confirmButtonText: '확인',
           });
-          */
-          resolve({ success: false, error: 'UUID not received' });
-          return;
-        }
-
-        const data = qs.stringify({
-          login_type: 'device',
-          email: uuid,
-          login_id: uuid,
-          passwd: uuid,
-          account_type: 'user'
-        });
-
-        // 3. 기존 로그인 API 사용 (device 타입으로)
-        const API_HOST = import.meta.env.VITE_API_HOST;
-        const response = await axios.post(
-          `${API_HOST}/api/deviceLogin`, 
-          data,
-          {
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
-          }
-        );
-
-        let { error = false, errMsg = false, errCode = false, user = false, staff = false, manager = false } = response.data;
-
-        // type decoration
-        user = user && { 
-          type: 'user', 
-          'login_type': 'device', 
-          login_id: uuid, 
-          ...user 
-        };
-
-        if (error) {
-          console.error('디바이스 로그인 실패:', errCode || errMsg);
-          /*
-          Swal.fire({
-            title: '로그인 실패',
-            text: errCode || errMsg || '디바이스 로그인에 실패했습니다.',
-            icon: 'error',
-            confirmButtonText: '확인'
-          });
-          */
-          resolve({ success: false, error: errCode || errMsg });
-          return;
-        }
-
-        // 성공 시 상태 업데이트
-        const loginUser = user || manager || staff;
-        localStorage.removeItem('lsh_language');
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('user', JSON.stringify(loginUser));
-
-        setIsLoggedIn(true);
-        setUser(loginUser);
-
-        if(invokeCntRef.current < 3) {
-      
-          invokeCntRef.current += 1;
-          // device_login -> 이력 추가
-            ApiClient.accessLog({
-              user_id : user.user_id,
-              page : "INTRO"
+        */
+          
+          if (!uuid) {
+            console.error('UUID를 받지 못했습니다.');
+            /*
+            Swal.fire({
+              title: 'UUID 오류',
+              text: '디바이스 UUID를 받지 못했습니다.',
+              icon: 'error',
+              confirmButtonText: '확인'
             });
+            */
+            resolve({ success: false, error: 'UUID not received' });
+            return;
+          }
+
+          const data = qs.stringify({
+            login_type: 'device',
+            email: uuid,
+            login_id: uuid,
+            passwd: uuid,
+            account_type: 'user'
+          });
+
+          // 3. 기존 로그인 API 사용 (device 타입으로)
+          const API_HOST = import.meta.env.VITE_API_HOST;
+          const response = await axios.post(
+            `${API_HOST}/api/deviceLogin`, 
+            data,
+            {
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              }
+            }
+          );
+
+          let { error = false, errMsg = false, errCode = false, user = false, staff = false, manager = false } = response.data;
+
+          // type decoration
+          user = user && { 
+            type: 'user', 
+            'login_type': 'device', 
+            login_id: uuid, 
+            ...user 
+          };
+
+          if (error) {
+            console.error('디바이스 로그인 실패:', errCode || errMsg);
+            /*
+            Swal.fire({
+              title: '로그인 실패',
+              text: errCode || errMsg || '디바이스 로그인에 실패했습니다.',
+              icon: 'error',
+              confirmButtonText: '확인'
+            });
+            */
+            resolve({ success: false, error: errCode || errMsg });
+            return;
+          }
+
+          // 성공 시 상태 업데이트
+          const loginUser = user || manager || staff;
+          localStorage.removeItem('lsh_language');
+          localStorage.setItem('isLoggedIn', 'true');
+          localStorage.setItem('user', JSON.stringify(loginUser));
+
+          setIsLoggedIn(true);
+          setUser(loginUser);
+
+          if(invokeCntRef.current < 3) {
+        
+            invokeCntRef.current += 1;
+            // device_login -> 이력 추가
+              ApiClient.accessLog({
+                user_id : user.user_id,
+                page : "INTRO"
+              });
+          }
+
+
+          
+          console.log('디바이스 로그인 성공:', loginUser);
+
+        } catch (error) {
+          console.error('디바이스 로그인 중 오류:', error);
+          
+          Swal.fire({
+            title: '오류 발생',
+            text: `로그인 중 오류가 발생했습니다: ${JSON.stringify(error)}`,
+            icon: 'error',
+            confirmButtonText: '확인'
+          });
+          resolve({ success: false, error: error.message });
+        } finally {
+          // 이벤트 리스너 정리
+          window.removeEventListener('message', handleMessage);
         }
+      };
 
-
-        
-        console.log('디바이스 로그인 성공:', loginUser);
-
-      } catch (error) {
-        console.error('디바이스 로그인 중 오류:', error);
-        
-        Swal.fire({
-          title: '오류 발생',
-          text: `로그인 중 오류가 발생했습니다: ${JSON.stringify(error)}`,
-          icon: 'error',
-          confirmButtonText: '확인'
-        });
-        resolve({ success: false, error: error.message });
-      } finally {
-        // 이벤트 리스너 정리
+      // 메시지 이벤트 리스너 등록
+      window.addEventListener('message', handleMessage);
+      
+      // UUID 요청
+      getUUID();
+      
+      // 타임아웃 설정 (10초)
+      setTimeout(() => {
         window.removeEventListener('message', handleMessage);
-      }
-    };
+        resolve({ success: false, error: 'UUID request timeout' });
+      }, 10000);
+    });
+  };
 
-    // 메시지 이벤트 리스너 등록
-    window.addEventListener('message', handleMessage);
-    
-    // UUID 요청
-    getUUID();
-    
-    // 타임아웃 설정 (10초)
-    setTimeout(() => {
-      window.removeEventListener('message', handleMessage);
-      resolve({ success: false, error: 'UUID request timeout' });
-    }, 10000);
-  });
-};
+
+
+
+  /////////////////////////////////////////////////////
+
+
+  // venue API 호출 (무조건 fetch)
+  const fetchVenueCatMap = async () => {
+    try {
+      const res = await ApiClient.get(`/api/venueCatMap`);
+      return res.data || [];
+    } catch (err) {
+      console.error("venueCatMap fetch 실패:", err);
+      return [];
+    }
+  };
+
+  // venue API with sessionStorage cache (만료 10분)
+  const venueCatMap = async () => {
+    const cacheKey = "venueCatMap";
+    const ttl = 10 * 60 * 1000; // 10분(ms)
+
+    try {
+      // 1. 캐시 확인
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const { data, ts } = JSON.parse(cached);
+        const now = Date.now();
+
+        // 만료 안됨 → 캐시 반환
+        if (now - ts < ttl) {
+          return data;
+        }
+      }
+
+      // 2. 없거나 만료 → fetch
+      const data = await fetchVenueCatMap();
+
+      // 3. 캐시에 저장 (데이터 + 저장 시각)
+      sessionStorage.setItem(
+        cacheKey,
+        JSON.stringify({ data, ts: Date.now() })
+      );
+
+      return data;
+    } catch (err) {
+      console.error("venueCatMap cache 실패:", err);
+      return [];
+    }
+  };
+
+  // venue 단일 항목 조회
+  const venueCatInfo = async (venue_id) => {
+    const vcm = await venueCatMap();
+    return vcm.find((v) => v.venue_id === venue_id) || null;
+  };
+
+  /////////////////////////////////////////////////////
 
 
 
@@ -633,7 +692,11 @@ const deviceLogin = async () => {
     iauMasking,
     verifyPassword,
     updateUserLang,
-    updateLoginState
+    updateLoginState,
+    exts:{
+      venueCatMap,
+      venueCatInfo
+    }
   };
 
   return (

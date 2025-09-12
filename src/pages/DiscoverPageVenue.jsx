@@ -1295,6 +1295,7 @@ const openMenuOverlay = (menuList) => {
                         navigateToPageWithData(PAGES.RESERVATION, {
                           target: 'venue',
                           id: venueId || 1,
+                          venue_id:venueId
                         });
                       } else {
                         // 미구독자인 경우 일일권 구매 안내
@@ -1322,6 +1323,7 @@ const openMenuOverlay = (menuList) => {
                       navigateToPageWithData(PAGES.RESERVATION, {
                         target: 'venue',
                         id: venueId || 1,
+                        venue_id:venueId
                       });
                     }
                   }}
@@ -1348,6 +1350,7 @@ const openMenuOverlay = (menuList) => {
                 navigateToPageWithData(PAGES.RESERVATION, {
                   target: 'venue',
                   id: venueId || 1,
+                  venue_id:venueId
                 })
               }}
             ><HatchPattern opacity={0.8} />

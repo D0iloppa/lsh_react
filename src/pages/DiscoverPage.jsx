@@ -1814,6 +1814,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                     navigateToPageWithData(PAGES.RESERVATION, {
                       target: 'venue',
                       id: venueId || 1,
+                      venue_id:venueId
                     });
                   } else {
                     const result = await Swal.fire({
@@ -1835,6 +1836,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                   navigateToPageWithData(PAGES.RESERVATION, {
                     target: 'venue',
                     id: venueId || 1,
+                    venue_id:venueId
                   });
                 }
               }}

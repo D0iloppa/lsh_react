@@ -381,6 +381,7 @@ hideIOSImageViewer();
         navigateToPageWithData(PAGES.RESERVATION, {
           target: 'staff',
           id: girl.staff_id || 123,
+          venue_id:girl.venue_id,
           staff: girl
         });
 
@@ -442,6 +443,7 @@ hideIOSImageViewer();
       navigateToPageWithData(PAGES.RESERVATION, {
         target: 'staff',
         id: girl.staff_id,
+        venue_id:girl.venue_id,
         staff: girl
       });
     }
