@@ -20,7 +20,7 @@ const GoogleMapComponent = ({
 
 
 
-  const apiKey = 'AIzaSyCXOZJxwzKKVlBJPfaDYRv4z_rQ2zOALZk';
+  const apiKey = 'AIzaSyAcLlS21yiX9Ym7aELGi0krFi6pGJ7vuRc';
 
 
   const mapRef = useRef(null);
