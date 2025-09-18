@@ -1270,7 +1270,7 @@ const categoryMap = {
           <div className="time-label">{get('venue.cat.label')}</div>
 
           {mode === "edit" ? (
-            <span>{get(categoryMap[selectedCategory].msg_code)}</span>
+            <span style={{"lineHeight": "20px", "display": "inline-block" }}>{get(categoryMap[selectedCategory].msg_code)}</span>
           ) : (
             <select value={selectedCategory} onChange={handleCatChange}>
               {Object.entries(categoryMap).map(([value, item]) => (
