@@ -97,10 +97,16 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
           timeFilter: timeFilter
         });
 
+        let data = (res.data || []);
+
+        // 필터
+        data = data.filter(i=>i.cat_id == 1);
+
+
         // 최대 랭킹
-        const topRank = 10;
-        //const data = (res.data || []).slice(0, topRank);
-        const data = res.data || []
+        const topRank = 100;
+        data = data.slice(0, topRank);
+        //const data = res.data || []
 
 
         const transformed = data.map((item, index) => ({

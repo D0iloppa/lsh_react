@@ -226,7 +226,7 @@ useEffect(() => {
     const fetchHotspots = async (favoritesData) => {
       try {
         const res = await axios.get(`${API_HOST}/api/getVenueList`);
-        const data = res.data || [];
+        let data = res.data || [];
 
         const favoriteIds = new Set(
           favoritesData
@@ -240,6 +240,10 @@ useEffect(() => {
         setIauData(iau);
 
         console.log('data', data);
+
+        // cat_id가 1인 값들만
+        data = data.filter(i => i.cat_id == 1);
+
         
         const transformed = data.map((item, index) => ({
           id: item.venue_id || index,
