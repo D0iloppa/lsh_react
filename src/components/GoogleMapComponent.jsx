@@ -6,6 +6,10 @@ const GoogleMapComponent = ({
   onMapClick = () => {},   // ✅ 1. 지도 클릭 콜백 추가
   disableInteraction = false
 }) => {
+
+
+  const apiKey = 'AIzaSyAcLlS21yiX9Ym7aELGi0krFi6pGJ7vuRc';
+  
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const markersRef = useRef([]);
@@ -20,7 +24,7 @@ const GoogleMapComponent = ({
 
       const script = document.createElement('script');
       script.id = 'google-maps-script';
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCXOZJxwzKKVlBJPfaDYRv4z_rQ2zOALZk`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
       script.async = true;
       script.defer = true;
       script.onload = () => initMap();
