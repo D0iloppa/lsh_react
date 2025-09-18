@@ -1171,6 +1171,9 @@ const chatWithUser = async(r) => {
                           </div>
                         )}
 
+                        <div>
+                          <Edit size={10}/> {get('MENU')}: {r.menu_name || get('menu.item.default')}
+                        </div>
 
                         <div>
                           <Edit size={10}/> {get('RESERVATION_NOTE_LABEL')} {r.note ? r.note : <span style={{color:'#9d9d9d'}}>{get('NO_NOTE_MESSAGE')}</span>}

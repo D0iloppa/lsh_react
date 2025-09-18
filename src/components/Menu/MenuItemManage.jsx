@@ -33,12 +33,25 @@ const MenuItemManage = ({ venue_id, get }) => {
       confirmButtonText: get("menu.mng.button.save") || "저장",
       cancelButtonText: get("menu.mng.button.cancel") || "취소",
       preConfirm: () => {
-        return {
-          name: document.getElementById("swal-name").value.trim(),
-          price: document.getElementById("swal-price").value.trim(),
-          description: document.getElementById("swal-desc").value.trim(),
-        };
-      },
+            const name = document.getElementById("swal-name").value.trim();
+            const price = document.getElementById("swal-price").value.trim();
+            const description = document.getElementById("swal-desc").value.trim();
+
+            if (!name) {
+                Swal.showValidationMessage(get('ERR_MENU_NAME_REQUIRED') || "메뉴명을 입력해주세요");
+                return false;
+            }
+            if (!price) {
+                Swal.showValidationMessage(get('ERR_MENU_PRICE_REQUIRED') || "가격을 입력해주세요");
+                return false;
+            }
+            if (!description) {
+                Swal.showValidationMessage(get('ERR_MENU_DESC_REQUIRED') || "설명을 입력해주세요");
+                return false;
+            }
+
+            return { name, price, description };
+        },
       didOpen: () => {
         // ✅ 팝업 내부 스타일
         const style = document.createElement("style");
@@ -49,8 +62,8 @@ const MenuItemManage = ({ venue_id, get }) => {
           .swal-form-row {
             display: flex;
             align-items: center;
-            margin: 8px 0;
-            gap: 6px;
+            margin: 20px 0;
+            gap: 10px;
           }
           .swal-form-row label {
             flex: 0 0 60px;
@@ -60,7 +73,7 @@ const MenuItemManage = ({ venue_id, get }) => {
           .swal2-input-inline {
             flex: 1;
             margin: 0 !important;
-            height: 20px;
+            height: 30px;
             font-size: 14px;
             padding: 4px 8px;
             border-radius: 6px;
@@ -81,8 +94,7 @@ const MenuItemManage = ({ venue_id, get }) => {
             flex: 1;
           }
           .swal-price-wrap input {
-            width: 100%;
-            padding-right: 45px;
+            width: 92%;
           }
           .swal-price-wrap::after {
             content: "VND";
@@ -93,6 +105,12 @@ const MenuItemManage = ({ venue_id, get }) => {
             font-size: 13px;
             color: #666;
           }
+            div:where(.swal2-container).swal2-center>.swal2-popup{width:100%; max-width:100%;}
+
+            div:where(.swal2-container) h2:where(.swal2-title){
+              border-bottom: 1px solid #d2d2d2;
+              padding-bottom: 1rem;
+            }
         `;
         Swal.getPopup().appendChild(style);
       },

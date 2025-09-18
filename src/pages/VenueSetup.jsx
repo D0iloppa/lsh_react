@@ -911,9 +911,9 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
 
 const categoryMap = {
-  1: {name:"BAR", menuInput:false},
-  2: {name:"SALON", menuInput:true},
-  3: {name:"SPA", menuInput:true}
+  1: {name:"BAR", mc:'ct_bar', msg_code:'ct_bar', menuInput:false},
+  2: {name:"SALON", mc:'ct_salon', msg_code:'ct_salon_spa', menuInput:true},
+  3: {name:"SPA", mc:'ct_spa', msg_code:'ct_salon_spa', menuInput:true},
 };
 
   return (
@@ -1270,12 +1270,12 @@ const categoryMap = {
           <div className="time-label">{get('venue.cat.label')}</div>
 
           {mode === "edit" ? (
-            <span>{categoryMap[selectedCategory].name}</span>
+            <span>{get(categoryMap[selectedCategory].msg_code)}</span>
           ) : (
             <select value={selectedCategory} onChange={handleCatChange}>
               {Object.entries(categoryMap).map(([value, item]) => (
                 <option key={value} value={value}>
-                  {item.name}
+                  {get(item.mc)}
                 </option>
               ))}
             </select>

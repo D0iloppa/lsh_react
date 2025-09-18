@@ -69,21 +69,35 @@ export default function LoginView() {
 
   const popularVenues = [
     {
-      venueName: "KLUB ONE",
+      venueName: "A",
       description: "Premium entertainment with elite hostesses and vibrant atmosphere",
       rating: "4.9",
       location: "District 1, Ho Chi Minh City",
       image:'/cdn/content/mang.png'
     },
     {
-      venueName: "Elite Hostess Club",
+      venueName: "spa1",
+      description: "Premium entertainment with elite hostesses and vibrant atmosphere",
+      rating: "4.9",
+      location: "District 1, Ho Chi Minh City",
+      image:'/cdn/spa1.png'
+    },
+    {
+      venueName: "sap2",
+      description: "Premium entertainment with elite hostesses and vibrant atmosphere",
+      rating: "4.9",
+      location: "District 1, Ho Chi Minh City",
+      image:'/cdn/spa2.jpg'
+    },
+    {
+      venueName: "B",
       description: "Experience top-notch services with our elite hostesses",
       rating: "4.8",
       location: "District 3, Ho Chi Minh City",
       image:'/cdn/content/qui.png'
     },
     {
-      venueName: "Vibrant Lounge Bar",
+      venueName: "C",
       description: "Join us for a night full of fun and great vibes",
       rating: "4.7",
       location: "District 7, Ho Chi Minh City",
