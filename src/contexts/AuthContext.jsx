@@ -236,6 +236,64 @@ export const AuthProvider = ({ children }) => {
   return true;
 };
 
+
+
+
+// venue API 호출 (무조건 fetch)
+  const fetchVenueCatMap = async () => {
+    try {
+      const res = await ApiClient.get(`/api/venueCatMap`);
+      return res.data || [];
+    } catch (err) {
+      console.error("venueCatMap fetch 실패:", err);
+      return [];
+    }
+  };
+
+  // venue API with sessionStorage cache (만료 10분)
+  const venueCatMap = async () => {
+    const cacheKey = "venueCatMap";
+    const ttl = 10 * 60 * 1000; // 10분(ms)
+
+    try {
+      // 1. 캐시 확인
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const { data, ts } = JSON.parse(cached);
+        const now = Date.now();
+
+        // 만료 안됨 → 캐시 반환
+        if (now - ts < ttl) {
+          return data;
+        }
+      }
+
+      // 2. 없거나 만료 → fetch
+      const data = await fetchVenueCatMap();
+
+      // 3. 캐시에 저장 (데이터 + 저장 시각)
+      sessionStorage.setItem(
+        cacheKey,
+        JSON.stringify({ data, ts: Date.now() })
+      );
+
+      return data;
+    } catch (err) {
+      console.error("venueCatMap cache 실패:", err);
+      return [];
+    }
+  };
+
+  // venue 단일 항목 조회
+  const venueCatInfo = async (venue_id) => {
+    const vcm = await venueCatMap();
+    return vcm.find((v) => v.venue_id === venue_id) || null;
+  };
+
+  /////////////////////////////////////////////////////
+
+
+
   const value = {
     isLoggedIn,
     user,
@@ -253,7 +311,11 @@ export const AuthProvider = ({ children }) => {
     updateVenueId,    // 추가
     isCompletedTuto,
     isJustLoggedIn,
-    clearJustLoggedInFlag
+    clearJustLoggedInFlag,
+    exts:{
+      venueCatMap,
+      venueCatInfo
+    }
   };
 
   return (
