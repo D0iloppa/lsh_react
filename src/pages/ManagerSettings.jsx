@@ -560,7 +560,7 @@ const handleChangePassword = async () => {
         </SketchDiv>
         */}
 
-        <div className="password-section">
+        <div className="password-section" style={{"display":'none'}}>
           <div className="section-title">{get('SETTINGS_CHANGE_PASSWORD')}</div>
           <SketchDiv className="section-box">
             <div className="input-row">
@@ -635,8 +635,10 @@ const handleChangePassword = async () => {
           </div>
         </SketchDiv> */}
 
-        <div className="section-title">{get('Staff.setting.language.title')}</div>
-        <SketchDiv className="section-box">
+        <div className="section-title" style={{"display":'none'}}>
+          {get('Staff.setting.language.title')}
+        </div>
+        <SketchDiv className="section-box" style={{"display":'none'}}> 
           <div className="lang-row">
             <select value={tempLang} 
                     onChange={(e) => {
@@ -670,7 +672,7 @@ const handleChangePassword = async () => {
           </SketchBtn>
         </div>
 
-        <div className='staff-delete' onClick={handleDelete}>{get('DELETE_ACCOUNT')}</div>
+        <div className='staff-delete' style={{"display":'none'}} onClick={handleDelete}>{get('DELETE_ACCOUNT')}</div>
       </div>
        <LoadingScreen
             variant="cocktail"
