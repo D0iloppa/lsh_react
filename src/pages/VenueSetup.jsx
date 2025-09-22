@@ -18,6 +18,7 @@ import Swal from 'sweetalert2';
 import ImageUploader from '@components/ImageUploader';
 import PhotoGallery from '@components/PhotoGallery';
 import LoadingScreen from '@components/LoadingScreen';
+import MenuItemManage from '@components/Menu/MenuItemManage'
 
 const defaultForm = {
   name: '',
@@ -47,10 +48,11 @@ const defaultForm = {
 };
 
 const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherProps }) => {
-  const { user, updateVenueId } = useAuth();
+  const { user, updateVenueId, exts } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [mode, setMode] = useState(otherProps.mode || 'create');
   const [venueId, setVenueId] = useState(otherProps.venue_id || null);
+  const [selectedCategory, setSelectedCategory] = useState("1");
   const [form, setForm] = useState(defaultForm);
   const [imageCount, setImageCount] = useState(0);
 
@@ -58,6 +60,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
   // ref로 폼 값 관리
   const formRef = useRef({
+    cat_id:1,
     name: '',
     address: '',
     phone: '',
@@ -188,7 +191,15 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
             params: { venue_id: venueId }
           });
 
+         const vcm = await exts.venueCatMap();
+         const vcmItem = vcm.find((v) => v.venue_id === venueId) || null;
+
+         if(vcmItem){
+          venueData.cat_id = vcmItem.cat_id;
+          setSelectedCategory(vcmItem.cat_id + "");
+         }
          
+
 
           let updatedForm = {
             ...form,
@@ -296,6 +307,11 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
 
   };
 
+
+  const handleCatChange = (e) => {
+    setSelectedCategory(e.target.value);
+    console.log("선택된 업종:", e.target.value);
+  }
 
   const handleBack = () => {
 
@@ -482,7 +498,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
   const insertVenue = async () => {
     // formRef에서 데이터 읽어오기
     const venueData = {
-      cat_id: 1,
+      cat_id: selectedCategory || 1,
       name: formRef.current.name.trim(),
       address: formRef.current.address.trim(),
       phone: formRef.current.phone.trim(),
@@ -605,7 +621,7 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
     
     // venue 수정 데이터 준비 (formRef에서 읽어오기)
     const venueData = {
-      cat_id: 1,
+      cat_id: selectedCategory,
       venue_id: user?.venue_id,
       manager_id: user?.manager_id,
       name: formRef.current.name.trim(),
@@ -891,6 +907,13 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
       confirmButtonText: get('SWAL_CONFIRM_BUTTON')
     });
   }
+};
+
+
+const categoryMap = {
+  1: {name:"BAR", msg_code:'ct_bar', menuInput:false},
+  2: {name:"SALON", msg_code:'ct_salon_spa', menuInput:true},
+  3: {name:"SPA", msg_code:'ct_salon_spa', menuInput:true},
 };
 
   return (
@@ -1236,6 +1259,31 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
         </div>
         
         <div className="section-title required-field">{get('VENUE_INFORMATION')}</div>
+
+        {/* 업종*/}
+        <div className="input-row"
+          style={{
+            display:'flex',
+            gap:'10px'
+          }}
+        >
+          <div className="time-label">{get('venue.cat.label')}</div>
+
+          {mode === "edit" ? (
+            <span>{get(categoryMap[selectedCategory].msg_code)}</span>
+          ) : (
+            <select value={selectedCategory} onChange={handleCatChange}>
+              {Object.entries(categoryMap).map(([value, item]) => (
+                <option key={value} value={value}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+
+
         
         <div className="input-row">
           <div className="time-label">{get('title.text.14')}</div>
@@ -1328,8 +1376,26 @@ const VenueSetup = ({ navigateToPageWithData, PAGES, goBack, pageData, ...otherP
             />
           </div>
         </div>
+          
+        { /* 메뉴 입력 (salon/spa) */}
+        {(mode === "edit" && categoryMap[selectedCategory]?.menuInput) ? (
+        <div className="input-row">
+          <div>
+            <div className="time-label">
+              {get('MENU_MANAGEMENT_2')}
+            </div>
+            <MenuItemManage
+              get={get}
+              venue_id={venueId}
+            />
+          </div>
+        </div>
+      ) : null}
 
-        {/* 메뉴 입력 */}
+
+
+
+        {/* 메뉴판 입력 */}
         <div className="input-row">
           <div>
               <div className="time-label">

@@ -30,6 +30,7 @@ const AppRoutes = () => {
   const { isLoggedIn, user, loginType, isCompletedTuto } = useAuth();
   const { currentLang, messages } = useMsg();
 
+  
 
   useEffect(() => {
     // body에 현재 언어 속성 추가

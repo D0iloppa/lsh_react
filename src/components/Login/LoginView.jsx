@@ -66,7 +66,21 @@ export default function LoginView() {
   const { messages, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [venues, setVenues] = useState([]);
   const [selectedVenue, setSelectedVenue] = useState('');
+  const [selectedIndustry, setSelectedIndustry] = useState("all");
   const [loading, setLoading] = useState(false);
+
+    // 업종 필터 적용
+  const filteredVenues = venues.filter((venue) => {
+    if (selectedIndustry === "all") return true;
+
+    let tmp_cat_id = venue.cat_id;
+    // 2,3 동일치 취급
+    if(tmp_cat_id == 3) tmp_cat_id = 2;
+
+    return String(tmp_cat_id) === selectedIndustry;
+  });
+
+  
 
   const navigate = useNavigate();
   const { login_v2 } = useAuth();
@@ -79,6 +93,10 @@ export default function LoginView() {
       window.scrollTo(0, 0);
     }
   }, [messages, currentLang]);
+
+  useEffect(() => {
+    setSelectedVenue("");  // 업종 바뀌면 매장 선택 초기화
+  }, [selectedIndustry]);
 
   // 매장 리스트 가져오기
   useEffect(() => {
@@ -243,6 +261,32 @@ export default function LoginView() {
             padding: '1rem'
           }}
         >
+
+    {/* 업종 필터 */}
+    <div style={{ display: "flex", alignItems: "center", marginBottom: "1rem" }}>
+      <span style={{ marginRight: "0.5rem", fontSize: "0.875rem", fontWeight: "500" }}>업종 :</span>
+      <select
+        value={selectedIndustry}
+        onChange={(e) => setSelectedIndustry(e.target.value)}
+        style={{
+          flex: 1, // 남는 공간 다 차지
+          padding: "0.75rem",
+          border: "1px solid #d1d5db",
+          borderRadius: "8px",
+          backgroundColor: "#f9fafb",
+          fontSize: "0.875rem",
+        }}
+        disabled={loading}
+      >
+        <option value="all">전체</option>
+        <option value="1">BAR</option>
+        <option value="2">이발소/스파</option>
+      </select>
+    </div>
+
+
+
+
           <select 
             value={selectedVenue}
             onChange={(e) => setSelectedVenue(e.target.value)}
@@ -258,9 +302,9 @@ export default function LoginView() {
             disabled={loading}
           >
             <option value="">매장을 선택해주세요</option>
-            {venues.map((venue) => (
+            {filteredVenues.map((venue) => (
               <option key={venue.manager_id} value={venue.venue_id}>
-                {`${venue.venue_name}`}
+                {venue.venue_name}
               </option>
             ))}
           </select>

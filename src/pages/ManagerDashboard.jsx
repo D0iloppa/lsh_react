@@ -447,7 +447,7 @@ const getVenueStatusButtonVariant = () => {
         if(!chkAlert()) return;
         navigateToPage(PAGES.NOTIFICATION_CENTER); 
       }
-    },
+    }, */
     { 
       id: 8, 
       icon: <Settings size={24} />, 
@@ -459,7 +459,7 @@ const getVenueStatusButtonVariant = () => {
         navigateToPage(PAGES.MANAGER_SETTINGS); 
       }
     }
-      */
+     
   ];
 
   useEffect(() => {
