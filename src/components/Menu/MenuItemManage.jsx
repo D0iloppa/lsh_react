@@ -14,13 +14,21 @@ const MenuItemManage = ({ venue_id, get }) => {
       title,
       html: `
         <div class="swal-form-row">
-          <label for="swal-name">${get("menu.mng.input.name") || "메뉴명"}</label>
+          <label for="swal-name">${get("menu.mng.input.name") || "코스명"}</label>
           <input id="swal-name" class="swal2-input-inline" value="${defaultValues.name || ""}">
         </div>
         <div class="swal-form-row">
           <label for="swal-price">${get("menu.mng.input.price") || "가격"}</label>
           <div class="swal-price-wrap">
-            <input id="swal-price" class="swal2-input-inline" value="${defaultValues.price || ""}" type="number">
+            <input id="swal-price" class="swal2-input-inline" 
+                 value="${defaultValues.price ? new Intl.NumberFormat("vi-VN").format(defaultValues.price) : ""}" 
+                 type="text">
+          </div>
+        </div>
+        <div class="swal-form-row">
+          <label for="swal-duration">${get("menu.mng.input.duration") || "이용시간"}</label>
+          <div class="swal-duration-wrap">
+            <input id="swal-duration" class="swal2-input-inline" value="${defaultValues.duration || ""}" type="number">
           </div>
         </div>
         <div class="swal-form-row">
@@ -34,11 +42,12 @@ const MenuItemManage = ({ venue_id, get }) => {
       cancelButtonText: get("menu.mng.button.cancel") || "취소",
       preConfirm: () => {
             const name = document.getElementById("swal-name").value.trim();
-            const price = document.getElementById("swal-price").value.trim();
+            const price = document.getElementById("swal-price").value.replace(/\./g, "").trim();
+            const duration = document.getElementById("swal-duration").value.trim();
             const description = document.getElementById("swal-desc").value.trim();
 
             if (!name) {
-                Swal.showValidationMessage(get('ERR_MENU_NAME_REQUIRED') || "메뉴명을 입력해주세요");
+                Swal.showValidationMessage(get('ERR_MENU_NAME_REQUIRED') || "코스명을 입력해주세요");
                 return false;
             }
             if (!price) {
@@ -50,7 +59,7 @@ const MenuItemManage = ({ venue_id, get }) => {
                 return false;
             }
 
-            return { name, price, description };
+            return { name, price, duration, description };
         },
       didOpen: () => {
         // ✅ 팝업 내부 스타일
@@ -105,6 +114,25 @@ const MenuItemManage = ({ venue_id, get }) => {
             font-size: 13px;
             color: #666;
           }
+
+          .swal-duration-wrap {
+            position: relative;
+            flex: 1;
+          }
+          .swal-duration-wrap input {
+            width: 92%;
+          }
+
+          .swal-duration-wrap::after {
+            content: "min";
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 13px;
+            color: #666;
+          }
+
             div:where(.swal2-container).swal2-center>.swal2-popup{width:100%; max-width:100%;}
 
             div:where(.swal2-container) h2:where(.swal2-title){
@@ -113,13 +141,23 @@ const MenuItemManage = ({ venue_id, get }) => {
             }
         `;
         Swal.getPopup().appendChild(style);
+
+        const priceInput = document.getElementById("swal-price");
+        priceInput.addEventListener("input", (e) => {
+          let value = e.target.value.replace(/[^\d]/g, "");
+          if (!value) {
+            e.target.value = "";
+            return;
+          }
+          e.target.value = new Intl.NumberFormat("vi-VN").format(value);
+        });
       },
     });
 
     return formValues;
   };
 
-  // ✅ 메뉴 목록 가져오기
+  // ✅ 코스 목록 가져오기
   const fetchMenuList = async () => {
     try {
       const res = await ApiClient.postForm("/api/getMenuItemList", {
@@ -127,18 +165,18 @@ const MenuItemManage = ({ venue_id, get }) => {
       });
       setItems(res.data || []); // 서버에서 내려온 목록 반영
     } catch (err) {
-      console.error("메뉴 목록 조회 실패:", err);
+      console.error("코스 목록 조회 실패:", err);
     }
   };
 
-  // ✅ 마운트 시 메뉴 목록 불러오기
+  // ✅ 마운트 시 코스 목록 불러오기
   useEffect(() => {
     fetchMenuList();
   }, [venue_id]);
 
-  // ✅ 메뉴 추가
+  // ✅ 코스 추가
   const handleAdd = async () => {
-    const formValues = await openMenuForm(get("menu.mng.dialog.add") || "메뉴 추가");
+    const formValues = await openMenuForm(get("menu.mng.dialog.add") || "코스 추가");
     if (formValues && formValues.name) {
       const newItem = {
         venue_id,
@@ -154,17 +192,17 @@ const MenuItemManage = ({ venue_id, get }) => {
           fetchMenuList();
         }
       } catch (err) {
-        console.error("메뉴 추가 실패:", err);
+        console.error("코스 추가 실패:", err);
       }
     }
   };
 
-  // ✅ 메뉴 수정
+  // ✅ 코스 수정
   const handleEdit = async (id) => {
     const item = items.find((i) => i.item_id === id || i.temp_id === id);
     if (!item) return;
 
-    const formValues = await openMenuForm(get("menu.mng.dialog.edit") || "메뉴 수정", item);
+    const formValues = await openMenuForm(get("menu.mng.dialog.edit") || "코스 수정", item);
     if (formValues) {
       const payload = {
         item_id: item.item_id,
@@ -180,12 +218,12 @@ const MenuItemManage = ({ venue_id, get }) => {
           fetchMenuList();
         }
       } catch (err) {
-        console.error("메뉴 수정 실패:", err);
+        console.error("코스 수정 실패:", err);
       }
     }
   };
 
-  // ✅ 메뉴 삭제
+  // ✅ 코스 삭제
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: get("menu.mng.confirm.delete") || "삭제하시겠습니까?",
@@ -214,7 +252,7 @@ const MenuItemManage = ({ venue_id, get }) => {
           fetchMenuList();
         }
       } catch (err) {
-        console.error("메뉴 삭제 실패:", err);
+        console.error("코스 삭제 실패:", err);
       }
     }
   };
@@ -222,7 +260,7 @@ const MenuItemManage = ({ venue_id, get }) => {
   return (
     <div className="menu-item-manage">
       <SketchBtn className="add-btn" onClick={handleAdd}>
-        {get("menu.mng.button.add") || "+ 메뉴 추가"}
+        {get("menu.mng.button.add") || "+ 코스 추가"}
       </SketchBtn>
 
       <ul className="menu-list">
