@@ -597,7 +597,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
 
 
 
-              <div className="form-label">{get('STAFF_USERNAME_LABEL') || '로그인 아이디'}</div>
+              <div className="form-label" style={{'display':'none'}}>{get('STAFF_USERNAME_LABEL') || '로그인 아이디'}</div>
               <SketchInput
                 name="username"
                 value={form.username}
@@ -607,7 +607,8 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
                 style={{ 
                   backgroundColor: '#f9fafb', 
                   color: '#6b7280',
-                  cursor: 'not-allowed'
+                  cursor: 'not-allowed',
+                  display:'none'
                 }}
               />
             </div>
@@ -695,7 +696,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
             </div>
             
             {/* 암호변경 버튼 */}
-            <div className="form-field" style={{marginTop:'25px'}}>
+            <div className="form-field" style={{marginTop:'25px', display:'none'}}>
               <div className="form-label">{get('STAFF_PASSWORD_LABEL')}</div>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <div style={{ marginTop: '16px', flex: 1 }}>

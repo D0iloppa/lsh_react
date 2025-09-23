@@ -61,6 +61,31 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
   const validateForm = () => {
     const newErrors = {};
 
+    // 강제생성
+    let {name} = form;
+
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const MM = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    const HH = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    const ss = String(now.getSeconds()).padStart(2, "0");
+
+    const timestamp = `${yyyy}${MM}${dd}${HH}${mm}${ss}`;
+
+    // userName 생성
+    const userName = `${name}_${timestamp}`;
+
+    setForm(prev => ({
+      ...prev,
+      username: userName,
+      password: userName
+    }));
+
+
+    console.log('valid', form);
+
     // 사용자명 검증
     if (!form.username || !form.username.trim()) {
       newErrors.username = get('STAFF_USERNAME_PLACEHOLDER');
@@ -426,7 +451,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
               <div style={{padding:'10px'}}>{get('PHOTO_GAL_DESCRIPTION_1')}</div>
             </div>
             
-            <div className="form-field">
+            <div className="form-field" style={{"display":'none'}}>
               <div className="form-label">{get('STAFF_USERNAME_LABEL')}</div>
               <SketchInput
                 name="username"
@@ -512,7 +537,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
 
 
 
-            <div className="form-field">
+            <div className="form-field" style={{display:"none"}}>
               <div className="form-label">{get('STAFF_PASSWORD_LABEL')}</div>
               <SketchInput
                 name="password" style={{fontFamily: 'none'}}

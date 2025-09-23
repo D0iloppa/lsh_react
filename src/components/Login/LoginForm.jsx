@@ -376,7 +376,7 @@ const { messages, error, get, currentLang, setLanguage, availableLanguages, refr
 
 
     {/* Account Type Radio Buttons */}
-    <div style={{ margin: '1rem 0', textAlign: 'center' }}>
+    <div style={{ margin: '1rem 0', textAlign: 'center', display:'none' }}>
             <label>
               <input
                 type="radio"
