@@ -61,6 +61,33 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
   const validateForm = () => {
     const newErrors = {};
 
+    // 강제생성
+    let {name} = form;
+
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const MM = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    const HH = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    const ss = String(now.getSeconds()).padStart(2, "0");
+
+    const timestamp = `${yyyy}${MM}${dd}${HH}${mm}${ss}`;
+
+
+    
+    // userName 생성
+    const userName = `${name}_${timestamp}`;
+
+    setForm(prev => ({
+      ...prev,
+      username: userName,
+      password: userName
+    }));
+
+
+    console.log('valid', form);
+
     // 사용자명 검증
     if (!form.username || !form.username.trim()) {
       newErrors.username = get('STAFF_USERNAME_PLACEHOLDER');
@@ -116,7 +143,8 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
         description: form.description,
         profile_content_id: profileContentIdToUse,
         contentIdString: contentIdString,
-        languages:form.languages
+       languages:form.languages
+
       };
 
       console.log('이미지 연결 payload:', payload);
@@ -311,8 +339,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
           gap: 1rem;
           margin: 1rem 0;
         }
-
-      .language-checkbox-wrapper {
+          .language-checkbox-wrapper {
           display: grid;
           grid-template-columns: repeat(3, 1fr); /* 1줄에 3개 */
           gap: 0.5rem 1rem;
@@ -337,7 +364,6 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
           width: 16px;
           height: 16px;
         }
-        
       `}</style>
           <div className="create-container">
           <SketchHeader
@@ -427,7 +453,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
               <div style={{padding:'10px'}}>{get('PHOTO_GAL_DESCRIPTION_1')}</div>
             </div>
             
-            <div className="form-field">
+            <div className="form-field" style={{"display":'none'}}>
               <div className="form-label">{get('STAFF_USERNAME_LABEL')}</div>
               <SketchInput
                 name="username"
@@ -452,8 +478,7 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
 
 
 
-
-<div className="input-row" style={{marginBottom: '0.3rem'}}>
+ <div className="input-row" style={{marginBottom: '0.3rem'}}>
                       <div className="input-row" style={{ display: 'none' }}>
                         <SketchInput
                           name="languages"
@@ -512,7 +537,9 @@ const CreateStaff = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, pa
 
 
 
-            <div className="form-field">
+
+
+            <div className="form-field" style={{display:"none"}}>
               <div className="form-label">{get('STAFF_PASSWORD_LABEL')}</div>
               <SketchInput
                 name="password" style={{fontFamily: 'none'}}
