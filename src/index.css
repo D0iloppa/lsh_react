@@ -3,6 +3,131 @@
 @tailwind utilities;
 
 
+/* 기본 테마 */
+:root {
+  --theme-bg: white;
+  --theme-border: #333;
+  --theme-title: #374151;
+  --theme-button-bg: #374151;
+  --theme-button-border: #374151;
+  --theme-map-bg: #374151;
+  --theme-scroll-bg: #374151;
+  --theme-nav-bg: white;
+  --theme-nav-border: #e5e7eb;
+  --theme-nav-icon: #374151;
+
+  /* Ranking 페이지용 추가 변수 */
+  --theme-hero-bg: white;
+  --theme-hero-border: #333;
+  --theme-hero-title: #374151;
+}
+
+/* BAR 테마 */
+.theme-bar {
+  --theme-bg: #fff7ed;
+  --theme-border: #f97316;
+  --theme-title: #ea580c;
+  --theme-button-bg: #ea580c;
+  --theme-button-border: #ea580c;
+  --theme-map-bg: #ea580c;
+  --theme-scroll-bg: #ea580c;
+  --theme-nav-bg: #fff7ed;
+  --theme-nav-border: #f97316;
+  --theme-nav-icon: #ea580c;
+
+    
+  /* BAR 테마 - Ranking 페이지용 */
+  --theme-hero-bg: #fff7ed;
+  --theme-hero-border: #f97316;
+  --theme-hero-title: #ea580c;
+}
+
+/* MASSAGE 테마 */
+.theme-massage {
+  --theme-bg: #f3e8ff;
+  --theme-border: #8b5cf6;
+  --theme-title: #7c3aed;
+  --theme-button-bg: #7c3aed;
+  --theme-button-border: #7c3aed;
+  --theme-map-bg: #7c3aed;
+  --theme-scroll-bg: #7c3aed;
+  --theme-nav-bg: #f3e8ff;
+  --theme-nav-border: #7c3aed;
+  --theme-nav-icon: #7c3aed;
+
+    /* BAR 테마 - Ranking 페이지용 */
+  --theme-hero-bg: #f3e8ff;
+  --theme-hero-border: #7c3aed;
+  --theme-hero-title: #7c3aed;
+}
+
+/* 네비게이션 바 테마 적용 */
+.bottom-navigation {
+  background-color: var(--theme-nav-bg) !important;
+  border-top: 1px solid var(--theme-nav-border) !important;
+  box-shadow: none !important;
+}
+
+.page-header.primary {
+  background-color: var(--theme-bg);
+  border-bottom: 1px solid var(--theme-border);
+}
+
+/* 네비게이션 아이콘과 텍스트 색상 */
+.nav-item:not(.active) {
+  color: var(--theme-nav-icon);
+}
+
+.nav-item:not(.active) .nav-icon {
+  stroke: var(--theme-nav-icon);
+}
+
+.nav-item:not(.active) .nav-label {
+  color: var(--theme-nav-icon);
+}
+
+
+.page-title {
+  color: var(--theme-title);
+}
+
+/* 활성 네비게이션 아이템 */
+.nav-item.active {
+  color: var(--theme-button-bg) !important;
+}
+
+.nav-item.active .nav-icon {
+  stroke: var(--theme-button-bg) !important;
+}
+
+.nav-item.active .nav-label {
+  color: var(--theme-button-bg) !important;
+}
+
+
+/* Ranking 페이지 전용 스타일 */
+.hero-section {
+  padding: 1rem 1.5rem 1.5rem;
+  background: linear-gradient(
+    var(--theme-hero-bg),
+    #ffffff
+  );
+  border-radius: 12px;
+  border: 1px solid var(--theme-hero-border);
+}
+
+.hero-title {
+  text-align: center;
+  font-size: 1.55rem;
+  font-weight: bold;
+  color: var(--theme-hero-title);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 .Toastify__toast {
     border: 1px solid #e0e0e0 !important;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;

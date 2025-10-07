@@ -34,8 +34,9 @@ import {
 } from '@utils/VietnamTime';
 
 const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps }) => {
-  const { target, id } = otherProps || {};
-  const { user, isActiveUser } = useAuth();
+  const { target, id, venue_id, cat_id  } = otherProps || {};
+  const { user, isActiveUser, exts } = useAuth();
+
 
   const getTodayString = () => {
     /*
@@ -50,6 +51,8 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   const [selectedDate, setSelectedDate] = useState('');
   const [memo, setMemo] = useState(''); // 메모 상태 추가
   const [bookerName, setBookerName] = useState('');
+
+  const [menuList, setMenuList] = useState([]);
 
   // Duration 기반 예약 데이터
   const [reservationData, setReservationData] = useState({
@@ -75,6 +78,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
   const [targetName, setTargetName] = useState('');
   const [pickupService, setPickupService] = useState(false);
+  const [menuItem, setMenuItem] = useState({ item_id: -1, label: "기본", duration:0 });
   const [useStaffService, setUseStaffService] = useState(false);
   const [selectedEntrance, setSelectedEntrance] = useState('');
 
@@ -150,10 +154,33 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
 
   }, [id, target]);
 
+
+  const fetchMenuList = async (venue_id) => {
+
+      try {
+        const res = await ApiClient.postForm("/api/getMenuItemList", {
+          venue_id: venue_id,
+        });
+
+        setMenuList(res.data || []);
+        
+      } catch (err) {
+        console.error("메뉴 목록 조회 실패:", err);
+      }
+    };
+
+
+
   useEffect(() => {
     window.scrollTo(0, 0);
     if (messages && Object.keys(messages).length > 0) {
       window.scrollTo(0, 0);
+    }
+
+    setMenuItem({item_id: -1, label: get('menu.item.default') || "기본2"});
+    
+    if(venue_id){
+      fetchMenuList();
     }
 
     if (target && id) {
@@ -164,7 +191,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
         }
       });
     }
-  }, [target, id, messages, currentLang]);
+  }, [target, id, venue_id, messages, currentLang]);
 
   // scheduleData 업데이트 완료 후 실행
   useEffect(() => {
@@ -299,7 +326,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   }
 
 
-  const SLOT_MINUTES = 60;
+  const SLOT_MINUTES = 30;
 
   // "YYYY-MM-DD HH:mm:ss" (VN local) -> Date(+07:00)
   const parseVNLocalTs = (ts) => new Date(`${ts.replace(' ', 'T')}+07:00`);
@@ -589,7 +616,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
           scheduleListSet.delete(key);
         }
 
-        if (!reason && checkDuplicateReserve(slotAbs, 1, userReservationList)) {
+        if (!reason && checkDuplicateReserve(slotAbs, 0.5, userReservationList)) {
           reason = 'conflict_user_reservation';
           scheduleListSet.delete(key);
         }
@@ -683,15 +710,33 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   // Duration 기반 시간 선택 핸들러
   const handleTimeSelect = (timeData) => {
     console.log('Time selection data:', timeData);
-
-    const { startTime, duration, endTime } = timeData;
-
-    if (startTime && duration) {
-      const endTime = calculateEndTime(startTime, duration);
-      timeData.endTime = endTime;
+  
+    // ✅ 메뉴 duration을 시간 단위로 변환
+    const convertMinutesToHours = (minutes) => {
+      if (!minutes) return null;
+      const hours = minutes / 60;
+      return Math.round(hours * 2) / 2; // 0.5 단위 반올림
+    };
+  
+    const menuDuration = menuItem?.duration
+      ? convertMinutesToHours(menuItem.duration)
+      : null;
+  
+    // ✅ 최종 duration: menuDuration 우선, 없으면 선택값
+    const finalDuration = menuDuration ?? timeData.duration;
+  
+    // ✅ 종료시간 보정
+    let endTime = timeData.endTime;
+    if (timeData.startTime && finalDuration) {
+      endTime = calculateEndTime(timeData.startTime, finalDuration);
     }
-
-    setReservationData(timeData);
+  
+    // ✅ reservationData에 최종 반영
+    setReservationData({
+      ...timeData,
+      duration: finalDuration,
+      endTime,
+    });
   };
 
   // 유효성 검사 및 포커스 이동 함수
@@ -877,6 +922,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
       useStaffService: useStaffService,
       selectedEntrance: selectedEntrance,
       escort_entrance: selectedEntrance,
+      menuItem:menuItem,
       memo: memo
     };
 
@@ -933,6 +979,9 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   // Duration 컴포넌트에서 사용할 다국어 메시지 정리
   const getReservationMessages = () => {
     return {
+
+      // 메뉴아이템
+      defaultItem: get('menu.item.default') || '기본',
 
       bookerLabel: get('RESERVATION_CLIENT_LABEL') || 'Booker',
       // AttendeeSelector 메시지들
@@ -1186,7 +1235,11 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
           rightButtons={[]}
         />
 
+
         <ReservationForm
+          venue_id={venue_id}
+          cat_id={cat_id}
+          menuList={menuList}
           attendee={attendee}
           onAttendeeChange={setAttendee}
           baseDate={baseDate}
@@ -1207,6 +1260,8 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
           messages={getReservationMessages()} // 다국어 메시지 전달
           pickupService={pickupService}
           setPickupService={setPickupService}
+          menuItem={menuItem} 
+          setMenuItem={setMenuItem}
           useStaffService={useStaffService}
           setUseStaffService={setUseStaffService}
           selectedEntrance={selectedEntrance}
@@ -1215,6 +1270,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
           navigateToPageWithData={navigateToPageWithData}
           PAGES={PAGES}
         />
+
         {/* <div className='Important-info'>
     <div style={{ marginBottom: '1rem', fontWeight: 'bold' }}>
       {get('Reservation.ImportantInfo')}

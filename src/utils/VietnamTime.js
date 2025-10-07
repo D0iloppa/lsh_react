@@ -146,3 +146,36 @@ export const buildVNDateTime = (ymd, hhmm, dayOffset = 0) => {
 
   return result;
 };
+
+
+
+export const generateWeeklyDays = (baseDate, maxDay = 1) => {
+  const today = new Date(baseDate);
+  const weekDays = [];
+
+  for (let i = 0; i < 7; i++) {
+    const currentDate = new Date(today);
+    currentDate.setDate(today.getDate() + i);
+
+    const dayOfWeek = currentDate.getDay();
+    const dayKey = dayKeys[dayOfWeek];
+
+    weekDays.push({
+      dayName: dayKey,
+      date: currentDate.getDate(),
+      fullDate: currentDate.toISOString().split("T")[0],
+      disabled: i >= maxDay,
+      isToday: i === 0,
+      dayOfWeek,
+    });
+  }
+
+  return weekDays;
+};
+
+export const getYearMonthDisplay = (date) => {
+  if (!date) return "loading...";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${year}.${month}`;
+};

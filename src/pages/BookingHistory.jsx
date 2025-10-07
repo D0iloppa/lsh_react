@@ -422,6 +422,7 @@ const BookingHistoryPage = ({
   const calculateActualEndTime = (startTime, durationHours) => {
     if (!startTime || !durationHours) return '';
     
+
     // 시간 파싱
     const [hours, minutes, seconds] = startTime.split(':').map(Number);
     
@@ -429,7 +430,7 @@ const BookingHistoryPage = ({
     const totalStartMinutes = hours * 60 + minutes;
     
     // duration을 분으로 변환하고 더하기
-    const totalEndMinutes = totalStartMinutes + (durationHours * 60);
+    const totalEndMinutes = totalStartMinutes + (durationHours * 30);
     
     // 24시간을 넘어가는지 계산
     const endHours = Math.floor(totalEndMinutes / 60);
@@ -632,17 +633,30 @@ useEffect(() => {
   };
 
   const calculateDuration = (startTime, endTime) => {
-
+    console.log('calc', startTime, endTime);
+  
     if (!startTime || !endTime) return '';
-    
-    const start = new Date(`2000-01-01 ${startTime}`);
-    const end = new Date(`2000-01-01 ${endTime}`);
-    const diffMs = end - start;
-    let diffHours = Math.round(diffMs / (1000 * 60 * 60));
-    
-    if ( diffHours < 0 ) diffHours=24+diffHours;
-    return `${diffHours}${get('Reservation.HourUnit') || '시간'}`;
+  
+    const start = new Date(`2000-01-01T${startTime}`);
+    const end = new Date(`2000-01-01T${endTime}`);
+  
+    let diffMs = end - start;
+    if (diffMs < 0) {
+      // 자정을 넘는 경우 → 24시간 추가
+      diffMs += 24 * 60 * 60 * 1000;
+    }
+  
+    const totalMinutes = Math.round(diffMs / (1000 * 60));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+  
+    let result = '';
+    if (hours > 0) result += `${hours}${get('Reservation.HourUnit') || '시간'}`;
+    if (minutes > 0) result += ` ${minutes}${get('Reservation.MinuteUnit') || '분'}`;
+  
+    return result.trim();
   };
+  
 
   const chatting = async (booking) => {
   try {

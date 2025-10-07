@@ -1,34 +1,31 @@
-// 전체 상단 import는 동일
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Users, Wine, Star, Heart, ArrowRight, Clock, MapPin,  MoveLeft, Sparkles, Diamond, Scissors, Home } from 'lucide-react';
+import { Users, Star, Heart, ArrowRight, Clock, MapPin, MoveLeft, Sparkles, Diamond, Bed } from 'lucide-react';
 import GoogleMapComponent from '@components/GoogleMapComponent';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import SketchSearch from '@components/SketchSearch';
 import HatchPattern from '@components/HatchPattern';
 import SketchBtn from '@components/SketchBtn';
+
 import { useAuth } from '../contexts/AuthContext';
 import { useMsg } from '@contexts/MsgContext';
 import { useNavigate } from 'react-router-dom';
 import { useFcm } from '@contexts/FcmContext';
 import LoadingScreen from '@components/LoadingScreen';
 import NoticePopup from '@components/NoticePopup';
-
-
 import GlobalPopupManager from '@components/GlobalPopupManager';
 import Swal from 'sweetalert2';
 import ApiClient from '@utils/ApiClient';
-import { useLoginOverlay } from '@hooks/useLoginOverlay.jsx';
-import { overlay } from 'overlay-kit';
+import SketchDiv from '@components/SketchDiv';
 import PageHeader from '@components/PageHeader';
-import AdBannerSlider from '@components/AdBannerSlider';
 
+import ThemeManager from '@utils/ThemeManager';
 
-const HomePage = ({ pageHistory, navigateToMap, navigateToSearch, navigateToPageWithData, PAGES, goBack, showAdWithCallback }) => {
+const MassageMainPage = ({ pageHistory, navigateToMap, navigateToPage, navigateToSearch, navigateToPageWithData, PAGES, goBack, showAdWithCallback }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [hotspots, setHotspots] = useState([]);
   const [originalHotspots, setOriginalHotspots] = useState([]);
-  const [categoryFilter, setCategoryFilter] = useState('ALL');
+  const [categoryFilter, setCategoryFilter] = useState('MASSAGE'); // MASSAGE로 고정
   const [sortRating, setSortRating] = useState('RATING_ALL');
   const [sortPrice, setSortPrice] = useState('PRICE_ALL');
   const [sortStaff, setSortStaff] = useState('STAFF_ALL');
@@ -41,56 +38,19 @@ const HomePage = ({ pageHistory, navigateToMap, navigateToSearch, navigateToPage
   const { fcmToken } = useFcm();
   const [iauData, setIauData] = useState(null);
   const [staffLanguageFilter, setStaffLanguageFilter] = useState('ALL');
-  
+  const [isLoadingVenues, setIsLoadingVenues] = useState(true);
+  const [sortType, setSortType] = useState('review');
 
   // 공지사항 상태
   const [notice, setNotice] = useState(null);
   const [showNotice, setShowNotice] = useState(false);
 
-  const [sortType, setSortType] = useState('status');
-
-const myBanners = [
-  {
-    type: 'video',
-    src: '/cdn/video_mobile.mp4',
-    //poster: '/cdn/video-thumb.jpg'
-  },
-  {
-    type: 'image',
-    src: '/cdn/ex1.jpg',
-    alt: '여름 세일 이벤트'
-  },
-  {
-    type: 'image', 
-    src: '/cdn/ex2.jpg',
-    alt: '신상품 컬렉션'
-  }
-];
-
-  // 카테고리 데이터
-  const categories = [
-     {
-    id: 'BAR',
-    name: get('category_bar_name'),
-    description: get('category_bar_desc'),
-    img: '/cdn/wine.png', 
-    color: '#f97316',
-    bgColor: '#fff7ed'
-  },
-  {
-    id: 'MASSAGE',
-    name: get('category_massage_name'),
-    description: get('category_massage_desc'),
-    img: '/cdn/bed.png',
-    color: '#8b5cf6',
-    bgColor: '#f3e8ff'
-  }
-  ];
-
   console.log(pageHistory);
-  // 커스텀 훅 사용
-  const navigationProps = { navigateToPageWithData, PAGES, goBack };
-  const { openLoginOverlay } = useLoginOverlay(navigationProps);
+  
+  // useLoginOverlay 대신 간단한 로그인 처리
+  const openLoginOverlay = () => {
+    navigate('/login');
+  };
 
   // 팝업 열기 핸들러
   const handleOpenPopup = () => {
@@ -98,23 +58,17 @@ const myBanners = [
     testPopup.emit('adViewCount'); 
   };
 
-  // 정렬
+
   useEffect(() => {
-      if (!originalHotspots.length) return;
-
-      const sorted = [...originalHotspots].sort((a, b) => {
-        if (sortType === "status") {
-         return (b.schedule_status === "available" ? 1 : 0) - (a.schedule_status === "available" ? 1 : 0);
-        } else if (sortType === "rating") {
-          return b.rating - a.rating; // 평점 높은 순
-        } else if (sortType === "latest") {
-          return b.created_at - a.created_at; // 최신 등록순
-        }
-        return 0;
-      });
-
-      setHotspots(sorted);
-    }, [sortType, originalHotspots]);
+      ThemeManager.setThemeSource('MASSAGELIST');
+      localStorage.setItem('currentVenueCategory', 'MASSAGELIST');
+  }, []);
+  
+  useEffect(() => {
+      return () => {
+          localStorage.removeItem('currentVenueCategory');
+      };
+  }, []);
 
   useEffect(() => {
     // 현재 상태를 강제로 push
@@ -162,9 +116,30 @@ const myBanners = [
 
     if (fcmToken) {
       upateAppId();
-      console.log('📲 HomePage에서 받은 FCM 토큰:', fcmToken, 'user_id:', user?.user_id || 1);
+      console.log('📲 MassageMainPage에서 받은 FCM 토큰:', fcmToken, 'user_id:', user?.user_id || 1);
     }
   }, [fcmToken, user]);
+
+
+   // 정렬
+      useEffect(() => {
+          if (!originalHotspots.length) return;
+    
+          const sorted = [...originalHotspots].sort((a, b) => {
+            if (sortType === "status") {
+             return (b.schedule_status === "available" ? 1 : 0) - (a.schedule_status === "available" ? 1 : 0);
+            } else if (sortType === "rating") {
+              return b.rating - a.rating; // 평점 높은 순
+            } else if (sortType === "latest") {
+              return b.created_at - a.created_at; // 최신 등록순
+            }else if (sortType === "staff_count") {
+              return b.staff_cnt - a.staff_cnt; // 스태프 순
+            }
+            return 0;
+          });
+  
+          setHotspots(sorted);
+        }, [sortType, originalHotspots]);
 
   useEffect(() => {
     const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
@@ -254,6 +229,7 @@ const myBanners = [
     };
 
     const fetchHotspots = async (favoritesData) => {
+        setIsLoadingVenues(true);
       try {
         const res = await axios.get(`${API_HOST}/api/getVenueList`);
         const data = res.data || [];
@@ -267,6 +243,8 @@ const myBanners = [
         const iau = await isActiveUser();
         setIauData(iau);
 
+        console.log("Data:", data);
+
         const transformed = data.map((item, index) => ({
           id: item.venue_id || index,
           name: item.name || 'Unknown',
@@ -276,6 +254,7 @@ const myBanners = [
           opening_hours: `${item.open_time}~${item.close_time}` || '정보 없음',
           isFavorite: favoriteIds.has(item.venue_id),
           cat_nm: item.cat_nm || 'UNKNOWN',
+           cat_id: item.cat_id,
           created_at: new Date(item.created_at || '2000-01-01'),
           price: item.price || 0,
           staff_cnt: item.staff_cnt || 0,
@@ -285,13 +264,19 @@ const myBanners = [
           staff_languages: item.staff_languages || '',
         }));
 
-        //transformed.sort((a, b) => b.staff_cnt - a.staff_cnt);
+        // MASSAGE 카테고리만 필터링
+        const massageVenues = transformed.filter(
+        venue => venue.cat_id === 2 || venue.cat_id === 3
+        );
+        //massageVenues.sort((a, b) => b.staff_cnt - a.staff_cnt);
 
-        setOriginalHotspots(transformed);
-        setHotspots(transformed);
+        setOriginalHotspots(massageVenues);
+        setHotspots(massageVenues);
       } catch (err) {
         console.error('장소 정보 실패:', err);
-      }
+      } finally {
+            setIsLoadingVenues(false);
+        }
     };
 
     const init = async () => {
@@ -351,14 +336,12 @@ const myBanners = [
   const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort) => {
     let filtered = [...originalHotspots];
 
+    // 이미 MASSAGE만 필터링된 상태이므로 추가 카테고리 필터링 불필요
+
     if (query.trim()) {
       filtered = filtered.filter((spot) =>
         spot.name.toLowerCase().includes(query.toLowerCase())
       );
-    }
-
-    if (category !== 'ALL') {
-      filtered = filtered.filter((spot) => spot.cat_nm === category);
     }
 
     if (ratingSort === 'RATING_5') filtered = filtered.filter((spot) => parseFloat(spot.rating) >= 5);
@@ -397,7 +380,9 @@ const myBanners = [
       localStorage.setItem('homeScrollY', scrollY.toString());
       localStorage.setItem('discoverScrollY', '0');
     }
-
+    
+     localStorage.setItem('currentVenueCategory', 'MASSAGELIST');
+     
     showAdWithCallback(
       () => {
         navigateToPageWithData(PAGES.DISCOVER, { venueId });
@@ -433,39 +418,27 @@ const myBanners = [
     }
   };
 
-const handleCategorySelect = (categoryId) => {
-
-console.log('categoryId', categoryId)
-
-  //setCategoryFilter(categoryId);
-  
-  switch(categoryId) {
-    case 'BAR':
-      navigateToPageWithData(PAGES.BARLIST, { category: categoryId });
-      break;
-    case 'MASSAGE':
-      navigateToPageWithData(PAGES.MASSAGELIST, { category: categoryId });
-      break;
-    default:
-      break;
-  }
-};
-
   const defaultTodayTrial = () => {
     let accessFlag = (user?.type == 'user') && user.user_id && user.user_id > 0;
 
     if (!accessFlag) {
-      openLoginOverlay();
-      onClose();
+      try {
+        openLoginOverlay();
+      } catch (error) {
+        console.warn('openLoginOverlay failed:', error);
+        navigate('/login');
+      }
     } else {
       navigate('/purchase');
-      onClose();
     }
   };
 
   return (
     <>
       <style jsx>{`
+         .nav-item:not(.active) {color: #7c3aed !important;}
+        .bottom-navigation{background-color: #f3e8ff; box-shadow: none; border-top: 1px solid #7c3aed;}
+
         .filter-selects {
           display: flex;
           gap: 12px;
@@ -493,24 +466,6 @@ console.log('categoryId', categoryId)
         .homepage-container {
           background: #f9fafb;
           font-family: 'BMHanna', 'Comic Sans MS';
-        }
-        .hero-section {
-          padding: 1rem;
-          background: white;
-          border-radius: 12px;
-          border: 1px solid #333;
-        }
-        .hero-title {
-          text-align: center;
-          font-size: 1.7rem;
-          font-weight: bold;
-          color: #374151;
-          margin-top: 0;
-          margin-bottom: 1rem;
-          white-space: normal;
-          overflow-wrap: break-word;
-          word-wrap: break-word;
-          word-break: keep-all;   
         }
         .content-section {
           padding: 20px 10px;
@@ -673,83 +628,8 @@ console.log('categoryId', categoryId)
           transform: translateY(-1px);
           box-shadow: 0 4px 12px rgba(59, 174, 228, 0.3);
         }
-        
-        /* 카테고리 섹션 스타일 */
-       .category-section {
-          margin-bottom: 1rem;
-        }
 
-
-        .category-title {
-          line-height: 1;
-          font-size: 1.4rem;
-          font-weight: bold;
-          color: #374151;
-          margin-top: 5px;
-          white-space: pre-line;
-        }
-       .category-grid {
-          padding: 0.5rem;
-          display: flex;                    
-          gap: 1rem;
-          scrollbar-width: none;            
-        }
-
-        .category-grid::-webkit-scrollbar { 
-          display: none;
-        }
-
-       .category-card {
-          position: relative;
-          border-radius: 8px;
-          border: 1px solid rgb(249, 115, 22);
-          display: flex;
-          align-items: center;
-          padding: 0.75rem;
-          width: 100%;
-          justify-content: space-between;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 
-                      0 2px 4px rgba(0, 0, 0, 0.08); /* 더 입체적인 그림자 */
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .category-card:hover {
-          transform: translateY(-4px); /* 살짝 떠오르는 효과 */
-          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18),
-                      0 4px 8px rgba(0, 0, 0, 0.12); /* hover 시 더 강한 그림자 */
-        }
-
-        .category-description {
-          font-size: 0.75rem;
-          font-weight: normal;
-          opacity: 0.8;
-          white-space: pre-line;
-          line-height: 0.7;
-          margin-bottom: 0.5rem;
-        }
-
-       .category-image {
-        position: absolute;
-        right: 3px;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 1;
-      }
-
-
-        .category-name {
-          /* 기존 스타일 유지 */
-          font-size: 1.2rem;      
-          margin-bottom: 0.7rem;
-        }
-
-        .category-name, .category-description {
-        position: relative;
-        z-index: 2;
-      }
-        
-
-         .venue-header {
+          .venue-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -760,7 +640,7 @@ console.log('categoryId', categoryId)
         .venue-list-title {
            font-size: 1.125rem;
             font-weight: bold;
-            color: #374151;
+            color: #7c3aed;
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -777,112 +657,79 @@ console.log('categoryId', categoryId)
             cursor: pointer;
             }
 
-            .ad-video{
-              height:150px; 
-              display:flex; 
-              align-items:center; 
-              justify-content:center; 
-              color:#666; 
-              font-size:14px; 
-              margin-top:10px;
-              border-radius:8px;
-              padding: 0.5rem;
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6b7280;
             }
+            .empty-state h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            }
+            .empty-state p {
+            color: #9ca3af;
+            }
+
+            .map-icon-container{background: #7c3aed; color: white; border: 1px solid #7c3aed;}
+            .scroll-up-btn{background: #7c3aed; border: 1px solid #7c3aed;}
+             .bottom-navigation {  background: #f3e8ff !important; color: #7c3aed !important;}
+             .nav-item:not(.active) {color: #7c3aed !important;}
+                         .nav-item:not(.active) .nav-icon{stroke: #7c3aed !important;}
+            .nav-item:not(.active) .nav-label {color: #7c3aed !important;}
+
+         
       `}</style>
 
       <div className="homepage-container">
-
-         <PageHeader 
-           title='LeThanhTon Sheriff'
-          category="All"
+        <PageHeader 
+           title={
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <Bed size={24} color="#7c3aed" />
+                         {get('venue_massage_title')}
+                    </span>
+                }
+          category="MASSAGE"
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
+          showBackButton={true}
+          onBackClick={() => navigateToPage(PAGES.HOME)}
         />
 
-        {/* 카테고리 섹션 */}
-        <section className="category-section">
-           
-          {/* <h2
-            className="category-title"
-            dangerouslySetInnerHTML={{ __html: get('booking_prompt') }}
-          ></h2> */}
-          <div className='ad-video'>
-            <AdBannerSlider banners={myBanners} />
-            {/* <video width="100%" height="auto" controls autoPlay muted loop>
-              <source src="/cdn/video_mobile.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video> */}
-          </div>
-          <div className="category-grid">
-            {categories.map((category) => {
-              const IconComponent = category.icon;
-              const isActive = categoryFilter === category.id;
-              
-              return (
-                <div
-                  key={category.id}
-                  className={`category-card ${isActive ? 'active' : ''}`}
-                  style={{
-                    color: isActive ? 'white' : category.color,
-                    background: isActive
-                      ? `linear-gradient(to bottom, ${category.color}, ${category.bgColor})`
-                      : `linear-gradient(to bottom, ${category.bgColor}, #fff)`, // 비활성화 시 은은한 입체감
-                    borderColor: category.color,
-                    boxShadow: isActive
-                      ? `0 6px 14px rgba(0,0,0,0.2), 0 3px 6px rgba(0,0,0,0.12)`
-                      : `0 4px 10px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08)`,
-                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                  }}
-                  onClick={() => handleCategorySelect(category.id)}
-                >
-                  <div>
-                    <div className="category-name">{category.name}</div>
-                    <div
-                      className="category-description"
-                      dangerouslySetInnerHTML={{ __html: category.description }}
-                    ></div>
-                  </div>
-                  <div className="category-image">
-                    <img
-                      src={category.img}
-                      alt={category.name}
-                      style={{
-                        width: '70px',
-                        height: '70px',
-                        objectFit: 'cover',
-                        borderRadius: '8px',
-                        opacity: 0.7,
-                      }}
-                    />
-                  </div>
-                </div>
-              );
-
-            })}
-          </div>
-        </section>
-
-        {/* 전체 매장 제목 */}
-
-      <div className="venue-header">
-            <h2 className="venue-list-title" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-            <Home size={22} color="#374151" opacity={0.8} />
-            { get('all_venues') }
-          </h2>
+         {/* 미용 매장 제목 */}
+        {/* <div className="venue-header">
+            <h2 className="venue-list-title">
+                {get('venue_massage_title')}
+            </h2>
             <select 
                 className="sort-select"
                 value={sortType}
                 onChange={(e) => setSortType(e.target.value)}
-            >
+            >   
                 <option value="status">{get('sort_open')}</option>
+                <option value="staff_count">{get('sort_staff_count')}</option>
                 <option value="rating">{get('sort_rating')}</option>
                 <option value="latest">{get('sort_latest')}</option>
             </select>
-        </div>
+        </div> */}
 
         {/* 매장 목록 섹션 */}
         <section className="content-section">
-          {hotspots.map((spot, index) => {
+             {isLoadingVenues ? (
+                <LoadingScreen 
+                variant="cocktail"
+                loadingText={get('PROMOTION_LOADING_TITLE')}
+                isVisible={true}
+                />
+            ) : hotspots.length === 0 ? (
+                <SketchDiv className="notification-item">
+                <HatchPattern opacity={0.02} />
+                <div className="empty-state">
+                    <h3>{get('venue_massage_empty')}</h3>
+                </div>
+                </SketchDiv>
+            ) : (
+                    hotspots.map((spot, index) => {
             const isOverlayStyle = index >= 3;
 
             const formatTime = (t) => {
@@ -1060,7 +907,7 @@ console.log('categoryId', categoryId)
                               style={{
                                 position: 'absolute',
                                 top: 2,
-                                left: -125,
+                                left: -118,
                                 zIndex: 11,
                                 display: 'inline-flex',
                                 alignItems: 'center',
@@ -1152,14 +999,10 @@ console.log('categoryId', categoryId)
                 )}
               </React.Fragment>
             );
-          })}
+          })
+        )}
         </section>
-        
-        <LoadingScreen 
-          variant="cocktail"
-          loadingText="Loading..."
-          isVisible={isLoading} 
-        />
+ 
       </div>
 
       <NoticePopup
@@ -1168,8 +1011,9 @@ console.log('categoryId', categoryId)
         setShowNotice={setShowNotice}
         get={get}
       />
+      
     </>
   );
 };
 
-export default HomePage;
+export default MassageMainPage;

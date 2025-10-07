@@ -19,7 +19,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
   const [rankingType, setRankingType] = useState('none'); // 'venue' or 'staff'
   const [timeFilter, setTimeFilter] = useState('week'); // 'day', 'week', 'month'
   const { messages, get, isLoading } = useMsg();
-  const { user, isActiveUser, iauMasking, filterFavorits } = useAuth();
+  const { user, isActiveUser, iauMasking, filterFavorits, exts: { venueCatMap } } = useAuth();
   const [isApiLoading, setIsApiLoading] = useState(false);
 
   const handleBack = () => {
@@ -85,6 +85,11 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
       try {
 
         const iau = await isActiveUser();
+        const rankingFromPage = localStorage.getItem('themeSource');
+
+        // venueCatMap 데이터 가져오기
+       const vcm = await venueCatMap();
+
         // iau.onlyMasking = true;
 
         const fvrs = (await filterFavorits(rankingType)).map(item => item.target_id);
@@ -100,7 +105,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
         let data = (res.data || []);
 
         // 필터
-        data = data.filter(i=>i.cat_id == 1);
+        //data = data.filter(i=>i.cat_id == 1);
 
 
         // 최대 랭킹
@@ -109,7 +114,13 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
         //const data = res.data || []
 
 
-        const transformed = data.map((item, index) => ({
+       const transformed = data.map((item, index) => {
+
+           // venue_id로 카테고리 정보 찾기
+          const catInfo = vcm.find(v => v.venue_id === item.venue_id);
+
+          return{
+          
           id: item.target_type == 'venue' ? item.venue_id : item.target_id,
           name: rankingType === 'staff' ? iauMasking(iau, item.name || '') : item.name || 'Unknown',
           rating: parseFloat(item.avg_rating || 0).toFixed(1),
@@ -123,15 +134,31 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
           staff_cnt: rankingType === 'venue' ? item.staff_cnt : null,
           venue_name: rankingType === 'staff' ? item.venue_name : null,
           venue_id: item.venue_id,
+          cat_nm: catInfo?.cat_nm || 'UNKNOWN', // venueCatMap에서 가져온 카테고리
+          cat_id: catInfo?.cat_id || 'UNKNOWN',
           rank: index + 1,
           latest_staff_created_at: item.latest_staff_created_at,
           isUpdated : isUpdated(item.latest_staff_created_at),
           isFavorite: fvrsSet.has(item.target_type == 'venue' ? item.venue_id : item.target_id),
           score: calculateRankingScore(item)
-        }));
+       };
+    });
 
 
         console.log('rank', fvrsSet, transformed, data);
+
+        // 이전 페이지에 따른 카테고리 필터링
+        let filteredData = transformed;
+
+        console.log("rankingFromPage", rankingFromPage);
+        
+        if (rankingFromPage === 'BARLIST') {
+          filteredData = transformed.filter(venue => venue.cat_id === 1);
+        } else if (rankingFromPage === 'MASSAGELIST') {
+          filteredData = transformed.filter(venue => 
+            venue.cat_id === 2 || venue.cat_id === 3
+          );
+        }
 
         // // 점수 기준으로 정렬
         // transformed.sort((a, b) => b.score - a.score);
@@ -141,8 +168,8 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
         //   item.rank = index + 1;
         // });
 
-        setOriginalData(transformed);
-        setRankingData(transformed);
+        setOriginalData(filteredData);  // 필터링된 데이터로 변경
+        setRankingData(filteredData);
 
       } catch (err) {
         console.error('랭킹 데이터 가져오기 실패:', err);
@@ -398,25 +425,11 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
           font-family: 'BMHanna', 'Comic Sans MS';
         }
 
+       
+
         .search-container{margin-bottom: 1rem !important;}
 
-        .hero-section {
-          padding: 1rem 1.5rem 1.5rem;
-          background: white;
-          border-radius: 12px;
-          border: 1px solid #333;
-        }
-        .hero-title {
-          text-align: center;
-          font-size: 1.55rem;
-          font-weight: bold;
-          color: #374151;
-          margin-bottom: 1rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        }
+       
         
         .filter-tabs {
           display: flex;

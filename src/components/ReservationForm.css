@@ -1,0 +1,191 @@
+.reserve-info {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .summary-item {
+    font-size: 0.95rem;
+    color: #374151;
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+  
+  .summary-item:last-child {
+    margin-bottom: 0;
+  }
+  
+  .summary-label {
+    font-weight: bold;
+    color: #1f2937;
+    flex-shrink: 0;
+  }
+  
+  .summary-value {
+    margin-left: 10px;
+  }
+  
+  .weekly-table {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+    padding: 0;
+  }
+  
+  .weekly-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 8px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: white;
+    min-height: 60px;
+  }
+  
+  .weekly-day:hover {
+    border-color: #1f2937;
+    background-color: #f9fafb;
+  }
+  
+  .weekly-day.selected {
+    background-color: #1f2937;
+    color: white;
+    border-color: #1f2937;
+  }
+  
+  .weekly-day.today {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+  }
+  
+  .weekly-day.today.selected {
+    background-color: #1f2937;
+    border-color: #1f2937;
+  }
+  
+  .weekly-day.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background-color: #f3f4f6;
+  }
+  
+  .weekly-day.disabled:hover {
+    border-color: #e5e7eb;
+    background-color: #f3f4f6;
+  }
+  
+  .day-name {
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #6b7280;
+  }
+  
+  .weekly-day.selected .day-name {
+    color: #d1d5db;
+  }
+  
+  .day-date {
+    font-size: 16px;
+    font-weight: bold;
+    color: #1f2937;
+  }
+  
+  .weekly-day.selected .day-date {
+    color: white;
+  }
+  
+  .weekly-day.today .day-date {
+    color: #3b82f6;
+  }
+  
+  .weekly-day.today.selected .day-date {
+    color: white;
+  }
+  
+  .selection-info {
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .selection-info small {
+    color: #6b7280;
+    font-size: 11px;
+  }
+  
+  .selected-count {
+    color: #3b82f6;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  .time-slot.drag-preview {
+    transform: scale(0.98);
+  }
+  
+  .selected-times-summary {
+    margin-top: 12px;
+    padding: 8px;
+    background-color: #f9fafb;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #374151;
+  }
+  
+  .clear-selection {
+    margin-left: 12px;
+    padding: 4px 8px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+  }
+  
+  .clear-selection:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .duration-selector {
+    margin-top: 16px;
+    padding: 12px;
+    background-color: #f9fafb;
+    border-radius: 8px;
+  }
+  
+  .duration-label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #374151;
+  }
+  
+  .duration-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+  }
+  
+  .duration-info {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6b7280;
+  }
+  
+  .selection-warning {
+    margin-top: 12px;
+    padding: 8px;
+    background-color: #fef3c7;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #92400e;
+  }
+  

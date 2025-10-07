@@ -24,7 +24,7 @@ const PromotionsPage = ({
   ...otherProps
 }) => {
   const [filterQuery, setFilterQuery] = useState(keyword);
-  const { user } = useAuth();
+  const { user, exts: { venueCatMap } } = useAuth();
   const [promotions, setPromotions] = useState([]);
   const [venueId, setVenueId] = useState(otherProps?.venueId || null);
   const [originalPromotions, setOriginalPromotions] = useState([]);
@@ -32,72 +32,122 @@ const PromotionsPage = ({
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
 
   const handleBack = () =>{
-    navigateToPage(PAGES.HOME);
+
+    const rankingFromPage = localStorage.getItem('themeSource');
+    console.log("rankingFromPage", rankingFromPage);
+
+    switch (rankingFromPage) {
+      case 'BARLIST':
+        localStorage.removeItem('themeSource');
+        navigateToPage(PAGES.BARLIST);
+        break;
+      case 'MASSAGELIST':
+        localStorage.removeItem('themeSource');
+        navigateToPage(PAGES.MASSAGELIST);
+        break;
+      default:
+         navigateToPage(PAGES.HOME);
+        break;
+    }
+
+   
     //goBack();
   }
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
+ useEffect(() => {
+     window.scrollTo(0, 0);
+ 
+     if (messages && Object.keys(messages).length > 0) {
+         console.log('✅ Messages loaded:', messages);
+         // setLanguage('en'); // 기본 언어 설정
+         console.log('Current language set to:', currentLang);
+         window.scrollTo(0, 0);
+       }
+ 
+     const fetchPromotion = async () => {
+ 
+ 
+       const params = {
+         lang: currentLang,
+       }
+ 
+       if(venueId) {
+         params.venue_id = venueId;
+       }
+ 
+       console.log("getPromotion params", params);
+       try {
+ 
+       // venueCatMap 데이터 가져오기
+       const vcm = await venueCatMap();
+       const themeSource = localStorage.getItem('themeSource');
+         
+         const response = await axios.get(`${API_HOST}/api/getPromotion`,{
+           params: params
+         });
+         const data = response.data || [];
 
-    if (messages && Object.keys(messages).length > 0) {
-        console.log('✅ Messages loaded:', messages);
-        // setLanguage('en'); // 기본 언어 설정
-        console.log('Current language set to:', currentLang);
-        window.scrollTo(0, 0);
-      }
-
-    const fetchPromotion = async () => {
-
-
-      const params = {
-        lang: currentLang,
-      }
-
-      if(venueId) {
-        params.venue_id = venueId;
-      }
-
-      console.log("getPromotion params", params);
-      try {
-        const response = await axios.get(`${API_HOST}/api/getPromotion`,{
-          params: params
-        });
-        const data = response.data || [];
-        setOriginalPromotions(data);
-         // ✅ keyword가 있으면 자동 검색 실행
-      if (keyword && keyword.trim() !== '') {
-        const lowerKeyword = keyword;
-        const filtered = data.filter(p =>
-          p.venue_name?.includes(lowerKeyword)
-        );
-        
-        setPromotions(filtered);
-      } else {
-        setPromotions(data);
-      }
-
-
-
-
-
-
-
-
-
-
-
-
-      } catch (error) {
-        console.error('프로모션 정보 불러오기 실패:', error);
-      }
-    };
-
-    fetchPromotion();
-
-    window.scrollTo(0, 0);
-      const container = document.querySelector('.content-area');
-      container.scrollTop=0;
-  }, [user, messages, currentLang]);
+         //console.log("프로모션 데이터:", data);
+ 
+         // reviewsData에 cat_nm을 매칭해서 추가
+         const proWithCat = data.map(r => {
+           const catInfo = vcm.find(v => v.venue_id === r.venue_id);
+           return {
+             ...r,
+             cat_nm: catInfo ? catInfo.cat_nm : null, // 없으면 null
+             cat_id: catInfo ? catInfo.cat_id : null // 없으면 null
+           };
+         });
+ 
+         //console.log("매칭된 프로모션 데이터:", themeSource, proWithCat);
+ 
+         let filteredPro = proWithCat;
+         if (themeSource === 'BARLIST') {
+           filteredPro = proWithCat.filter(r => r.cat_id === 1);
+         } else if (themeSource === 'MASSAGELIST') {
+           filteredPro = proWithCat.filter(
+             r => r.cat_id === 2 || r.cat_id === 3
+           );
+         }
+ 
+ 
+ 
+         setOriginalPromotions(filteredPro);
+ 
+          // ✅ keyword가 있으면 자동 검색 실행
+       if (keyword && keyword.trim() !== '') {
+         const lowerKeyword = keyword;
+         const filtered = filteredPro.filter(p =>
+           p.venue_name?.includes(lowerKeyword)
+         );
+         
+         setPromotions(filtered);
+       } else {
+         setPromotions(filteredPro);
+       }
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+       } catch (error) {
+         console.error('프로모션 정보 불러오기 실패:', error);
+       }
+     };
+ 
+     fetchPromotion();
+ 
+     window.scrollTo(0, 0);
+       const container = document.querySelector('.content-area');
+       container.scrollTop=0;
+   }, [user, messages, currentLang]);
 
   useEffect(() => {
     const resetPromotionScroll = () => {

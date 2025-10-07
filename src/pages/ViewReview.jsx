@@ -52,7 +52,7 @@ const ViewReviewPage = ({
   const [originalReviews, setOriginalReviews] = useState([]); // 원본 데이터 보관
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const API_HOST = import.meta.env.VITE_API_HOST;
-  const { user, isActiveUser, iauMasking, fetchFavorits } = useAuth();
+  const { user, isActiveUser, iauMasking, fetchFavorits, exts: { venueCatMap }  } = useAuth();
   const [iauData, setIauData] = useState(null);
   
 
@@ -243,6 +243,12 @@ const handleTranslate = useCallback(async (reviewId, text) => {
       try {
         setLoading(true);
 
+      // venueCatMap 데이터 가져오기
+      const vcm = await venueCatMap();
+
+      // localStorage에서 현재 테마/카테고리 읽기
+      const themeSource = localStorage.getItem('themeSource'); // 'BARLIST' or 'MASSAGELIST'
+
 
         const fvrs = (await fetchFavorits()).map(item => ({
           target_type: item.target_type,
@@ -270,22 +276,38 @@ const handleTranslate = useCallback(async (reviewId, text) => {
 
         let reviewsData = response.data || [];
         
-        reviewsData = reviewsData.map(item => ({
+        reviewsData = reviewsData.map(item =>  {
+
+           const catInfo = vcm.find(v => v.venue_id === item.venue_id);
+
+          return {
           ...item,
           isFavorite: item.target_type == 'venue' ? 
                     vnFvrsSet.has(item.venue_id) : 
-                    staffFvrsSet.has(item.target_id)
-        }));
+                    staffFvrsSet.has(item.target_id),
+          cat_nm: catInfo ? catInfo.cat_nm : null, // 없으면 null
+          cat_id: catInfo ? catInfo.cat_id : null, // 없으면 null
+         };
+    });
 
 
 
         console.log("reviewsData", reviewsData, vnFvrsSet, staffFvrsSet);
 
-        setOriginalReviews(reviewsData);
-        setReviews(reviewsData);
+        let filteredReviews = reviewsData;
+        if (themeSource === 'BARLIST') {
+          filteredReviews = reviewsData.filter(r => r.cat_id === 1);
+        } else if (themeSource === 'MASSAGELIST') {
+          filteredReviews = reviewsData.filter(
+            r => r.cat_id === 2 || r.cat_id === 3
+          );
+        }
+
+        setOriginalReviews(filteredReviews);
+        setReviews(filteredReviews);
 
         // 유니크한 user_id들 추출
-        const userIds = [...new Set(reviewsData.map(review => review.user_id))];
+        const userIds = [...new Set(filteredReviews.map(review => review.user_id))];
 
         // 모든 유저 정보를 병렬로 요청
         /*const userPromises = userIds.map(userId =>
@@ -552,7 +574,22 @@ const renderUserName = (userName) => {
     } else if (venueId) {
       goBack && goBack();
     } else{
-      navigateToPage(PAGES.HOME);
+       const rankingFromPage = localStorage.getItem('themeSource');
+      console.log("rankingFromPage", rankingFromPage);
+
+      switch (rankingFromPage) {
+        case 'BARLIST':
+          localStorage.removeItem('themeSource');
+          navigateToPage(PAGES.BARLIST);
+          break;
+        case 'MASSAGELIST':
+          localStorage.removeItem('themeSource');
+          navigateToPage(PAGES.MASSAGELIST);
+          break;
+        default:
+          navigateToPage(PAGES.HOME);
+          break;
+      }
     }
   };
   

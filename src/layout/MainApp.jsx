@@ -17,6 +17,7 @@ import { backHandlerRef } from '@hooks/backRef';
 
 
 import { useLocation, useNavigate } from 'react-router-dom';
+import ThemeManager from '@utils/ThemeManager';
 
 
 
@@ -120,6 +121,11 @@ const MainApp = () => {
         goBackParams,
         PAGES
     } = usePageNavigation();
+
+    useEffect(() => {
+            console.log('페이지 변경됨:', currentPage);
+            ThemeManager.applyTheme(currentPage); // currentPage를 매개변수로 전달
+        }, [currentPage]);
 
      useEffect(() => {
         if (isIOS) {
@@ -487,86 +493,116 @@ const MainApp = () => {
                             key={id}
                             onClick={() => {
 
-                                if(needLogin){
+                               if(needLogin){
                                     if(!user || user?.user_id == 1){
-
                                         openLoginOverlay(id, data);
                                         return;
                                     }
                                 }
 
-                                 if (id === PAGES.HOME) {
+                                // HOME 버튼 클릭 처리
+                                if (id === PAGES.HOME || id === PAGES.ACCOUNT) {
+                                    console.log('HOME 버튼 클릭 - 모든 테마 정보 초기화');
+                                    ThemeManager.resetTheme(); // themeSource도 함께 초기화됨
                                     localStorage.setItem('homeScrollY', '0');
+                                    navigateToPage(id);
+                                    return;
                                 }
 
-                                  if (id === PAGES.RANKING) {
-                                    localStorage.setItem('rankScrollRatio',0);
-                                    localStorage.setItem('rankScrollY',0);
-                                }
+                                // RANKING 버튼 클릭 처리
+                                 if (id === PAGES.RANKING) {
+                                        console.log('RANKING 버튼 클릭');
+                                        // rankingFromPage는 여전히 사용 (다른 로직에서 필요할 수 있음)
+                                        localStorage.setItem('rankingFromPage', currentPage);
+                                        localStorage.setItem('rankScrollRatio', 0);
+                                        localStorage.setItem('rankScrollY', 0);
+                                        localStorage.setItem('rankingType', 'venue');
+                                        navigateToPage(id);
+                                        return;
+                                    }
 
+
+                                // PROMOTION 버튼 클릭 처리
                                 if (id === PAGES.PROMOTION) {
-                                    localStorage.setItem('promotionScrollY',0);
+                                    localStorage.setItem('promotionScrollY', 0);
                                 }
                                
 
+                                 // 기타 페이지 처리
                                 //const blockPage = [ PAGES.RANKING, PAGES.CHATTINGLIST, PAGES.BOOKINGHISTORY];
                                 const blockPage = [ PAGES.CHATTINGLIST, PAGES.BOOKINGHISTORY];
 
-                                if(id == PAGES.RANKING ){
-                                    localStorage.setItem('rankingType', 'venue');
-                                    
-
-                                    navigateToPage(id);
-
-
-                                    /*
-                                    showAdWithCallback(
-                                        // 광고 완료 시 콜백
-                                        () => {
-                                            navigateToPage(id);
-                                        },
-                                        // fallback 콜백 (광고 응답 없을 때)
-                                        () => {
-                                            navigateToPage(id);
-                                        },
-                                        1000, // 1초 타임아웃
-                                        false // 강제 광고 표시(광고 호출 주기 무시)
-                                      );
-                                      */
-
-
-                                      return;
-                                }
-
-                                if(id == PAGES.VIEWREVIEW ){
+                                if(id == PAGES.VIEWREVIEW) {
 
                                     const INITIAL_STATE = {
-                                    scrollY: 0,
-                                    sortOrder1: "latest",
-                                    sortOrder: "latest",
-                                    targetTypeFilter: "venue"
+                                        scrollY: 0,
+                                        sortOrder1: "latest",
+                                        sortOrder: "latest",
+                                        targetTypeFilter: "venue"
                                     };
 
                                     localStorage.setItem("viewReviewPageState", JSON.stringify(INITIAL_STATE));
                                     showAdWithCallback(
-                                        // 광고 완료 시 콜백
-                                        () => {
-                                            navigateToPage(id);
-                                        },
-                                        // fallback 콜백 (광고 응답 없을 때)
-                                        () => {
-                                            navigateToPage(id);
-                                        },
-                                        1000 // 1초 타임아웃
-                                      );
-                                      return;
+                                        () => navigateToPage(id),
+                                        () => navigateToPage(id),
+                                        1000
+                                    );
+                                    return;
                                 }
+
+                                // if(id == PAGES.RANKING ){
+                                //     localStorage.setItem('rankingType', 'venue');
+                                    
+
+                                //     navigateToPage(id);
+
+
+                                //     /*
+                                //     showAdWithCallback(
+                                //         // 광고 완료 시 콜백
+                                //         () => {
+                                //             navigateToPage(id);
+                                //         },
+                                //         // fallback 콜백 (광고 응답 없을 때)
+                                //         () => {
+                                //             navigateToPage(id);
+                                //         },
+                                //         1000, // 1초 타임아웃
+                                //         false // 강제 광고 표시(광고 호출 주기 무시)
+                                //       );
+                                //       */
+
+
+                                //       return;
+                                // }
+
+                                // if(id == PAGES.VIEWREVIEW ){
+
+                                //     const INITIAL_STATE = {
+                                //     scrollY: 0,
+                                //     sortOrder1: "latest",
+                                //     sortOrder: "latest",
+                                //     targetTypeFilter: "venue"
+                                //     };
+
+                                //     localStorage.setItem("viewReviewPageState", JSON.stringify(INITIAL_STATE));
+                                //     showAdWithCallback(
+                                //         // 광고 완료 시 콜백
+                                //         () => {
+                                //             navigateToPage(id);
+                                //         },
+                                //         // fallback 콜백 (광고 응답 없을 때)
+                                //         () => {
+                                //             navigateToPage(id);
+                                //         },
+                                //         1000 // 1초 타임아웃
+                                //       );
+                                //       return;
+                                // }
                                     
 
                                if(blockPage.includes(id)) {
                                     console.log("activeUser", activeUser);
-
-                                    
 
                                     // activeUser 상태가 빈 객체이거나 isActive가 false인 경우
                                     if (Object.keys(activeUser).length === 0) {
@@ -642,19 +678,22 @@ const MainApp = () => {
                 </div>
             </nav>
             )}
-            {currentPage == 'HOME' && (
-                <section className="bottom-map-section">
-                    <div className="map-icon-container" onClick={handleMapClick}>
-                    <Map size={20} /> <span style={{marginLeft: '5px'}}>{get('Main1.1')}</span>
-                    </div>
-                </section>
-                )}
-
-            {currentPage == 'HOME' && (
-                 <button className="scroll-up-btn" onClick={scrollToTop}>
-                    <ChevronUp size={24} />
-                    </button>
-                    )}
+             {['HOME', 'BARLIST', 'MASSAGELIST'].includes(currentPage) && (
+                           <section className="bottom-map-section">
+                               <div className="map-icon-container" onClick={handleMapClick}>
+                                   {/* style 속성 제거 - CSS에서 처리 */}
+                                   <Map size={20} /> 
+                                   <span style={{ marginLeft: '5px' }}>{get('Main1.1')}</span>
+                               </div>
+                           </section>
+                       )}
+           
+                       {['HOME', 'BARLIST', 'MASSAGELIST'].includes(currentPage) && (
+                           <button className="scroll-up-btn" onClick={scrollToTop}>
+                               {/* style 속성 제거 - CSS에서 처리 */}
+                               <ChevronUp size={24} />
+                           </button>
+                       )}
 
                                <LoadingScreen 
                                          variant="cocktail"

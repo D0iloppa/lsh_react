@@ -34,7 +34,8 @@ const ReserveSummaryPage = ({
     duration: '',
     attendee: '',
     memo: '',
-    escort_entrance: ''
+    escort_entrance: '',
+    menuDisp: ''
   });
   const [isConfirming, setIsConfirming] = useState(false);
 
@@ -87,7 +88,8 @@ const ReserveSummaryPage = ({
         pickupService,
         useStaffService,
         selectedEntrance,
-        escort_entrance
+        escort_entrance,
+        menuItem,
       } = reserve_data;
 
       // API 요청을 위한 payload 준비
@@ -106,7 +108,8 @@ const ReserveSummaryPage = ({
         use_escort: pickupService ? 1 : 0,
         use_staff: useStaffService ? 1 : 0,
         venueToItem:true, pickupService:pickupService,useStaffService:useStaffService,
-        escort_entrance: escort_entrance
+        escort_entrance: escort_entrance,
+        item_id:menuItem.item_id
       };
 
       setReservationPayload(api_payload);
@@ -125,7 +128,8 @@ const ReserveSummaryPage = ({
         memo: memo || '',
         pickupService: pickupService,
         useStaffService: useStaffService,
-        escort_entrance: escort_entrance
+        escort_entrance: escort_entrance,
+        menuDisp:menuItem.label
       };
 
       setDisplayData(display_data);
@@ -296,6 +300,7 @@ const getEntranceText = (entranceValue) => {
       noMemo: get('BookingSum.NoMemo') || '메모 없음',
       confirmingButton: get('Reservation.Confirming') || '예약 확정 중...',
       escortLabel:get('reservation.escort.1'),
+      menuLabel:get('COURSE'),
       useStaffLabel:get('STAFF_MSG_1'),
       entranceLabel: get('title.text.15')
     };
@@ -549,6 +554,13 @@ const getEntranceText = (entranceValue) => {
                 <span className="summary-label">{messages_summary.entranceLabel}:</span>
                 <div className="summary-value">
                   <span>{getEntranceText(displayData.escort_entrance)}</span>
+                </div>
+              </div>
+              {/* 메뉴 */}
+              <div className="summary-item">
+                <span className="summary-label">{messages_summary.menuLabel}:</span>
+                <div className="summary-value">
+                  <span>{displayData.menuDisp}</span>
                 </div>
               </div>
 

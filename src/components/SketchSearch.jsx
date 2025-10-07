@@ -89,7 +89,7 @@ const SketchSearch = ({
         <input
           type="search"                  // ✅ 키보드에 "검색" 버튼 표시
           enterKeyHint="search"          // ✅ 안드로이드/아이폰 모두 지원
-          placeholder={placeholder}
+          placeholder={get('Search1.1')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="search-input"

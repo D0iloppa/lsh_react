@@ -619,7 +619,6 @@ export const filterTimeSlots = (allTimeSlots, startTime, endTime) => {
 export const getDisabledTimeSlots = (scheduleData, selectedDate, bookedTimes = []) => {
   const disabledTimes = [];
 
-  console.log('getDisabledTimeSlots',scheduleData, selectedDate, bookedTimes);
   if (bookedTimes && bookedTimes.length > 0) {
     disabledTimes.push(...bookedTimes);
   }
@@ -804,8 +803,7 @@ export const DurationBasedTimeSelector = ({
   maxDuration = 6, // 최대 6시간까지 선택 가능
   messages = {}, // 다국어 메시지 추가
   navigateToPageWithData,
-  PAGES,
-  menuDuration = null // ✅ 새로 추가
+  PAGES
 }) => {
 
   const { user, isActiveUser } = useAuth();
@@ -835,25 +833,17 @@ export const DurationBasedTimeSelector = ({
   const handleTimeClick = (timeSlot) => {
     const time = typeof timeSlot === 'string' ? timeSlot : timeSlot.value;
     if (disabledTimes.includes(time)) return;
-  
+
+    // 새로운 시작 시간 선택시 기간 초기화
     setStartTime(time);
-  
-    // 메뉴 duration이 있으면 바로 확정
-    if (menuDuration) {
-      onTimeSelect({
-        startTime: time,
-        duration: menuDuration,
-        endTime: getEndTimeDisplay(time, menuDuration),
-      });
-    } else {
-      // 기존 로직: duration은 사용자가 고름
-      setDuration(null);
-      onTimeSelect({
-        startTime: time,
-        duration: null,
-        endTime: null,
-      });
-    }
+    setDuration(null);
+
+    // 부모 컴포넌트에 시작 시간만 전달
+    onTimeSelect({
+      startTime: time,
+      duration: null,
+      endTime: null
+    });
   };
 
   const handleDurationChange = (newDuration) => {
@@ -871,22 +861,17 @@ export const DurationBasedTimeSelector = ({
     const time = typeof timeSlot === 'string' ? timeSlot : timeSlot.value;
     if (disabledTimes.includes(time)) return 'disabled';
     if (startTime === time) return 'accent';
-  
+
     // 선택된 시간 범위 하이라이트
-    const effectiveDuration = menuDuration || duration;  // ✅ 메뉴 duration 우선
-    if (startTime && effectiveDuration) {
-      const [startHour, startMin] = startTime.split(':').map(Number);
-      const [timeHour, timeMin] = time.split(':').map(Number);
-  
-      const startTotal = startHour * 60 + startMin;
-      const slotTotal = timeHour * 60 + timeMin;
-      const endTotal = startTotal + effectiveDuration * 60;
-  
-      if (slotTotal >= startTotal && slotTotal < endTotal) {
+    if (startTime && duration) {
+      const [startHour] = startTime.split(':').map(Number);
+      const [timeHour] = time.split(':').map(Number);
+
+      if (timeHour >= startHour && timeHour < startHour + duration) {
         return 'primary';
       }
     }
-  
+
     return 'secondary';
   };
 
@@ -1082,21 +1067,18 @@ export const DurationBasedTimeSelector = ({
 
 
 
-      {/* DurationSelector → menuDuration 없을 때만 보이도록 */}
-      {!menuDuration && (
-        <DurationSelector
-          startTime={startTime}
-          timeSlots={timeSlots}
-          maxDuration={maxDuration}
-          selectedDuration={duration}
-          onDurationChange={handleDurationChange}
-          disabledTimes={disabledTimes}
-          availableTimes={availableTimes}
-          messages={messages}
-        />
-      )}
+      <DurationSelector
+        startTime={startTime}
+        timeSlots={timeSlots}
+        maxDuration={maxDuration}
+        selectedDuration={duration}
+        onDurationChange={handleDurationChange}
+        disabledTimes={disabledTimes}
+        availableTimes={availableTimes}
+        messages={messages}
+      />
 
-      {startTime && !duration && !menuDuration && (
+      {startTime && !duration && (
         <div className="selection-warning">
           {messages.selectDurationWarning || "시작 시간을 선택했습니다. 이용 시간을 선택해주세요."}
         </div>
@@ -1455,7 +1437,6 @@ export const MenuSelect = ({ venue_id, value, onChange, messages = {} }) => {
         onChange={(opt) => {
           const selected = {
             item_id: opt.item_id,
-            duration: opt.duration || null,
             label: `${opt.name} (${opt.price.toLocaleString("vi-VN")} VND)`,
           };
           console.log("👉 선택된 메뉴:", selected);
@@ -1583,73 +1564,8 @@ export const ReservationForm = ({
   PAGES
 }) => {
 
-  console.log("cat_id 값:", cat_id);
-  const { get } = useMsg();
-
-  // ReservationForm 내부
-  const [menuDuration, setMenuDuration] = useState(null);
-
- 
-
-   // 최종 duration: 메뉴 duration 우선, 없으면 선택값
-
-   const convertMinutesToHours = (minutes) => {
-    if (!minutes) return null;
-    // 분 → 시간 (소수)
-    const hours = minutes / 60;
-    // 0.5 단위로 반올림
-    return Math.round(hours * 2) / 2;
-  };
-
-   // 메뉴 아이템 선택될 때 duration 반영
-   useEffect(() => {
-    if (menuItem?.duration) {
-      const hours = convertMinutesToHours(menuItem.duration);
-      setMenuDuration(hours);
-    } else {
-      setMenuDuration(null);
-    }
-  }, [menuItem]);
-
-  const handleMenuChange = (menu) => {
-    setMenuItem(menu);
-  
-    // 이미 startTime이 선택돼 있다면 새 duration 반영
-    if (selectedTimes?.startTime && menu?.duration) {
-      const hours = convertMinutesToHours(menu.duration);
-      onTimeSelect({
-        startTime: selectedTimes.startTime,
-        duration: hours,
-        endTime: getEndTimeDisplay(selectedTimes.startTime, hours),
-      });
-    }
-  };
-
-  useEffect(() => {
-    if (menuItem?.duration && selectedTimes?.startTime) {
-      const hours = convertMinutesToHours(menuItem.duration);
-      onTimeSelect({
-        startTime: selectedTimes.startTime,
-        duration: hours,
-        endTime: getEndTimeDisplay(selectedTimes.startTime, hours),
-      });
-    }
-  }, [menuItem, selectedTimes?.startTime]);
-  
-
-     // onTimeSelect 호출 래퍼
-  const handleTimeSelectWithMenu = (selection) => {
-    const appliedDuration = menuItem?.duration
-      ? convertMinutesToHours(menuItem.duration)
-      : selection.duration ?? null;
-
-    onTimeSelect({
-      ...selection,
-      duration: appliedDuration,   // duration만 확정해서 전달
-    });
-
-    console.log('hts', appliedDuration);
-  };
+console.log("cat_id 값:", cat_id);
+ const { get } = useMsg();
 
   return (
     <div className="form-section">
@@ -1685,16 +1601,25 @@ export const ReservationForm = ({
           timeSlots={timeSlots}
           selectedStartTime={selectedTimes?.startTime || ''}
           selectedDuration={selectedTimes?.duration || null}
-          onTimeSelect={handleTimeSelectWithMenu}
+          onTimeSelect={onTimeSelect}
           disabledTimes={disabledTimes}
           availableTimes={availableTimes}
           maxDuration={maxDuration}
           messages={messages}
           navigateToPageWithData={navigateToPageWithData}
           PAGES={PAGES}
-          menuDuration={menuDuration} // ✅ 여기서만 추가
         />
-      ) : null}
+      ) : (
+        <TimeSlotSelector
+          timeSlots={timeSlots}
+          selectedTimes={selectedTimes || selectedTime}
+          onTimeSelect={onTimeSelect}
+          disabledTimes={disabledTimes}
+          selectionMode={timeSelectionMode}
+          allowDrag={allowDrag}
+          messages={messages}
+        />
+      )}
 
       {messages.rev_target !== 'staff' && (
         <UseStaff
@@ -1730,7 +1655,7 @@ export const ReservationForm = ({
         venue_id={venue_id}
         menuList={menuList}
         value={menuItem.item_id}
-        onChange={handleMenuChange}
+        onChange={setMenuItem}
         messages={{
           defaultItem: messages['defaultItem'] || '기본2',
           menuLabel: get('MENU') || '코스',
