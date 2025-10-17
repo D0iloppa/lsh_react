@@ -83,8 +83,10 @@ const handleTranslate = useCallback(async (reviewId, text) => {
     if ( language == 'kr') language='ko';
     if ( language == 'cn') language='zh';
     
+    // const apiKey = 'AIzaSyAnvkb7_-zX-aI8WVw6zLMRn63yQQrss9c';
+    const apiKey = 'AIzaSyDCt8lNfZ8_91dDbsVHhUvYTPXpEIEM-yM';
     const response = await axios.post(
-      `https://translation.googleapis.com/language/translate/v2?key=AIzaSyAnvkb7_-zX-aI8WVw6zLMRn63yQQrss9c`,
+      `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`,
       {
         q: text,
         target: language || 'vi',  // 사용자 언어 기준 (없으면 베트남어)

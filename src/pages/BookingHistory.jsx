@@ -539,7 +539,8 @@ const BookingHistoryPage = ({
           cancelable:item.cancelable,
           escort_entrance:item.escort_entrance,
           venue_name: item.venue_name,
-          manager_id: item.manager_id
+          manager_id: item.manager_id,
+          canceler:item.canceler
         }));
         
         setAllBookings(formattedBookings); // ⬅ 전체 데이터 저장
@@ -1199,6 +1200,24 @@ const getEntranceText = (entranceValue) => {
                       {booking.statusLabel}
                     </div>
                     <div className="action-buttons">
+
+                    {booking.status === 'canceled' && (
+                        <div
+                          style={{
+                            fontSize: "0.85rem",
+                            color: "#6b7280",
+                            paddingBottom: "12px"
+                          }}
+                        >
+                          ({get('cancel_reason_label')} : {get(
+                            booking.canceler === 'user'
+                              ? 'cancel_reason_user'
+                              : booking.canceler === 'manager'
+                                ? 'cancel_reason_manager'
+                                : 'cancel_reason_auto'
+                          )})
+                        </div>
+                      )}
 
                       {booking.status != 'completed' && booking.status != 'canceled' && (
                           <SketchBtn
