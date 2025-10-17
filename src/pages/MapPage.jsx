@@ -52,10 +52,22 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
     try {
       const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
       const response = await axios.get(`${API_HOST}/api/getVenueList`, { params: { keyword } });
-      const venueList = response.data || [];
+      let venueList = response.data || [];
 
       const iau = await isActiveUser();
+      
+      const themeSource = localStorage.getItem('themeSource');
+      const currentCategory = localStorage.getItem('currentVenueCategory');
 
+      console.log("1234:"+themeSource);
+
+
+  if (themeSource === 'BARLIST') {
+    venueList = venueList.filter(v => v.cat_nm === 'BAR');
+  } else if (themeSource === 'MASSAGELIST') {
+    venueList = venueList.filter(v => v.cat_nm === 'SALON');
+  }
+      
       // 구독 정보 확인 및 주소 마스킹 적용
       const processedVenueList = venueList.map(item => ({
         ...item,
