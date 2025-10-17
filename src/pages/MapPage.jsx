@@ -55,7 +55,7 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
       const venueList = response.data || [];
 
       const iau = await isActiveUser();
-      
+
       // 구독 정보 확인 및 주소 마스킹 적용
       const processedVenueList = venueList.map(item => ({
         ...item,

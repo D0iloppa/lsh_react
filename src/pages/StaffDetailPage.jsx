@@ -713,6 +713,18 @@ hideIOSImageViewer();
       try {
 
         let vn_schedule_status = girl?.vn_schedule_status || false;
+
+
+        const vn_response = await ApiClient.get(`/api/getVenue`, {
+          params: { venue_id: girl.venue_id
+            ,lang:currentLang
+           },
+        });
+
+        
+        vn_schedule_status = vn_response.schedule_status;
+
+        /*
         if(!vn_schedule_status){
           const response = await ApiClient.get(`/api/getVenue`, {
             params: { venue_id: girl.venue_id
@@ -723,8 +735,53 @@ hideIOSImageViewer();
           console.log('venue-info', response);
           vn_schedule_status = response.schedule_status;
         }
+        */
 
-        if(vn_schedule_status === 'closed'){
+
+        let openTime = vn_response.open_time || false;
+        let closeTime = vn_response.close_time || false;
+
+        console.log('venue-info', vn_response, openTime, closeTime);
+
+        let isPreOpen = false;
+
+        function getNowInVietnam() {
+          const now = new Date();
+        
+          // 베트남 타임존 offset은 UTC+7
+          const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+          const vnTime = new Date(utc + 7 * 60 * 60000); // +7시간
+          return vnTime;
+        }
+
+
+
+        if (openTime) {
+          
+          const nowVN = getNowInVietnam();
+
+        
+          // openTime 예: "09:00" 형태라고 가정
+          const [openH, openM] = openTime.split(':').map(Number);
+          const openAbs = new Date(nowVN);
+          openAbs.setHours(openH, openM, 0, 0);
+        
+          // 오픈 30분 전 시각 계산
+          const preOpenStart = new Date(openAbs.getTime() - 30 * 60 * 1000);
+        
+          // 현재 시간이 오픈 30분 전 이후 ~ 오픈 시각 이전이면 true
+          if (nowVN >= preOpenStart && nowVN < openAbs) {
+            isPreOpen = true;
+
+            vn_schedule_status = 'preOpen';
+          }
+        
+          console.log('[PreOpen 체크]', { nowVN, openAbs, preOpenStart, isPreOpen });
+        }
+
+
+
+        if(vn_schedule_status === 'closed' && !isPreOpen){
           setAvailCnt(0);
           setVnScheduleStatus(vn_schedule_status);
           setIsLoadingAvailCnt(false);
@@ -760,6 +817,7 @@ hideIOSImageViewer();
     window.scrollTo(0, 0);
   }, [messages, currentLang]);
 
+
 /*
   useEffect(() => {
   const container = document.querySelector('.staff-detail-container');
@@ -774,6 +832,35 @@ hideIOSImageViewer();
   };
 }, []);
 */
+
+
+  // 예약 버튼 상태 계산 함수
+  const getReserveButtonState = (girl, availCnt, vnScheduleStatus, get) => {
+
+    console.log('staff reservation status check', girl, availCnt, vnScheduleStatus);
+    if (vnScheduleStatus === 'closed') {
+      return {
+        disabled: true,
+        label: get('DiscoverPage1.1.disable') || '예약 마감',
+      };
+    }
+
+    if (availCnt > 0) {
+      return {
+        disabled: false,
+        label: get('DiscoverPage1.1') || '예약하기',
+      };
+    }
+
+    return {
+      disabled: true,
+      label: get('DiscoverPage1.1.disable') || '예약 마감',
+    };
+  }
+
+
+
+
 
   return (
     <>
@@ -1090,6 +1177,7 @@ hideIOSImageViewer();
         </div>
 )}
          <div className="booking-form-section fixed-bottom">
+          {/*
   <SketchBtn
     className="sketch-button enter-button"
     variant="event"
@@ -1103,6 +1191,22 @@ hideIOSImageViewer();
         ? get('DiscoverPage1.1') || '예약하기'
         : get('DiscoverPage1.1.disable') || '예약 마감'}
   </SketchBtn>
+  */}
+    {(() => {
+      const state = getReserveButtonState(girl, availCnt, vnScheduleStatus, get);
+      return (
+        <SketchBtn
+          className="sketch-button enter-button"
+          variant="event"
+          disabled={state.disabled}
+          onClick={handleReserve}
+        >
+          <HatchPattern opacity={0.8} />
+          {state.label}
+        </SketchBtn>
+      );
+    })()}
+
 </div>
 
 

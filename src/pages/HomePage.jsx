@@ -285,9 +285,9 @@ const myBanners = [
           staff_languages: item.staff_languages || '',
         }));
 
-        //transformed.sort((a, b) => b.staff_cnt - a.staff_cnt);
+       transformed.sort((a, b) => b.staff_cnt - a.staff_cnt);
 
-        setOriginalHotspots(transformed);
+        //setOriginalHotspots(transformed);
         setHotspots(transformed);
       } catch (err) {
         console.error('장소 정보 실패:', err);
@@ -869,15 +869,7 @@ console.log('categoryId', categoryId)
             <Home size={22} color="#374151" opacity={0.8} />
             { get('all_venues') }
           </h2>
-            <select 
-                className="sort-select"
-                value={sortType}
-                onChange={(e) => setSortType(e.target.value)}
-            >
-                <option value="status">{get('sort_open')}</option>
-                <option value="rating">{get('sort_rating')}</option>
-                <option value="latest">{get('sort_latest')}</option>
-            </select>
+ 
         </div>
 
         {/* 매장 목록 섹션 */}

@@ -572,7 +572,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
         const dispH = String(rawH % 24).padStart(2, '0');
         const dispM = String(rawM).padStart(2, '0');
         //const key   = `${dispH}:${dispM}|${dayOffset}`;
-        const key = `${rawH}:${dispM}`;
+        const key = `${String(rawH).padStart(2,'0')}:${dispM}`;
 
         const slotAbs = buildVNDateTime(fullDate, `${dispH}:${dispM}`, dayOffset);
 
@@ -582,14 +582,20 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
         if (isActiveDay && slotAbs <= now) {
           reason = 'past';
         }
-        // 리드타임 (1시간 기준, 필요시 30분으로 조정 가능)
+        // 리드타임
         else if (isActiveDay) {
           const diffMs = slotAbs - now;
-          const ONE_HOUR = 30 * 60 * 1000;
-          if (diffMs > 0 && diffMs < ONE_HOUR) {
-            reason = 'within_30m';
+        
+          const BEFORE_OPEN = now < openAbs;
+          const TIME_CUTOFF = BEFORE_OPEN
+            ? 15 * 60 * 1000   // 오픈 전엔 15분
+            : 15 * 60 * 1000;  // 일반 리드타임 15분
+        
+          if (diffMs > 0 && diffMs < TIME_CUTOFF) {
+            reason = BEFORE_OPEN ? 'within_15m_before_open' : 'within_15m';
           }
         }
+
         // 구독 만료 컷
         else if (expiredAtDate && slotAbs > expiredAtDate) {
           reason = 'after_expired_time';
@@ -612,7 +618,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
           */
 
         if (!reason && !availableSet.has(key)) {
-          reason = 'not_in_schedule';
+          reason = `not_in_schedule (key:${key})`;
           scheduleListSet.delete(key);
         }
 
@@ -651,7 +657,9 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
 
         // 안전하게 availableSet도 확인 (정합성 유지)
         const [H, M] = v.split(':').map(Number);
-        const chainKey = `${H}:${String(M).padStart(2,'0')}`;
+        //const chainKey = `${H}:${String(M).padStart(2,'0')}`;
+        const chainKey = `${String(H).padStart(2,'0')}:${String(M).padStart(2,'0')}`;
+
         if (!availableSet.has(chainKey)) { ok = false; break; }
       }
 

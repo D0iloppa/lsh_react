@@ -267,7 +267,7 @@ useEffect(() => {
         const barVenues = transformed.filter(venue => venue.cat_id === 1);
         barVenues.sort((a, b) => b.staff_cnt - a.staff_cnt);
 
-        setOriginalHotspots(barVenues);
+        //setOriginalHotspots(barVenues);
         setHotspots(barVenues);
       } catch (err) {
         console.error('장소 정보 실패:', err);

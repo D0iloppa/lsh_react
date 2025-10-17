@@ -268,9 +268,9 @@ const MassageMainPage = ({ pageHistory, navigateToMap, navigateToPage, navigateT
         const massageVenues = transformed.filter(
         venue => venue.cat_id === 2 || venue.cat_id === 3
         );
-        //massageVenues.sort((a, b) => b.staff_cnt - a.staff_cnt);
+        massageVenues.sort((a, b) => b.staff_cnt - a.staff_cnt);
 
-        setOriginalHotspots(massageVenues);
+        //setOriginalHotspots(massageVenues);
         setHotspots(massageVenues);
       } catch (err) {
         console.error('장소 정보 실패:', err);

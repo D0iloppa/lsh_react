@@ -1,6 +1,9 @@
 // PopupContext.js
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { useAuth } from '@contexts/AuthContext';
+import ApiClient from '@utils/ApiClient';
+
+import Block from '@components/Welcome/Block';
 
 const PopupContext = createContext();
 
@@ -266,10 +269,36 @@ export const PopupProvider = ({ children }) => {
       };
 
       
-      if(eventType == 'adViewCount'){
-        console.log('한시적 adViewCount 팝업 미호출');
-        return;
-      }
+      if (eventType == 'adViewCount') {
+          const currentUrl = window.location.href;
+
+          // 이미 block 페이지라면 이동하지 않음
+          if (currentUrl.includes('/block')) {
+            console.log('이미 block 페이지입니다. 이동하지 않습니다.');
+            return;
+          }
+
+          try {
+            const response = await ApiClient.postForm('/api/getSubscriptionInfo', { 
+              user_id: user.user_id
+            });
+
+            console.log('adViewCount 응답:', response);
+
+            // response가 존재하고, userState가 blocked일 때만 이동
+            if (response && response.userState === 'blocked') {
+              console.log('사용자 상태가 blocked입니다. block 페이지로 이동합니다.');
+              window.location.href = './block';
+              return;
+            }
+
+            console.log('한시적 adViewCount 팝업 미호출 (userState:', response?.userState, ')');
+          } catch (error) {
+            console.error('getSubscriptionInfo 호출 중 오류 발생:', error);
+          }
+
+          return;
+        }
     
 
       const { isActive } = await updateUserStateIfNeeded();

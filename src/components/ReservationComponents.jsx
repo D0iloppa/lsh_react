@@ -1463,9 +1463,39 @@ export const MenuSelect = ({ venue_id, value, onChange, messages = {} }) => {
         }}
         placeholder="메뉴를 선택하세요"
         getOptionValue={(opt) => String(opt.item_id)}
+        menuPosition="fixed"
+        menuPortalTarget={document.body}
+        isSearchable={false}  // ✅ 키패드 차단
+        styles={{
+          menuPortal: (base) => ({ ...base, zIndex: 2147483647 }),
+          menuList: (base) => ({
+            ...base,
+            fontFamily: "BMHanna, sans-serif",
+            maxHeight: 240,
+          }),
+          option: (base, state) => ({
+            ...base,
+            fontFamily: "BMHanna, sans-serif",
+            backgroundColor: state.isSelected
+              ? "#00f0ff" // ✅ 선택된 항목 배경 (연한 하늘색)
+              : state.isFocused
+              ? "#f9fafb" // ✅ hover 시 회색톤 강조
+              : "#fff",   // 기본 흰색
+            color: state.isSelected ? "#111" : "#333", // 선택 시 살짝 진하게
+            fontWeight: state.isSelected ? "600" : "400",
+            cursor: "pointer",
+            transition: "background-color 0.2s ease",
+          }),
+          control: (base, state) => ({
+            ...base,
+            borderColor: state.isFocused ? "#3b82f6" : "#ccc",
+            boxShadow: state.isFocused ? "0 0 0 1px #3b82f6" : "none",
+            "&:hover": { borderColor: "#3b82f6" },
+            fontFamily: "BMHanna, sans-serif",
+          }),
+        }}
         formatOptionLabel={(opt, { context }) => {
           if (opt.item_id === -1) return messages.defaultItem || "기본";
-
           if (context === "menu") {
             return (
               <div style={{ display: "flex", flexDirection: "column" }}>
@@ -1481,7 +1511,6 @@ export const MenuSelect = ({ venue_id, value, onChange, messages = {} }) => {
               </div>
             );
           }
-
           return `${opt.name} (${opt.price.toLocaleString("vi-VN")} VND)`;
         }}
       />

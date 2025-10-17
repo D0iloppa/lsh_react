@@ -109,8 +109,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
 
 
         // 최대 랭킹
-        const topRank = 100;
-        data = data.slice(0, topRank);
+       
         //const data = res.data || []
 
 
@@ -159,6 +158,15 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
             venue.cat_id === 2 || venue.cat_id === 3
           );
         }
+
+
+         const topRank = 100;
+        data = data.slice(0, topRank);
+
+        filteredData = filteredData.map((item, index) => ({
+          ...item,
+          rank: index + 1
+        }));
 
         // // 점수 기준으로 정렬
         // transformed.sort((a, b) => b.score - a.score);

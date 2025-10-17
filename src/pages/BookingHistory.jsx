@@ -682,13 +682,19 @@ useEffect(() => {
         }));
       }
 
-      
+    console.log('tt', booking);
+
     navigateToPageWithData(PAGES.CHATTING, {
+      initType: 'booking',
+      reservation_id: booking.id,
       name: booking.venue_name,
       room_sn: room_sn,
       send_to: 'manager',
       receiver_id: booking.manager_id,
+      ...booking
     });
+
+    
   } catch (error) {
     console.error("채팅방 생성 에러:", error);
   }
