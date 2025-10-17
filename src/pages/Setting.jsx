@@ -476,7 +476,7 @@ console.log("language", language)
           
           font-size: 1.3rem;
           font-weight: bold;
-          color: #1f2937;
+          //color: #1f2937;
           margin: 0;
         }
 

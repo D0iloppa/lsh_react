@@ -81,6 +81,7 @@ const StaffDetailPage = ({ pageHistory, navigateToPageWithData, goBack, PAGES, s
   const [isLoadingAvailCnt, setIsLoadingAvailCnt] = useState(false);
   const [loading, setLoading] = useState(false);
   const [girl, setGirl] = useState(otherProps || {});
+  const [catId, setCatId] = useState(1);
   const [images, setImages] = useState([]);
 
   const didOpenIOSViewerRef = useRef(false);
@@ -382,7 +383,8 @@ hideIOSImageViewer();
           target: 'staff',
           id: girl.staff_id || 123,
           venue_id:girl.venue_id,
-          staff: girl
+          staff: girl,
+          cat_id:catId
         });
 
 
@@ -444,7 +446,8 @@ hideIOSImageViewer();
         target: 'staff',
         id: girl.staff_id,
         venue_id:girl.venue_id,
-        staff: girl
+        staff: girl,
+        cat_id:catId
       });
     }
   };
@@ -723,6 +726,7 @@ hideIOSImageViewer();
 
         
         vn_schedule_status = vn_response.schedule_status;
+        setCatId(vn_response.cat_id || 1);
 
         /*
         if(!vn_schedule_status){

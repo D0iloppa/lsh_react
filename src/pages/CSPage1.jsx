@@ -147,7 +147,7 @@ const CSPage1 = ({
         .page-title {
           font-size: 1.4rem;
           font-weight: bold;
-          color: #1f2937;
+         //color: #1f2937;
           margin: 0;
         }
 

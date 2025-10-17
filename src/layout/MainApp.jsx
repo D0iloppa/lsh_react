@@ -501,7 +501,7 @@ const MainApp = () => {
                                 }
 
                                 // HOME 버튼 클릭 처리
-                                if (id === PAGES.HOME || id === PAGES.ACCOUNT) {
+                                if (id === PAGES.HOME) {
                                     console.log('HOME 버튼 클릭 - 모든 테마 정보 초기화');
                                     ThemeManager.resetTheme(); // themeSource도 함께 초기화됨
                                     localStorage.setItem('homeScrollY', '0');

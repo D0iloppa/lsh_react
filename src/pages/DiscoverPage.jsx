@@ -21,6 +21,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'r
 
 const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ...otherProps }) => {
 
+
+
+  console.log('discovrPage', otherProps);
+
   const venueId = otherProps?.venueId || null;
   const [venueInfo, setVenueInfo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -1814,7 +1818,8 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                     navigateToPageWithData(PAGES.RESERVATION, {
                       target: 'venue',
                       id: venueId || 1,
-                      venue_id:venueId
+                      venue_id:venueId,
+                      cat_id:venueInfo.cat_id
                     });
                   } else {
                     const result = await Swal.fire({
@@ -1836,7 +1841,8 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                   navigateToPageWithData(PAGES.RESERVATION, {
                     target: 'venue',
                     id: venueId || 1,
-                    venue_id:venueId
+                    venue_id:venueId,
+                    cat_id:venueInfo.cat_id
                   });
                 }
               }}

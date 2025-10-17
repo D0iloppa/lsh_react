@@ -74,6 +74,8 @@ const AdBannerSlider = ({ banners }) => {
     handleDragEnd();
   };
 
+
+  /*
   // 터치 이벤트
   const handleTouchStart = (e) => {
     e.preventDefault(); // 터치 이벤트 기본 동작 방지
@@ -89,6 +91,27 @@ const AdBannerSlider = ({ banners }) => {
     e.preventDefault();
     handleDragEnd();
   };
+*/
+const handleTouchStart = (e) => {
+  // 🎯 비디오 요소 클릭일 경우, 드래그 이벤트 완전히 무시
+  if (e.target.tagName.toLowerCase() === 'video') return;
+  
+  // preventDefault 제거 (WebView 클릭 막힘 방지)
+  handleDragStart(e.touches[0].clientX);
+};
+
+const handleTouchMove = (e) => {
+  if (e.target.tagName.toLowerCase() === 'video') return;
+  
+  // WebView 환경에서는 preventDefault()를 호출하지 않아야 onClick 유지됨
+  handleDragMove(e.touches[0].clientX);
+};
+
+const handleTouchEnd = (e) => {
+  if (e.target.tagName.toLowerCase() === 'video') return;
+  handleDragEnd();
+};
+
 
   // 마우스 이벤트 리스너 등록/해제
   useEffect(() => {
@@ -107,27 +130,70 @@ const AdBannerSlider = ({ banners }) => {
   const handleIndicatorClick = (index) => {
     setCurrentIndex(index);
   };
-
-  // 슬라이드 변경 시 비디오 제어
+  
+  
   useEffect(() => {
-    const videos = sliderRef.current?.querySelectorAll('video');
-    if (!videos) return;
+  const videos = sliderRef.current?.querySelectorAll('video');
+  if (!videos) return;
 
-    videos.forEach((video, index) => {
-      if (index === currentIndex) {
-        // 현재 슬라이드의 비디오면 처음부터 재생
-        video.currentTime = 0;
-        video.play().catch(() => {
-          // 자동재생 실패 시 무시 (브라우저 정책)
+  let lastTime = 0;
+
+  const handleTimeUpdate = (e) => {
+    lastTime = e.target.currentTime;
+  };
+
+  const resumePlayback = (video) => {
+    if (!video) return;
+    try {
+      video.currentTime = lastTime;
+      // ✅ 0.5초 지연 후 재생 시도 (WebView에서 성공률 ↑)
+      setTimeout(() => {
+        video.play().catch(err => {
+          console.warn('자동재생 실패, 사용자 제스처 필요:', err);
         });
-      } else {
-        // 현재 슬라이드가 아닌 비디오는 일시정지하고 처음으로 되돌림
-        video.pause();
-        video.currentTime = 0;
-      }
-    });
-  }, [currentIndex]);
+      }, 500);
+    } catch (e) {
+      console.warn('resumePlayback error', e);
+    }
+  };
 
+  const handleFullscreenChange = () => {
+    const fullscreenElement =
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.msFullscreenElement;
+
+    if (!fullscreenElement) {
+      resumePlayback(videos[currentIndex]);
+    }
+  };
+
+  const handleWebkitEndFullscreen = () => {
+    resumePlayback(videos[currentIndex]);
+  };
+
+  videos.forEach((video) => {
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('webkitendfullscreen', handleWebkitEndFullscreen);
+  });
+
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
+  document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+  document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+  return () => {
+    videos.forEach((video) => {
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('webkitendfullscreen', handleWebkitEndFullscreen);
+    });
+    document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.removeEventListener('msfullscreenchange', handleFullscreenChange);
+  };
+}, [currentIndex]);
+
+
+  
   return (
     <div className="ad-banner-slider">
       {/* 슬라이더 컨테이너 */}
@@ -160,21 +226,38 @@ const AdBannerSlider = ({ banners }) => {
                   className="banner-media"
                 />
               ) : (
-                <video 
-                  width="100%" 
-                  height="100%" 
+                <video
+                  width="100%"
+                  height="100%"
                   autoPlay
                   loop
                   playsInline
-                  //controlsList="nodownload nofullscreen"
-                  muted  
+                  muted
                   poster={banner.poster}
                   className="banner-media"
-                  onClick={(e) => e.stopPropagation()} // 비디오 클릭이 슬라이드 이벤트와 충돌하지 않도록
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const video = e.currentTarget;
+
+                    try {
+                      if (video.requestFullscreen) {
+                        video.requestFullscreen();
+                      } else if (video.webkitEnterFullscreen) { // ✅ iOS Safari / WKWebView
+                        video.webkitEnterFullscreen();
+                      } else if (video.webkitRequestFullscreen) {
+                        video.webkitRequestFullscreen();
+                      } else if (video.msRequestFullscreen) {
+                        video.msRequestFullscreen();
+                      }
+                      video.play().catch(() => {});
+                    } catch (err) {
+                      console.warn('Fullscreen request failed:', err);
+                    }
+                  }}
                 >
                   <source src={banner.src} type="video/mp4" />
-                  Your browser does not support the video tag.
                 </video>
+
               )}
             </div>
           ))}
@@ -287,7 +370,7 @@ const AdBannerSlider = ({ banners }) => {
           }
           
           .slider-container {
-            height: 150px;
+            height: 210px;
           }
           
           .indicators {

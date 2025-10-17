@@ -429,9 +429,14 @@ const DurationSelector = ({
   onDurationChange,
   disabledTimes = [],
   availableTimes = new Set(),
-  messages = {} // 다국어 메시지 추가
+  messages = {}, // 다국어 메시지 추가
+  cat_id=1
 }) => {
   if (!startTime) return null;
+
+  console.log("duatationSelector", cat_id);
+
+  if(cat_id>1) return null;
 
   // startTime 기준으로 timeSlots에서 인덱스 찾기
   const startTimeIndex = timeSlots.findIndex(slot => {
@@ -805,7 +810,9 @@ export const DurationBasedTimeSelector = ({
   messages = {}, // 다국어 메시지 추가
   navigateToPageWithData,
   PAGES,
-  menuDuration = null // ✅ 새로 추가
+  menuDuration = null, // ✅ 새로 추가
+  menuList = [],
+  cat_id = 1
 }) => {
 
   const { user, isActiveUser } = useAuth();
@@ -835,6 +842,9 @@ export const DurationBasedTimeSelector = ({
   const handleTimeClick = (timeSlot) => {
     const time = typeof timeSlot === 'string' ? timeSlot : timeSlot.value;
     if (disabledTimes.includes(time)) return;
+
+
+    console.log('htc', cat_id);
   
     setStartTime(time);
   
@@ -1093,6 +1103,7 @@ export const DurationBasedTimeSelector = ({
           disabledTimes={disabledTimes}
           availableTimes={availableTimes}
           messages={messages}
+          cat_id={cat_id}
         />
       )}
 
@@ -1427,9 +1438,13 @@ export const MenuSelect = ({ venue_id, value, onChange, messages = {} }) => {
   console.log("options:", options.map((o) => `${o.item_id}:${typeof o.item_id}`));
   console.log("selectedOption:", selectedOption);
 
+
+  let tobeDisable = (menuList.length < 1) ;
+
   return (
     <div
       style={{
+        display:tobeDisable ? "none":"block",
         border: "1px solid rgb(96 96 96);",
         borderRadius: "8px",
         padding: "23px 0px",
@@ -1722,6 +1737,8 @@ export const ReservationForm = ({
           navigateToPageWithData={navigateToPageWithData}
           PAGES={PAGES}
           menuDuration={menuDuration} // ✅ 여기서만 추가
+          menuList={menuList}
+          cat_id={cat_id}
         />
       ) : null}
 

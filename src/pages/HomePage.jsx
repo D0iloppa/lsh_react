@@ -54,16 +54,6 @@ const myBanners = [
     type: 'video',
     src: '/cdn/video_mobile.mp4',
     //poster: '/cdn/video-thumb.jpg'
-  },
-  {
-    type: 'image',
-    src: '/cdn/ex1.jpg',
-    alt: '여름 세일 이벤트'
-  },
-  {
-    type: 'image', 
-    src: '/cdn/ex2.jpg',
-    alt: '신상품 컬렉션'
   }
 ];
 
@@ -778,7 +768,7 @@ console.log('categoryId', categoryId)
             }
 
             .ad-video{
-              height:150px; 
+              height:200px; 
               display:flex; 
               align-items:center; 
               justify-content:center; 

@@ -31,7 +31,7 @@ const AccountPage = ({
 
   const navigate = useNavigate();
 
-  const { user, logout, isActiveUser } = useAuth();
+  const { user, logout, isActiveUser, exts: { venueCatMap }  } = useAuth();
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [showChatButton, setShowChatButton] = useState(true);
   const [activeUser, setActiveUser] = useState({});
