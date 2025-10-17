@@ -101,6 +101,27 @@ const addOneHour = (timeString) => {
   }
 };
 
+const add30Min = (timeString) => {
+  try {
+    if (!timeString) return 'N/A';
+    const [hours, minutes, seconds] = timeString.split(':').map(Number);
+
+    let totalMinutes = hours * 60 + minutes + 30; // 30분 추가
+    totalMinutes %= 24 * 60; // 24시간 기준으로 순환
+
+    const newHours = Math.floor(totalMinutes / 60);
+    const newMinutes = totalMinutes % 60;
+
+    return `${newHours.toString().padStart(2, '0')}:${newMinutes
+      .toString()
+      .padStart(2, '0')}${seconds !== undefined ? ':' + seconds.toString().padStart(2, '0') : ''}`;
+  } catch (error) {
+    console.error('Time adding error:', error, timeString);
+    return timeString;
+  }
+};
+
+
 // API 데이터를 UI용 데이터로 변환하는 함수
 const transformReservationData = (apiData) => {
   //console.log('Transforming API data:', apiData); // 디버깅용
@@ -113,7 +134,7 @@ const transformReservationData = (apiData) => {
       date: formatDate(item.res_date), // timestamp를 "Friday, 20th Oct" 형식으로
        time: item.res_start_time === item.res_end_time 
         ? `${formatTime(item.res_start_time)} - ${formatTime(addOneHour(item.res_start_time))}` // 시작시간과 종료시간이 같으면 +1시간으로 표시
-        : `${formatTime(item.res_start_time)} - ${formatTime(addOneHour(item.res_end_time))}`, // 다르면 그대로 표시
+        : `${formatTime(item.res_start_time)} - ${formatTime(add30Min(item.res_end_time))}`, // 다르면 그대로 표시
       venue: item.name || 'Unknown Venue', // 스태프 이름을 venue 대신 사용
       status: item.status || 'unknown', // "confirmed", "pending", "cancelled"
       staffName: item.name,
