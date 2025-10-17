@@ -129,7 +129,8 @@ const transformReservationData = (apiData) => {
       note: item.note,
       attendee: item.attendee,
       noShowCount: item.no_show_count,
-      escort_entrance:item.escort_entrance
+      escort_entrance:item.escort_entrance,
+      menu_name:item.menu_name || null
     };
     
     console.log('Transformed item:', transformed); // 변환된 데이터 확인
