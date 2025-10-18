@@ -104,6 +104,10 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
 
         let data = (res.data || []);
 
+        data = data.slice(0, 100);
+
+        
+
         // 필터
         //data = data.filter(i=>i.cat_id == 1);
 
