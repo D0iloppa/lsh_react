@@ -104,7 +104,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
 
         let data = (res.data || []);
 
-        data = data.slice(0, 100);
+        // data = data.slice(0, 100);
 
         
 
@@ -165,12 +165,14 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
 
 
          const topRank = 100;
-        data = data.slice(0, topRank);
+        // data = data.slice(0, topRank);
 
         filteredData = filteredData.map((item, index) => ({
           ...item,
           rank: index + 1
         }));
+
+        filteredData = filteredData.slice(0, 100);
 
         // // 점수 기준으로 정렬
         // transformed.sort((a, b) => b.score - a.score);
