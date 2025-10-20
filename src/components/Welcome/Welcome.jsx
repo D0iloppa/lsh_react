@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoadingScreen from '@components/LoadingScreen';
+import ThemeManager from '@utils/ThemeManager';
 import './Welcome.css';
 
 const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
@@ -17,6 +18,7 @@ const Welcome = ({ onNextScreen, currentStep, totalSteps, isLast }) => {
 
     // 1초 후 자동 이동
     const timer = setTimeout(() => {
+      ThemeManager.resetTheme();
       onExpore();
     }, 1500);
 
