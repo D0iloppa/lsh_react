@@ -370,7 +370,7 @@ const handleTouchEnd = (e) => {
           }
           
           .slider-container {
-            height: 300px;
+            height: 270px;
           }
           
           .indicators {
