@@ -87,9 +87,9 @@ const MapPage = ({ onVenueSelect = () => {}, navigateToPage, navigateToPageWithD
   const applyFilters = (baseList) => {
     let filtered = [...baseList];
     if (categoryFilter !== 'ALL') filtered = filtered.filter((v) => v.cat_nm === categoryFilter);
-    if (sortRating === 'RATING_5') filtered = filtered.filter((v) => parseFloat(v.rating) <= 5);
-    else if (sortRating === 'RATING_4') filtered = filtered.filter((v) => parseFloat(v.rating) <= 4);
-    else if (sortRating === 'RATING_3') filtered = filtered.filter((v) => parseFloat(v.rating) <= 3);
+    if (sortRating === 'RATING_5') filtered = filtered.filter((v) => parseFloat(v.rating) >= 5);
+    else if (sortRating === 'RATING_4') filtered = filtered.filter((v) => parseFloat(v.rating) >= 4);
+    else if (sortRating === 'RATING_3') filtered = filtered.filter((v) => parseFloat(v.rating) >= 3);
     if (sortPrice === 'PRICE_LOW') filtered.sort((a, b) => a.price - b.price);
     else if (sortPrice === 'PRICE_HIGH') filtered.sort((a, b) => b.price - a.price);
     if (sortStaff === 'STAFF_10') filtered = filtered.filter((v) => v.staff_cnt >= 10);

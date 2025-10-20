@@ -768,7 +768,7 @@ console.log('categoryId', categoryId)
             }
 
             .ad-video{
-              height:200px; 
+              height:280px; 
               display:flex; 
               align-items:center; 
               justify-content:center; 
