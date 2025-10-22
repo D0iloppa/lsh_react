@@ -250,7 +250,7 @@ hideIOSImageViewer();
       startIndex: currentIndex,
       noImagePopup,
       staffInfo: JSON.stringify({
-        name: girlname || "Unknown Staff",
+        name: girlname+"(🏪"+girl.venue_name+")" || 'Unknown Staff',
         languages: girl?.languages || "",
         description: girl?.description || "",
         msg1: get("LANGUAGES_LABEL"),
@@ -498,9 +498,19 @@ hideIOSImageViewer();
 
           const basicInfo = apiDataArray.length > 0 ? apiDataArray[0] : {};
 
+          const vn_response = await ApiClient.get(`/api/getVenue`, {
+          params: { venue_id: girl.venue_id
+            ,lang:currentLang
+           },
+        });
+        
+
+          const venue_name = vn_response.name;
+
           const _girl ={
             ...otherProps,
             ...basicInfo,
+            venue_name:venue_name
           }
 
           _girl.rating = parseFloat(basicInfo.avg_rating || 0);
@@ -511,8 +521,9 @@ hideIOSImageViewer();
 
           console.log('girl-detail', _girl);
 
-
           setGirl(_girl);
+          console.log("2345", _girl);
+          
 
           setIsFavorite(_girl.is_favorite === 1);
 
@@ -670,7 +681,7 @@ hideIOSImageViewer();
         startIndex: 0,
         noImagePopup,
         staffInfo: JSON.stringify({
-          name: girlname || 'Unknown Staff',
+          name: girlname+"(🏪"+girl.venue_name+")" || 'Unknown Staff',
           languages: girl?.languages || '',
           description: girl?.description || '',
           msg1: get('LANGUAGES_LABEL'),
@@ -723,7 +734,6 @@ hideIOSImageViewer();
             ,lang:currentLang
            },
         });
-
         
         vn_schedule_status = vn_response.schedule_status;
         setCatId(vn_response.cat_id || 1);
@@ -784,6 +794,16 @@ hideIOSImageViewer();
         }
 
 
+
+        const vnData = vn_response?.data || vn_response;
+
+        // ✅ venue_name 추가
+        setGirl(prev => ({
+          ...prev,
+          venue_name: vnData.name || '',
+        }));
+
+        console.log("1234", girl)
 
         if(vn_schedule_status === 'closed' && !isPreOpen){
           setAvailCnt(0);
@@ -1053,7 +1073,7 @@ hideIOSImageViewer();
               gap: '8px'   // 이름과 하트 사이 간격
             }}
           >
-            <span>{girl.name || 'Unknown Staff'}</span>
+            <span>{girl.name +"(🏪"+girl.venue_name+")" || 'Unknown Staff'}</span>
 
             {/* 즐겨찾기 버튼 */}
             <button

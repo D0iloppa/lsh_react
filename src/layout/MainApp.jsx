@@ -252,6 +252,7 @@ const MainApp = () => {
 
     const showAdWithCallback = useCallback(async (onAdComplete, fallbackAction, timeoutMs = 4000, forceShow = false) => {
         
+
         // 한시적 광고 비활성화
         let isAdDisabled = false;
         if(isAdDisabled){
@@ -343,6 +344,33 @@ const MainApp = () => {
             onAdComplete();
             return;
         }
+
+        //////////
+        // 화이트리스트
+
+
+        console.log('MAINAPP', user.user_id);
+
+        let whiteList = [22, 202];
+        
+        if (whiteList.includes(user.user_id)) {
+            console.warn('whiteList user');
+            onAdComplete();
+            return;
+        }
+        /*
+        if(user.log){
+            console.warn('active user');
+            onAdComplete();
+            return;
+        }
+        */
+
+
+
+
+
+
 
         // N회마다 광고 호출 (1, N+1, 2N+1... 회차에 광고 호출)
         //if (adCallCount % AD_CALL_INTERVAL !== 1) {
