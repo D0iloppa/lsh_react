@@ -49,7 +49,7 @@ const HomePage = ({ pageHistory, navigateToMap, navigateToSearch, navigateToPage
   const [notice, setNotice] = useState(null);
   const [showNotice, setShowNotice] = useState(false);
 
-  const [sortType, setSortType] = useState('status');
+  const [sortType, setSortType] = useState('latest');
 
 const myBanners = [
   {
@@ -282,7 +282,9 @@ const myBanners = [
           })
         }));
 
-       transformed.sort((a, b) => b.staff_cnt - a.staff_cnt);
+       // transformed.sort((a, b) => b.staff_cnt - a.staff_cnt);
+       transformed.sort((a, b) => b.created_at - a.created_at);
+
 
         //setOriginalHotspots(transformed);
         setHotspots(transformed);

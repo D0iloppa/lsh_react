@@ -272,7 +272,8 @@ useEffect(() => {
 
         // BAR 카테고리만 필터링
         const barVenues = transformed.filter(venue => venue.cat_id === 1);
-        barVenues.sort((a, b) => b.staff_cnt - a.staff_cnt);
+        // barVenues.sort((a, b) => b.staff_cnt - a.staff_cnt);
+        barVenues.sort((a, b) => b.created_at - a.created_at);
 
         //setOriginalHotspots(barVenues);
         setHotspots(barVenues);

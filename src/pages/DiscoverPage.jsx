@@ -68,6 +68,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
     return(
       <div
       style={{
+        display:'none',
         position: 'absolute',
         top: '8px',
         right: '10px',
