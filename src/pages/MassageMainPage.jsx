@@ -900,6 +900,7 @@ const MassageMainPage = ({ pageHistory, navigateToMap, navigateToPage, navigateT
                           {get( spot.opening_status?.msg_code)}
                         </div>
 
+
                         {/* 예약 가능 여부 */}
                         <div
                           className="is-reservation"
