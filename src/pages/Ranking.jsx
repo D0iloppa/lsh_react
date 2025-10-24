@@ -897,7 +897,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
                                 ? 'rgb(11, 199, 97)'   // 영업중 (초록)
                                 : 'rgb(107, 107, 107)', // 영업종료 (회색)
                             color: '#fff',
-                            padding: '5px 7px',
+                            padding: '3px 5px',
                             borderRadius: '3px',
                             display: 'inline-block',
                             marginTop: '4px',
@@ -916,7 +916,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
                               ? 'rgb(11, 199, 97)'  // 예약가능 - 초록색
                               : 'rgb(107, 107, 107)', // 영업종료 - 회색
                           color: '#fff',
-                          padding: '5px 7px',
+                          padding: '3px 5px',
                           borderRadius: '3px',
                           display: 'inline-block',
                           marginTop: '4px',
