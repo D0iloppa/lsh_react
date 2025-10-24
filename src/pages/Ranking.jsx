@@ -10,6 +10,7 @@ import SketchHeader from '@components/SketchHeaderMain';
 
 import Swal from 'sweetalert2';
 
+import { getOpeningStatus } from '@utils/VietnamTime'
 
 
 const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ...otherProps }) => {
@@ -123,27 +124,31 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
           const catInfo = vcm.find(v => v.venue_id === item.venue_id);
 
           return{
-          
-          id: item.target_type == 'venue' ? item.venue_id : item.target_id,
-          name: rankingType === 'staff' ? iauMasking(iau, item.name || '') : item.name || 'Unknown',
-          rating: parseFloat(item.avg_rating || 0).toFixed(1),
-          image: item.image_url,
-          address: iauMasking(iau, item.address || ''),
-          opening_hours: rankingType === 'venue' ? `${item.open_time}~${item.close_time}` : null,
-          schedule_status: item.is_open,
-          is_reservation: item.is_open === 'available',
-          reservation_count: item.reservation_cnt || 0,
-          view_cnt: item.view_cnt || 0,
-          staff_cnt: rankingType === 'venue' ? item.staff_cnt : null,
-          venue_name: rankingType === 'staff' ? item.venue_name : null,
-          venue_id: item.venue_id,
-          cat_nm: catInfo?.cat_nm || 'UNKNOWN', // venueCatMap에서 가져온 카테고리
-          cat_id: catInfo?.cat_id || 'UNKNOWN',
-          rank: index + 1,
-          latest_staff_created_at: item.latest_staff_created_at,
-          isUpdated : isUpdated(item.latest_staff_created_at),
-          isFavorite: fvrsSet.has(item.target_type == 'venue' ? item.venue_id : item.target_id),
-          score: calculateRankingScore(item)
+            id: item.target_type == 'venue' ? item.venue_id : item.target_id,
+            name: rankingType === 'staff' ? iauMasking(iau, item.name || '') : item.name || 'Unknown',
+            rating: parseFloat(item.avg_rating || 0).toFixed(1),
+            image: item.image_url,
+            address: iauMasking(iau, item.address || ''),
+            opening_hours: rankingType === 'venue' ? `${item.open_time}~${item.close_time}` : null,
+            schedule_status: item.is_open,
+            is_reservation: item.is_open === 'available',
+            reservation_count: item.reservation_cnt || 0,
+            view_cnt: item.view_cnt || 0,
+            staff_cnt: rankingType === 'venue' ? item.staff_cnt : null,
+            venue_name: rankingType === 'staff' ? item.venue_name : null,
+            venue_id: item.venue_id,
+            cat_nm: catInfo?.cat_nm || 'UNKNOWN', // venueCatMap에서 가져온 카테고리
+            cat_id: catInfo?.cat_id || 'UNKNOWN',
+            rank: index + 1,
+            latest_staff_created_at: item.latest_staff_created_at,
+            isUpdated : isUpdated(item.latest_staff_created_at),
+            isFavorite: fvrsSet.has(item.target_type == 'venue' ? item.venue_id : item.target_id),
+            score: calculateRankingScore(item),
+            opening_status: getOpeningStatus({
+              open_time : item.open_time, 
+              close_time : item.close_time, 
+              schedule_status : item.is_open
+            })
        };
     });
 
@@ -800,8 +805,57 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
                   <div style={{ fontWeight: 'bold', fontSize: '16px' }}>
                     {item.name}
                     {rankingType === 'staff' && item.venue_name && (
-                      <span style={{ fontSize: '12px', color: '#666', marginLeft: '8px' }}>
+                      <span style={{ 
+                          fontSize: '11px',
+                          color: '#666',
+                          marginLeft: '8px',
+                          display: 'inline-flex',       // ✅ 한 줄 정렬
+                          alignItems: 'center',         // 세로 중앙 정렬
+                          flexWrap: 'nowrap',           // 줄바꿈 방지
+                        }}>
                         @ {item.venue_name}
+                          {/* 상태 아이콘 래퍼 */}
+                          <span style={{ display: 'inline-flex', marginLeft: '4px' }}>
+                            {/* 영업 상태 */}
+                            <span
+                              className="is-reservation"
+                              style={{
+                                backgroundColor:
+                                  item.opening_status?.opening_status === 'open'
+                                    ? 'rgb(11, 199, 97)' // 영업중
+                                    : 'rgb(107, 107, 107)', // 영업종료
+                                color: '#fff',
+                                padding: '3px 5px',
+                                borderRadius: '3px',
+                                fontSize: '9px',
+                                lineHeight: '1',
+                                marginLeft: '4px',
+                              }}
+                            >
+                              {get(item.opening_status?.msg_code)}
+                            </span>
+
+                            {/* 예약 가능 여부 */}
+                            <span
+                              className="is-reservation"
+                              style={{
+                                backgroundColor:
+                                  item.schedule_status === 'available'
+                                    ? 'rgb(11, 199, 97)'
+                                    : 'rgb(107, 107, 107)',
+                                color: '#fff',
+                                padding: '3px 5px',
+                                borderRadius: '3px',
+                                fontSize: '9px',
+                                lineHeight: '1',
+                                marginLeft: '2px',
+                              }}
+                            >
+                              {item.schedule_status === 'available'
+                                ? get('DiscoverPage1.1.able')
+                                : get('DiscoverPage1.1.disable')}
+                            </span>
+                          </span>
                       </span>
                     )}
                   </div>
@@ -833,6 +887,27 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
                     </div>
                     */
                     <div style={{ display: 'flex' }}>
+
+                        {/* 영업 상태 */}
+                        <div
+                          className="is-reservation"
+                          style={{
+                            backgroundColor:
+                            item.opening_status?.opening_status === 'open'
+                                ? 'rgb(11, 199, 97)'   // 영업중 (초록)
+                                : 'rgb(107, 107, 107)', // 영업종료 (회색)
+                            color: '#fff',
+                            padding: '5px 7px',
+                            borderRadius: '3px',
+                            display: 'inline-block',
+                            marginTop: '4px',
+                            fontSize: '12px'
+                          }}
+                        >
+                          {get( item.opening_status?.msg_code)}
+                        </div>
+
+                        {/* 예약 가능 여부 */}
                       <div
                         className="is-reservation"
                         style={{
@@ -845,18 +920,14 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
                           borderRadius: '3px',
                           display: 'inline-block',
                           marginTop: '4px',
+                          marginLeft: '2px',
                           fontSize: '12px'
                         }}
                       >
-
                         {item.schedule_status === 'available'
                           ? get('DiscoverPage1.1.able')  // 예약가능
-                          : get('VENUE_END') // 영업종료
+                          : get('DiscoverPage1.1.disable') // 영업종료
                         }
-
-
-
-
                       </div>
                     </div>
 

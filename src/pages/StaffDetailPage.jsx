@@ -21,6 +21,7 @@ import CountryFlag from 'react-country-flag';
 
 import Swal from 'sweetalert2';
 
+import { getOpeningStatus } from '@utils/VietnamTime'
 
 const FLAG_CODES = {
   kr: 'KR',
@@ -78,6 +79,7 @@ const StaffDetailPage = ({ pageHistory, navigateToPageWithData, goBack, PAGES, s
   const [partySize, setPartySize] = useState('');
   const [availCnt, setAvailCnt] = useState(0);
   const [vnScheduleStatus, setVnScheduleStatus] = useState('');
+  const [openingStatus, setOpeningStatus] = useState({});
   const [isLoadingAvailCnt, setIsLoadingAvailCnt] = useState(false);
   const [loading, setLoading] = useState(false);
   const [girl, setGirl] = useState(otherProps || {});
@@ -499,18 +501,25 @@ hideIOSImageViewer();
           const basicInfo = apiDataArray.length > 0 ? apiDataArray[0] : {};
 
           const vn_response = await ApiClient.get(`/api/getVenue`, {
-          params: { venue_id: girl.venue_id
-            ,lang:currentLang
-           },
-        });
-        
+            params: { venue_id: girl.venue_id
+              ,lang:currentLang
+            },
+          });
 
           const venue_name = vn_response.name;
+          const opening_status = getOpeningStatus({
+            open_time : vn_response.open_time, 
+            close_time : vn_response.close_time, 
+            schedule_status : vn_response.schedule_status
+          })
+
+          setOpeningStatus(opening_status);
 
           const _girl ={
             ...otherProps,
             ...basicInfo,
-            venue_name:venue_name
+            venue_name:venue_name,
+            opening_status: opening_status
           }
 
           _girl.rating = parseFloat(basicInfo.avg_rating || 0);
@@ -755,6 +764,14 @@ hideIOSImageViewer();
         let openTime = vn_response.open_time || false;
         let closeTime = vn_response.close_time || false;
 
+        const opening_status = getOpeningStatus({
+          open_time : vn_response.open_time, 
+          close_time : vn_response.close_time, 
+          schedule_status : vn_response.schedule_status
+        })
+
+        setOpeningStatus(opening_status);
+
         console.log('venue-info', vn_response, openTime, closeTime);
 
         let isPreOpen = false;
@@ -797,10 +814,12 @@ hideIOSImageViewer();
 
         const vnData = vn_response?.data || vn_response;
 
+      
+
         // ✅ venue_name 추가
         setGirl(prev => ({
           ...prev,
-          venue_name: vnData.name || '',
+          venue_name: vnData.name || ''
         }));
 
         console.log("1234", girl)
@@ -859,9 +878,16 @@ hideIOSImageViewer();
 
 
   // 예약 버튼 상태 계산 함수
-  const getReserveButtonState = (girl, availCnt, vnScheduleStatus, get) => {
+  const getReserveButtonState = (girl, availCnt, vnScheduleStatus, openingStatus, get) => {
 
-    console.log('staff reservation status check', girl, availCnt, vnScheduleStatus);
+    console.log('staff reservation status check', girl, availCnt, openingStatus, vnScheduleStatus);
+
+
+
+
+
+
+
     if (vnScheduleStatus === 'closed') {
       return {
         disabled: true,
@@ -982,26 +1008,54 @@ hideIOSImageViewer();
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span>{get('Menu1.2')}</span>
               {!isLoadingAvailCnt && (
-                <span
-                  style={{
-                    backgroundColor: 
-                      vnScheduleStatus === 'closed' 
-                        ? 'rgb(107, 107, 107)' 
-                        : availCnt > 0 
-                          ? 'rgb(11, 199, 97)' 
-                          : 'rgb(107, 107, 107)',
-                    color: 'white',
-                    padding: '2px 6px',
-                    borderRadius: '3px',
-                    fontSize: '10px',
-                  }}
-                >
-                  {vnScheduleStatus === 'closed'
-                    ? get('DiscoverPage1.1.disable')
-                    : availCnt > 0 
-                      ? get('DiscoverPage1.1.able') 
-                      : get('DiscoverPage1.1.disable')}
-                </span>
+
+
+
+                <div>
+                  {/* 영업 상태 */}
+                  {console.log('render-chk', girl, openingStatus)}
+                  <span
+                    style={{
+                      backgroundColor: openingStatus.opening_status === 'open' 
+                            ? 'rgb(11, 199, 97)' 
+                            : 'rgb(107, 107, 107)',
+                      color: 'white',
+                      padding: '2px 6px',
+                      borderRadius: '3px',
+                      marginLeft: '2px',
+                      fontSize: '10px',
+                    }}
+                  >
+                    {get(openingStatus.msg_code)}
+                  </span>
+
+
+
+                   {/* 예약 가능 여부 */}
+                   <span
+                    style={{
+                      backgroundColor: 
+                        vnScheduleStatus === 'closed' 
+                          ? 'rgb(107, 107, 107)' 
+                          : availCnt > 0 
+                            ? 'rgb(11, 199, 97)' 
+                            : 'rgb(107, 107, 107)',
+                      color: 'white',
+                      padding: '2px 6px',
+                      borderRadius: '3px',
+                      marginLeft: '2px',
+                      fontSize: '10px',
+                    }}
+                  >
+                    {vnScheduleStatus === 'closed'
+                      ? get('DiscoverPage1.1.disable')
+                      : availCnt > 0 
+                        ? get('DiscoverPage1.1.able') 
+                        : get('DiscoverPage1.1.disable')}
+                  </span>
+
+
+                </div>
               )}
             </div>
           }
@@ -1217,7 +1271,7 @@ hideIOSImageViewer();
   </SketchBtn>
   */}
     {(() => {
-      const state = getReserveButtonState(girl, availCnt, vnScheduleStatus, get);
+      const state = getReserveButtonState(girl, availCnt, vnScheduleStatus, openingStatus, get);
       return (
         <SketchBtn
           className="sketch-button enter-button"

@@ -358,14 +358,6 @@ const MainApp = () => {
             onAdComplete();
             return;
         }
-        /*
-        if(user.log){
-            console.warn('active user');
-            onAdComplete();
-            return;
-        }
-        */
-
 
 
 

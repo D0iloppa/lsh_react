@@ -17,6 +17,7 @@ import Swal from 'sweetalert2';
 
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
+import { getOpeningStatus } from '@utils/VietnamTime'
 
 
 const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ...otherProps }) => {
@@ -40,6 +41,10 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
 
   
   const staffStatus = (staff) => {
+
+
+    console.log('checkStaffStatus', staff, venueInfo);
+
 
     const availCnt = staff?.availCnt || 0;
     
@@ -321,11 +326,20 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
         const iau = await isActiveUser();
         const venueInfo = response.data;
 
+
         const vi = {
           ...venueInfo,
+          opening_status: getOpeningStatus({
+            open_time : venueInfo.open_time, 
+            close_time : venueInfo.close_time, 
+            schedule_status : venueInfo.schedule_status
+          }),
           phone: iauMasking(iau, venueInfo.phone || ''),
           address: iauMasking(iau, venueInfo.address || '')
         };
+
+        console.log('vi', vi);
+
         window.scrollTo(0, 0);
         setVenueInfo(vi || null);
       } catch (error) {
@@ -1688,28 +1702,65 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
             }}>
               {/* 영업 상태 */}
               {venueInfo && (
-                <div
-                  className="is-reservation reserv-bottom"
-                  style={{
-                    position: 'relative',
-                    backgroundColor:
+
+                <div>
+                  {/* 영업 상태 */}
+                  <div
+                    className="is-reservation reserv-bottom"
+                    style={{
+                      position: 'relative',
+                      backgroundColor:
+                        venueInfo.opening_status.opening_status === 'open'
+                          ? 'rgb(11, 199, 97)'  // 예약가능 - 초록색
+                          : 'rgb(107, 107, 107)', // 영업종료 - 회색
+                      color: '#fff',
+                      padding: '3px 6px',
+                      borderRadius: '3px',
+                      display: 'inline-block',
+                      fontSize: '10px',
+                      alignSelf: 'flex-start'
+                    }}
+                  >
+                    {
+                      get(venueInfo.opening_status.msg_code)
+                      
+                      /*
                       venueInfo.schedule_status === 'available'
-                        ? 'rgb(11, 199, 97)'  // 예약가능 - 초록색
-                        : 'rgb(107, 107, 107)', // 영업종료 - 회색
-                    color: '#fff',
-                    padding: '3px 6px',
-                    borderRadius: '3px',
-                    display: 'inline-block',
-                    fontSize: '10px',
-                    alignSelf: 'flex-start'
-                  }}
-                >
-                  {
-                    venueInfo.schedule_status === 'available'
-                      ? get('DiscoverPage1.1.able')  // 예약가능
-                      : get('VENUE_END') // 영업종료
-                  }
+                        ? get('DiscoverPage1.1.able')  // 예약가능
+                        : get('VENUE_END') // 영업종료
+                      */
+                    }
+                  </div>
+
+
+                    {/* 예약 가능 상태 */}
+                  <div
+                    className="is-reservation reserv-bottom"
+                    style={{
+                      position: 'relative',
+                      backgroundColor:
+                        venueInfo.schedule_status === 'available'
+                          ? 'rgb(11, 199, 97)'  // 예약가능 - 초록색
+                          : 'rgb(107, 107, 107)', // 영업종료 - 회색
+                      color: '#fff',
+                      marginLeft: '2px',
+                      padding: '3px 6px',
+                      borderRadius: '3px',
+                      display: 'inline-block',
+                      fontSize: '10px',
+                      alignSelf: 'flex-start'
+                    }}
+                  >
+                    {
+                      venueInfo.schedule_status === 'available'
+                        ? get('DiscoverPage1.1.able')  // 예약가능
+                        : get('DiscoverPage1.1.disable') // 영업종료
+                    }
+                  </div>
                 </div>
+
+
+                
               )}
               {/* 가게명 */}
               <div className="club-name" style={{

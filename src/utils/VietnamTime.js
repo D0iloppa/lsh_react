@@ -179,3 +179,67 @@ export const getYearMonthDisplay = (date) => {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   return `${year}.${month}`;
 };
+
+
+
+export function getOpeningStatus({
+  open_time,
+  close_time,
+  schedule_status = 'available'
+}) {
+  try {
+    // 1️⃣ 스케줄 상태 확인
+    if (schedule_status === 'closed' || !open_time || !close_time) {
+      return {
+        opening_status: 'closed',
+        msg_code: 'VENUE_END',
+        open_time, close_time, schedule_status
+      };
+    }
+
+    // 2️⃣ 시간 문자열 → 초 단위 숫자로 변환
+    const toSeconds = (timeStr) => {
+      const [h, m, s] = timeStr.split(':').map(Number);
+      return h * 3600 + m * 60 + s;
+    };
+
+    const openSeconds = toSeconds(open_time);
+    const closeSeconds = toSeconds(close_time);
+
+    // 3️⃣ 베트남 현지시간 기준 현재 시각 구하기
+    const now = new Date();
+    const vnTime = new Date(
+      now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' })
+    );
+
+    const currentSeconds =
+      vnTime.getHours() * 3600 +
+      vnTime.getMinutes() * 60 +
+      vnTime.getSeconds();
+
+    // 4️⃣ 영업시간 판별
+    let isOpen = false;
+
+    if (openSeconds < closeSeconds) {
+      // 일반 영업 (예: 09:00:00 ~ 18:00:00)
+      isOpen = currentSeconds >= openSeconds && currentSeconds < closeSeconds;
+    } else {
+      // 심야 영업 (예: 20:00:00 ~ 06:00:00)
+      isOpen = currentSeconds >= openSeconds || currentSeconds < closeSeconds;
+    }
+
+    // 5️⃣ 결과 반환
+    return {
+      opening_status: isOpen ? 'open' : 'closed',
+      msg_code: isOpen ? 'VENUE_OPEN' : 'VENUE_END',
+      open_time, close_time, schedule_status
+    };
+  } catch (e) {
+    console.error('[getOpeningStatus] Error:', e);
+    return {
+      opening_status: 'closed',
+      msg_code: 'VENUE_END',
+      open_time, close_time, schedule_status
+    };
+  }
+}
