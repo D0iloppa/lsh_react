@@ -12,6 +12,7 @@ const PageHeader = ({
   showSearch = true,
   showBackButton = false,
   onBackClick,
+  handleSearch,
   customStyles = {} 
 }) => {
   const { get } = useMsg();
@@ -82,6 +83,7 @@ const PageHeader = ({
             placeholder={get('Search1.1')}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
+            handleSearch={handleSearch}
           />
         )}
       </section>

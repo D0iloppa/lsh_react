@@ -286,7 +286,7 @@ const myBanners = [
        transformed.sort((a, b) => b.created_at - a.created_at);
 
 
-        //setOriginalHotspots(transformed);
+        setOriginalHotspots(transformed);
         setHotspots(transformed);
       } catch (err) {
         console.error('장소 정보 실패:', err);
@@ -337,6 +337,26 @@ const myBanners = [
   const handleGoBack = () => {
     navigate(-1);
   };
+
+  const handleSearch = () => {
+
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) {
+      setHotspots(originalHotspots);
+      return;
+    }
+
+    
+    const filtered = originalHotspots.filter((spot) =>
+      spot.name.toLowerCase().includes(query)
+    );
+
+    console.log('search', query, filtered);
+
+
+
+    setHotspots(filtered);
+  };
   
   const isNewSpot = (createdAt) => {
     if (!createdAt) return false;
@@ -348,7 +368,13 @@ const myBanners = [
   };
 
   const filterAndSortHotspots = (query, category, ratingSort, priceSort, staffSort) => {
+    
+    
+
+
     let filtered = [...originalHotspots];
+
+    console.log('here', filtered);
 
     if (query.trim()) {
       filtered = filtered.filter((spot) =>

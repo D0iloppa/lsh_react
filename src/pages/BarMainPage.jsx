@@ -275,7 +275,7 @@ useEffect(() => {
         // barVenues.sort((a, b) => b.staff_cnt - a.staff_cnt);
         barVenues.sort((a, b) => b.created_at - a.created_at);
 
-        //setOriginalHotspots(barVenues);
+        setOriginalHotspots(barVenues);
         setHotspots(barVenues);
       } catch (err) {
         console.error('장소 정보 실패:', err);
