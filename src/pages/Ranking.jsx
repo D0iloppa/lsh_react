@@ -901,7 +901,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
                             borderRadius: '3px',
                             display: 'inline-block',
                             marginTop: '4px',
-                            fontSize: '12px'
+                            fontSize: '9px'
                           }}
                         >
                           {get( item.opening_status?.msg_code)}
@@ -921,7 +921,7 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
                           display: 'inline-block',
                           marginTop: '4px',
                           marginLeft: '2px',
-                          fontSize: '12px'
+                          fontSize: '9px'
                         }}
                       >
                         {item.schedule_status === 'available'
