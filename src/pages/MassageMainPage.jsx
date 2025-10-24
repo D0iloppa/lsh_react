@@ -21,6 +21,8 @@ import PageHeader from '@components/PageHeader';
 
 import ThemeManager from '@utils/ThemeManager';
 
+import { getOpeningStatus } from '@utils/VietnamTime'
+
 const MassageMainPage = ({ pageHistory, navigateToMap, navigateToPage, navigateToSearch, navigateToPageWithData, PAGES, goBack, showAdWithCallback }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [hotspots, setHotspots] = useState([]);
@@ -262,6 +264,11 @@ const MassageMainPage = ({ pageHistory, navigateToMap, navigateToPage, navigateT
           schedule_status: item.schedule_status,
           has_promotion: item.has_promotion,
           staff_languages: item.staff_languages || '',
+          opening_status: getOpeningStatus({
+            open_time : item.open_time, 
+            close_time : item.close_time, 
+            schedule_status : item.schedule_status
+          })
         }));
 
         // MASSAGE 카테고리만 필터링
@@ -873,25 +880,48 @@ const MassageMainPage = ({ pageHistory, navigateToMap, navigateToPage, navigateT
                       <div style={{ fontWeight: 'bold', fontSize: '16px', display: 'flex', alignItems: 'center' }}>
                         {spot.name}
                       </div>
-                      <div
-                        className="is-reservation"
-                        style={{
-                          backgroundColor:
-                            spot.schedule_status === 'available'
-                            ? 'rgb(11, 199, 97)'
-                            : 'rgb(107, 107, 107)',
-                          color: '#fff',
-                          padding: '5px 7px',
-                          borderRadius: '3px',
-                          display: 'inline-block',
-                          marginTop: '4px',
-                          fontSize: '12px'
-                        }}
-                      >
-                        {spot.schedule_status === 'available'
-                          ? get('DiscoverPage1.1.able')
-                          : get('VENUE_END')
-                        }  
+                      <div>
+                        {/* 영업 상태 */}
+                        <div
+                          className="is-reservation"
+                          style={{
+                            backgroundColor:
+                              spot.opening_status?.opening_status === 'open'
+                                ? 'rgb(11, 199, 97)'   // 영업중 (초록)
+                                : 'rgb(107, 107, 107)', // 영업종료 (회색)
+                            color: '#fff',
+                            padding: '5px 7px',
+                            borderRadius: '3px',
+                            display: 'inline-block',
+                            marginTop: '4px',
+                            fontSize: '12px'
+                          }}
+                        >
+                          {get( spot.opening_status?.msg_code)}
+                        </div>
+
+                        {/* 예약 가능 여부 */}
+                        <div
+                          className="is-reservation"
+                          style={{
+                            backgroundColor:
+                              spot.schedule_status === 'available'
+                              ? 'rgb(11, 199, 97)'
+                              : 'rgb(107, 107, 107)',
+                            color: '#fff',
+                            padding: '5px 7px',
+                            borderRadius: '3px',
+                            display: 'inline-block',
+                            marginTop: '4px',
+                            marginLeft: '2px',
+                            fontSize: '12px'
+                          }}
+                        >
+                          {spot.schedule_status === 'available'
+                            ? get('DiscoverPage1.1.able')
+                            : get('DiscoverPage1.1.disable')
+                          }  
+                        </div>
                       </div>
                       <div style={{ fontSize: '14px', color: '#333', marginTop: '6px' }}>
                         <MapPin size={14}/> {spot.address}
