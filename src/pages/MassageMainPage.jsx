@@ -1028,10 +1028,9 @@ const MassageMainPage = ({ pageHistory, navigateToMap, navigateToPage, navigateT
             const randomInterval = 1;
             if ( 1 === 1 && (index + 1) % randomInterval === 0) {
         
-              
         
               if(iauData?.isActiveUser == true){
-                return;
+                return elements;
               }
               
               console.log('randomInterval', iauData);

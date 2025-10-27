@@ -1022,10 +1022,9 @@ useEffect(() => {
             const randomInterval = 3 + Math.floor(Math.random() * 3);
             if ( 1 === 1 && (index + 1) % randomInterval === 0) {
         
-              
         
               if(iauData?.isActiveUser == true){
-                return;
+                return elements;
               }
               
               console.log('randomInterval', iauData);

@@ -1210,7 +1210,7 @@ console.log('categoryId', categoryId)
       
 
       if(iauData?.isActiveUser == true){
-        return;
+        return elements;
       }
       
       console.log('randomInterval', iauData);
