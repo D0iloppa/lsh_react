@@ -292,11 +292,13 @@ export const PopupProvider = ({ children }) => {
               return;
             }
 
-            console.log('한시적 adViewCount 팝업 미호출 (userState:', response?.userState, ')');
+            // console.log('한시적 adViewCount 팝업 미호출 (userState:', response?.userState, ')');
           } catch (error) {
             console.error('getSubscriptionInfo 호출 중 오류 발생:', error);
           }
 
+
+          // 한시적 adViewCount 팝업 미호출 (얼리리턴) 
           return;
         }
     

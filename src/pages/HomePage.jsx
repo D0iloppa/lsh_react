@@ -25,6 +25,8 @@ import AdBannerSlider from '@components/AdBannerSlider';
 
 import { getOpeningStatus } from '@utils/VietnamTime'
 
+import { getVersionInfo, compareVersions } from '@utils/storage'
+
 
 const HomePage = ({ pageHistory, navigateToMap, navigateToSearch, navigateToPageWithData, PAGES, goBack, showAdWithCallback }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -87,7 +89,7 @@ const myBanners = [
   // 팝업 열기 핸들러
   const handleOpenPopup = () => {
     localStorage.removeItem('popupClosedDate');
-    testPopup.emit('adViewCount'); 
+    //testPopup.emit('adViewCount'); 
   };
 
   // 정렬
@@ -127,7 +129,7 @@ const myBanners = [
   useEffect(() => {
     // PopupProvider가 마운트된 후에 testPopup이 생성됨
     if (window.testPopup) {
-      window.testPopup.emit('adViewCount');
+      // window.testPopup.emit('adViewCount');
     } else {
       console.log('❌ testPopup이 아직 생성되지 않음');
     }
@@ -228,7 +230,7 @@ const myBanners = [
 
   useEffect(() => {
     if (window.testPopup) {
-      window.testPopup.emit('adViewCount');
+      // window.testPopup.emit('adViewCount');
     } 
 
     const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
@@ -898,303 +900,371 @@ console.log('categoryId', categoryId)
         </div>
 
         {/* 매장 목록 섹션 */}
-        <section className="content-section">
-          {hotspots.map((spot, index) => {
-            const isOverlayStyle = index >= 3;
+        {/* 매장 목록 섹션 */}
+<section className="content-section">
+  {hotspots.flatMap((spot, index) => {
+    const elements = [];
+    const isOverlayStyle = index >= 3;
 
-            const formatTime = (t) => {
-              if (!t || typeof t !== 'string') return '';
-              const [h, m] = t.split(':');
-              return `${h}:${m}`;
-            };
+    const formatTime = (t) => {
+      if (!t || typeof t !== 'string') return '';
+      const [h, m] = t.split(':');
+      return `${h}:${m}`;
+    };
 
-            const openTime = formatTime(spot.opening_hours?.split('~')[0]);
-            const closeTime = formatTime(spot.opening_hours?.split('~')[1]);
-            const openHoursText = `${openTime} ~ ${closeTime}`;
+    const openTime = formatTime(spot.opening_hours?.split('~')[0]);
+    const closeTime = formatTime(spot.opening_hours?.split('~')[1]);
+    const openHoursText = `${openTime} ~ ${closeTime}`;
 
-            const shouldShowDailyPass = () => {
-              const currentIndex = index + 1;
-              
-              if (currentIndex === 3) {
-                return true;
-              } else if (currentIndex > 3) {
-                return (currentIndex - 3) % 10 === 0;
-              }
-              
-              return false;
-            };
+    const shouldShowDailyPass = () => {
+      const currentIndex = index + 1;
+      if (currentIndex === 3) {
+        return true;
+      } else if (currentIndex > 3) {
+        return (currentIndex - 3) % 10 === 0;
+      }
+      return false;
+    };
 
-            return (
-              <React.Fragment key={spot.id}>
-                <div
-                  className="card"
-                  onClick={() => handleDiscover(spot.id)}
+    // ① 기존 매장 카드 렌더링
+    elements.push(
+      <React.Fragment key={spot.id}>
+        <div
+          className="card"
+          onClick={() => handleDiscover(spot.id)}
+          style={{
+            cursor: 'pointer',
+            display: isOverlayStyle ? 'flex' : 'block',
+            flexDirection: isOverlayStyle ? 'row' : 'initial',
+            alignItems: isOverlayStyle ? 'center' : 'initial',
+            gap: isOverlayStyle ? '1rem' : '0',
+            padding: isOverlayStyle ? '1rem' : '0',
+            position: 'relative',
+          }}
+        >
+          {/* 이미지 영역 */}
+          <div
+            style={{
+              flex: isOverlayStyle ? '0 0 100px' : '1',
+              width: isOverlayStyle ? '100px' : '100%',
+              height: isOverlayStyle ? '100px' : '200px',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              position: 'relative',
+            }}
+          >
+            <img
+              src={spot.image}
+              alt={spot.name}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                borderRadius: '8px',
+              }}
+            />
+
+            <div
+              className="heart-icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFavorite(spot);
+              }}
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                cursor: 'pointer',
+                zIndex: 2,
+              }}
+            >
+              <Heart fill={spot.isFavorite ? '#f43f5e' : 'white'} color="white" />
+            </div>
+
+            {spot.has_promotion === 1 && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: isNewSpot(spot.created_at)
+                    ? (isOverlayStyle ? '45%' : '65%')
+                    : (isOverlayStyle ? '70%' : '80%'),
+                  left: '2%',
+                  width: isOverlayStyle ? '98%' : '40%',
+                  backgroundColor: '#007bff',
+                  color: 'white',
+                  fontSize: isOverlayStyle ? '11px' : '12px',
+                  fontWeight: 'bold',
+                  zIndex: 11,
+                  padding: isOverlayStyle ? '6px 0' : '8px 0',
+                  lineHeight: isOverlayStyle ? 1.2 : 1.4,
+                  boxShadow: isOverlayStyle ? '0 2px 6px rgba(0,0,0,0.3)' : 'none',
+                  borderRadius: isOverlayStyle ? '8px' : '4px',
+                  display: isOverlayStyle ? 'none' : 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: isOverlayStyle ? '6px' : '4px',
+                }}
+              >
+                <Sparkles size={14} color="white" />
+                <span>PROMOTION</span>
+              </div>
+            )}
+
+            {isNewSpot(spot.created_at) && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  width: '100%',
+                  backgroundColor: '#ff4757',
+                  color: 'white',
+                  textAlign: 'center',
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  zIndex: 10,
+                  padding: '6px 0',
+                  lineHeight: 1.2,
+                  boxShadow: '0 -2px 6px rgba(0,0,0,0.3)',
+                  borderBottomLeftRadius: '8px',
+                  borderBottomRightRadius: '8px',
+                }}
+              >
+                {isOverlayStyle ? 'NEW STAFF' : 'NEW STAFF UPDATED!!'}
+              </div>
+            )}
+
+            {!isOverlayStyle && (
+              <div className="rating-badge">
+                <Star
+                  size={16}
                   style={{
-                    cursor: 'pointer',
-                    display: isOverlayStyle ? 'flex' : 'block',
-                    flexDirection: isOverlayStyle ? 'row' : 'initial',
-                    alignItems: isOverlayStyle ? 'center' : 'initial',
-                    gap: isOverlayStyle ? '1rem' : '0',
-                    padding: isOverlayStyle ? '1rem' : '0',
-                    position: 'relative',
+                    marginRight: '4px',
+                    fill: '#ffe800',
+                    animation: 'shake 1s ease-in-out infinite',
+                  }}
+                />
+                {spot.rating}
+              </div>
+            )}
+          </div>
+
+          {/* 텍스트 영역 */}
+          <div style={{ flex: '1', position: 'relative' }}>
+            <div style={{ padding: isOverlayStyle ? '0' : '0.75rem 1rem' }}>
+              <div
+                style={{
+                  fontWeight: 'bold',
+                  fontSize: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                {spot.name}
+              </div>
+              <div>
+                {/* 영업 상태 */}
+                <div
+                  className="is-reservation"
+                  style={{
+                    backgroundColor:
+                      spot.opening_status?.opening_status === 'open'
+                        ? 'rgb(11, 199, 97)'
+                        : 'rgb(107, 107, 107)',
+                    color: '#fff',
+                    padding: '5px 7px',
+                    borderRadius: '3px',
+                    display: 'inline-block',
+                    marginTop: '4px',
+                    fontSize: '12px',
                   }}
                 >
-                  {/* 이미지 영역 */}
-                  <div
-                    style={{
-                      flex: isOverlayStyle ? '0 0 100px' : '1',
-                      width: isOverlayStyle ? '100px' : '100%',
-                      height: isOverlayStyle ? '100px' : '200px',
-                      borderRadius: '8px',
-                      overflow: 'hidden',
-                      position: 'relative',
-                    }}
-                  >
-                    <img
-                      src={spot.image}
-                      alt={spot.name}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        borderRadius: '8px',
-                      }}
-                    />
-
-                    <div
-                      className="heart-icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleFavorite(spot);
-                      }}
-                      style={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        cursor: 'pointer',
-                        zIndex: 2,
-                      }}
-                    >
-                      <Heart fill={spot.isFavorite ? '#f43f5e' : 'white'} color="white" />
-                    </div>
-
-                    {spot.has_promotion === 1 && (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: isNewSpot(spot.created_at) 
-                            ? (isOverlayStyle ? '45%' : '65%')
-                            : (isOverlayStyle ? '70%' : '80%'),
-                          left: '2%',
-                          width: isOverlayStyle ? '98%' : '40%',
-                          backgroundColor: '#007bff',
-                          color: 'white',
-                          fontSize: isOverlayStyle ? '11px' : '12px',
-                          fontWeight: 'bold',
-                          zIndex: 11,
-                          padding: isOverlayStyle ? '6px 0' : '8px 0',
-                          lineHeight: isOverlayStyle ? 1.2 : 1.4,
-                          boxShadow: isOverlayStyle ? '0 2px 6px rgba(0,0,0,0.3)' : 'none',
-                          borderRadius: isOverlayStyle ? '8px' : '4px',
-                          display: isOverlayStyle ? 'none' : 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: isOverlayStyle ? '6px' : '4px'
-                        }}
-                      >
-                        <Sparkles size={14} color="white" />
-                        <span>PROMOTION</span>
-                      </div>
-                    )}
-
-                    {isNewSpot(spot.created_at) && (
-                      <div style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        width: '100%',
-                        backgroundColor: '#ff4757',
-                        color: 'white',
-                        textAlign: 'center',
-                        fontSize: '11px',
-                        fontWeight: 'bold',
-                        zIndex: 10,
-                        padding: '6px 0',
-                        lineHeight: 1.2,
-                        boxShadow: '0 -2px 6px rgba(0,0,0,0.3)',
-                        borderBottomLeftRadius: '8px',
-                        borderBottomRightRadius: '8px'
-                      }}>
-                        {isOverlayStyle ? 'NEW STAFF' : 'NEW STAFF UPDATED!!'}
-                      </div>
-                    )}
-
-                    {!isOverlayStyle && (
-                      <div className="rating-badge">
-                        <Star size={16} style={{ marginRight: '4px', fill: '#ffe800', animation: 'shake 1s ease-in-out infinite'}} />
-                        {spot.rating}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 텍스트 영역 */}
-                  <div style={{ flex: '1', position: 'relative' }}>
-                    <div style={{ padding: isOverlayStyle ? '0' : '0.75rem 1rem' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '16px', display: 'flex', alignItems: 'center' }}>
-                        {spot.name}
-                      </div>
-                      <div>
-                        {/* 영업 상태 */}
-                        <div
-                          className="is-reservation"
-                          style={{
-                            backgroundColor:
-                              spot.opening_status?.opening_status === 'open'
-                                ? 'rgb(11, 199, 97)'   // 영업중 (초록)
-                                : 'rgb(107, 107, 107)', // 영업종료 (회색)
-                            color: '#fff',
-                            padding: '5px 7px',
-                            borderRadius: '3px',
-                            display: 'inline-block',
-                            marginTop: '4px',
-                            fontSize: '12px'
-                          }}
-                        >
-                          {get( spot.opening_status?.msg_code)}
-                        </div>
-
-                        {/* 예약 가능 여부 */}
-                        <div
-                          className="is-reservation"
-                          style={{
-                            backgroundColor:
-                              spot.schedule_status === 'available'
-                              ? 'rgb(11, 199, 97)'
-                              : 'rgb(107, 107, 107)',
-                            color: '#fff',
-                            padding: '5px 7px',
-                            borderRadius: '3px',
-                            display: 'inline-block',
-                            marginTop: '4px',
-                            marginLeft: '2px',
-                            fontSize: '12px'
-                          }}
-                        >
-                          {spot.schedule_status === 'available'
-                            ? get('DiscoverPage1.1.able')
-                            : get('DiscoverPage1.1.disable')
-                          }  
-                        </div>
-                      </div>
-                    
-                      <div style={{ fontSize: '14px', color: '#333', marginTop: '6px' }}>
-                        <MapPin size={14}/> {spot.address}
-                      </div>
-                      <div style={{ fontSize: '14px', color: '#555', marginTop: '4px' }}>
-                        <Clock size={14}/> {openHoursText}  / <Users size={14}/> <strong style={{color:'rgb(11, 199, 97)'}}>{spot.staff_cnt}</strong> {get('title.text.16')}
-                      </div>
-
-                      {isOverlayStyle && (
-                        <div style={{ position: 'relative' }}>
-                          {spot.has_promotion === 1 && (
-                            <div
-                              style={{
-                                position: 'absolute',
-                                top: 2,
-                                left: -125,
-                                zIndex: 11,
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 6,
-                                padding: '3px 8px',
-                                background: 'linear-gradient(180deg, #2d7ff9, #0a66ff)',
-                                color: '#fff',
-                                fontSize: 11,
-                                fontWeight: 700,
-                                lineHeight: 1,
-                                letterSpacing: '0.3px',
-                                borderRadius: 9999,
-                                boxShadow:
-                                  '0 2px 6px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.35)',
-                                whiteSpace: 'nowrap',
-                                pointerEvents: 'none',
-                              }}
-                            >
-                              <Sparkles size={14} color="white" />
-                              <span>PROMOTION</span>
-                            </div>
-                          )}
-                          
-                          <div
-                            style={{
-                              fontSize: '14px',
-                              marginTop: '4px',
-                              color: '#333',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                            }}
-                          >
-                            <Star size={14} style={{ fill: '#ffe800' }} />
-                            {spot.rating}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  {get(spot.opening_status?.msg_code)}
                 </div>
 
-                {/* 일일권 구매 안내 표시 */}
-                {shouldShowDailyPass() && iauData && !iauData.isActiveUser && (
-                  <div className='daily-purchase' style={{
-                    textAlign: 'center',
-                    padding: '1rem',
-                    margin: '1rem 0',
-                    border: '1px solid rgb(14, 133, 189)',
-                    borderRadius: '8px',
-                    color: '#0369a1',
-                    fontWeight: 'bold',
-                    display: 'none'
-                  }}>
-                    {get('reservation.daily_pass.benefits_title')}
-                    <div style={{
-                        marginTop: '0.75rem',
-                        fontSize: '0.75rem',
-                        fontWeight: 'normal',
-                        color: '#334155',
-                        textAlign: 'start',
-                        marginLeft:'2rem'
-                      }}>
-                        <div style={{ marginBottom: '0.25rem' }}>
-                          <Sparkles size={10} style={{ color: '#fbbf24' }}/> {get('reservation.daily_pass.benefit_no_ads')}
-                        </div>
-                        <div style={{ marginBottom: '0.25rem' }}>
-                          <Sparkles size={10} style={{ color: '#fbbf24' }}/> {get('reservation.daily_pass.benefit_unlimited_info')}
-                        </div>
-                        <div style={{ marginBottom: '0.25rem' }}>
-                          <Sparkles size={10} style={{ color: '#fbbf24' }}/> {get('reservation.daily_pass.benefit_unlimited_booking')}
-                        </div>
-                        <div>
-                          <Sparkles size={10} style={{ color: '#fbbf24' }}/> {get('reservation.daily_pass.benefit_escort_reviews')}
-                        </div>
-                      </div>
-                     <SketchBtn 
-                        className="purchase-btn-shine"
-                        onClick={defaultTodayTrial}
-                        style={{
-                          marginTop: '1rem', 
-                          color: 'white', 
-                          backgroundColor: 'rgb(66 179 222)'
-                        }}
-                      ><HatchPattern opacity={0.5} />
-                        {get('reservation.daily_pass.purchase_button')}
-                      </SketchBtn>
+                {/* 예약 가능 여부 */}
+                <div
+                  className="is-reservation"
+                  style={{
+                    backgroundColor:
+                      spot.schedule_status === 'available'
+                        ? 'rgb(11, 199, 97)'
+                        : 'rgb(107, 107, 107)',
+                    color: '#fff',
+                    padding: '5px 7px',
+                    borderRadius: '3px',
+                    display: 'inline-block',
+                    marginTop: '4px',
+                    marginLeft: '2px',
+                    fontSize: '12px',
+                  }}
+                >
+                  {spot.schedule_status === 'available'
+                    ? get('DiscoverPage1.1.able')
+                    : get('DiscoverPage1.1.disable')}
+                </div>
+              </div>
+
+              <div
+                style={{ fontSize: '14px', color: '#333', marginTop: '6px' }}
+              >
+                <MapPin size={14} /> {spot.address}
+              </div>
+              <div
+                style={{ fontSize: '14px', color: '#555', marginTop: '4px' }}
+              >
+                <Clock size={14} /> {openHoursText} / <Users size={14} />{' '}
+                <strong style={{ color: 'rgb(11, 199, 97)' }}>
+                  {spot.staff_cnt}
+                </strong>{' '}
+                {get('title.text.16')}
+              </div>
+
+              {isOverlayStyle && (
+                <div style={{ position: 'relative' }}>
+                  {spot.has_promotion === 1 && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 2,
+                        left: -125,
+                        zIndex: 11,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '3px 8px',
+                        background:
+                          'linear-gradient(180deg, #2d7ff9, #0a66ff)',
+                        color: '#fff',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        lineHeight: 1,
+                        letterSpacing: '0.3px',
+                        borderRadius: 9999,
+                        boxShadow:
+                          '0 2px 6px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.35)',
+                        whiteSpace: 'nowrap',
+                        pointerEvents: 'none',
+                      }}
+                    >
+                      <Sparkles size={14} color="white" />
+                      <span>PROMOTION</span>
+                    </div>
+                  )}
+
+                  <div
+                    style={{
+                      fontSize: '14px',
+                      marginTop: '4px',
+                      color: '#333',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <Star size={14} style={{ fill: '#ffe800' }} />
+                    {spot.rating}
                   </div>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </section>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 일일권 안내 (기존 그대로) */}
+        {shouldShowDailyPass() && iauData && !iauData.isActiveUser && (
+          <div
+            className="daily-purchase"
+            style={{
+              textAlign: 'center',
+              padding: '1rem',
+              margin: '1rem 0',
+              border: '1px solid rgb(14, 133, 189)',
+              borderRadius: '8px',
+              color: '#0369a1',
+              fontWeight: 'bold',
+              display: 'none',
+            }}
+          >
+            {get('reservation.daily_pass.benefits_title')}
+            <SketchBtn
+              onClick={defaultTodayTrial}
+              style={{
+                marginTop: '1rem',
+                color: 'white',
+                backgroundColor: 'rgb(66 179 222)',
+              }}
+            >
+              <HatchPattern opacity={0.5} />
+              {get('reservation.daily_pass.purchase_button')}
+            </SketchBtn>
+          </div>
+        )}
+      </React.Fragment>
+    );
+
+    // ② 추가: 3~5개 사이마다 프로모션 더미 카드 삽입
+    const randomInterval = 3 + Math.floor(Math.random() * 3);
+    if ( 1 === 1 && (index + 1) % randomInterval === 0) {
+
+      
+
+      if(iauData?.isActiveUser == true){
+        return;
+      }
+      
+      console.log('randomInterval', iauData);
+
+      elements.push(
+        <div
+          key={`promo-${index}`}
+          className="promo-card"
+          style={{
+            border: '2px dashed #4f46e5',
+            borderRadius: '12px',
+            padding: '1.2rem',
+            margin: '1.5rem 0',
+            background: 'linear-gradient(180deg, #eef2ff, #ffffff)',
+            textAlign: 'center',
+            color: '#1e3a8a',
+            fontWeight: 'bold',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          }}
+          onClick={() => navigate('/purchase')}
+        >
+          <div style={{ fontSize: '1.1rem', marginBottom: '0.4rem' }}>
+            🎁 {get('daily.pass.benefits.title')}
+          </div>
+          <div style={{ fontSize: '0.9rem', color: '#334155' }}>
+            {get('Popup.Premium.Benefit1')}
+          </div>
+          <div style={{ fontSize: '0.9rem', color: '#334155' }}>
+            {get('Popup.Premium.Benefit2')}
+          </div>
+          <div style={{ fontSize: '0.9rem', color: '#334155' }}>
+            {get('Popup.Premium.Benefit3')}
+          </div>
+          <SketchBtn
+            style={{
+              marginTop: '0.8rem',
+              background: '#4f46e5',
+              color: '#fff',
+              padding: '8px 20px',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: 600,
+            }}
+          >
+            {get('daily.pass.benefits.title')}
+          </SketchBtn>
+        </div>
+      );
+    }
+
+    return elements;
+  })}
+</section>
+
         
         <LoadingScreen 
           variant="cocktail"

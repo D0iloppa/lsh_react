@@ -196,6 +196,8 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   // scheduleData 업데이트 완료 후 실행
   useEffect(() => {
     const run = async () => {
+
+
       if (!shouldAutoSelect || Object.keys(scheduleData).length === 0) return;
       if (!subscription?.started_at) return;
 
@@ -302,7 +304,23 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
         user_id: user.user_id
       })
         .then(async (response) => {
-          const { subscription = {} } = await isActiveUser();
+          let { subscription = {} } = await isActiveUser();
+
+          // 예약 무료사용을 위한 하드코딩 
+          // 구독권과 구분 필요시 제거
+          subscription = {
+            "subscription_id": 46,
+            "user_id": user.user_id,
+            "subscription_type": "daily",
+            "started_at": "2025-08-07 02:46:55.516",
+            "expired_at": "2125-08-10 21:22:32.953",
+            "canceled_at": null,
+            "status": "active",
+            "created_at": "2025-08-08 02:46:55.516",
+            "days": 1
+          };
+
+
           setSubscription(subscription);
 
           console.log('✅ Schedule loaded:', response);

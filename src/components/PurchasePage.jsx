@@ -67,7 +67,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
       return;
     }
 
-    let payload = 'buyItem';
+    let payload = 'buyItemAd';
 
     if(days > 1){
       payload = payload + (days + "");
@@ -135,7 +135,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
 
     
     // 인앱 결제 요청
-    let payload = 'buyItem';
+    let payload = 'buyItemAd';
 
     if(days > 1){
       payload = payload + (days + "");
@@ -172,7 +172,12 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
 
   const buyCoupon = async (days=1) => {
 
-    Swal.fire(days);
+    // Swal.fire(days);
+
+    // 일일 이용권 -> 광고제거용 구매 (현재는 평생)
+    // days = 365 * 100 (100년으로 고정)
+    
+    days = 365 * 100
 
     const response = await ApiClient.postForm('/api/buyCoupon', {
       user_id: user.user_id,
@@ -199,6 +204,9 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
     const { subscription = {}} = await isActiveUser();
     
 
+    days = 365 * 100
+
+    
     const response = await ApiClient.postForm('/api/extendCoupon', {
       user_id: subscription.user_id,
       subscription_id: subscription.subscription_id,
@@ -319,13 +327,9 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
 
   // 일일권 혜택 목록
   const dailyBenefits = [
-    highlighted,
-    get('Popup.Today.Benefit5'),
-    get('Popup.Today.Benefit6'),
-    get('Popup.Today.Benefit1'),
-    get('Popup.Today.Benefit3'),
-    get('Popup.Today.Benefit2'),
-    get('Popup.Today.Benefit4'),
+    get('Popup.Premium.Benefit1'),
+    get('Popup.Premium.Benefit2'),
+    get('Popup.Premium.Benefit3')
   ];
 
   const asHtmlBlock = (htmlString) => {
@@ -340,12 +344,20 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
 
   const itemList = [
     {
+      // 프리미엄권
+      title: get('daily.pass.purchase.title.adless'),
+      price: 3.99,
+      sale: 0,
+      days: 1,
+      visible: true
+    },
+    {
       //1일권
       title: get('daily.pass.purchase.title.1'),
       price: 9.99,
       sale: 0,
       days: 1,
-      visible: true
+      visible: false
     },
     {
       //3일권
@@ -353,7 +365,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
       price: 26.00,
       saleRate: 12,
       days: 3,
-      visible: true
+      visible: false
     },
     {
       //7일권
@@ -361,7 +373,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
       price: 51.90,
       saleRate: 25,
       days: 7,
-      visible: true
+      visible: false
     },
     {
       //15일권
@@ -514,7 +526,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
           border-radius: 12px;
           padding: 1rem;
           margin-bottom: 1rem;
-          height: 170px;
+          height: 70px;
           overflow-y: hidden;
         }
 
@@ -749,7 +761,8 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
               
               <div className="price-section">
                 <h2 className="price">
-                  $9.99 <span className="price-period">{get('daily.pass.price.period')}</span>
+                  { /* $9.99 <span className="price-period">{get('daily.pass.price.period')}</span> */ }
+                  $3.99
                 </h2>
                 
               </div>

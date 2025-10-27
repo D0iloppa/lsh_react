@@ -14,7 +14,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
 
-  const isFreeUse = true;
+  const isFreeUse = false;
 
   const invokeCntRef = useRef(0);
 
@@ -148,7 +148,40 @@ const { currentLang, setLanguage } = useMsg();
         user_id: user.user_id
       });
 
-      if(isFreeUse){
+
+      const compareVersions = (v1, v2) => {
+        const a = v1.split('.').map(Number);
+        const b = v2.split('.').map(Number);
+        for (let i = 0; i < Math.max(a.length, b.length); i++) {
+          if ((a[i] || 0) > (b[i] || 0)) return 1;
+          if ((a[i] || 0) < (b[i] || 0)) return -1;
+        }
+        return 0;
+      };
+
+
+      let app_version = localStorage.getItem('app_version');
+      let app_device = localStorage.getItem('app_device');
+      let optionalFreeOpen = false;
+
+      /*
+      Swal.fire(JSON.stringify({
+        app_version, app_device
+      }))
+      */
+
+
+      if(app_device == 'ios' && compareVersions(app_version, '1.0.10') < 0){
+        optionalFreeOpen = true;
+      }
+
+      
+      if (app_device === 'android' && compareVersions(app_version, '1.0.19') < 0) {
+        optionalFreeOpen = true;
+      }
+
+
+      if(isFreeUse || optionalFreeOpen){
 
         const subscription = {
           "subscription_id": 46,
@@ -195,7 +228,13 @@ const { currentLang, setLanguage } = useMsg();
   
 
 const iauMasking = (iau, text, onPurchaseClick) => {
-  const { isActiveUser = false, subscription = {}, onlyMasking = false } = iau;
+  let { isActiveUser = false, subscription = {}, onlyMasking = false } = iau;
+
+
+  // 마스킹 기능 비활성화
+  isActiveUser = true;
+
+
 
   if (isActiveUser) {
     return text;

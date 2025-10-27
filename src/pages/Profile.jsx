@@ -188,6 +188,21 @@ const deleteReview = async (reviewId) => {
 };
 
 
+const iauDataRender = () => {
+  console.log('iauDataRender', iauData);
+
+  const btn = document.querySelector('.daily-stats');
+
+  if (btn) {
+    if (iauData && iauData.isActiveUser != true) {
+      btn.style.display = 'block';   // 조건 충족 시 표시
+    } else {
+      btn.style.display = 'none';    // 그 외에는 숨김
+    }
+  }
+};
+
+
   return (
     <>
       <style jsx="true">{`
@@ -525,7 +540,24 @@ const deleteReview = async (reviewId) => {
           margin: 0;
           font-style: italic;
         }
-          .daily-stats {margin-top: 1.5rem;     box-shadow: 4px 4px 0px #49dde4; display:none;}
+          .daily-stats {margin-top: 1.5rem;     box-shadow: 4px 4px 0px #49dde4;  display:none;}
+
+          .premium-badge {
+            display: inline-flex;
+            align-items: center;      /* 세로 가운데 정렬 */
+            justify-content: center;  /* 가로 가운데 정렬 */
+            background-color: #ffcc00;
+            color: #000;
+            font-weight: bold;
+            font-size: 0.5rem;
+            padding: 2px 6px;
+            border-radius: 6px;
+            margin-right: 6px;
+            width: 45px;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+          }
+
+            
       `}</style>
 
       <div className="account-container">
@@ -545,7 +577,18 @@ const deleteReview = async (reviewId) => {
                 <img src={userInfo.image_url} alt="profile" />
             </div>
               <div className="profile-details">
-                <h2>{userInfo?.nickname || get('PROFILE_NO_NICKNAME')}</h2>
+                <h2
+                  style={{
+                    "display" : "flex",
+                    "flexDirection" : "column"
+                  }}
+                >
+                  <div>{iauDataRender()}</div>
+                   {iauData?.isActiveUser == true && (
+                      <div className="premium-badge">Ad-Free</div>
+                    )}
+                  {userInfo?.nickname || get('PROFILE_NO_NICKNAME')}
+                </h2>
                 {/*<p>{userInfo?.email || get('PROFILE_NO_EMAIL')}</p>*/}
                 <p>{userInfo?.created_at
                   ? `${get('PROFILE_MEMBER_SINCE')} ${new Date(userInfo.created_at).toLocaleString('en-US', {
@@ -572,7 +615,7 @@ const deleteReview = async (reviewId) => {
 
            <SketchBtn 
             className={`daily-stats ${iauData?.isActiveUser ? 'active' : ''}`}
-            variant={iauData?.isActiveUser ? 'success' : 'event'}
+            variant={iauData?.isActiveUser ? true : false}
             onClick={handleDailyPassClick}
           >
             {iauData?.isActiveUser ? (

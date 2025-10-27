@@ -90,6 +90,15 @@ const AppRoutes = () => {
     const isAndroid = !!window.native;
     const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
 
+    let deviceType = 'nonNative';
+    if (isAndroid) {
+      deviceType = 'android';
+    } else if (isIOS) {
+      deviceType = 'ios';
+    }
+
+    localStorage.setItem('app_device', deviceType);
+
     try {
       const uuid = await getUUIDTmp();
 

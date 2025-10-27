@@ -19,7 +19,7 @@ import { backHandlerRef } from '@hooks/backRef';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ThemeManager from '@utils/ThemeManager';
 
-
+import { getVersionInfo, compareVersions } from '@utils/storage'
 
 
 import './MainApp.css';
@@ -337,7 +337,24 @@ const MainApp = () => {
 
         // 한시적 무료
         // 모든이 광고 필수
-        _isActive = false;
+        //_isActive = false;
+
+
+        let app_version = localStorage.getItem('app_version');
+        let app_device = localStorage.getItem('app_device');
+        
+
+        if(app_device == 'ios' && compareVersions(app_version, '1.0.10') < 0){
+            _isActive = false;
+          }
+    
+          
+          if (app_device === 'android' && compareVersions(app_version, '1.0.19') < 0) {
+            _isActive = false;
+          }
+    
+
+
 
         if(_isActive) {
             console.warn('active user');
@@ -345,13 +362,15 @@ const MainApp = () => {
             return;
         }
 
+        
+
         //////////
         // 화이트리스트
 
 
         console.log('MAINAPP', user.user_id);
 
-        let whiteList = [22, 202];
+        let whiteList = [202];
         
         if (whiteList.includes(user.user_id)) {
             console.warn('whiteList user');

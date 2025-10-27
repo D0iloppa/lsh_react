@@ -1020,6 +1020,7 @@ hideIOSImageViewer();
                             ? 'rgb(11, 199, 97)' 
                             : 'rgb(107, 107, 107)',
                       color: 'white',
+                      display:'none',
                       padding: '2px 6px',
                       borderRadius: '3px',
                       marginLeft: '2px',
@@ -1042,6 +1043,7 @@ hideIOSImageViewer();
                             : 'rgb(107, 107, 107)',
                       color: 'white',
                       padding: '2px 6px',
+                      display:'none',
                       borderRadius: '3px',
                       marginLeft: '2px',
                       fontSize: '10px',
