@@ -368,7 +368,11 @@ const MainApp = () => {
 
         console.log('MAINAPP', user.user_id);
 
-        let whiteList = [202, 22];
+        // 202 : 이광빈 대표
+        // 22 : 권도일
+        // 21 : 대표님
+        
+        let whiteList = [202, 22, 21];
         
         if (whiteList.includes(user.user_id)) {
             console.warn('whiteList user');
