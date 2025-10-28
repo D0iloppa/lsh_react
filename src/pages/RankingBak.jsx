@@ -7,7 +7,6 @@ import { useMsg } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
 import ApiClient from '@utils/ApiClient';
 import SketchHeader from '@components/SketchHeaderMain';
-import SketchBtn from '@components/SketchBtn';
 
 import Swal from 'sweetalert2';
 
@@ -443,20 +442,6 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
     return `${h}:${m}`;
   };
 
-
-  const defaultTodayTrial = () => {
-    let accessFlag = (user?.type == 'user') && user.user_id && user.user_id > 0;
-
-    if (!accessFlag) {
-      openLoginOverlay();
-      onClose();
-    } else {
-      navigate('/purchase');
-      onClose();
-    }
-  };
-
-
   return (
     <>
       <style jsx>{`
@@ -744,282 +729,311 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
 
         {/* 랭킹 리스트 */}
         <section className="content-section">
-  {rankingData.flatMap((item, index) => {
-    const elements = [];
-    const isOverlayStyle = index >= 3;
+          {rankingData.flatMap((item, index) => {
 
-    const openTime = formatTime(item.opening_hours?.split('~')[0]);
-    const closeTime = formatTime(item.opening_hours?.split('~')[1]);
-    const openHoursText = item.opening_hours ? `${openTime} ~ ${closeTime}` : '';
+            const elements = [];
+            const isOverlayStyle = index >= 3;
 
-    const shouldShowDailyPass = () => {
-      const currentIndex = index + 1;
-      if (currentIndex === 3) return true;
-      if (currentIndex > 3) return (currentIndex - 3) % 10 === 0;
-      return false;
-    };
 
-    // ① 랭킹 카드 구성
-    elements.push(
-      <React.Fragment key={`item-${item.id}`}>
-        <div
-          className={`ranking-card ${item.rank <= 3 ? `rank-${item.rank}` : ''}`}
-          onClick={() => handleDiscover(item)}
-        >
-          {/* 순위 표시 */}
-          <div className="rank-number">
-            {getRankIcon(item.rank)}
-          </div>
+            const openTime = formatTime(item.opening_hours?.split('~')[0]);
+            const closeTime = formatTime(item.opening_hours?.split('~')[1]);
+            const openHoursText = item.opening_hours ? `${openTime} ~ ${closeTime}` : '';
 
-          {/* 이미지 영역 */}
-          <div className="image-container" style={{ position: 'relative' }}>
-            <img
-              src={item.image}
-              alt={item.name}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                display: 'block',
-              }}
-            />
 
-            {/* 즐겨찾기 하트 버튼 */}
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleFavorite(item);
-              }}
-              style={{
-                position: 'absolute',
-                right: 3,
-                top: 3,
-              }}
-            >
-              <Heart size={22} fill={item.isFavorite ? '#f43f5e' : 'none'} color="white" />
-            </div>
 
-            {/* UPDATED 오버레이 */}
-            {item.isUpdated && (
+            
+            const shouldShowDailyPass = () => {
+              const currentIndex = index + 1;
+              if (currentIndex === 3) {
+                return true;
+              } else if (currentIndex > 3) {
+                return (currentIndex - 3) % 10 === 0;
+              }
+              return false;
+            };
+
+
+
+
+            return (
               <div
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  padding: '6px 8px',
-                  backgroundColor: 'rgba(255, 0, 0, 0.7)',
-                  color: '#fff',
-                  fontSize: '11px',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                  borderBottomLeftRadius: '4px',
-                  borderBottomRightRadius: '4px',
-                  zIndex: 2,
-                  pointerEvents: 'none',
-                }}
+                key={item.id}
+                className={`ranking-card ${item.rank <= 3 ? `rank-${item.rank}` : ''}`}
+                onClick={() => handleDiscover(item)}
               >
-                UPDATED!!
-              </div>
-            )}
-          </div>
-
-          {/* 콘텐츠 영역 */}
-          <div className="rank-content-area">
-            <div style={{ fontWeight: 'bold', fontSize: '16px' }}>
-              {item.name}
-              {rankingType === 'staff' && item.venue_name && (
-                <span
-                  style={{
-                    fontSize: '11px',
-                    color: '#666',
-                    marginLeft: '8px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  @ {item.venue_name}
-                  <span style={{ display: 'inline-flex', marginLeft: '4px' }}>
-                    {/* 영업 상태 */}
-                    <span
-                      style={{
-                        backgroundColor:
-                          item.opening_status?.opening_status === 'open'
-                            ? 'rgb(11, 199, 97)'
-                            : 'rgb(107, 107, 107)',
-                        color: '#fff',
-                        padding: '3px 5px',
-                        borderRadius: '3px',
-                        fontSize: '9px',
-                        lineHeight: '1',
-                        marginLeft: '4px',
-                      }}
-                    >
-                      {get(item.opening_status?.msg_code)}
-                    </span>
-
-                    {/* 예약 가능 여부 */}
-                    <span
-                      style={{
-                        backgroundColor:
-                          item.schedule_status === 'available'
-                            ? 'rgb(11, 199, 97)'
-                            : 'rgb(107, 107, 107)',
-                        color: '#fff',
-                        padding: '3px 5px',
-                        borderRadius: '3px',
-                        fontSize: '9px',
-                        lineHeight: '1',
-                        marginLeft: '2px',
-                      }}
-                    >
-                      {item.schedule_status === 'available'
-                        ? get('DiscoverPage1.1.able')
-                        : get('DiscoverPage1.1.disable')}
-                    </span>
-                  </span>
-                </span>
-              )}
-            </div>
-
-            {/* venue일 경우 주소 + 통계 표시 */}
-            {rankingType === 'venue' && item.address && (
-              <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                {item.address}
-              </div>
-            )}
-
-            <div className="stats-row">
-              {rankingType === 'venue' && (
-                <div className="stat-item">
-                  <Users size={12} />
-                  {get('title.text.16')} {item.staff_cnt}{get('Reservation.PersonUnit')}
+                {/* 순위 표시 */}
+                <div className="rank-number">
+                  {getRankIcon(item.rank)}
                 </div>
-              )}
-              <div className="stat-item">
-                <Star size={12} style={{ fill: '#ffe800' }} />
-                {item.rating}
-              </div>
-            </div>
 
-            <div className="stats-row-2">
-              <div className="stat-item">
-                <Calendar size={12} />
-                {`${timeFilter == 'week' ? get('WORK_SCHEDULE_WEEK') : timeFilter == 'month' ? get('WORK_SCHEDULE_MONTH') : ''}` + ' ' + get('btn.booking.1') + ' '}
-                {item.reservation_count}{' ' + get('text.cnt.1')}
-              </div>
-              <div className="stat-item">
-                <Eye size={12} />
-                {`${timeFilter == 'week' ? get('WORK_SCHEDULE_WEEK') : timeFilter == 'month' ? get('WORK_SCHEDULE_MONTH') : ''}` + ' ' + get('ranking_veiw_text')}
-                {' ' + item.view_cnt.toLocaleString()}
-              </div>
-            </div>
-          </div>
-        </div>
+                {/* 이미지 영역 */}
+                <div className="image-container"
+                  style={{ position: 'relative' }}
+                >
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      display: 'block', // ✅ 인라인 이미지 하단 공백 방지
+                    }}
+                  />
 
-        {/* 일일 이용권 안내 */}
-        {shouldShowDailyPass() && iauData && !iauData.isActiveUser && (
-          <div
-            className="daily-purchase"
-            style={{
+                    <div
+                     onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(item);
+                    }}
+                      style={{
+                        position: 'absolute',
+                        right:3,
+                        top:3,
+                      }}
+                    >
+                      <Heart size={22} fill={item.isFavorite ? '#f43f5e' : 'none'} color="white" />
+                    </div>
+
+                    
+                {/* 스태프 컨텐츠 업데이트 여부: 하단 띠 오버레이 */}
+                {item.isUpdated && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      right: 0,
+                      bottom: 0,                 // ✅ 하단에 딱 붙이기
+                      padding: '6px 8px',
+                      backgroundColor: 'rgba(255, 0, 0, 0.7)', // 살짝 투명 추천
+                      color: '#fff',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      textAlign: 'center',       // 가운데 정렬
+                      borderBottomLeftRadius: '4px',
+                      borderBottomRightRadius: '4px',
+                      zIndex: 2,
+                      pointerEvents: 'none',     // 오버레이가 클릭 가로막지 않도록 (필요 시)
+                    }}
+                  >
+                    UPDATED!!
+                  </div>
+                )}
+
+
+                  {/* 점수 배지 */}
+                  <div className="score-badge" style={{ display: 'none' }}>
+                    {item.score}점
+                  </div>
+                </div>
+
+                {/* 콘텐츠 영역 */}
+                <div className="rank-content-area">
+                  <div style={{ fontWeight: 'bold', fontSize: '16px' }}>
+                    {item.name}
+                    {rankingType === 'staff' && item.venue_name && (
+                      <span style={{ 
+                          fontSize: '11px',
+                          color: '#666',
+                          marginLeft: '8px',
+                          display: 'inline-flex',       // ✅ 한 줄 정렬
+                          alignItems: 'center',         // 세로 중앙 정렬
+                          flexWrap: 'nowrap',           // 줄바꿈 방지
+                        }}>
+                        @ {item.venue_name}
+                          {/* 상태 아이콘 래퍼 */}
+                          <span style={{ display: 'inline-flex', marginLeft: '4px' }}>
+                            {/* 영업 상태 */}
+                            <span
+                              className="is-reservation"
+                              style={{
+                                backgroundColor:
+                                  item.opening_status?.opening_status === 'open'
+                                    ? 'rgb(11, 199, 97)' // 영업중
+                                    : 'rgb(107, 107, 107)', // 영업종료
+                                color: '#fff',
+                                padding: '3px 5px',
+                                borderRadius: '3px',
+                                fontSize: '9px',
+                                lineHeight: '1',
+                                marginLeft: '4px',
+                              }}
+                            >
+                              {get(item.opening_status?.msg_code)}
+                            </span>
+
+                            {/* 예약 가능 여부 */}
+                            <span
+                              className="is-reservation"
+                              style={{
+                                backgroundColor:
+                                  item.schedule_status === 'available'
+                                    ? 'rgb(11, 199, 97)'
+                                    : 'rgb(107, 107, 107)',
+                                color: '#fff',
+                                padding: '3px 5px',
+                                borderRadius: '3px',
+                                fontSize: '9px',
+                                lineHeight: '1',
+                                marginLeft: '2px',
+                              }}
+                            >
+                              {item.schedule_status === 'available'
+                                ? get('DiscoverPage1.1.able')
+                                : get('DiscoverPage1.1.disable')}
+                            </span>
+                          </span>
+                      </span>
+                    )}
+                  </div>
+
+
+
+                  {/* 영업 상태 (매장만) */}
+                  {rankingType === 'venue' && (
+                    /*
+                    <div
+                      style={{
+                        backgroundColor:
+                          item.schedule_status === 'closed' || item.schedule_status === 'before_open'
+                            ? 'rgb(107, 107, 107)'
+                            : item.is_reservation
+                            ? 'rgb(11, 199, 97)'
+                            : 'rgb(107, 107, 107)',
+                        color: '#fff',
+                        padding: '4px 6px',
+                        borderRadius: '3px',
+                        display: 'inline-block',
+                        marginTop: '4px',
+                        fontSize: '11px'
+                      }}
+                    >
+                      {item.schedule_status === 'closed' || item.schedule_status === 'before_open'
+                        ? get('VENUE_END') || '영업종료'
+                        : (item.is_reservation ? get('DiscoverPage1.1.able') || '예약가능' : get('DiscoverPage1.1.disable') || '예약불가')}
+                    </div>
+                    */
+                    <div style={{ display: 'flex' }}>
+
+                        {/* 영업 상태 */}
+                        <div
+                          className="is-reservation"
+                          style={{
+                            backgroundColor:
+                            item.opening_status?.opening_status === 'open'
+                                ? 'rgb(11, 199, 97)'   // 영업중 (초록)
+                                : 'rgb(107, 107, 107)', // 영업종료 (회색)
+                            color: '#fff',
+                            padding: '3px 5px',
+                            borderRadius: '3px',
+                            display: 'inline-block',
+                            marginTop: '4px',
+                            fontSize: '9px'
+                          }}
+                        >
+                          {get( item.opening_status?.msg_code)}
+                        </div>
+
+                        {/* 예약 가능 여부 */}
+                      <div
+                        className="is-reservation"
+                        style={{
+                          backgroundColor:
+                            item.schedule_status === 'available'
+                              ? 'rgb(11, 199, 97)'  // 예약가능 - 초록색
+                              : 'rgb(107, 107, 107)', // 영업종료 - 회색
+                          color: '#fff',
+                          padding: '3px 5px',
+                          borderRadius: '3px',
+                          display: 'inline-block',
+                          marginTop: '4px',
+                          marginLeft: '2px',
+                          fontSize: '9px'
+                        }}
+                      >
+                        {item.schedule_status === 'available'
+                          ? get('DiscoverPage1.1.able')  // 예약가능
+                          : get('DiscoverPage1.1.disable') // 영업종료
+                        }
+                      </div>
+                    </div>
+
+
+                  )}
+
+                  {/* 주소 (매장만) */}
+                  {rankingType === 'venue' && item.address && (
+                    <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                      {item.address}
+                    </div>
+                  )}
+
+                  {/* 통계 정보 */}
+                  <div className="stats-row">
+
+
+
+
+
+
+                    {rankingType === 'venue' && (
+                      <div className="stat-item">
+                        <Users size={12} />
+                        {get('title.text.16')} {item.staff_cnt}{get('Reservation.PersonUnit')}
+                      </div>
+                    )}
+
+
+
+
+
+                    <div className="stat-item">
+                      <Star size={12} style={{ fill: '#ffe800' }} />
+                      {item.rating}
+                    </div>
+                  </div>
+                  <div className="stats-row-2">
+                    <div className="stat-item">
+                      <Calendar size={12} />
+                      {
+                        `${timeFilter == 'week' ? get('WORK_SCHEDULE_WEEK') : timeFilter == 'month' ? get('WORK_SCHEDULE_MONTH') : ''}` + ' ' + get('btn.booking.1') + ' '
+                      }
+                      {item.reservation_count}
+                      {' ' + get('text.cnt.1')}
+                    </div>
+                    <div className="stat-item">
+                      <Eye size={12} />
+                      {
+                        `${timeFilter == 'week' ? get('WORK_SCHEDULE_WEEK') : timeFilter == 'month' ? get('WORK_SCHEDULE_MONTH') : ''}` + ' ' + get('ranking_veiw_text')
+                      }
+                      {' ' + item.view_cnt.toLocaleString()}
+                    </div>
+
+                    {/* {rankingType === 'venue' && openHoursText && (
+                      <div className="stat-item">
+                        <Clock size={12} />
+                        {openHoursText}
+                      </div>
+                    )} */}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          {rankingData.length === 0 && (
+            <div style={{
               textAlign: 'center',
-              padding: '1rem',
-              margin: '1rem 0',
-              border: '1px solid rgb(14, 133, 189)',
+              padding: '2rem',
+              color: '#666',
+              background: 'white',
               borderRadius: '8px',
-              color: '#0369a1',
-              fontWeight: 'bold',
-              display: 'none',
-            }}
-          >
-            {get('reservation.daily_pass.benefits_title')}
-            <SketchBtn
-              onClick={defaultTodayTrial}
-              style={{
-                marginTop: '1rem',
-                color: 'white',
-                backgroundColor: 'rgb(66 179 222)',
-              }}
-            >
-              <HatchPattern opacity={0.5} />
-              {get('reservation.daily_pass.purchase_button')}
-            </SketchBtn>
-          </div>
-        )}
-      </React.Fragment>
-    );
-
-    // ② 중간 프로모션 카드 삽입 로직
-    const randomInterval = 3 + Math.floor(Math.random() * 3);
-    if ((index + 1) % randomInterval === 0) {
-      if (iauData?.isActiveUser === true) return elements;
-
-      elements.push(
-        <div
-          key={`promo-${index}`}
-          className="promo-card"
-          style={{
-            border: '2px dashed #4f46e5',
-            borderRadius: '12px',
-            padding: '1.2rem',
-            margin: '1.5rem 0',
-            background: 'linear-gradient(180deg, #eef2ff, #ffffff)',
-            textAlign: 'center',
-            color: '#1e3a8a',
-            fontWeight: 'bold',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          }}
-          onClick={() => navigate('/purchase')}
-        >
-          <div style={{ fontSize: '1.1rem', marginBottom: '0.4rem' }}>
-            🎁 {get('daily.pass.benefits.title')}
-          </div>
-          <div style={{ fontSize: '0.9rem', color: '#334155' }}>
-            {get('Popup.Premium.Benefit1')}
-          </div>
-          <div style={{ fontSize: '0.9rem', color: '#334155' }}>
-            {get('Popup.Premium.Benefit2')}
-          </div>
-          <div style={{ fontSize: '0.9rem', color: '#334155' }}>
-            {get('Popup.Premium.Benefit3')}
-          </div>
-          <SketchBtn
-            style={{
-              marginTop: '0.8rem',
-              background: '#4f46e5',
-              color: '#fff',
-              padding: '8px 20px',
-              borderRadius: '6px',
-              fontSize: '14px',
-              fontWeight: 600,
-            }}
-          >
-            {get('daily.pass.benefits.title')}
-          </SketchBtn>
-        </div>
-      );
-    }
-
-    return elements;
-  })}
-
-  {rankingData.length === 0 && (
-    <div
-      style={{
-        textAlign: 'center',
-        padding: '2rem',
-        color: '#666',
-        background: 'white',
-        borderRadius: '8px',
-        border: '1px solid #ddd',
-      }}
-    >
-      {get('title.text.17')}
-    </div>
-  )}
-</section>
-
-
+              border: '1px solid #ddd'
+            }}>
+              {get('title.text.17')}
+            </div>
+          )}
+        </section>
 
         <LoadingScreen
           variant="cocktail"
