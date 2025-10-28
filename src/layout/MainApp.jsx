@@ -352,8 +352,6 @@ const MainApp = () => {
           if (app_device === 'android' && compareVersions(app_version, '1.0.19') < 0) {
             _isActive = false;
           }
-    
-
 
 
         if(_isActive) {
@@ -370,7 +368,7 @@ const MainApp = () => {
 
         console.log('MAINAPP', user.user_id);
 
-        let whiteList = [202];
+        let whiteList = [202, 22];
         
         if (whiteList.includes(user.user_id)) {
             console.warn('whiteList user');
