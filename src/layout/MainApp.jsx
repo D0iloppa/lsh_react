@@ -372,7 +372,7 @@ const MainApp = () => {
         // 22 : 권도일
         // 21 : 대표님
 
-        let whiteList = [202, 22];
+        let whiteList = [202];
         
         if (whiteList.includes(user.user_id)) {
             console.warn('whiteList user');
