@@ -4,6 +4,7 @@ import SketchSearch from '@components/SketchSearch';
 import HatchPattern from '@components/HatchPattern';
 import { useAuth } from '../contexts/AuthContext';
 import { useMsg } from '@contexts/MsgContext';
+import { useNavigate } from 'react-router-dom';
 import LoadingScreen from '@components/LoadingScreen';
 import ApiClient from '@utils/ApiClient';
 import SketchHeader from '@components/SketchHeaderMain';
@@ -21,9 +22,13 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
   const [rankingType, setRankingType] = useState('none'); // 'venue' or 'staff'
   const [timeFilter, setTimeFilter] = useState('week'); // 'day', 'week', 'month'
   const { messages, get, isLoading } = useMsg();
+  const navigate = useNavigate();
   const { user, isActiveUser, iauMasking, filterFavorits, exts: { venueCatMap } } = useAuth();
   const [isApiLoading, setIsApiLoading] = useState(false);
   const [iauData, setIauData] = useState(null);
+
+  const [promoInterval] = useState(() => 4 + Math.floor(Math.random() * 5));
+
 
   const handleBack = () => {
     console.log('Back 클릭');
@@ -950,8 +955,8 @@ const Ranking = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ..
     );
 
     // ② 중간 프로모션 카드 삽입 로직
-    const randomInterval = 3 + Math.floor(Math.random() * 3);
-    if ((index + 1) % randomInterval === 0) {
+    //const randomInterval = 4 + Math.floor(Math.random() * 4);
+    if ((index + 1) % promoInterval === 0 && index !== 0) {
       if (iauData?.isActiveUser === true) return elements;
 
       elements.push(

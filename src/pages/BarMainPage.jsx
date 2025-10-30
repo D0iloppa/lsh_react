@@ -43,6 +43,8 @@ const BarMainPage = ({ pageHistory, navigateToMap, navigateToPage, navigateToSea
   const [isLoadingVenues, setIsLoadingVenues] = useState(true);
   const [sortType, setSortType] = useState('status');
 
+  const [promoInterval] = useState(() => 4 + Math.floor(Math.random() * 5));
+
   // 공지사항 상태
   const [notice, setNotice] = useState(null);
   const [showNotice, setShowNotice] = useState(false);
@@ -1019,8 +1021,8 @@ useEffect(() => {
             );
         
             // ② 추가: 3~5개 사이마다 프로모션 더미 카드 삽입
-            const randomInterval = 3 + Math.floor(Math.random() * 3);
-            if ( 1 === 1 && (index + 1) % randomInterval === 0) {
+           // const randomInterval = 3 + Math.floor(Math.random() * 3);
+            if ( 1 === 1 && (index + 1) % promoInterval === 0) {
         
         
               if(iauData?.isActiveUser == true){

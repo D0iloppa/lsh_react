@@ -45,6 +45,7 @@ const HomePage = ({ pageHistory, navigateToMap, navigateToSearch, navigateToPage
   const { fcmToken } = useFcm();
   const [iauData, setIauData] = useState(null);
   const [staffLanguageFilter, setStaffLanguageFilter] = useState('ALL');
+  const [promoInterval] = useState(() => 4 + Math.floor(Math.random() * 5));
   
 
   // 공지사항 상태
@@ -1204,8 +1205,8 @@ console.log('categoryId', categoryId)
     );
 
     // ② 추가: 3~5개 사이마다 프로모션 더미 카드 삽입
-    const randomInterval = 3 + Math.floor(Math.random() * 3);
-    if ( 1 === 1 && (index + 1) % randomInterval === 0) {
+    //const randomInterval = 3 + Math.floor(Math.random() * 3);
+    if ( 1 === 1 && (index + 1) % promoInterval === 0) {
 
       
 
