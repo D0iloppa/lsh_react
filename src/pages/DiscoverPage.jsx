@@ -1858,10 +1858,62 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                 }
 
                 try {
+                 
+
+                  ///////////////////////////////////////
+
+                  // 국가체크
+                  const cres = await ApiClient.postForm('/api/getUserCountry', {
+                        user_id: user.user_id
+                  });
+                  
+                  let { data = {} } = cres;
+            
+                  const country = data?.country_code || 'UNKNOWN';
+            
+                  const blockCntry = ['KR', 'UNKNOWN'];
+            
+            
+                  if(blockCntry.includes(country)){
+                    stateIOSImageViewer.clear();
+            
+                    stateIOSImageViewer.set({
+                      needToHide : true,
+                      needToShow : false,
+                      timer:4000
+                    });
+            
+            
+                    Swal.fire({
+                      title: get('reserve.country.policy.title'),
+                      text: get('reserve.country.policy.content'),
+                      timer: 4000,
+                      didClose: () => {
+                        // Swal이 닫히는 모든 경우(타이머 종료, X버튼, ESC 등)에 실행됨
+                        stateIOSImageViewer.set({
+                          needToHide: false,
+                          needToShow: true,
+                          timer: 4000,
+                        });
+                      }
+                    });
+
+
+
+                    return;
+                  }
+
+                  ///////////////////////////////////////
+
+
+
+
+
                   const response = await ApiClient.postForm('/api/getSubscriptionInfo', {
                     user_id: user.user_id
                   });
                   let { isActiveUser = false } = response;
+
 
                   // 한시적 무료
                   isActiveUser = true;

@@ -10,6 +10,8 @@ import ApiClient from '@utils/ApiClient';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import LoadingScreen from '@components/LoadingScreen';
 
+import { stateIOSImageViewer } from '@utils/storage';
+
 // 새로운 컴포넌트 import
 import {
   ReservationForm,
@@ -137,7 +139,6 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   useEffect(() => {
 
 
-    /*
     // 접속 국가 체크
     ApiClient.postForm('/api/getUserCountry', {
       user_id: user.user_id
@@ -151,16 +152,36 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
 
 
       if(blockCntry.includes(country)){
+
+
+        stateIOSImageViewer.clear();
+
+        stateIOSImageViewer.set({
+          needToHide : true,
+          needToShow : false,
+          timer:4000
+        });
+
         goBack();
+
         Swal.fire({
           title: get('reserve.country.policy.title'),
           text: get('reserve.country.policy.content'),
-          timer: 4000
+          timer: 4000,
+          didClose: () => {
+            // Swal이 닫히는 모든 경우(타이머 종료, X버튼, ESC 등)에 실행됨
+            stateIOSImageViewer.set({
+              needToHide: false,
+              needToShow: true,
+              timer: 4000,
+            });
+          }
         })
+
+
       }
 
     });
-    */
 
 
 

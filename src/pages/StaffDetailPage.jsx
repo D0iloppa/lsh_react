@@ -13,6 +13,8 @@ import { useMsg } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
 import { usePopup } from '@contexts/PopupContext';
 
+import { stateIOSImageViewer } from '@utils/storage';
+
 
 import { Star, Heart, Clock, Users, Phone, CreditCard, MessageCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -93,6 +95,9 @@ const StaffDetailPage = ({ pageHistory, navigateToPageWithData, goBack, PAGES, s
   const { get, currentLang, messages } = useMsg();
   const { user, isActiveUser, iauMasking } = useAuth();
   const { showPopup, closePopup } = usePopup();
+
+  const showBtnRef = useRef(null);
+  const hideBtnRef = useRef(null);
 
 
   const isAndroid = !!window.native;
@@ -361,19 +366,110 @@ hideIOSImageViewer();
   };
 
   useEffect(() => {
-  return () => {
-    // ✅ 페이지에서 벗어날 때 실행됨
-    if (isIOS) {
-      hideIOSImageViewer();
-    }
-  };
-}, []);
+   
+    /*
+    setTimeout(() => {
+      const iosState = stateIOSImageViewer.get();
+      if (!iosState) return;
+    
+      const { needToHide = false, needToShow = false, timer = 4000 } = iosState;
+    
+      if (!needToHide) return;
+    
+      hideBtnRef.current?.click();
+    
+      const start = Date.now();
+      const checkInterval = setInterval(() => {
+        const diff = Date.now() - start;
+        const state = stateIOSImageViewer.get();
+    
+        if (state?.needToShow) {
+          hideBtnRef.current?.click();
+          showBtnRef.current?.click();
+          stateIOSImageViewer.clear();
+          clearInterval(checkInterval);
+        }
+    
+        // 4초 지나면 타이머 종료
+        if (diff >= timer) {
+          hideBtnRef.current?.click();
+          showBtnRef.current?.click();
+          stateIOSImageViewer.clear();
+          clearInterval(checkInterval);
+        }
+      }, 100); // 0.1초 단위로 감시
+
+    }, 100);
+    */
+
+   
+
+
+
+      
+    return () => {
+      // ✅ 페이지에서 벗어날 때 실행됨
+      if (isIOS) {
+        hideIOSImageViewer();
+      }
+    };
+  }, []);
+
+
 
 
   const handleReserve = async () => {
     try {
 
       hideIOSImageViewer();
+
+
+
+      /////////////////////////////////////////
+
+      // 국가체크
+      const cres = await ApiClient.postForm('/api/getUserCountry', {
+            user_id: user.user_id
+      });
+      
+      let { data = {} } = cres;
+
+      const country = data?.country_code || 'UNKNOWN';
+
+      const blockCntry = ['KR', 'UNKNOWN'];
+
+
+      if(blockCntry.includes(country)){
+
+        Swal.fire({
+          title: get('reserve.country.policy.title'),
+          text: get('reserve.country.policy.content'),
+          timer: 4000,
+          didClose: () => {
+            showIOSImageViewer();
+          }
+        });
+
+        return;
+      }
+
+    /////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       // 구독 상태 확인
       const { isActiveUser: isActive = false } = await isActiveUser();
@@ -552,6 +648,7 @@ hideIOSImageViewer();
     };
 
     fetchStaffData();
+
 
   }, [otherProps.fromReview, otherProps.staff_id]);
 
@@ -1256,7 +1353,33 @@ hideIOSImageViewer();
           </div>
         </div>
 )}
+
+
+          <div>
+            <SketchBtn
+                ref={showBtnRef}
+                style={{ visibility: 'hidden', position: 'absolute' }}
+                onClick={showIOSImageViewer}
+              >
+                show
+              </SketchBtn>
+
+              <SketchBtn
+                ref={hideBtnRef}
+                style={{ visibility: 'hidden', position: 'absolute' }}
+                onClick={hideIOSImageViewer}
+              >
+                hide
+              </SketchBtn>
+          </div>
+
          <div className="booking-form-section fixed-bottom">
+
+       
+
+
+
+
           {/*
   <SketchBtn
     className="sketch-button enter-button"
@@ -1275,6 +1398,7 @@ hideIOSImageViewer();
     {(() => {
       const state = getReserveButtonState(girl, availCnt, vnScheduleStatus, openingStatus, get);
       return (
+        
         <SketchBtn
           className="sketch-button enter-button"
           variant="event"

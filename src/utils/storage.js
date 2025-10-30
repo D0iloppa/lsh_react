@@ -32,3 +32,29 @@ export const getVersionInfo = () => {
     app_version, app_device
   }
 }
+
+
+
+
+  // 페이지 이동이 발생하는 경우, 
+  // 모든 상태값이 초기화 되므로 상태를 관리하기위하여 sessionStorage로 관리함
+export const stateIOSImageViewer = {
+  set: (value) => {
+    sessionStorage.setItem( 'stateIOSImageViewer' , JSON.stringify(value));
+  },
+  get: () => {
+    const item = sessionStorage.getItem('stateIOSImageViewer');
+    return item ? JSON.parse(item) : null;
+  },
+  remove: () => {
+    sessionStorage.removeItem('stateIOSImageViewer');
+  },
+  clear: () => {
+    sessionStorage.setItem( 'stateIOSImageViewer' , JSON.stringify({  
+      needToHide : false,
+      needToShow : true,
+      timer:4000
+    }));
+
+  }
+}
