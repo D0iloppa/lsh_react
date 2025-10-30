@@ -135,6 +135,36 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
 
 
   useEffect(() => {
+
+
+    /*
+    // 접속 국가 체크
+    ApiClient.postForm('/api/getUserCountry', {
+      user_id: user.user_id
+    }).then( (res) =>{
+
+      let { data = {} } = res;
+
+      const country = data?.country_code || 'UNKNOWN';
+
+      const blockCntry = ['KR', 'UNKNOWN'];
+
+
+      if(blockCntry.includes(country)){
+        goBack();
+        Swal.fire({
+          title: get('reserve.country.policy.title'),
+          text: get('reserve.country.policy.content'),
+          timer: 4000
+        })
+      }
+
+    });
+    */
+
+
+
+
     const resetContentAreaScroll = () => {
       // 진짜 스크롤 컨테이너인 .content-area를 리셋
       const contentArea = document.querySelector('.content-area');

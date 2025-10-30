@@ -378,7 +378,7 @@ hideIOSImageViewer();
       // 구독 상태 확인
       const { isActiveUser: isActive = false } = await isActiveUser();
 
-      if (isActive) {
+      if (isActive || true) {
         // Active User: 예약 페이지로 이동
 
         navigateToPageWithData(PAGES.RESERVATION, {

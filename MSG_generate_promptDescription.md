@@ -10,7 +10,16 @@
 ```sql
 INSERT INTO public.lsh_message_code
 (msg_code, "scope", msg_kr, msg_en, msg_vi, msg_ja)
-VALUES(${msg_code}, ${scope}, ${msg_kr}, ${msg_en}, ${msg_vi}, ${msg_ja}, ${msg_cn});
+VALUES(${msg_code}, ${scope}, ${msg_kr}, ${msg_en}, ${msg_vi}, ${msg_ja}, ${msg_cn})
+ON CONFLICT (msg_code)
+DO UPDATE
+SET
+  "scope" = EXCLUDED."scope",
+  msg_kr = EXCLUDED.msg_kr,
+  msg_en = EXCLUDED.msg_en,
+  msg_vi = EXCLUDED.msg_vi,
+  msg_ja = EXCLUDED.msg_ja,
+  msg_cn = EXCLUDED.msg_cn;
 ```
 
 ## 사용법
