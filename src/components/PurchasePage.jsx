@@ -20,6 +20,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
   const { user, isActiveUser } = useAuth();
   const { get } = useMsg();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isBuying, setIsBuying] = useState(false);
   const [mode, setMode] = useState(otherProps?.mode || 'daily');
 
 
@@ -91,11 +92,12 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
       // ✅ iOS WebView
       console.log('📱 iOS 인앱 결제 요청');
 
-    
+      setIsBuying(true);
       window.webkit.messageHandlers.native.postMessage(payload);
       
     } else if (isAndroid) {
       // ✅ Android WebView
+      setIsBuying(true);
       console.log('🤖 Android 인앱 결제 요청');
       window.native.postMessage(payload);
 
@@ -172,6 +174,8 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
 
   const buyCoupon = async (days=1) => {
 
+    setIsBuying(true);
+
     // Swal.fire(days);
 
     // 일일 이용권 -> 광고제거용 구매 (현재는 평생)
@@ -187,6 +191,8 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
     const { success = false } = response;
   
     if (success) {
+      setIsBuying(false);
+
       await Swal.fire({
         title: get('SWAL_DAILY_TICKET_SUCCESS_TITLE'),
         text: get('SWAL_DAILY_TICKET_SUCCESS_TEXT'),
@@ -195,6 +201,9 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
       });
       navigate('/main');
     } else {
+
+      setIsBuying(false);
+
       throw new Error('구매 실패');
     }
   };
@@ -233,6 +242,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
       if (event.data === 'purchaseSuccess') {
         console.log('✅ 결제 성공 메시지 수신');
         setIsProcessing(true);
+        setIsBuying(true);
   
 
         const days = daysRef.current;
@@ -254,6 +264,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
           });
         } finally {
           setIsProcessing(false);
+          setIsBuying(false);
         }
       } else if (event.data === 'purchaseCancelled') {
         await Swal.fire({
@@ -263,6 +274,7 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
           confirmButtonText: get('Common.Confirm')
         });
         setIsProcessing(false);
+        setIsBuying(false);
       } else {
 
         if ( event.data === 'onBackPressed' )  {
@@ -296,6 +308,10 @@ const PurchasePage = ({  goBack, navigateToPageWithData, PAGES, navigateToPage, 
     const handleBack = () => {
     //navigate(-1); // 브라우저 히스토리 뒤로가기
     
+    // 구매중인 경우, 뒤로가기 잠그기
+    if(isBuying) return;
+      
+
 
     if(mode === 'extend'){
       goBack();
