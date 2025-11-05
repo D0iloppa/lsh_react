@@ -140,7 +140,7 @@ const AppRoutes = () => {
     };
 
     // 분기 기준 버전
-    const andVersion = '1.0.19';
+    const andVersion = '1.0.23';
     const iosVersion = '1.0.10';
 
     // ✅ 버전 분기 처리
