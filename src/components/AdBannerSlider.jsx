@@ -133,64 +133,79 @@ const handleTouchEnd = (e) => {
   
   
   useEffect(() => {
-  const videos = sliderRef.current?.querySelectorAll('video');
-  if (!videos) return;
-
-  let lastTime = 0;
-
-  const handleTimeUpdate = (e) => {
-    lastTime = e.target.currentTime;
-  };
-
-  const resumePlayback = (video) => {
-    if (!video) return;
-    try {
-      video.currentTime = lastTime;
-      // ✅ 0.5초 지연 후 재생 시도 (WebView에서 성공률 ↑)
-      setTimeout(() => {
-        video.play().catch(err => {
-          console.warn('자동재생 실패, 사용자 제스처 필요:', err);
-        });
-      }, 500);
-    } catch (e) {
-      console.warn('resumePlayback error', e);
-    }
-  };
-
-  const handleFullscreenChange = () => {
-    const fullscreenElement =
-      document.fullscreenElement ||
-      document.webkitFullscreenElement ||
-      document.msFullscreenElement;
-
-    if (!fullscreenElement) {
+    const videos = sliderRef.current?.querySelectorAll('video');
+    if (!videos) return;
+  
+    let lastTime = 0;
+  
+    const handleTimeUpdate = (e) => {
+      lastTime = e.target.currentTime;
+    };
+  
+    const resumePlayback = (video) => {
+      if (!video) return;
+      try {
+        video.currentTime = lastTime;
+        setTimeout(() => {
+          video.play().catch(err => {
+            console.warn('자동재생 실패, 사용자 제스처 필요:', err);
+          });
+        }, 500);
+      } catch (e) {
+        console.warn('resumePlayback error', e);
+      }
+    };
+  
+    const handleFullscreenChange = () => {
+      const fullscreenElement =
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.msFullscreenElement;
+  
+      if (!fullscreenElement) {
+        resumePlayback(videos[currentIndex]);
+      }
+    };
+  
+    const handleWebkitEndFullscreen = () => {
       resumePlayback(videos[currentIndex]);
-    }
-  };
-
-  const handleWebkitEndFullscreen = () => {
-    resumePlayback(videos[currentIndex]);
-  };
-
-  videos.forEach((video) => {
-    video.addEventListener('timeupdate', handleTimeUpdate);
-    video.addEventListener('webkitendfullscreen', handleWebkitEndFullscreen);
-  });
-
-  document.addEventListener('fullscreenchange', handleFullscreenChange);
-  document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-  document.addEventListener('msfullscreenchange', handleFullscreenChange);
-
-  return () => {
+    };
+  
+    // ✅ 백그라운드 복귀 시 재생 재개
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const currentVideo = videos[currentIndex];
+        if (currentVideo) {
+          setTimeout(() => {
+            currentVideo.play().catch(err => {
+              console.warn('백그라운드 복귀 후 자동재생 실패:', err);
+            });
+          }, 300);
+        }
+      }
+    };
+  
     videos.forEach((video) => {
-      video.removeEventListener('timeupdate', handleTimeUpdate);
-      video.removeEventListener('webkitendfullscreen', handleWebkitEndFullscreen);
+      video.addEventListener('timeupdate', handleTimeUpdate);
+      video.addEventListener('webkitendfullscreen', handleWebkitEndFullscreen);
     });
-    document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.removeEventListener('msfullscreenchange', handleFullscreenChange);
-  };
-}, [currentIndex]);
+  
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange); // ✅ 추가
+  
+    return () => {
+      videos.forEach((video) => {
+        video.removeEventListener('timeupdate', handleTimeUpdate);
+        video.removeEventListener('webkitendfullscreen', handleWebkitEndFullscreen);
+      });
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('msfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange); // ✅ 추가
+    };
+  }, [currentIndex]);
 
 
   
