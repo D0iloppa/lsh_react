@@ -1862,6 +1862,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
 
                   ///////////////////////////////////////
 
+                  /*
                   // 국가체크
                   const cres = await ApiClient.postForm('/api/getUserCountry', {
                         user_id: user.user_id
@@ -1903,6 +1904,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                     return;
                   }
 
+                  */
                   ///////////////////////////////////////
 
 
