@@ -139,6 +139,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   useEffect(() => {
 
 
+    /*
     // 접속 국가 체크
     ApiClient.postForm('/api/getUserCountry', {
       user_id: user.user_id
@@ -182,6 +183,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
       }
 
     });
+    */
 
 
 

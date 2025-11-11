@@ -1861,7 +1861,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
                  
 
 
-                  
+
                   ///////////////////////////////////////
 
                   /*

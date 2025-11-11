@@ -427,6 +427,7 @@ hideIOSImageViewer();
 
       /////////////////////////////////////////
 
+      /*
       // 국가체크
       const cres = await ApiClient.postForm('/api/getUserCountry', {
             user_id: user.user_id
@@ -454,6 +455,7 @@ hideIOSImageViewer();
         return;
       }
 
+      */
     /////////////////////////////////////////
 
 
