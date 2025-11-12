@@ -540,6 +540,7 @@ const BookingHistoryPage = ({
           escort_entrance:item.escort_entrance,
           venue_name: item.venue_name,
           manager_id: item.manager_id,
+          menu_name:item.menu_name,
           canceler:item.canceler
         }));
         
@@ -1187,6 +1188,14 @@ const getEntranceText = (entranceValue) => {
                         <span className="entrance-text">({getEntranceText(booking.escort_entrance)})</span>
                       )}
                     </p>
+                    {
+                      booking.menu_name && (
+                        <p className="booking-note">
+                        <Edit size={12}/> {get('COURSE')}: {booking.menu_name}
+                      </p>
+                      )
+                    }
+                    
                     <p className="booking-note">
                    <Edit size={12}/> {get('Reservation.MemoLabel')}: {booking.note || get('NO_NOTE_MESSAGE')}
                   </p>

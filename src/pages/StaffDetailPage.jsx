@@ -437,7 +437,7 @@ hideIOSImageViewer();
 
       const country = data?.country_code || 'UNKNOWN';
 
-      const blockCntry = ['KR', 'UNKNOWN'];
+      const blockCntry = ['KR'];
 
 
       if(blockCntry.includes(country)){
@@ -454,8 +454,7 @@ hideIOSImageViewer();
         
         return;
       }
-
-      */
+    */
     /////////////////////////////////////////
 
 
