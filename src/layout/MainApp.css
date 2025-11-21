@@ -85,6 +85,12 @@ img {
     font-weight: 600;
     transform: rotate(-1deg) scale(1.1);
   }
+
+  
+  .nav-item.active .nav-icon {
+    stroke: var(--custom-stroke, var(--theme-button-bg)) !important;
+  }
+
   
   .nav-item:not(.active) {
     color: #6b7280;
@@ -102,6 +108,10 @@ img {
     line-height: 1;
   }
   
+.nav-icon[color] {
+    stroke: attr(color) !important;
+}
+
   /* 스케치 스타일 효과 */
   .nav-item:nth-child(1) { transform: rotate(1deg); }
   .nav-item:nth-child(2) { transform: rotate(-0.5deg); }

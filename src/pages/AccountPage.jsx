@@ -188,6 +188,9 @@ const AccountPage = ({
       case 8:
         navigateToPageWithData && navigateToPageWithData(PAGES.CSPAGE2);
         break;
+      case 9:
+        navigateToPageWithData && navigateToPageWithData(PAGES.PROMOTION);
+        break;
     }
   };
 
@@ -236,6 +239,15 @@ const AccountPage = ({
       isRead: true,
       hasArrow: false
     },
+    {
+      id: 9,
+      icon: <Tag size={20} />,
+      name: get('btn.promotion.1'),
+      isRead: true,
+      hasArrow: false
+    },
+
+    /*{ id: PAGES.PROMOTION, icon: Tag, label: get('btn.promotion.1'), needLogin:false }, */
     {
       id: 7,
       icon: <Settings size={20} />,

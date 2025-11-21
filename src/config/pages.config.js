@@ -54,6 +54,8 @@ import Notice from '@pages/Notice';
 import BarMainPage from '@pages/BarMainPage';
 import MassageMainPage from '@pages/MassageMainPage';
 
+import ShortsViewer from '@pages/ShortsViewerPage';
+
 // 페이지 상수
 export const PAGES = {
     HOME: 'HOME',
@@ -88,7 +90,8 @@ export const PAGES = {
     RANKING: 'RANKING',
     NOTICE: 'NOTICE',
     BARLIST: 'BARLIST',
-    MASSAGELIST: 'MASSAGELIST'
+    MASSAGELIST: 'MASSAGELIST',
+    SHORTSVIEWER: 'SHORTSVIEWER'
 };
 
 // 페이지 컴포넌트 매핑
@@ -125,7 +128,8 @@ export const PAGE_COMPONENTS = {
     [PAGES.RANKING]: Ranking,
     [PAGES.NOTICE]: Notice,
     [PAGES.BARLIST]: BarMainPage,
-    [PAGES.MASSAGELIST]: MassageMainPage
+    [PAGES.MASSAGELIST]: MassageMainPage,
+    [PAGES.SHORTSVIEWER]: ShortsViewer
 };
 
 // 기본 페이지

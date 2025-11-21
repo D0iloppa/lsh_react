@@ -1,7 +1,7 @@
 // src/layout/MainApp.jsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@contexts/AuthContext';
-import { Home, Search, Trophy, Calendar, User, Map, ChevronUp, Star,Icon, History, MessagesSquare, Settings, Tag } from 'lucide-react';
+import { Home, Search, Trophy, Calendar, User, Map, ChevronUp, Star,Icon, History, MessagesSquare, Settings, Tag, PlaySquare } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
 import useWebviewBackBlock from '@hooks/useWebviewBackBlock';
 
@@ -511,7 +511,8 @@ const MainApp = () => {
         { id: PAGES.HOME, icon: Home, label: get('Footer1.3'), needLogin:false },
         // { id: PAGES.SEARCH, icon: Search, label: get('btn.searchMap.1.1'), needLogin:false },
         { id: PAGES.RANKING, icon: Trophy, label: get('TITLE_RANK'), needLogin:false },
-        { id: PAGES.PROMOTION, icon: Tag, label: get('btn.promotion.1'), needLogin:false },
+        { id: PAGES.SHORTSVIEWER, icon: PlaySquare, label: get('TITLE_SHORTS'), needLogin:false, color:'#FF0050' },
+        /*{ id: PAGES.PROMOTION, icon: Tag, label: get('btn.promotion.1'), needLogin:false }, */
         { id: PAGES.VIEWREVIEW, icon: Star, label: get('Profile1.1') ,needLogin:false},
         { id: PAGES.ACCOUNT, icon: Settings, label: get('MENU_SETTINGS'), needLogin:true }
     ];
@@ -520,7 +521,7 @@ const MainApp = () => {
         
         <div className="main-app-container">
             {/* 메인 콘텐츠 영역 (스크롤 가능) */}
-            <main className="content-area">
+            <main class="content-area h-screen overflow-hidden">
                 {renderCurrentPage()}
             </main>
 
@@ -529,7 +530,7 @@ const MainApp = () => {
             <nav className="bottom-navigation">
                 <div className="nav-container">
                     {<HatchPattern opacity={0.3} />}
-                    {navigationItems.map(({ id, icon: Icon, label, data = false, needLogin = false }) => (
+                    {navigationItems.map(({ id, icon: Icon, label, data = false, needLogin = false, color }) => (
                        <button
                             key={id}
                             onClick={() => {
@@ -709,7 +710,11 @@ const MainApp = () => {
                             className={`nav-item ${currentPage === id ? 'active' : ''}`}
                         >
                             <div className="nav-icon-container">
-                                <Icon className="nav-icon" />
+                                <Icon 
+                                    className="nav-icon" 
+                                    color={color}
+                                    style={color ? { stroke: color, '--custom-stroke': color } : {}}
+                                />
                                 {/* 채팅 버튼에만 뱃지 추가 */}
                                
                             </div>
