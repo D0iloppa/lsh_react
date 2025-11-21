@@ -84,6 +84,13 @@ const fetchInitialVideos = async (userId) => {
  */
 const fetchNextVideo = async (currentVideoId, userId) => {
   try {
+
+    ApiClient.accessLog({
+      user_id : userId,
+      page : "SHORTSVIEWER"
+    });
+
+
     const { video = null } = await ApiClient.get('/api/shorts/next', {
       params: {
         user_id: userId,
