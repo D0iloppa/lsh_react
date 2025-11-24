@@ -599,7 +599,8 @@ hideIOSImageViewer();
           const basicInfo = apiDataArray.length > 0 ? apiDataArray[0] : {};
 
           const vn_response = await ApiClient.get(`/api/getVenue`, {
-            params: { venue_id: girl.venue_id
+            params: { 
+              venue_id: basicInfo.venue_id
               ,lang:currentLang
             },
           });
