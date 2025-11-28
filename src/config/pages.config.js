@@ -54,6 +54,8 @@ import DiscoverPageVenue from '@pages/DiscoverPageVenue';
 import EditStaff from '@pages/EditStaff';
 
 
+import ShortsManagement from '@pages/ShortsManagement'
+
 //////////////////////////
 // Staff Pages
 import StaffHome from '@pages/StaffHome';
@@ -126,7 +128,8 @@ export const PAGES = {
     NOTIFICATION_CENTER_STAFF: 'NOTIFICATION_CENTER_STAFF',
     DISCOVERVENUE: 'DiscoverPageVenue',
     STAFFCHAT : 'StaffChat',
-    STAFFTUTO1:'STAFFTUTO1'
+    STAFFTUTO1:'STAFFTUTO1',
+    SHORTSMANAGEMENT: 'SHORTSMANAGEMENT'
 };
 
 // 페이지 컴포넌트 매핑
@@ -179,7 +182,8 @@ export const PAGE_COMPONENTS = {
     [PAGES.NOTIFICATION_CENTER_STAFF]: NotificationCenter_staff,
     [PAGES.DISCOVERVENUE]: DiscoverPageVenue,
     [PAGES.STAFFCHAT] : StaffChat,
-    [PAGES.STAFFTUTO1] : StaffTuto1
+    [PAGES.STAFFTUTO1] : StaffTuto1,
+    [PAGES.SHORTSMANAGEMENT] : ShortsManagement
 };
 
 // 기본 페이지

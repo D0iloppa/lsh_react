@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Calendar, Users, ClipboardList, Tag, Star, Headphones, Bell, Settings, MessagesSquare , Briefcase, LogIn, LogOut } from 'lucide-react';
+import { SquarePlay, Calendar, Users, ClipboardList, Tag, Star, Headphones, Bell, Settings, MessagesSquare , Briefcase, LogIn, LogOut } from 'lucide-react';
 
 import SketchHeader from '@components/SketchHeader';
 import SketchMenuBtn from '@components/SketchMenuBtn';
@@ -448,6 +448,17 @@ const getVenueStatusButtonVariant = () => {
         navigateToPage(PAGES.NOTIFICATION_CENTER); 
       }
     }, */
+    { 
+      id: 9, 
+      icon: <SquarePlay size={24} />, 
+      name: '쇼츠', 
+      page: PAGES.SHORTSMANAGEMENT,
+      badgeCount: 0,
+      showBadge: false, // 설정은 뱃지 없음
+      menuEvent: () => { 
+        navigateToPage(PAGES.SHORTSMANAGEMENT); 
+      }
+    },
     { 
       id: 8, 
       icon: <Settings size={24} />, 

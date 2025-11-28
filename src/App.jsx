@@ -219,8 +219,8 @@ const AppContent = () => {
 function App() {
   return (
     <MsgProvider>
-      <OverlayProvider>
-        <FcmProvider>
+      <OverlayProvider portalRoot={document.getElementById("overlay-root")}>
+      <FcmProvider>
           <AuthProvider>
               <PopupProvider>
                 <AppContent />

@@ -119,7 +119,25 @@ const ApiClient = {
   // 3. 메뉴 삭제
   deleteVenueMenu(itemId, venueId) {
     return this.delete(`/api/deleteVenueMenu?item_id=${itemId}&venue_id=${venueId}`);
-  }
+  },
+
+
+
+  uploadShorts(data, config = {}) {
+    const formData = new FormData();
+    formData.append("file", data.file);
+    formData.append("onwer_id", data.owner_id);
+    formData.append("title", data.title);
+
+    return axiosInstance.post('/api/shorts/upload', formData, {
+        ...config,
+        headers: {
+            'Content-Type': 'multipart/form-data',
+            ...config.headers
+        },
+        onUploadProgress: config.onUploadProgress
+    }).then(res => res.data);
+},
 };
 
 export default ApiClient;
