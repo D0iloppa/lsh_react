@@ -384,45 +384,110 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
 
 // 쿠폰 데이터 로딩
 useEffect(() => {
+
   const fetchCoupons = async () => {
-    // 더미 데이터 설정
+
+
+    const response = await ApiClient.get('/api/coupon/todayCouponList');
+
+    const { data:coupons = [] } = response;
+
+    console.log('fetchCoupons', coupons);
+
+    //
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*
     const dummyCoupons = [
       {
         coupon_id: 1,
         coupon_token: 'TEST',
         coupon_type: 'PERCENT',
-        discount_value: 10.00,
+        discount_value: 10.0,
         max_discount_amt: null,
-        owner_id: 19,
+        owner_id: null,
         status: 'ISSUED',
         issued_at: '2025-12-08 09:55:33.479',
         download_at: '2025-12-08 09:55:33.479',
-        expired_at: '2025-12-09 09:55:33.479',
-        used_at: '2025-12-08 21:55:33.479',
-        reservation_id: 76,
+        expired_at: '2025-12-10 09:55:33.479',
+        used_at: null,
+        reservation_id: null,
         venue_id: 43,
         manager_id: 31,
       },
-  
+      {
+        coupon_id: 2,
+        coupon_token: 'TEST2',
+        coupon_type: 'PERCENT',
+        discount_value: 5.0,
+        max_discount_amt: null,
+        owner_id: null,
+        status: 'ISSUED',
+        issued_at: '2025-12-01 09:55:33.479',
+        download_at: '2025-12-01 09:55:33.479',
+        expired_at: '2025-12-31 09:55:33.479',
+        used_at: '2025-12-05 09:55:33.479',
+      },
+       {
+        coupon_id: 3,
+        coupon_token: 'TEST2',
+        coupon_type: 'PERCENT',
+        discount_value: 5.0,
+        max_discount_amt: null,
+        owner_id: 11,
+        status: 'USED',
+        issued_at: '2025-12-01 09:55:33.479',
+        download_at: '2025-12-01 09:55:33.479',
+        expired_at: '2025-12-31 09:55:33.479',
+        used_at: '2025-12-05 09:55:33.479',
+      },
+        {
+        coupon_id: 4,
+        coupon_token: 'TEST2',
+        coupon_type: 'PERCENT',
+        discount_value: 5.0,
+        max_discount_amt: null,
+        owner_id: 19,
+        status: 'DOWNLOADED',
+        issued_at: '2025-12-01 09:55:33.479',
+        download_at: '2025-12-01 09:55:33.479',
+        expired_at: '2025-12-31 09:55:33.479',
+        used_at: '2025-12-05 09:55:33.479',
+      }
     ];
-
-    setCouponData(dummyCoupons);
-    
-    /* 나중에 API 연결 시 사용
-    try {
-      const response = await ApiClient.get('/api/getUserCoupons', {
-        params: { user_id: user.user_id }
-      });
-      setCouponData(response.data || []);
-    } catch (error) {
-      console.error('쿠폰 데이터 로딩 실패:', error);
-      setCouponData([]);
-    }
     */
+
+    const userId = user?.user_id;
+
+
+      const issuedCoupons = coupons.filter(c => c.status === "ISSUED");
+      const remainCount = issuedCoupons.length;
+
+      // remain_count 적용(남은 건 수)
+      const couponsWithRemain = coupons.map(c => ({
+        ...c,
+        remain_count: remainCount
+      }));
+
+      setCouponData(couponsWithRemain);
   };
 
   fetchCoupons();
-}, []); 
+}, [user]);
+
+
 
   const venueViewCntUpsert = () => {
     console.log('viewCountUpsert-deprecated', venueId);
@@ -1412,14 +1477,67 @@ useEffect(() => {
     </button>
   </div>
 )}
-{/* 쿠폰 섹션 추가 */}
-{couponData.length > 0 && (
-  <div style={{ margin: '20px 0' }}>
-    {couponData.map((coupon) => (
-      <CouponAlert key={coupon.token} coupon={coupon} />
-    ))}
-  </div>
-)}
+          {/* 쿠폰 섹션 추가 */}
+          {couponData.length > 0 && (() => {
+
+            // 남아있는 쿠폰 장수
+            const issuedCoupons = couponData.filter(c => c.status === "ISSUED");
+
+            // 나의 쿠폰 다운로드 여부
+            const downloadedSelf = couponData.filter(
+              c => c.owner_id === user?.user_id
+            );
+
+            return  (
+              <div style={{ margin: "20px 0" }}>
+                  <CouponAlert key={null} 
+                    downloaded={ downloadedSelf.length>0 }
+                    remain_cnt={issuedCoupons.length} 
+                    coupon={couponData[0]} />
+              </div>
+            );
+            
+
+
+
+            /*
+            const myCoupons = couponData.filter(
+              c => c.owner_id === user?.user_id
+            );
+
+            let viewData = [];
+
+            if (myCoupons.length > 0) {
+              // 이미 다운로드/사용한 쿠폰이 있다면 그 쿠폰만 보여줌
+              viewData = myCoupons;
+            } else {
+              // 유저가 쿠폰을 전혀 보유하지 않았다면 → ISSUED 쿠폰 중 1개만 보여줌
+              const issuedCoupons = couponData.filter(c => c.status === "ISSUED");
+              if (issuedCoupons.length > 0) {
+                viewData = [issuedCoupons[0]];
+              }
+            }
+
+            // viewData가 비어있으면 아무것도 그리지 않음
+            if (viewData.length === 0) return  (
+              <div style={{ margin: "20px 0" }}>
+                  <CouponAlert key={null} coupon={couponData[0]} />
+              </div>
+            );
+
+            return (
+              <div style={{ margin: "20px 0" }}>
+                {viewData.map(coupon => (
+                  <CouponAlert key={coupon.coupon_id} coupon={coupon} />
+                ))}
+              </div>
+            );
+            */
+
+
+          })()}
+
+
 
           <div className='sum-info text-start'>
             <div className="club-location">{venueInfo?.address || venueInfo?.location || 'in Vietnam'}</div>

@@ -35,7 +35,8 @@ const ReserveSummaryPage = ({
     attendee: '',
     memo: '',
     escort_entrance: '',
-    menuDisp: ''
+    menuDisp: '',
+    coupon_id: null
   });
   const [isConfirming, setIsConfirming] = useState(false);
 
@@ -89,6 +90,8 @@ const ReserveSummaryPage = ({
         useStaffService,
         selectedEntrance,
         escort_entrance,
+        coupon_id,
+        cpTitle,
         menuItem,
       } = reserve_data;
 
@@ -109,7 +112,8 @@ const ReserveSummaryPage = ({
         use_staff: useStaffService ? 1 : 0,
         venueToItem:true, pickupService:pickupService,useStaffService:useStaffService,
         escort_entrance: escort_entrance,
-        item_id:menuItem.item_id
+        item_id:menuItem.item_id,
+        coupon_id: coupon_id || null
       };
 
       setReservationPayload(api_payload);
@@ -129,7 +133,9 @@ const ReserveSummaryPage = ({
         pickupService: pickupService,
         useStaffService: useStaffService,
         escort_entrance: escort_entrance,
-        menuDisp:menuItem.label
+        menuDisp:menuItem.label,
+        coupon_id: coupon_id || null,
+        cpTitle: cpTitle
       };
 
       setDisplayData(display_data);
@@ -561,6 +567,14 @@ const getEntranceText = (entranceValue) => {
                 <span className="summary-label">{messages_summary.menuLabel}:</span>
                 <div className="summary-value">
                   <span>{displayData.menuDisp}</span>
+                </div>
+              </div>
+
+              {/* 쿠폰 */}
+              <div className="summary-item" style={{display:(displayData.coupon_id)? '' : 'none'}}>
+                <span className="summary-label">{get('profile_coupon_item_label')}:</span>
+                <div className="summary-value">
+                  <span>{displayData.cpTitle}</span>
                 </div>
               </div>
 

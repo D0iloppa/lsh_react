@@ -6,12 +6,15 @@ import ImagePlaceholder from '@components/ImagePlaceholder';
 import '@components/SketchComponents.css';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import dayjs from 'dayjs'; // ⬅ dayjs 추가
-import { Edit, MessageCircle} from 'lucide-react';
+import { Edit, MessageCircle, Ticket, QrCode, X } from 'lucide-react';
 
 import ApiClient from '@utils/ApiClient';
 import LoadingScreen from '@components/LoadingScreen';
 import { useAuth } from '@contexts/AuthContext';
 import Swal from 'sweetalert2';
+
+import { overlay } from 'overlay-kit';
+import QrCodeDisplay from '@components/QrCodeDisplay';
 
 import {
   getVietnamDate, 
@@ -445,6 +448,74 @@ const BookingHistoryPage = ({
     }
   };
 
+
+  const handleShowQr = ({token, discount_value}) => {
+    if (!token) return;
+  
+
+
+    overlay.open(({ isOpen, close, unmount }) => {
+
+      let cp_title = `${discount_value}% ${get('profile_coupon_item_label')}`;
+      return (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)', // 어두운 배경
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+          }}
+          onClick={() => { close(); unmount(); }} // 배경 클릭 시 닫기
+        >
+          {/* 내부 컨텐츠 (클릭 이벤트 전파 방지) */}
+          <div style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
+            
+            {/* 닫기 버튼 (우측 상단) */}
+            <button 
+              onClick={() => { close(); unmount(); }}
+              style={{
+                position: 'absolute',
+                top: '-40px',
+                right: '0',
+                background: 'none',
+                border: 'none',
+                color: 'white',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+               <X size={24} />
+            </button>
+  
+            {/* QR 코드 컴포넌트 */}
+            <QrCodeDisplay token={token} get={get} title={cp_title} />
+          </div>
+        </div>
+      );
+    });
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   useEffect(() => {
     const initializeData = async () => {
       window.scrollTo(0, 0);
@@ -541,7 +612,10 @@ const BookingHistoryPage = ({
           venue_name: item.venue_name,
           manager_id: item.manager_id,
           menu_name:item.menu_name,
-          canceler:item.canceler
+          canceler:item.canceler,
+          coupon_id:item.coupon_id,
+          coupon_token:item.coupon_token,
+          discount_value:item.discount_value
         }));
         
         setAllBookings(formattedBookings); // ⬅ 전체 데이터 저장
@@ -1195,6 +1269,41 @@ const getEntranceText = (entranceValue) => {
                       </p>
                       )
                     }
+                  {booking.coupon_id && (
+                    <div className="booking-note-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                      {/* 기존 쿠폰 정보 텍스트 */}
+                      <p className="booking-note" style={{ margin: 0 }}>
+                        <Ticket size={12}/> {get('profile_coupon_item_label')}: {`${booking.discount_value} % Coupon`}
+                      </p>
+
+                      {/* 쿠폰 확인 버튼 (토큰이 있을 때만 표시) */}
+                      {booking.coupon_token && (
+                        <button 
+                          onClick={() => handleShowQr({
+                            token:booking.coupon_token,
+                            discount_value:booking.discount_value
+                          })}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '4px 8px',
+                            fontSize: '0.8rem',
+                            backgroundColor: '#333', // 프로젝트 테마에 맞게 조정
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            // Sketch 스타일을 원하시면 아래와 같이 불규칙한 radius 추가
+                            // borderRadius: '255px 15px 225px 15px / 15px 225px 15px 255px', 
+                          }}
+                        >
+                          <QrCode size={14} />
+                          {get('btn_check_coupon') || 'QR 확인'}
+                        </button>
+                      )}
+                    </div>
+                  )}
                     
                     <p className="booking-note">
                    <Edit size={12}/> {get('Reservation.MemoLabel')}: {booking.note || get('NO_NOTE_MESSAGE')}

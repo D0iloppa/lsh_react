@@ -84,6 +84,77 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
   const [useStaffService, setUseStaffService] = useState(false);
   const [selectedEntrance, setSelectedEntrance] = useState('');
 
+  //쿠폰 상태 추가
+  const [couponList, setCouponList] = useState([]);
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
+  const [selectedCpTitle, setSelectedCpTitle] = useState(null);
+
+//쿠폰 정보 불러오기
+const fetchCouponList = async () => {
+  // try {
+  //   const res = await ApiClient.postForm("/api/getUserCoupons", {
+  //     user_id: user.user_id,
+  //   });
+  // } catch (err) {
+  //   console.error("쿠폰 조회 실패:", err);
+  // }
+
+    try {
+
+      /*
+    const dummyCoupons = [
+      {
+        coupon_id: 1,
+        coupon_token: 'TEST',
+        coupon_type: 'PERCENT',
+        discount_value: 10.0,
+        max_discount_amt: null,
+        owner_id: 19,
+        status: 'DOWNLOADED',
+        issued_at: '2025-12-08 09:55:33.479',
+        download_at: '2025-12-08 09:55:33.479',
+        expired_at: '2025-12-10 09:55:33.479',
+        used_at: null,
+        reservation_id: null,
+        venue_id: 43,
+        manager_id: 31,
+      },
+      {
+        coupon_id: 2,
+        coupon_token: 'TEST2',
+        coupon_type: 'PERCENT',
+        discount_value: 5.0,
+        max_discount_amt: null,
+        owner_id: 11,
+        status: 'DOWNLOADED', // 이미 사용됨
+        issued_at: '2025-12-01 09:55:33.479',
+        download_at: '2025-12-01 09:55:33.479',
+        expired_at: '2025-12-31 09:55:33.479',
+        used_at: '2025-12-05 09:55:33.479',
+      }
+    ];
+
+    */
+
+
+    const res = await ApiClient.get("/api/coupon/getCouponList", {
+        params:{
+          user_id: user.user_id
+        }
+     });
+
+     const { data=[] } = res;
+
+    
+
+    setCouponList(data);
+
+  } catch (err) {
+    console.error("쿠폰 조회 실패:", err);
+  }
+};
+
+
 
   // 체크박스 상태들
   const [agreements, setAgreements] = useState({
@@ -233,6 +304,7 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
     
     if(venue_id){
       fetchMenuList();
+      fetchCouponList(); //쿠폰 불러오기
     }
 
     if (target && id) {
@@ -1001,6 +1073,8 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
       selectedEntrance: selectedEntrance,
       escort_entrance: selectedEntrance,
       menuItem:menuItem,
+      coupon_id: selectedCoupon || null,
+      cpTitle: selectedCpTitle || null,
       memo: memo
     };
 
@@ -1327,6 +1401,15 @@ const ReservationPage = ({ navigateToPageWithData, goBack, PAGES, ...otherProps 
           timeSlots={timeSlots}
           selectedTimes={reservationData} // Duration 데이터 전달
           onTimeSelect={handleTimeSelect} // Duration 핸들러 사용
+          couponList={couponList}               // NEW
+          selectedCoupon={selectedCoupon}       // NEW
+          onCouponSelect={ (sel) => {
+            console.log('onCo', sel);
+
+
+            setSelectedCpTitle(sel.cpTitle);
+            setSelectedCoupon(sel.value);
+          }}    // NEW
           memo={memo} // 메모 값 전달
           onMemoChange={setMemo} // 메모 변경 핸들러 전달
           onBookerChange={setBookerName} // booker 변경 핸들러

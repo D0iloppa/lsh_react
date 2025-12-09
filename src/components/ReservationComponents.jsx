@@ -1215,7 +1215,7 @@ export const MemoSelector = ({ value, onChange, messages = {} }) => {
       }}
     >
       <div className="step-label">
-        <span className="step-number">4</span>
+        <span className="step-number">5</span>
         {messages.memoLabel || 'Memo'}
       </div>
       <textarea
@@ -1603,6 +1603,9 @@ export const ReservationForm = ({
   selectedTime, // 기존 API 유지
   selectedTimes, // 새로운 API 추가
   onTimeSelect,
+  couponList,
+  selectedCoupon,
+  onCouponSelect,
   memo, // 메모 값 추가
   onMemoChange, // 메모 변경 핸들러 추가
   onBookerChange,
@@ -1782,6 +1785,46 @@ export const ReservationForm = ({
           menuLabel: get('MENU') || '코스',
         }}
       />
+
+      {/* Coupon Selector */}
+        <div className="form-step" style={{ marginTop: '20px' }}>
+          <div className="step-label">
+            <span className="step-number">4</span>
+            {get('profile_coupon_item_label')}
+          </div>
+
+          <select
+            className="attendee-select"
+            value={selectedCoupon ?? ""}
+            onChange={(e) => {
+              
+              const selected = e.target.selectedOptions[0];
+              const cpTitle = selected.getAttribute("cp_title");
+
+              onCouponSelect({
+                value:e.target.value, 
+                cpTitle
+              });
+
+            }}
+          >
+            {/* 1) 기본 옵션: 쿠폰 적용 안함 */}
+            <option value="">{get('coupon.none')}</option>
+
+            {/* 2) DOWNLOADED(다운로드 완료) 쿠폰만 표시 */}
+            {couponList
+              .filter((c) => c.status === "DOWNLOADED")
+              .map((coupon) => {
+                return (
+                  <option key={coupon.coupon_id} value={coupon.coupon_id} cp_title={`${coupon.discount_value}% ${get('profile_coupon_item_label')}`}>
+                      {coupon.discount_value}% {get('profile_coupon_item_label')}
+                  </option>
+                );
+              })}
+          </select>
+        </div>
+
+
 
       <MemoSelector
         value={memo}
