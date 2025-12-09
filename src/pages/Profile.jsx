@@ -26,6 +26,7 @@ const Profile = ({
   const { user, isActiveUser, isLoggedIn } = useAuth();
   const [userInfo, setUserInfo] = useState({});
   const [userReviews, setUserReviews] = useState([]);
+  const [userCoupons, setuserCoupons] = useState([]);
   const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const [iauData, setIauData] = useState(null);
@@ -67,8 +68,22 @@ const Profile = ({
       }
     };
 
+    const fetchUserCoupons = async () => {
+      try {
+            const response = await axios.get(`${API_HOST}/api/coupon/getCouponList`, {
+            params: { user_id: user?.user_id}
+          });
+
+          console.log('쿠폰 목록', response.data.data);
+          setuserCoupons(response.data.data || []);
+        } catch (error) {
+          console.error('쿠폰 목록 불러오기 실패:', error);
+        }
+      };
+
     fetchUserInfo();
     fetchUserReviews();
+    fetchUserCoupons();
   }, [user, messages, currentLang]);
 
   // 1) 스크롤 복구: userReviews가 렌더링된 뒤에 적용
@@ -186,6 +201,47 @@ const deleteReview = async (reviewId) => {
     });
   }
 };
+
+function formatDate(dt) {
+  if (!dt) return '-';
+
+  const y = dt.year.toString().slice(2);        // yy
+  const m = String(dt.monthValue).padStart(2, '0');
+  const d = String(dt.dayOfMonth).padStart(2, '0');
+  const hh = String(dt.hour).padStart(2, '0');
+  const mm = String(dt.minute).padStart(2, '0');
+  const ss = String(dt.second).padStart(2, '0');
+
+  return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+}
+
+function getRemainingTime(expiredAt) {
+  if (!expiredAt) return '-';
+
+  const exp = new Date(
+    expiredAt.year,
+    expiredAt.monthValue - 1,
+    expiredAt.dayOfMonth,
+    expiredAt.hour,
+    expiredAt.minute,
+    expiredAt.second
+  );
+
+  const now = new Date();
+  let diff = exp - now;
+
+  if (diff <= 0) return get('profile_coupon_expired') || '만료됨';
+
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  diff -= hours * 1000 * 60 * 60;
+
+  const minutes = Math.floor(diff / (1000 * 60));
+
+  const left = get('profile_coupon_time_left'); // ← 다국어 처리된 '남음'
+
+  return `${hours}시간 ${minutes}분 ${left}`;
+}
+
 
 
 const iauDataRender = () => {
@@ -557,6 +613,38 @@ const iauDataRender = () => {
             box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
           }
 
+
+          .coupon-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+}
+
+.coupon-left {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.coupon-right {
+  text-align: right;
+  font-size: 13px;
+  color: #777;
+}
+
+.coupon-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.remaining-time .value {
+  color: #ff3366;          /* 포인트 컬러 (분홍/빨강 계열) */
+  font-weight: 700;        /* 두껍게 */
+  font-size: 14px;         /* 약간 크게 */
+  display: inline-block;
+  margin-top: 2px;
+}
+
             
       `}</style>
 
@@ -630,6 +718,50 @@ const iauDataRender = () => {
               </>
             )}
           </SketchBtn>
+          </SketchDiv>
+
+          {/*쿠폰 섹션*/}
+          <SketchDiv className="reviews-section">
+            <div className="section-header">
+              <h3 className="section-title">{get('profile_coupon_title')}</h3>
+            </div>
+
+            <div className="reviews-list">
+        {userCoupons.length > 0 ? (
+          userCoupons.map((coupon) => (
+            <div key={coupon.coupon_id} className="review-item coupon-item">
+
+                    {/* LEFT: Title */}
+                    <div className="coupon-left">
+                      {`${coupon.discount_value}% ${get('profile_coupon_item_label')}`}
+                    </div>
+
+                    {/* RIGHT: Download date & Expire date */}
+                    <div className="coupon-right">
+
+
+
+                    <div className="coupon-row">
+                      <span className="label">{get('profile_coupon_expire_date')}</span>
+                      <span className="value">{formatDate(coupon.expired_at)}</span>
+                    </div>
+
+                    <div className="coupon-row remaining-time">
+                      <span className="value">{getRemainingTime(coupon.expired_at)}</span>
+                    </div>
+
+
+                    </div>
+
+                  </div>
+                ))
+              ) : (
+                <div className="empty-reviews">
+                  <p className="empty-text">{get('profile_coupon_empty')}</p>
+                </div>
+              )}
+            </div>
+
           </SketchDiv>
 
           <SketchDiv className="reviews-section">

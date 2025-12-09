@@ -18,6 +18,7 @@ import Swal from 'sweetalert2';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
 import { getOpeningStatus } from '@utils/VietnamTime'
+import CouponAlert from '@components/CouponAlert.jsx';
 
 
 const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallback, ...otherProps }) => {
@@ -32,6 +33,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   const [topGirls, setTopGirls] = useState([]);
   const [showFooter, setShowFooter] = useState(true);
   const [reviewCount, setReviewCount] = useState(0);
+  const [couponData, setCouponData] = useState([]);
 
   /*
     const handleDetail = (girl) => {
@@ -237,6 +239,7 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   // }, []); // 의존성 배열 비움
 
 
+  
   useEffect(() => {
     const resetContentAreaScroll = () => {
       // 진짜 스크롤 컨테이너인 .content-area를 리셋
@@ -379,6 +382,47 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
     //fetchTopGirls();
   }, [venueId, messages, currentLang]);
 
+// 쿠폰 데이터 로딩
+useEffect(() => {
+  const fetchCoupons = async () => {
+    // 더미 데이터 설정
+    const dummyCoupons = [
+      {
+        coupon_id: 1,
+        coupon_token: 'TEST',
+        coupon_type: 'PERCENT',
+        discount_value: 10.00,
+        max_discount_amt: null,
+        owner_id: 19,
+        status: 'ISSUED',
+        issued_at: '2025-12-08 09:55:33.479',
+        download_at: '2025-12-08 09:55:33.479',
+        expired_at: '2025-12-09 09:55:33.479',
+        used_at: '2025-12-08 21:55:33.479',
+        reservation_id: 76,
+        venue_id: 43,
+        manager_id: 31,
+      },
+  
+    ];
+
+    setCouponData(dummyCoupons);
+    
+    /* 나중에 API 연결 시 사용
+    try {
+      const response = await ApiClient.get('/api/getUserCoupons', {
+        params: { user_id: user.user_id }
+      });
+      setCouponData(response.data || []);
+    } catch (error) {
+      console.error('쿠폰 데이터 로딩 실패:', error);
+      setCouponData([]);
+    }
+    */
+  };
+
+  fetchCoupons();
+}, []); 
 
   const venueViewCntUpsert = () => {
     console.log('viewCountUpsert-deprecated', venueId);
@@ -1366,6 +1410,14 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
     >
       {get('MENU_PROMOTIONS')}
     </button>
+  </div>
+)}
+{/* 쿠폰 섹션 추가 */}
+{couponData.length > 0 && (
+  <div style={{ margin: '20px 0' }}>
+    {couponData.map((coupon) => (
+      <CouponAlert key={coupon.token} coupon={coupon} />
+    ))}
   </div>
 )}
 
