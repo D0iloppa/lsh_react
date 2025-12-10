@@ -246,8 +246,8 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
       // 시간은 오후 9시(21:00)로 고정
       //target.setHours(21, 0, 0, 0);
 
-      // UTC 14시 = 베트남 21시
-      target.setUTCHours(14, 0, 0, 0);
+      // UTC 14시 = 베트남 21시 // 11시 = 베트남 18시
+      target.setUTCHours(11, 0, 0, 0);
 
       
       return target;

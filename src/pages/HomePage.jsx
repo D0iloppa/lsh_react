@@ -464,7 +464,7 @@ useEffect(() => {
         //target.setHours(21, 0, 0, 0);
   
         // UTC 14시 = 베트남 21시
-        target.setUTCHours(14, 0, 0, 0);
+        target.setUTCHours(11, 0, 0, 0);
   
         
         return target;
