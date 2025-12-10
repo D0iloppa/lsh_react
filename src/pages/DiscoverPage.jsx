@@ -1509,7 +1509,7 @@ useEffect(() => {
 
 
             return  (
-              <div style={{ margin: "20px 0" }}>
+              <div style={{ margin: "20px 0", display: venueInfo?.cat_id == 1 ? '' : 'none'}}>
                   <CouponAlert key={null} 
                     nextOpenDate = {nextOpenDateValue}
                     downloaded={ downloadedSelf.length>0 }
