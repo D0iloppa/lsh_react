@@ -52,59 +52,59 @@ const ViewReviewPage = ({
   const [originalReviews, setOriginalReviews] = useState([]); // 원본 데이터 보관
   const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
   const API_HOST = import.meta.env.VITE_API_HOST;
-  const { user, isActiveUser, iauMasking, fetchFavorits, exts: { venueCatMap }  } = useAuth();
+  const { user, isActiveUser, iauMasking, fetchFavorits, exts: { venueCatMap } } = useAuth();
   const [iauData, setIauData] = useState(null);
-  
+
 
   const [translationMap, setTranslationMap] = useState({});
   const [showTranslateIcon, setShowTranslateIcon] = useState({});
-  
+
   const longPressTimer = useRef(null);
 
-  
+
   // 번역 아이콘 표시 (꾹 눌렀을 때)
-const handleLongPress = useCallback((reviewId) => {
-  setShowTranslateIcon(prev => ({
-    ...prev,
-    [reviewId]: true,
-  }));
-}, []);
-
-// 번역 실행
-const handleTranslate = useCallback(async (reviewId, text) => {
-  if (translationMap[reviewId]) return; // 이미 번역됨
-
-  try {
-
-    console.log("1234", user);
-
-    let language=currentLang;
-    
-    if ( language == 'kr') language='ko';
-    if ( language == 'cn') language='zh';
-    
-    // const apiKey = 'AIzaSyAnvkb7_-zX-aI8WVw6zLMRn63yQQrss9c';
-    const apiKey = 'AIzaSyDCt8lNfZ8_91dDbsVHhUvYTPXpEIEM-yM';
-    const response = await axios.post(
-      `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`,
-      {
-        q: text,
-        target: language || 'vi',  // 사용자 언어 기준 (없으면 베트남어)
-        format: 'text',
-      }
-    );
-
-    const translated = response.data.data.translations[0].translatedText;
-
-    setTranslationMap(prev => ({
+  const handleLongPress = useCallback((reviewId) => {
+    setShowTranslateIcon(prev => ({
       ...prev,
-      [reviewId]: translated,
+      [reviewId]: true,
     }));
-  } catch (error) {
-    console.error('❌ 번역 실패:', error);
-    Swal.fire('번역 오류', 'Google Translate API 호출에 실패했습니다.', 'error');
-  }
-}, [translationMap, user.language]);
+  }, []);
+
+  // 번역 실행
+  const handleTranslate = useCallback(async (reviewId, text) => {
+    if (translationMap[reviewId]) return; // 이미 번역됨
+
+    try {
+
+      console.log("1234", user);
+
+      let language = currentLang;
+
+      if (language == 'kr') language = 'ko';
+      if (language == 'cn') language = 'zh';
+
+      // const apiKey = 'AIzaSyAnvkb7_-zX-aI8WVw6zLMRn63yQQrss9c';
+      const apiKey = 'AIzaSyDCt8lNfZ8_91dDbsVHhUvYTPXpEIEM-yM';
+      const response = await axios.post(
+        `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`,
+        {
+          q: text,
+          target: language || 'vi',  // 사용자 언어 기준 (없으면 베트남어)
+          format: 'text',
+        }
+      );
+
+      const translated = response.data.data.translations[0].translatedText;
+
+      setTranslationMap(prev => ({
+        ...prev,
+        [reviewId]: translated,
+      }));
+    } catch (error) {
+      console.error('❌ 번역 실패:', error);
+      Swal.fire('번역 오류', 'Google Translate API 호출에 실패했습니다.', 'error');
+    }
+  }, [translationMap, user.language]);
 
 
   useEffect(() => {
@@ -122,43 +122,43 @@ const handleTranslate = useCallback(async (reviewId, text) => {
     navigateToPageWithData && navigateToPageWithData(PAGES.RESERVATION, {
       target: review.target_type,
       id: (review.target_type == 'venue') ? review.venue_id : review.target_id,
-      staff: (review.target_type == 'staff') ? { name : review.targetName} : {}
+      staff: (review.target_type == 'staff') ? { name: review.targetName } : {}
     });
   };
 
   const handleViewDetail = (review) => {
 
-      const container = document.querySelector('.content-area');
+    const container = document.querySelector('.content-area');
 
     if (container) {
       localStorage.setItem("viewReviewPageState", JSON.stringify({
-      scrollY: container.scrollTop,
-      sortOrder1,
-      sortOrder,
-      targetTypeFilter
-    }));
+        scrollY: container.scrollTop,
+        sortOrder1,
+        sortOrder,
+        targetTypeFilter
+      }));
     }
 
-    let savedState =localStorage.getItem("viewReviewPageState");
-    console.log("set scrollY",savedState);
+    let savedState = localStorage.getItem("viewReviewPageState");
+    console.log("set scrollY", savedState);
 
-    
-  console.log('View detail clicked:', review);
-  
-  if (review.target_type === 'venue') {
-    // venue인 경우 VIEWREVIEW 페이지로 이동
-    navigateToPageWithData && navigateToPageWithData(PAGES.DISCOVER, {
-      venueId: review.venue_id
-    });
-  } else if (review.target_type === 'staff') {
-    // staff인 경우 STAFFDETAIL 페이지로 이동
-    navigateToPageWithData && navigateToPageWithData(PAGES.STAFFDETAIL, {
-      staff_id: review.target_id,
-      image_url: review.image_url,
-      fromReview: true
-    });
-  }
-};
+
+    console.log('View detail clicked:', review);
+
+    if (review.target_type === 'venue') {
+      // venue인 경우 VIEWREVIEW 페이지로 이동
+      navigateToPageWithData && navigateToPageWithData(PAGES.DISCOVER, {
+        venueId: review.venue_id
+      });
+    } else if (review.target_type === 'staff') {
+      // staff인 경우 STAFFDETAIL 페이지로 이동
+      navigateToPageWithData && navigateToPageWithData(PAGES.STAFFDETAIL, {
+        staff_id: review.target_id,
+        image_url: review.image_url,
+        fromReview: true
+      });
+    }
+  };
 
   const applyFiltersAndSort = () => {
 
@@ -245,18 +245,18 @@ const handleTranslate = useCallback(async (reviewId, text) => {
       try {
         setLoading(true);
 
-      // venueCatMap 데이터 가져오기
-      const vcm = await venueCatMap();
+        // venueCatMap 데이터 가져오기
+        const vcm = await venueCatMap();
 
-      // localStorage에서 현재 테마/카테고리 읽기
-      const themeSource = localStorage.getItem('themeSource'); // 'BARLIST' or 'MASSAGELIST'
+        // localStorage에서 현재 테마/카테고리 읽기
+        const themeSource = localStorage.getItem('themeSource'); // 'BARLIST' or 'MASSAGELIST'
 
 
         const fvrs = (await fetchFavorits()).map(item => ({
           target_type: item.target_type,
           target_id: item.target_id
         }));
-        
+
 
         const vnFvrs = fvrs.filter(item => item.target_type === 'venue').map(item => item.target_id);
         const stfFvrs = fvrs.filter(item => item.target_type === 'staff').map(item => item.target_id);
@@ -269,28 +269,28 @@ const handleTranslate = useCallback(async (reviewId, text) => {
         const response = await ApiClient.postForm('/api/getVenueReviewList', {
           venue_id: venueId || -1
         });
-        
-        
+
+
         const iau = await isActiveUser();
         console.log('IAU:', iau);
-        
+
         setIauData(iau);
 
         let reviewsData = response.data || [];
-        
-        reviewsData = reviewsData.map(item =>  {
 
-           const catInfo = vcm.find(v => v.venue_id === item.venue_id);
+        reviewsData = reviewsData.map(item => {
+
+          const catInfo = vcm.find(v => v.venue_id === item.venue_id);
 
           return {
-          ...item,
-          isFavorite: item.target_type == 'venue' ? 
-                    vnFvrsSet.has(item.venue_id) : 
-                    staffFvrsSet.has(item.target_id),
-          cat_nm: catInfo ? catInfo.cat_nm : null, // 없으면 null
-          cat_id: catInfo ? catInfo.cat_id : null, // 없으면 null
-         };
-    });
+            ...item,
+            isFavorite: item.target_type == 'venue' ?
+              vnFvrsSet.has(item.venue_id) :
+              staffFvrsSet.has(item.target_id),
+            cat_nm: catInfo ? catInfo.cat_nm : null, // 없으면 null
+            cat_id: catInfo ? catInfo.cat_id : null, // 없으면 null
+          };
+        });
 
 
 
@@ -344,20 +344,20 @@ const handleTranslate = useCallback(async (reviewId, text) => {
     loadVenueReviews();
   }, [venueId]);
 
-   useEffect(() => {
+  useEffect(() => {
     if (!loading && reviews.length > 0) {
       const savedState = localStorage.getItem("viewReviewPageState");
 
       if (savedState) {
         const { scrollY, sortOrder1, sortOrder, targetTypeFilter } = JSON.parse(savedState);
-        
-        if (sortOrder1) setSortOrder1(sortOrder1); 
+
+        if (sortOrder1) setSortOrder1(sortOrder1);
         if (sortOrder) setSortOrder(sortOrder);
         if (targetTypeFilter) setTargetTypeFilter(targetTypeFilter);
 
-        
+
         const container = document.querySelector('.content-area');
-        
+
         if (container) {
           container.scrollTop = scrollY;
         }
@@ -366,76 +366,76 @@ const handleTranslate = useCallback(async (reviewId, text) => {
   }, [loading, reviews]);
 
   // utils.js 같은 곳에 빼도 되고, 컴포넌트 안에 선언해도 됨
-const renderUserName = (userName) => {
-  if (userName === '레탄톤 보안관') {
-    return (
-      <span
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '4px',
-          fontWeight: 300,
-          color: '#fff',
-          backgroundColor: '#374151',  // Tailwind gray-700
-          padding: '4px 10px',
-          borderRadius: '20px',
-          fontSize: '10px',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-        }}
+  const renderUserName = (userName) => {
+    if (userName === '레탄톤 보안관') {
+      return (
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+            fontWeight: 300,
+            color: '#fff',
+            backgroundColor: '#374151',  // Tailwind gray-700
+            padding: '4px 10px',
+            borderRadius: '20px',
+            fontSize: '10px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+          }}
+        >
+          🎖️ 레탄톤 보안관 꿀팁
+        </span>
+      );
+    }
+
+    const GoogleG = ({ size = 12 }) => (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 256 262"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+        focusable="false"
+        style={{ display: 'block' }}
       >
-        🎖️ 레탄톤 보안관 꿀팁
-      </span>
+        <path fill="#4285F4" d="M255.88 133.51c0-10.6-.86-18.34-2.73-26.37H130.5v47.9h71.88c-1.45 12.3-9.3 30.78-26.76 43.23l-.24 1.62 38.86 30.12 2.69.27c24.72-22.8 38.95-56.45 38.95-97.77" />
+        <path fill="#34A853" d="M130.5 261.1c35.27 0 64.94-11.64 86.59-31.74l-41.27-32.03c-11.04 7.76-25.83 13.18-45.32 13.18-34.62 0-64-22.73-74.45-54.29l-1.54.13-40.35 31.23-.53 1.47C34.13 231.8 78.54 261.1 130.5 261.1" />
+        <path fill="#FBBC05" d="M56.05 155.22c-2.78-8.03-4.38-16.64-4.38-25.44 0-8.8 1.6-17.41 4.25-25.44l-.07-1.7-40.78-31.65-1.33.63C4.98 88.31 0 109.15 0 129.78c0 20.63 4.98 41.47 13.74 58.16l42.31-32.72" />
+        <path fill="#EA4335" d="M130.5 50.52c24.56 0 41.1 10.62 50.54 19.5l36.84-35.97C195.39 12.6 165.77 0 130.5 0 78.54 0 34.13 29.3 13.74 71.62l42.31 32.72C66.5 73.25 95.88 50.52 130.5 50.52" />
+      </svg>
     );
-  }
 
-  const GoogleG = ({ size = 12 }) => (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 256 262"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-      focusable="false"
-      style={{ display: 'block' }}
-    >
-      <path fill="#4285F4" d="M255.88 133.51c0-10.6-.86-18.34-2.73-26.37H130.5v47.9h71.88c-1.45 12.3-9.3 30.78-26.76 43.23l-.24 1.62 38.86 30.12 2.69.27c24.72-22.8 38.95-56.45 38.95-97.77"/>
-      <path fill="#34A853" d="M130.5 261.1c35.27 0 64.94-11.64 86.59-31.74l-41.27-32.03c-11.04 7.76-25.83 13.18-45.32 13.18-34.62 0-64-22.73-74.45-54.29l-1.54.13-40.35 31.23-.53 1.47C34.13 231.8 78.54 261.1 130.5 261.1"/>
-      <path fill="#FBBC05" d="M56.05 155.22c-2.78-8.03-4.38-16.64-4.38-25.44 0-8.8 1.6-17.41 4.25-25.44l-.07-1.7-40.78-31.65-1.33.63C4.98 88.31 0 109.15 0 129.78c0 20.63 4.98 41.47 13.74 58.16l42.31-32.72"/>
-      <path fill="#EA4335" d="M130.5 50.52c24.56 0 41.1 10.62 50.54 19.5l36.84-35.97C195.39 12.6 165.77 0 130.5 0 78.54 0 34.13 29.3 13.74 71.62l42.31 32.72C66.5 73.25 95.88 50.52 130.5 50.52"/>
-    </svg>
-  );
-
-  if(userName === 'GOOGLE REVIEW'){
-    return (
-      <span
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-          padding: '4px 10px',
-          borderRadius: 20,
-          backgroundColor: '#fff',             // ✅ 흰색 배지
-          color: '#111827',                    // gray-900 계열 텍스트
-          border: '1px solid #E5E7EB',         // gray-200 보더
-          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-          fontSize: 10,
-          fontWeight: 500,
-          lineHeight: 1,
-        }}
-      >
+    if (userName === 'GOOGLE REVIEW') {
+      return (
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '4px 10px',
+            borderRadius: 20,
+            backgroundColor: '#fff',             // ✅ 흰색 배지
+            color: '#111827',                    // gray-900 계열 텍스트
+            border: '1px solid #E5E7EB',         // gray-200 보더
+            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+            fontSize: 10,
+            fontWeight: 500,
+            lineHeight: 1,
+          }}
+        >
           <GoogleG size={12} />
-         {/* <SiGoogle size={12} /> */}
-         GOOGLE REVIEW
-      </span>
-    );
-  }
+          {/* <SiGoogle size={12} /> */}
+          GOOGLE REVIEW
+        </span>
+      );
+    }
 
-  if (userName) {
-    return userName.charAt(0) + '***';
-  }
+    if (userName) {
+      return userName.charAt(0) + '***';
+    }
 
-  return '';
-};
+    return '';
+  };
 
 
 
@@ -443,15 +443,15 @@ const renderUserName = (userName) => {
     console.log('Edit review:', review);
 
     navigateToPageWithData && navigateToPageWithData(PAGES.SHARE_EXP, {
-      mode:'edit',
-      review:review,
+      mode: 'edit',
+      review: review,
 
-      reservation_id:review.reservation_id,
-      image:review.targetImage,
-      user_id:review.user_id,
-      target:review.target_type,
-      target_id:review.target_id,
-      targetName:review.targetName
+      reservation_id: review.reservation_id,
+      image: review.targetImage,
+      user_id: review.user_id,
+      target: review.target_type,
+      target_id: review.target_id,
+      targetName: review.targetName
     });
 
 
@@ -534,16 +534,16 @@ const renderUserName = (userName) => {
         confirmButtonText: get('PROMOTION_DELETE_BUTTON'),
         cancelButtonText: get('Reservation.CancelButton')
       });
-      
+
       if (!result.isConfirmed) {
         return; // 사용자가 취소한 경우
       }
-  
+
       const response = await ApiClient.postForm('/api/deleteReview', {
         user_id: user.user_id,
         review_id: reviewId
       });
-      
+
       if (response == 1) {
         await Swal.fire({
           title: get('REVIEW_DELETE_SUCCESS'),
@@ -562,7 +562,7 @@ const renderUserName = (userName) => {
         confirmButtonText: get('SWAL_CONFIRM_BUTTON')
       });
     }
-    
+
   };
 
   const handleNotifications = () => {
@@ -571,12 +571,12 @@ const renderUserName = (userName) => {
   };
 
   const handleBack = () => {
-    if(fromMyReview){
+    if (fromMyReview) {
       goBack && goBack();
     } else if (venueId) {
       goBack && goBack();
-    } else{
-       const rankingFromPage = localStorage.getItem('themeSource');
+    } else {
+      const rankingFromPage = localStorage.getItem('themeSource');
       console.log("rankingFromPage", rankingFromPage);
 
       switch (rankingFromPage) {
@@ -594,7 +594,7 @@ const renderUserName = (userName) => {
       }
     }
   };
-  
+
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -602,21 +602,21 @@ const renderUserName = (userName) => {
     // 검색 로직
   };
 
- const renderStars = (rating) => {
-  return (
-    <>
-      {[...Array(5)].map((_, i) => (
-        <Star
-          key={i}
-          size={14}
-          fill={i < rating ? '#fbbf24' : 'none'}
-          color={i < rating ? '#fbbf24' : '#d1d5db'}
-          style={{ marginRight: 2 }}
-        />
-      ))}
-    </>
-  );
-};
+  const renderStars = (rating) => {
+    return (
+      <>
+        {[...Array(5)].map((_, i) => (
+          <Star
+            key={i}
+            size={14}
+            fill={i < rating ? '#fbbf24' : 'none'}
+            color={i < rating ? '#fbbf24' : '#d1d5db'}
+            style={{ marginRight: 2 }}
+          />
+        ))}
+      </>
+    );
+  };
 
 
   return (
@@ -970,9 +970,9 @@ const renderUserName = (userName) => {
         }
 
       `}</style>
-<div>
+      <div>
 
-   {/* Header */}
+        {/* Header */}
 
         <SketchHeader
           title={get('Profile1.1')}
@@ -980,98 +980,96 @@ const renderUserName = (userName) => {
           onBack={handleBack}
           rightButtons={[]}
         />
-      <div className="view-review-container">
-     
-
-        {/* Search Section */}
-        <div className="map-filter-selects">
-          <select
-  className="select-box"
-  value={sortOrder1}
-  onChange={(e) => {
-    const value = e.target.value;
-    setSortOrder1(value);
-    localStorage.setItem(
-      "viewReviewPageState",
-      JSON.stringify({
-        scrollY: 0,
-        sortOrder1: value,
-        sortOrder,
-        targetTypeFilter
-      })
-    );
-  }}
->
-  <option value="latest">{get('Newest.filter')}</option>
-  <option value="oldest">{get('Oldest.filter')}</option>
-  <option value="rating_high">{get('Sort.Rating.High')}</option>
-  <option value="rating_low">{get('Sort.Rating.Low')}</option>
-  
-</select>
-
-<select
-  className="select-box"
-  value={sortOrder}
-  style={{display: 'none'}}
-  onChange={(e) => {
-    const value = e.target.value;
-    setSortOrder(value);
-    /*
-    localStorage.setItem(
-      "viewReviewPageState",
-      JSON.stringify({
-        scrollY: 0,
-        sortOrder1,
-        sortOrder: value,
-        targetTypeFilter
-      })
-    );
-    */
-  }}
->
-  <option value="latest">{get('Newest.filter')}</option>
-  <option value="oldest">{get('Oldest.filter')}</option>
-</select>
-
-<div className="filter-buttons" style={{ display: 'flex', gap: '8px', width: '60%' }}>
-  <div
-    className={`filter-tab ${targetTypeFilter === 'venue' ? 'active' : ''}`}
-    onClick={() => {
-      setTargetTypeFilter('venue');
-      localStorage.setItem(
-        "viewReviewPageState",
-        JSON.stringify({
-          scrollY: 0,
-          sortOrder1,
-          sortOrder,
-          targetTypeFilter: 'venue'
-        })
-      );
-    }}
-  >
-    {get('title.text.14')}
-  </div>
-
-  <div
-    className={`filter-tab ${targetTypeFilter === 'staff' ? 'active' : ''}`}
-    onClick={() => {
-      setTargetTypeFilter('staff');
-      localStorage.setItem(
-        "viewReviewPageState",
-        JSON.stringify({
-          scrollY: 0,
-          sortOrder1,
-          sortOrder,
-          targetTypeFilter: 'staff'
-        })
-      );
-    }}
-  >
-    {get('title.text.16')}
-  </div>
-</div>
+        <div className="view-review-container">
 
 
+          {/* Search Section */}
+          <div className="map-filter-selects">
+            <select
+              className="select-box"
+              value={sortOrder1}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSortOrder1(value);
+                localStorage.setItem(
+                  "viewReviewPageState",
+                  JSON.stringify({
+                    scrollY: 0,
+                    sortOrder1: value,
+                    sortOrder,
+                    targetTypeFilter
+                  })
+                );
+              }}
+            >
+              <option value="latest">{get('Newest.filter')}</option>
+              <option value="oldest">{get('Oldest.filter')}</option>
+              <option value="rating_high">{get('Sort.Rating.High')}</option>
+              <option value="rating_low">{get('Sort.Rating.Low')}</option>
+
+            </select>
+
+            <select
+              className="select-box"
+              value={sortOrder}
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSortOrder(value);
+                /*
+                localStorage.setItem(
+                  "viewReviewPageState",
+                  JSON.stringify({
+                    scrollY: 0,
+                    sortOrder1,
+                    sortOrder: value,
+                    targetTypeFilter
+                  })
+                );
+                */
+              }}
+            >
+              <option value="latest">{get('Newest.filter')}</option>
+              <option value="oldest">{get('Oldest.filter')}</option>
+            </select>
+
+            <div className="filter-buttons" style={{ display: 'flex', gap: '8px', width: '60%' }}>
+              <div
+                className={`filter-tab ${targetTypeFilter === 'venue' ? 'active' : ''}`}
+                onClick={() => {
+                  setTargetTypeFilter('venue');
+                  localStorage.setItem(
+                    "viewReviewPageState",
+                    JSON.stringify({
+                      scrollY: 0,
+                      sortOrder1,
+                      sortOrder,
+                      targetTypeFilter: 'venue'
+                    })
+                  );
+                }}
+              >
+                {get('title.text.14')}
+              </div>
+
+              <div
+                className={`filter-tab ${targetTypeFilter === 'staff' ? 'active' : ''}`}
+                onClick={() => {
+                  setTargetTypeFilter('staff');
+                  localStorage.setItem(
+                    "viewReviewPageState",
+                    JSON.stringify({
+                      scrollY: 0,
+                      sortOrder1,
+                      sortOrder,
+                      targetTypeFilter: 'staff'
+                    })
+                  );
+                }}
+              >
+                {get('title.text.16')}
+              </div>
+            </div>
 
 
 
@@ -1079,8 +1077,10 @@ const renderUserName = (userName) => {
 
 
 
-        </div>
-        {/* <div className="search-section">
+
+
+          </div>
+          {/* <div className="search-section">
           <form onSubmit={handleSearch}>
             <SketchInput
               type="text"
@@ -1091,223 +1091,247 @@ const renderUserName = (userName) => {
           </form>
         </div> */}
 
-        {/* User Reviews */}
-        <div className="reviews-section">
+          {/* User Reviews */}
+          <div className="reviews-section">
 
-          {loading ? (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              textAlign: 'center',
-              color: 'gray',
-              height: '200px'
-            }}>
-              <Martini size={15} />
-              <span>Loading...</span>
-            </div>
-          ) : reviews.length > 0 ? (
-            reviews.map((review, index) => (
-              <SketchDiv key={review.review_id} className="review-card" onClick={() => handleViewDetail(review)}>
-                <HatchPattern opacity={0.03} />
-                <div className="review-content">
-                  <div className="review-header">
-                    <ImagePlaceholder
-                      //src={userImages[review.user_id] || '/placeholder-user.jpg'}
-                      src={review.targetImage || '/cdn/defaultC/staff.png'}
-                      className="user-avatar" alt="profile"
-                    />
-                    <div>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        marginBottom: '8px'
-                      }}>
+            {loading ? (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                textAlign: 'center',
+                color: 'gray',
+                height: '200px'
+              }}>
+                <Martini size={15} />
+                <span>Loading...</span>
+              </div>
+            ) : reviews.length > 0 ? (
+              reviews.map((review, index) => (
+                <SketchDiv key={review.review_id} className="review-card" onClick={() => handleViewDetail(review)}>
+                  <HatchPattern opacity={0.03} />
+                  <div className="review-content">
+                    <div className="review-header">
+                      <ImagePlaceholder
+                        //src={userImages[review.user_id] || '/placeholder-user.jpg'}
+                        src={review.targetImage || '/cdn/defaultC/staff.png'}
+                        className="user-avatar" alt="profile"
+                      />
+                      <div>
                         <div style={{
-                          display: 'inline-flex',
+                          display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          width: '24px',
-                          height: '24px',
-                          borderRadius: '50%',
-                          backgroundColor: review.target_type === 'venue' ? '#dcfce7' : '#fef3c7',
-                          color: review.target_type === 'venue' ? '#16a34a' : '#d97706'
+                          gap: '8px',
+                          marginBottom: '8px'
                         }}>
-                          {review.target_type === 'venue' ? (
-                            <Store size={14} />
-                          ) : (
-                            <User size={14} />
-                          )}
+                          <div style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '50%',
+                            backgroundColor: review.target_type === 'venue' ? '#dcfce7' : '#fef3c7',
+                            color: review.target_type === 'venue' ? '#16a34a' : '#d97706'
+                          }}>
+                            {review.target_type === 'venue' ? (
+                              <Store size={14} />
+                            ) : (
+                              <User size={14} />
+                            )}
+                          </div>
+                          <span style={{
+                            fontSize: '15px',
+                            fontWeight: '500',
+                            color: '#333'
+                          }}>
+
+                            {review.target_type === 'staff' && !iauData.isActiveUser
+                              ? review.targetName
+                                ? review.targetName.charAt(0) + '***'
+                                : ''
+                              : review.targetName}
+                          </span>
+
+                          <span
+                            style={{
+                              display: 'none'
+                            }}
+                          >
+                            <Heart size={12} fill={review.isFavorite ? '#f43f5e' : 'none'} color="black" />
+                          </span>
+
+
+
                         </div>
-                        <span style={{
-                          fontSize: '15px',
-                          fontWeight: '500',
-                          color: '#333'
-                        }}>
-                            
-                              {review.target_type === 'staff' && !iauData.isActiveUser
-                                ? review.targetName
-                                    ? review.targetName.charAt(0) + '***'
-                                    : ''
-                                : review.targetName}
-                        </span>
 
-                        <span
-                          style={{
-                            display:'none'
-                          }}
-                        >
-                          <Heart size={12} fill={review.isFavorite ? '#f43f5e' : 'none'} color="black" />
-                        </span>
 
-                        
+
+                        <div className="user-info"></div>
+
+                        <p className="review-meta">
+                          {renderStars(review.rating)}
+                          <span className="review-meta-date">
+                            {new Date(review.created_at).toLocaleDateString()}
+                          </span>
+                        </p>
+
+
+                        <p className="review-meta">
+                          <span
+                            className="review-meta-date"
+                            style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                          >
+                            {renderUserName(review.user_name)}
+                          </span>
+                        </p>
+
+
 
                       </div>
-
-
-
-                      <div className="user-info"></div>
-                    
-                      <p className="review-meta">
-                      {renderStars(review.rating)}  
-                      <span className="review-meta-date">
-                        {new Date(review.created_at).toLocaleDateString()}
-                      </span>
-                    </p>
-
-
-                    <p className="review-meta">
-  <span
-    className="review-meta-date"
-    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
-  >
-    {renderUserName(review.user_name)}
-  </span>
-</p>
-
-
-
                     </div>
-                  </div>
-                  {review.content !== '-' && review.content !== '' && (
-  <div 
-    style={{ 
-      border: 'none', 
-      boxShadow: 'none', 
-      marginBottom: 0, 
-      padding: '8px 0' 
-    }}
-    onClick={() => handleViewDetail(review)}
-  >
-    <HatchPattern opacity={0.03} />
-    <div className="review-content" style={{minHeight: '25px'}}>
-      <p className="review-text">
-        {review.content}
-      </p>
+                    {review.content !== '-' && review.content !== '' && (
+                      <div
+                        style={{
+                          border: 'none',
+                          boxShadow: 'none',
+                          marginBottom: 0,
+                          padding: '8px 0'
+                        }}
+                        onClick={() => handleViewDetail(review)}
+                      >
+                        <HatchPattern opacity={0.03} />
+                        <div className="review-content" style={{ minHeight: '25px' }}>
+                          <p className="review-text">
+                            {review.content}
+                          </p>
 
-      {/* 번역된 결과 */}
-      {translationMap[review.review_id] && (
-        <div style={{ marginTop: 6, fontSize: 12, color: '#6b7280', fontStyle: 'italic' }}>
-          {translationMap[review.review_id]}
-          <span style={{ fontSize: 10, marginLeft: 4 }}>({get('trans_1')})</span>
-        </div>
-      )}
-
-
-      
-
-      {/* 수정/삭제 버튼 (작성자 본인일 때만) */}
-      <div
-        style={{
-          display: fromMyReview ? 'block' : 'none',
-          position: 'absolute',
-          right: '0',
-          top: 10,
-        }}>
-          {review.user_id === user.user_id && (
-            <div style={{ display: 'flex', gap: '3px', marginLeft: 'auto' }}>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEditReview(review);
-                  }}
-                  style={{
-                    background: '#3b82f6',
-                    color: '#fff',
-                    fontSize: 12,
-                    padding: '4px 10px',
-                    border: 'none',
-                    borderRadius: 6,
-                    cursor: 'pointer'
-                  }}
-                >
-                  {/*<Pencil size={14} color="#374151" />*/}
-
-                  {get('PROMOTION_EDIT_BUTTON')}
-                </button>
-                <button
-                  style={{
-                    background: 'rgb(194 44 51)',
-                    color: '#fff',
-                    fontSize: 12,
-                    padding: '4px 10px',
-                    border: 'none',
-                    borderRadius: 6,
-                    cursor: 'pointer'
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteReview(review.review_id);
-                  }}
-                  
-                >
-                  {/*<Trash2 size={14} color="#ef4444" />*/}
-
-                  {get('PROMOTION_DELETE_BUTTON')}
-                </button>
-              </div>
-              )}
-      </div>
-
-      {/* 번역 버튼 */}
-      <div style={{ 
-         display: fromMyReview ? 'none' : 'block',
-         marginTop: 8, textAlign: 'right' }}>
-
-
-        
-        <button
-          style={{
-            background: '#3b82f6',
-            color: '#fff',
-            fontSize: 12,
-            padding: '4px 10px',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer'
-          }}
-          onClick={(e) => {
-            e.stopPropagation(); // 상세보기 클릭 방지
-            handleTranslate(review.review_id, review.content);
-          }}
-        >
-          {get('Translation')}
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+                          {/* 번역된 결과 */}
+                          {translationMap[review.review_id] && (
+                            <div style={{ marginTop: 6, fontSize: 12, color: '#6b7280', fontStyle: 'italic' }}>
+                              {translationMap[review.review_id]}
+                              <span style={{ fontSize: 10, marginLeft: 4 }}>({get('trans_1')})</span>
+                            </div>
+                          )}
 
 
 
-                  {/* 매니저 답변 표시 */}
-               
 
-                  {/* 예약하기 버튼 */}
-                  {/* <div className="review-actions" style={{
+                          {/* 수정/삭제 버튼 (작성자 본인일 때만) */}
+                          <div
+                            style={{
+                              display: fromMyReview ? 'block' : 'none',
+                              position: 'absolute',
+                              right: '0',
+                              top: 10,
+                            }}>
+                            {review.user_id === user.user_id && (
+                              <div style={{ display: 'flex', gap: '3px', marginLeft: 'auto' }}>
+
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditReview(review);
+                                  }}
+                                  style={{
+                                    background: '#3b82f6',
+                                    color: '#fff',
+                                    fontSize: 12,
+                                    padding: '4px 10px',
+                                    border: 'none',
+                                    borderRadius: 6,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  {/*<Pencil size={14} color="#374151" />*/}
+
+                                  {get('PROMOTION_EDIT_BUTTON')}
+                                </button>
+                                <button
+                                  style={{
+                                    background: 'rgb(194 44 51)',
+                                    color: '#fff',
+                                    fontSize: 12,
+                                    padding: '4px 10px',
+                                    border: 'none',
+                                    borderRadius: 6,
+                                    cursor: 'pointer'
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteReview(review.review_id);
+                                  }}
+
+                                >
+                                  {/*<Trash2 size={14} color="#ef4444" />*/}
+
+                                  {get('PROMOTION_DELETE_BUTTON')}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* 번역 버튼 */}
+                          <div style={{
+                            display: fromMyReview ? 'none' : 'block',
+                            marginTop: 8, textAlign: 'right'
+                          }}>
+
+
+
+                            <button
+                              style={{
+                                background: '#3b82f6',
+                                color: '#fff',
+                                fontSize: 12,
+                                padding: '4px 10px',
+                                border: 'none',
+                                borderRadius: 6,
+                                cursor: 'pointer'
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation(); // 상세보기 클릭 방지
+                                handleTranslate(review.review_id, review.content);
+                              }}
+                            >
+                              {get('Translation')}
+                            </button>
+                          </div>
+
+                          {review.reply_content && (
+                            <div className={`manager-response ${review.target_type === 'staff' ? 'staff-response' : ''}`}>
+                              <div className="response-header">
+                                <span className="response-label">
+                                  {review.target_type === 'venue'
+                                    ? get('REVIEW_MANAGER_RESPONSE')
+                                    : get('REVIEW_STAFF_RESPONSE')
+                                  }
+                                </span>
+                                <span className="response-badge"><User size={14} /></span>
+                              </div>
+                              <div className="response-text">
+                                "{review.reply_content}"
+                              </div>
+                            </div>
+                          )}
+
+
+
+
+
+
+                        </div>
+                      </div>
+                    )}
+
+
+
+                    {/* 매니저 답변 표시 */}
+
+
+                    {/* 예약하기 버튼 */}
+                    {/* <div className="review-actions" style={{
                     paddingTop: '1rem',
                     borderTop: '1px solid #e5e7eb',
                     display: 'flex',
@@ -1335,20 +1359,20 @@ const renderUserName = (userName) => {
 
                   </div> */}
 
+                  </div>
+                </SketchDiv>
+              ))
+            ) : (
+              <SketchDiv className="notification-item">
+                <HatchPattern opacity={0.02} />
+                <div className="empty-state">
+                  <h3>{get('Review3.5')}</h3>
+                  <p style={{ fontSize: '0.83rem' }}>{get('REVIEW_NO_REVIEWS_MESSAGE')}</p>
                 </div>
               </SketchDiv>
-            ))
-          ) : (
-             <SketchDiv className="notification-item">
-              <HatchPattern opacity={0.02} />
-              <div className="empty-state">
-                <h3>{get('Review3.5')}</h3>
-                <p style={{fontSize: '0.83rem'}}>{get('REVIEW_NO_REVIEWS_MESSAGE')}</p>
-              </div>
-            </SketchDiv>
-          )}
+            )}
+          </div>
         </div>
-      </div>
       </div>
     </>
   );

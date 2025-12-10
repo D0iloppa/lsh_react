@@ -1787,7 +1787,7 @@ export const ReservationForm = ({
       />
 
       {/* Coupon Selector */}
-        <div className="form-step" style={{ marginTop: '20px' }}>
+        <div className="form-step" style={{ marginTop: '20px', display: cat_id == 1 ? '' : 'none' }}>
           <div className="step-label">
             <span className="step-number">4</span>
             {get('profile_coupon_item_label')}
