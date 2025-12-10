@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import axios from 'axios';
 import RotationDiv from '@components/RotationDiv';
 import ImagePlaceholder from '@components/ImagePlaceholder';
@@ -238,6 +238,25 @@ const DiscoverPage = ({ navigateToPageWithData, PAGES, goBack, showAdWithCallbac
   //   return () => window.removeEventListener('scroll', handleScroll);
   // }, []); // 의존성 배열 비움
 
+  
+    const getNextDailyOpenDate = () => {
+      const target = new Date();
+      // 현재가 언제든 상관없이 무조건 하루를 더함 (내일)
+      target.setDate(target.getDate() + 1);
+      // 시간은 오후 9시(21:00)로 고정
+      //target.setHours(21, 0, 0, 0);
+
+      // UTC 14시 = 베트남 21시
+      target.setUTCHours(14, 0, 0, 0);
+
+      
+      return target;
+    };
+
+
+      const nextOpenDateValue = useMemo(() => {
+        return getNextDailyOpenDate();
+      }, []);
 
   
   useEffect(() => {
@@ -1488,9 +1507,11 @@ useEffect(() => {
               c => c.owner_id === user?.user_id
             );
 
+
             return  (
               <div style={{ margin: "20px 0" }}>
                   <CouponAlert key={null} 
+                    nextOpenDate = {nextOpenDateValue}
                     downloaded={ downloadedSelf.length>0 }
                     remain_cnt={issuedCoupons.length} 
                     coupon={couponData[0]} />

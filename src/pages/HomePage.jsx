@@ -1,7 +1,7 @@
 // 전체 상단 import는 동일
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import { Users, Wine, Star, Heart, ArrowRight, Clock, MapPin,  MoveLeft, Sparkles, Diamond, Scissors, Home } from 'lucide-react';
+import { Users, Download, Star, Heart, Timer, Clock, MapPin,  MoveLeft, Sparkles, Diamond, Scissors, Home } from 'lucide-react';
 import GoogleMapComponent from '@components/GoogleMapComponent';
 import ImagePlaceholder from '@components/ImagePlaceholder';
 import SketchSearch from '@components/SketchSearch';
@@ -24,6 +24,7 @@ import PageHeader from '@components/PageHeader';
 import AdBannerSlider from '@components/AdBannerSlider';
 
 import { getOpeningStatus } from '@utils/VietnamTime'
+import EventTimer from "@components/EventTimer";
 
 import { getVersionInfo, compareVersions } from '@utils/storage'
 
@@ -46,7 +47,8 @@ const HomePage = ({ pageHistory, navigateToMap, navigateToSearch, navigateToPage
   const [iauData, setIauData] = useState(null);
   const [staffLanguageFilter, setStaffLanguageFilter] = useState('ALL');
   const [promoInterval] = useState(() => 4 + Math.floor(Math.random() * 5));
-  
+  const [couponData, setCouponData] = useState([]);
+  const [couponStatus, setCouponStatus] = useState("ISSUED");
 
   // 공지사항 상태
   const [notice, setNotice] = useState(null);
@@ -55,11 +57,17 @@ const HomePage = ({ pageHistory, navigateToMap, navigateToSearch, navigateToPage
   const [sortType, setSortType] = useState('latest');
 
 const myBanners = [
-  {
-    type: 'video',
-    src: '/cdn/video_mobile.mp4',
-    //poster: '/cdn/video-thumb.jpg'
-  }
+  // {
+  //   type: 'video',
+  //   src: '/cdn/video_mobile.mp4',
+  //   //poster: '/cdn/video-thumb.jpg'
+  // }
+
+   {
+     type: 'image',
+     src: '/cdn/coupon.png',
+     alt: '할인 쿠폰 이미지'
+   }
 ];
 
   // 카테고리 데이터
@@ -81,6 +89,7 @@ const myBanners = [
     bgColor: '#f3e8ff'
   }
   ];
+  
 
   console.log(pageHistory);
   // 커스텀 훅 사용
@@ -337,6 +346,136 @@ const myBanners = [
     init();
   }, [messages, currentLang]);
 
+  // 쿠폰 데이터 로딩
+  // useEffect(() => {
+  
+  //   const fetchCoupons = async () => {
+  
+  
+  //     const response = await ApiClient.get('/api/coupon/todayCouponList');
+  
+  //     const { data:coupons = [] } = response;
+  
+  //     console.log('fetchCoupons', coupons);
+  
+  //     /*
+  //     const coupons = [
+  //       {
+  //         coupon_id: 1,
+  //         coupon_token: 'TEST',
+  //         coupon_type: 'PERCENT',
+  //         discount_value: 10.0,
+  //         max_discount_amt: null,
+  //         owner_id: null,
+  //         status: 'ISSUED',
+  //         issued_at: '2025-12-08 09:55:33.479',
+  //         download_at: '2025-12-08 09:55:33.479',
+  //         expired_at: '2025-12-10 09:55:33.479',
+  //         used_at: null,
+  //         reservation_id: null,
+  //         venue_id: 43,
+  //         manager_id: 31,
+  //       },
+  //       {
+  //         coupon_id: 2,
+  //         coupon_token: 'TEST2',
+  //         coupon_type: 'PERCENT',
+  //         discount_value: 5.0,
+  //         max_discount_amt: null,
+  //         owner_id: null,
+  //         status: 'ISSUED',
+  //         issued_at: '2025-12-01 09:55:33.479',
+  //         download_at: '2025-12-01 09:55:33.479',
+  //         expired_at: '2025-12-31 09:55:33.479',
+  //         used_at: '2025-12-05 09:55:33.479',
+  //       },
+  //        {
+  //         coupon_id: 3,
+  //         coupon_token: 'TEST2',
+  //         coupon_type: 'PERCENT',
+  //         discount_value: 5.0,
+  //         max_discount_amt: null,
+  //         owner_id: 11,
+  //         status: 'USED',
+  //         issued_at: '2025-12-01 09:55:33.479',
+  //         download_at: '2025-12-01 09:55:33.479',
+  //         expired_at: '2025-12-31 09:55:33.479',
+  //         used_at: '2025-12-05 09:55:33.479',
+  //       },
+  //         {
+  //         coupon_id: 4,
+  //         coupon_token: 'TEST2',
+  //         coupon_type: 'PERCENT',
+  //         discount_value: 5.0,
+  //         max_discount_amt: null,
+  //         owner_id: 19,
+  //         status: 'DOWNLOADED',
+  //         issued_at: '2025-12-01 09:55:33.479',
+  //         download_at: '2025-12-01 09:55:33.479',
+  //         expired_at: '2025-12-31 09:55:33.479',
+  //         used_at: '2025-12-05 09:55:33.479',
+  //       }
+  //     ];
+  //     */
+  
+  //       const userId = user?.user_id;
+  
+  
+  //       const issuedCoupons = coupons.filter(c => c.status === "ISSUED");
+  //       const remainCount = issuedCoupons.length;
+  
+  //       // remain_count 적용(남은 건 수)
+  //       const couponsWithRemain = coupons.map(c => ({
+  //         ...c,
+  //         remain_count: remainCount
+  //       }));
+  
+  //       setCouponData(couponsWithRemain);
+  //   };
+  
+  //   fetchCoupons();
+  // }, [user]);
+
+useEffect(() => {
+  fetchCoupons();
+}, [user]);
+
+  const fetchCoupons = async () => {
+    const response = await ApiClient.get('/api/coupon/todayCouponList');
+    const { data: coupons = [] } = response;
+
+    const issuedCoupons = coupons.filter(c => c.status === "ISSUED");
+    const remainCount = issuedCoupons.length;
+
+    const couponsWithRemain = coupons.map(c => ({
+      ...c,
+      remain_count: remainCount
+    }));
+
+    setCouponData(couponsWithRemain);
+  };
+
+
+    const getNextDailyOpenDate = () => {
+        const target = new Date();
+        // 현재가 언제든 상관없이 무조건 하루를 더함 (내일)
+        target.setDate(target.getDate() + 1);
+        // 시간은 오후 9시(21:00)로 고정
+        //target.setHours(21, 0, 0, 0);
+  
+        // UTC 14시 = 베트남 21시
+        target.setUTCHours(14, 0, 0, 0);
+  
+        
+        return target;
+      };
+  
+  
+        const nextOpenDateValue = useMemo(() => {
+          return getNextDailyOpenDate();
+        }, []);
+  
+
   const handleGoBack = () => {
     navigate(-1);
   };
@@ -490,6 +629,53 @@ console.log('categoryId', categoryId)
       onClose();
     }
   };
+
+  
+  const userId = user?.user_id;
+  const isDownloaded = couponData.some(
+    c =>
+      (c.status === "DOWNLOADED" || c.status === "USED") &&
+      c.owner_id === userId
+  );
+
+  console.log('isDownloaded', isDownloaded);
+  const remainCount = couponData.filter(c => c.status === "ISSUED").length;
+
+
+  // 발급 버튼 클릭
+    const handleIssueCoupon = () => {
+    const userId = user?.user_id;
+
+    ApiClient.get('/api/coupon/download', {
+      params: { owner_id: userId }
+    }).then(res => {
+      const { success = true, message = '' } = res;
+
+      if (!success) {
+        Swal.fire({
+          title: get('coupon_download_fail_title'),
+          text: get(message),
+          icon: "error",
+          confirmButtonColor: "rgb(55, 65, 81)",
+        });
+      } else {
+        Swal.fire({
+          title: get('coupon.issue.complete.title'),
+          text: get('coupon.issue.complete.desc'),
+          icon: "success",
+          confirmButtonColor: "rgb(55, 65, 81)",
+        }).then(() => {
+
+          /** 홈 화면도 로컬 상태 업데이트 */
+          setCouponStatus("DOWNLOADED");
+
+          /** ③ 서버 데이터 동기화 */
+          fetchCoupons();
+        });
+      }
+    });
+  };
+
 
   return (
     <>
@@ -805,17 +991,176 @@ console.log('categoryId', categoryId)
             cursor: pointer;
             }
 
-            .ad-video{
-              height:270px; 
-              display:flex; 
-              align-items:center; 
-              justify-content:center; 
-              color:#666; 
-              font-size:14px; 
-              margin-top:10px;
-              border-radius:8px;
-              padding: 0.5rem;
-            }
+            // .ad-video{
+            //   color:#666; 
+            //   font-size:14px; 
+            //   margin-top:10px;
+            //   border-radius:8px;
+            //   padding: 0.5rem;
+            // }
+
+
+            .ad-video {
+                    position: relative;
+                    width: 95%;
+                    overflow: hidden;
+                    margin: 0 auto;
+                    margin-top: 10px;
+                    border-radius: 10px;
+              }
+
+              /* 전체 오버레이 박스 */
+              .ad-overlay {
+                  position: absolute;
+                  inset: 0;
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: flex-end;
+                  align-items: center;
+                  padding: 10px;
+                  z-index: 10;
+                  color: #fff;
+                  text-align: center;
+
+                  /*  유리 느낌 추가 */
+                  background: rgba(0, 0, 0, 0.03);
+
+                  overflow: hidden; /* 반짝 애니메이션이 삐져나가지 않게 */
+                }
+
+                /* 반짝이는 자동 광택 */
+                .ad-overlay::before {
+                  content: "";
+                  position: absolute;
+                  top: 0;
+                  left: -150%;
+                  width: 50%;
+                  height: 100%;
+
+                  /* 유리 반사광 느낌 */
+                  background: linear-gradient(
+                    120deg,
+                    transparent 0%,
+                    rgba(255, 255, 255, 0.27) 60%,
+                    transparent 100%
+                  );
+
+                  transform: skewX(-20deg);
+                  animation: shine 5s ease-in-out infinite;
+                }
+
+                /* 반짝이 움직이는 애니메이션 */
+                @keyframes shine {
+                  0% {
+                    left: -150%;
+                  }
+                  50% {
+                    left: 150%;
+                  }
+                  100% {
+                    left: 150%;
+                  }
+                }
+
+
+              /* 큰 타이틀 */
+              .ad-overlay .main-text {
+                font-size: 26px;
+                font-weight: 800;
+                margin-bottom: 8px;
+                text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+              }
+
+              /* 작은 문구 */
+              .ad-overlay .sub-text {
+                font-size: 14px;
+                margin-bottom: 20px;
+                color: #f2f2f2;
+                text-shadow: 0 1px 5px rgba(0,0,0,0.6);
+              }
+
+              /* 전체 폭 버튼 */
+             .ad-overlay .coupon-btn {
+                width: 100%;
+                padding: 12px 0;
+                background: linear-gradient(135deg, #fff3d0 0%, #f1c95d 25%, #eec05b 50%, #ffb615 75%, #ffd372 100%);
+                color: #3d2904;
+                font-size: 15px;
+                font-weight: 800;
+                border: none;
+                border-radius: 12px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.6), inset 0 -2px 3px rgba(0, 0, 0, 0.2);
+                text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
+                cursor: pointer;
+                transition: all 0.2s ease;
+              }
+
+
+              /* 소진됨 오버레이를 배경보다 조금 더 어둡게 */
+              .soldout-overlay {
+                background: rgba(0, 0, 0, 0.55);
+                display: flex;
+                flex-direction: column;
+                justify-content: center; /* 가운데 배치 */
+                align-items: center;
+                text-align: center;
+                padding: 20px;
+                z-index: 20;
+              }
+
+              .soldout-title {
+                font-size: 16px;
+                max-width: 206px;
+                color: #e0e0e0;
+                margin-bottom: 8px;
+                text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+              }
+
+              .soldout-desc {
+                    border-radius: 30px;
+                    background: #ffffffd1;
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    padding: 5px 10px;
+                    font-size: 14px;
+                    color: black;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+              }
+
+                /* 빨간 라벨 */
+                .event-label {
+                  color: #ffffc7;
+                  font-size: 12px;
+                  font-weight: 700;
+                  padding: 4px 14px;
+                  border-radius: 20px;
+                  letter-spacing: 1px;
+                  text-transform: uppercase;
+                  margin-bottom: 4px;
+                }
+
+                /* 부드러운 등장 애니메이션 */
+                @keyframes fadeDown {
+                  from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                  }
+                  to {
+                    opacity: 1;
+                    transform: translateY(0);
+                  }
+                }
+
+                .remain_count{
+                      color: white;
+                      padding: 1px 4px;
+                      background: rgb(95 95 95);
+                      border-radius: 5px;
+                      font-size: 14px;
+                      margin-left: 7px;
+                }
+
       `}</style>
 
       <div className="homepage-container">
@@ -834,13 +1179,66 @@ console.log('categoryId', categoryId)
             className="category-title"
             dangerouslySetInnerHTML={{ __html: get('booking_prompt') }}
           ></h2> */}
-          <div className='ad-video'>
-            <AdBannerSlider banners={myBanners} />
-            {/* <video width="100%" height="auto" controls autoPlay muted loop>
-              <source src="/cdn/video_mobile.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video> */}
-          </div>
+          <div className="ad-video">
+          <AdBannerSlider banners={myBanners} />
+
+          {isDownloaded ? (
+
+            // 이미 발급받은 상태
+            <div className="ad-overlay">
+              <span className="event-label">COUPON EVENT!</span>
+
+              <div className="main-text">
+                {couponData[0]?.discount_value}% {get('profile_coupon_item_label')}
+              </div>
+
+              <div className="sub-text">{get('CPN_CODE_2')}</div>
+
+              <button className="coupon-btn" disabled style={{ opacity: 0.5 }}>
+                {get('coupon.issue.done')}
+              </button>
+            </div>
+
+          ) : remainCount > 0 ? (
+
+            // 발급 가능 상태
+            <div className="ad-overlay">
+              <span className="event-label">COUPON EVENT!</span>
+
+              <div className="ad-title-group">
+              <span className="main-text">
+                {couponData[0]?.discount_value}% {get('profile_coupon_item_label')} 
+              </span>
+              <span className="remain_count">
+                 {couponData[0].remain_count} {get('coupon.remaining.count')}
+              </span></div>
+
+              <div className="sub-text">{get('coupon_limited_msg')}</div>
+
+              <button className="coupon-btn" onClick={handleIssueCoupon}>
+                <Download size={16} style={{ marginRight: 6 }} />
+                {get('profile_coupon_item_label')} {get('coupon.issue.button')}
+              </button>
+            </div>
+
+          ) : (
+
+            // 소진 상태
+            <div className="ad-overlay soldout-overlay">
+              <div className="soldout-title">{get('coupon_limited_msg_end')}</div>
+              <div className="soldout-desc">
+                <Timer size={16} color="#E11D48" style={{ marginRight: 6 }} />
+                <span style={{ marginRight: 6 }}>{get('coupon_next_open_left_msg')}</span>
+                <span style={{ color: "#E11D48" }}>
+                  <EventTimer targetDate={nextOpenDateValue}/>
+                </span>
+              </div>
+            </div>
+
+          )}
+
+        </div>
+
           <div className="category-grid">
             {categories.map((category) => {
               const IconComponent = category.icon;

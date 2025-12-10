@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { Clock, Download } from "lucide-react";
+import { Clock, Download, Timer } from "lucide-react";
 import Swal from "sweetalert2";
 import { useMsg } from "@contexts/MsgContext";
 import { useAuth } from '@contexts/AuthContext';
 
 import ApiClient from '@utils/ApiClient';
+
+import EventTimer from "@components/EventTimer";
 
 
 
@@ -73,6 +75,7 @@ const styles = {
     cursor: "pointer",
     color: "#FF8484",
     marginLeft: "8px",
+    lineHeight: "1",
   },
 
   middleRow: {
@@ -83,29 +86,29 @@ const styles = {
   },
 
   subMessage: {
-    fontSize: "0.5rem",
+    fontSize: "0.7rem",
     color: "#A34A4A",
   },
 
   rightCol: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "flex-end",
+    gap: "6px",
     marginLeft: "16px",
-    alignSelf: "center",
   },
 
   issueBtn: {
     background: "linear-gradient(135deg, #ff6a6a, #ff3d3d)",
     border: "none",
-    padding: "5px 12px",
-    borderRadius: "18px",
+    padding: "6px 15px",
+    borderRadius: "20px",
     color: "white",
     fontWeight: 800,
-    fontSize: "0.95rem",
+    fontSize: "1rem",
     cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
     boxShadow: "0 4px 12px rgba(255, 60, 60, 0.35)",
+    width: "100%"
   },
   disabledBtn: {
     backgroundColor: "rgb(252 101 101 / 55%)",
@@ -113,29 +116,65 @@ const styles = {
     padding: "6px 15px",
     borderRadius: "20px",
     border: "none",
-    fontWeight: 600,
+    fontWeight: 800,
+    fontSize: "1rem",
     cursor: "not-allowed",
     whiteSpace: "nowrap",
+    width: "100%"
   },
+  timerRow: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.6)", // 약간 더 밝게 강조
+    borderRadius: "12px",
+    padding: "6px",
+    marginTop: "10px", // 메시지 밑으로 간격 둠
+    marginBottom: "4px",
+    border: "1px solid #FFCDCD",
+  },
+  timerText: {
+    fontSize: "0.6rem",
+    fontWeight: "800",
+    color: "#E11D48", // 붉은 계열 강조색
+    marginLeft: "6px",
+    fontVariantNumeric: "tabular-nums", // 숫자 너비 고정 (시간 흔들림 방지)
+  },
+  timerLabel: {
+    fontSize: "0.6rem",
+    color: "#9CA3AF",
+    marginRight: "4px",
+    marginLeft: "2px",
+    fontWeight: "600"
+  }
 };
 
 // CouponCard 컴포넌트
-const CouponCard = ({ downloaded, remain_cnt, coupon }) => {
+const CouponCard = ({ downloaded, remain_cnt, coupon, nextOpenDate }) => {
+
+  console.log('cpCard');
+
+  
   const { get } = useMsg();
   const [visible, setVisible] = useState(true);
-  
+  const remain_count = typeof remain_cnt === "number" ? remain_cnt : 0;
   // 초기 상태 설정
-  const [currentStatus, setCurrentStatus] = useState(
-    downloaded ? 'DOWNLOADED' : (remain_cnt > 0 ? "ISSUED" : "RANOUT")
-  );
+ const initialStatus = downloaded
+  ? "DOWNLOADED"
+  : remain_count > 0
+    ? "ISSUED"
+    : "RANOUT";
+
+const [currentStatus, setCurrentStatus] = useState(initialStatus);
   
-  const remain_count = remain_cnt;
+  
   const { user } = useAuth(); // 필요한 부분만 destructuring
 
   // 편의를 위한 상태 변수
   const isRanout = currentStatus === "RANOUT";
 
   if (!visible) return null;
+  
 
   // 발급 버튼 클릭
   const handleIssueCoupon = () => {
@@ -148,7 +187,7 @@ const CouponCard = ({ downloaded, remain_cnt, coupon }) => {
 
       if (!success) {
         Swal.fire({
-          title: get('coupon.issue.complete.title'),
+          title: get('coupon_download_fail_title'),
           text: get(message),
           icon: "error",
           confirmButtonColor: "rgb(55, 65, 81)",
@@ -191,88 +230,92 @@ const CouponCard = ({ downloaded, remain_cnt, coupon }) => {
           .RANOUT {
             border-color: #E5E7EB !important; /* 연한 회색 테두리 */
             background-color: #F9FAFB !important; /* 아주 연한 회색 배경 */
-            opacity: 0.9;
+            opacity: 0.95;
           }
         `}
       </style>
       
-      {/* 상태 클래스 적용 */}
       <div className={currentStatus} style={styles.card}>
-        <div style={styles.row}>
-          {/* 왼쪽 */}
-          <div style={styles.leftCol}>
-            <div style={styles.topRow}>
-              <div style={styles.iconRow}>
-                {/* 시계 아이콘 색상 동적 변경 */}
-                <Clock
-                  size={25}
-                  color={themeColor} 
-                  className={!isRanout ? "wiggle-animate" : ""} /* 마감되면 흔들림 멈춤 (선택사항) */
-                />
-                
-                {/* 할인율 텍스트 색상 변경 */}
-                <span style={{ ...styles.chanceText, color: isRanout ? '#6B7280' : undefined }}>
-                  {coupon.discount_value}% {get('profile_coupon_item_label')}
-                </span>
+      {/* 상단 정보 영역 */}
+      <div style={styles.row}>
+        <div style={styles.leftCol}>
+          
+          {/* 아이콘/타이틀 */}
+          <div style={styles.topRow}>
+            <div style={styles.iconRow}>
+              <Clock size={25} color={themeColor} className={!isRanout ? "wiggle-animate" : ""} />
 
-                {typeof remain_count === "number" && (
-                  <span style={{ 
-                      ...styles.remainBadge, 
-                      // 마감 시 뱃지도 회색 처리
-                      backgroundColor: isRanout ? '#E5E7EB' : '#FEE2E2', 
-                      color: isRanout ? '#9CA3AF' : '#EF4444'
-                    }}>
-                    {remain_count} {get('coupon.remaining.count')}
-                  </span>
-                )}
-              </div>
+              <span style={{ ...styles.chanceText, color: isRanout ? '#6B7280' : undefined }}>
+                {coupon.discount_value}% {get('profile_coupon_item_label')}
+              </span>
+
+              {/* remain_count는 숫자가 아니어도 0으로 처리했으므로 항상 표시 가능 */}
+              <span style={{
+                ...styles.remainBadge,
+                backgroundColor: isRanout ? '#E5E7EB' : '#FEE2E2',
+                color: isRanout ? '#9CA3AF' : '#EF4444'
+              }}>
+                {remain_count} {get('coupon.remaining.count')}
+              </span>
             </div>
+            {/*<button style={{display:'none'}} onClick={() => setVisible(false)} style={{styles.closeBtnInner}}>×</button>*/}
+            <button onClick={() => setVisible(false)} style={{display:'none'}}>×</button>
+          </div>
 
-            <div style={styles.middleRow}>
-              {/* 기존 조건(remain_count > 0) 제거하고 메시지 항시 노출하되 내용만 변경 */}
-              <div style={{
-                  ...styles.subMessage,
-                  color: themeColor, // 메시지 색상도 테마 컬러 따라감
-                  fontWeight: isRanout ? 'normal' : 'bold'
-                }}>
-                {statusMessage}
-              </div>
+          {/* 메시지 영역 */}
+          <div style={styles.middleRow}>
+            <div style={{
+              ...styles.subMessage,
+              color: themeColor
+            }}>
+              {isRanout ? get('coupon_limited_msg_end') : get('coupon_limited_msg')}
             </div>
           </div>
 
-          {/* 오른쪽 */}
-          <div style={styles.rightCol}>
-            {currentStatus === "ISSUED" && remain_count > 0 && (
-              <>
-                <button style={styles.issueBtn} onClick={handleIssueCoupon}>
-                  <Download size={16} style={{ marginRight: 6 }} />
-                  {get('coupon.issue.button')}
-                </button>
-                <button onClick={() => setVisible(false)} style={styles.closeBtnInner}>×</button>
-              </>
-            )}
+          {/* [NEW] 타이머 컴포넌트 삽입 영역 */}
+          {/* isRanout이고, 다음 오픈 시간이 있을 때만 렌더링 */}
+          {isRanout && nextOpenDate && (
+            <div style={styles.timerRow}>
+               <Timer size={16} color="#E11D48" />
+               <span style={styles.timerLabel}>{get('coupon_next_open_left_msg')}</span>
+               <div style={styles.timerText}>
+                  <EventTimer targetDate={nextOpenDate} />
+               </div>
+            </div>
+          )}
 
-            {(currentStatus === "DOWNLOADED" || currentStatus === "USED") && (
-              <>
-                <button style={styles.disabledBtn} disabled>
-                  {get('coupon.issue.done')}
-                </button>
-                <button onClick={() => setVisible(false)} style={styles.closeBtnInner}>×</button>
-              </>
-            )}
-
-            {currentStatus === "RANOUT" && (
-              <>
-                {/* 마감 버튼 스타일: 회색조로 변경 */}
-                <button style={{...styles.disabledBtn, backgroundColor: '#D1D5DB', color: '#FFF'}} disabled>
-                  {get('coupon.issue.ranout')}
-                </button>
-                <button onClick={() => setVisible(false)} style={styles.closeBtnInner}>×</button>
-              </>
-            )}
-          </div>
         </div>
       </div>
+
+      {/* 버튼을 카드 하단으로 이동 */}
+      <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between" }}>
+        {currentStatus === "ISSUED" && remain_count > 0 && (
+          <>
+            <button style={styles.issueBtn} onClick={handleIssueCoupon}>
+              <Download size={16} style={{ marginRight: 6 }} />
+              {get('coupon.issue.button')}
+            </button>
+          </>
+        )}
+
+        {(currentStatus === "DOWNLOADED" || currentStatus === "USED") && (
+          <>
+            <button style={styles.disabledBtn} disabled>
+              {get('coupon.issue.done')}
+            </button>
+          </>
+        )}
+
+        {isRanout && (
+          <>
+            <button style={{ ...styles.disabledBtn, backgroundColor: '#D1D5DB', color: '#FFF' }} disabled>
+              {get('coupon.issue.ranout')}
+            </button>
+          </>
+        )}
+      </div>
+
+    </div>
     </>
   );
 };
