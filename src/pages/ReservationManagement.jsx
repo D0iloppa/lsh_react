@@ -6,7 +6,7 @@ import '@components/SketchComponents.css';
 import SketchHeader from '@components/SketchHeader';
 import HatchPattern from '@components/HatchPattern';
 import PersonFinderBillboard from '@components/PersonFinderBillboard';
-import { MessageCircle, Calendar, Check, Edit, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
+import { Ticket, MessageCircle, Calendar, Check, Edit, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import ApiClient from '@utils/ApiClient';
 import { useAuth } from '../contexts/AuthContext';
@@ -151,7 +151,10 @@ const transformReservationData = (apiData) => {
       attendee: item.attendee,
       noShowCount: item.no_show_count,
       escort_entrance:item.escort_entrance,
-      menu_name:item.menu_name || null
+      menu_name:item.menu_name || null,
+      coupon_id : item.coupon_id || null, 
+      discount_value : item.discount_value || null, 
+      coupon_token: item.coupon_token || null
     };
     
     console.log('Transformed item:', transformed); // 변환된 데이터 확인
@@ -1196,6 +1199,16 @@ const chatWithUser = async(r) => {
                         <div>
                           <Edit size={10}/> {get('MENU')}: {r.menu_name || get('menu.item.default')}
                         </div>
+
+                        {r.coupon_id && (
+                          <div className="booking-note-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                              <Ticket size={10}/> 
+                              {get('profile_coupon_item_label')}: 
+                              <span style={{color:'red'}}>
+                              {`${r.discount_value} % Coupon`}                              
+                              </span>
+                          </div>
+                        )}
 
                         <div>
                           <Edit size={10}/> {get('RESERVATION_NOTE_LABEL')} {r.note ? r.note : <span style={{color:'#9d9d9d'}}>{get('NO_NOTE_MESSAGE')}</span>}
