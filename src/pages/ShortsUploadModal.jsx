@@ -8,6 +8,7 @@ import { useAuth } from '@contexts/AuthContext';
 
 const ShortsUploadModal = ({ isOpen, onClose, onUploaded }) => {
   const { user } = useAuth();
+  
 
   const [title, setTitle] = useState("");
   const [file, setFile] = useState(null);

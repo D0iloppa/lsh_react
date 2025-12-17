@@ -15,8 +15,12 @@ import LoginView from '@components/Login';
 import RegisterView from '@components/Register';
 import TermsView from '@components/Terms';
 import PrivacyView from '@components/Privacy';
+
 import MainApp from '@layout/MainApp';
 import StaffApp from '@layout/StaffApp';
+import AdminApp from '@layout/AdminApp';
+
+
 import Cocktail from '@components/CocktailIcon';
 import HatchPattern from '@components/HatchPattern';
 import VenueTuto1 from '@components/Welcome/VenueTuto1';
@@ -109,6 +113,15 @@ const AppRoutes = () => {
            <RegisterView />
         } 
       />
+
+
+      <Route 
+        path="/admin" 
+        element={
+          <AdminApp />
+        } 
+      />
+
 
       {/* 4. 매니저 메인 앱 (로그인 필요) */}
       <Route 
