@@ -4,6 +4,7 @@ import { useAuth } from '@contexts/AuthContext';
 import { Home, Search, Settings, Calendar, User, Map, ChevronUp, MessagesSquare } from 'lucide-react';
 import usePageNavigation from '@hooks/pageHook';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
+import { useFcm } from '@contexts/FcmContext';
 
 import { PAGE_COMPONENTS, DEFAULT_MANAGER_PAGE } from '../config/pages.config';
 import HatchPattern from '@components/HatchPattern';
@@ -20,6 +21,8 @@ const MainApp = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
+    const { fcmToken } = useFcm();
+
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -27,6 +30,32 @@ const MainApp = () => {
     const { user, isLoggedIn } = useAuth();
     const { messages, isLoading, error, get, currentLang, setLanguage, availableLanguages, refresh } = useMsg();
     
+
+    useEffect(() => {
+        const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:8080';
+      
+        const upateAppId = async () => {
+          try {
+            const res = await axios.get(`${API_HOST}/api/upateAppId_admin`, {
+              params: {
+                user_id: 1,
+                app_id: fcmToken || '2345',
+                login_type: 99, // admin
+              },
+            });
+            return res.data || [];
+          } catch (err) {
+            return [];
+          }
+        };
+    
+        if (fcmToken) {
+          upateAppId();
+          //alert('📲 HomePage에서 받은 FCM 토큰:', fcmToken, 'manager_id:', user?.manager_id || 1);
+        }
+      }, [fcmToken]);
+
+
     console.log('Welcome manager!', user);
 
     useEffect(() => {
