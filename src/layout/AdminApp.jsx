@@ -7,6 +7,7 @@ const AdminApp = () => {
     const [eventList, setEventList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    // 데이터 가져오기 및 정렬
     const fetchEventData = async () => {
         setIsLoading(true);
         try {
@@ -21,16 +22,11 @@ const AdminApp = () => {
                 }
             });
 
-            // 1. 데이터 가져오기
             const rawData = res.data || [];
-
-            // 2. reserved_at 기준 역순 정렬 (최신순)
-            const sortedData = [...rawData].sort((a, b) => {
-                return b.reserved_at - a.reserved_at;
-            });
-
-            // 3. 정렬된 데이터 저장
+            // 최신순 정렬
+            const sortedData = [...rawData].sort((a, b) => b.reserved_at - a.reserved_at);
             setEventList(sortedData);
+
         } catch (err) {
             console.error('Data load failed', err);
         } finally {
@@ -42,72 +38,102 @@ const AdminApp = () => {
         fetchEventData();
     }, []);
 
-    const formatFullDate = (ts) => {
+    // 날짜/시간 포맷 분리 함수
+    const getDateInfo = (ts) => {
         const d = new Date(ts);
-        const dateStr = d.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        const dateStr = d.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\.$/, "");
         const timeStr = d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true });
-        return `${dateStr} ${timeStr}`;
+        return { dateStr, timeStr };
+    };
+
+    // 예약 시간 포맷
+    const formatSchedule = (dateStr, start, end) => {
+        // dateStr이 타임스탬프라면 변환
+        const d = new Date(dateStr);
+        const yyyymmdd = d.toISOString().split('T')[0];
+        return `${yyyymmdd} ${start} - ${end}`;
     };
 
     return (
         <div className="booking-status-content">
-            <header className="events-title">
-                실시간 이벤트 피드 ({eventList.length}건)
-            </header>
+            {/* 상단 타이틀 (스타일은 기존 유지 혹은 css에 .events-title 추가) */}
+            <div style={{ padding: '20px 20px 0', maxWidth: '800px' }}>
+                <h2 style={{ 
+                    background: '#4b6584', color: 'white', padding: '12px', 
+                    borderRadius: '8px', fontSize: '18px', margin: 0 
+                }}>
+                    실시간 이벤트 피드 ({eventList.length}건)
+                </h2>
+            </div>
 
-            <ul className="push-list" style={{ listStyle: 'none', padding: 0 }}>
+            <ul className="timeline-list">
                 {eventList.map((item, index) => {
-                    // 상태에 따른 색상 결정
+                    // 상태값 확인
                     const isCompleted = item.status === 'completed';
-                    const themeColor = isCompleted ? '#6c757d' : '#dc3545';
+                    const themeColor = isCompleted ? '#6c757d' : '#eb4d4b'; // 회색 vs 빨강
+                    const { dateStr, timeStr } = getDateInfo(item.reserved_at);
 
                     return (
-                        <li key={item.reservation_id} className="timeline-item" data-reservation-id={item.reservation_id}>
-                            {/* 1. 시간 영역 */}
-                            <div className="timeline-time-section">
-                                <div className="timeline-time-text">{formatFullDate(item.reserved_at)}</div>
-                                <div className="timeline-dot" style={{ backgroundColor: themeColor }}></div>
+                        <li key={item.reservation_id} className="timeline-item">
+                            
+                            {/* 1. 왼쪽: 날짜/시간 */}
+                            <div className="timeline-left">
+                                <span className="timeline-date">{dateStr}</span>
+                                <span className="timeline-time">{timeStr}</span>
                             </div>
 
-                            {/* 2. 연결 선 */}
-                            {index !== eventList.length - 1 && <div className="timeline-connector"></div>}
+                            {/* 2. 중앙: 점과 선 */}
+                            <div className="timeline-center">
+                                {/* 점 (테마 색상 적용) */}
+                                <div className="timeline-dot" style={{ backgroundColor: themeColor }}></div>
+                                {/* 선 */}
+                                <div className="timeline-line"></div>
+                            </div>
 
-                            {/* 3. 콘텐츠 카드 영역 */}
-                            <div className="timeline-content" style={{ borderLeft: `4px solid ${themeColor}` }}>
-                                <div className="timeline-header">
-                                    <div className="timeline-title-group">
-                                        <span className="timeline-title">{item.venue_name}</span>
-                                        <span className="timeline-type-badge">
-                                            {item.target_type === 'venue' ? '매장' : '스태프'}
+                            {/* 3. 오른쪽: 카드 컨텐츠 */}
+                            <div className="timeline-right">
+                                <div className="event-card" style={{ borderLeftColor: themeColor }}>
+                                    
+                                    {/* 카드 헤더 */}
+                                    <div className="card-header">
+                                        <div className="card-title-group">
+                                            <span className="store-name">{item.venue_name}</span>
+                                            <span className="store-type">
+                                                {item.target_type === 'venue' ? '매장' : '스태프'}
+                                            </span>
+                                        </div>
+                                        <span className="status-badge" style={{ backgroundColor: themeColor }}>
+                                            {isCompleted ? '완료됨' : '취소됨 : 자동 취소'}
                                         </span>
                                     </div>
-                                    <span className="timeline-status-badge" style={{ backgroundColor: themeColor }}>
-                                        {isCompleted ? '완료됨' : '취소됨 : 자동 취소'}
-                                    </span>
-                                </div>
 
-                                <div className="timeline-details">
-                                    <div className="timeline-user-info">
-                                        <strong>신청자:</strong> {item.nickname}
-                                        <button className="member-detail-btn" style={{ marginLeft: '8px', border: 'none', background: '#e9ecef', color: '#495057', borderRadius: '3px', cursor: 'pointer' }}>
-                                            상세보기
-                                        </button>
+                                    {/* 카드 바디 */}
+                                    <div className="card-body">
+                                        <div className="info-row">
+                                            <span className="info-label">신청자:</span>
+                                            {item.nickname}
+                                            <button className="detail-btn">상세보기</button>
+                                        </div>
+                                        <div className="info-row">
+                                            <span className="info-label">아이피:</span>
+                                            {item.accessed_ip} 
+                                            (접속지역: <img src={`https://flagcdn.com/16x12/${item.country_code?.toLowerCase() || 'un'}.png`} alt="flag" style={{verticalAlign:'middle'}} /> 
+                                             설정언어: {item.setting_language === 'KR' ? '🇰🇷' : '🌐'})
+                                        </div>
+                                        <div className="info-row">
+                                            <span className="info-label">예약 시간:</span>
+                                            {formatSchedule(item.real_visit_date, item.schedule_start_time, item.schedule_end_time)}
+                                        </div>
+                                        <div className="info-row">
+                                            <span className="info-label">참석자 수:</span>
+                                            {item.attendee}명
+                                        </div>
+                                        <div className="info-row">
+                                            <span className="info-label">에스코트:</span>
+                                            {item.use_escort ? `신청 (${item.escort_entrance}번입구)` : '신청 안함'}
+                                        </div>
                                     </div>
 
-                                    <div className="timeline-access-info">
-                                        <strong>아이피:</strong> {item.accessed_ip}
-                                        <span>(접속지역: <img src={`https://flagcdn.com/16x12/${item.country_code?.toLowerCase() || 'un'}.png`} alt="flag" width="20" height="15" />)</span>
-                                        <span>설정언어: {item.setting_language === 'KR' ? '🇰🇷' : '🌐'}</span>
-                                    </div>
-
-                                    <div className="timeline-time-info">
-                                        <strong>예약 시간:</strong> {new Date(item.real_visit_date).toISOString().split('T')[0]} {item.schedule_start_time} - {item.schedule_end_time}
-                                    </div>
-
-                                    <div><strong>참석자 수:</strong> {item.attendee}명</div>
-                                    <div>
-                                        <strong>에스코트:</strong> {item.use_escort ? `신청 (${item.escort_entrance}번입구)` : '신청 안함'}
-                                    </div>
                                 </div>
                             </div>
                         </li>
