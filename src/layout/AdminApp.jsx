@@ -3,9 +3,14 @@ import ApiClient from '@utils/ApiClient';
 import LoadingScreen from '@components/LoadingScreen';
 import './AdminApp.css';
 
+import { useNavigate } from 'react-router-dom';
+import { Home } from 'lucide-react';
+
 const AdminApp = () => {
     const [eventList, setEventList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+
+    const navigate = useNavigate();
 
     // 데이터 가져오기 및 정렬
     const fetchEventData = async () => {
@@ -58,12 +63,43 @@ const AdminApp = () => {
         <div className="booking-status-content">
             {/* 상단 타이틀 (스타일은 기존 유지 혹은 css에 .events-title 추가) */}
             <div style={{ padding: '20px 20px 0', maxWidth: '800px' }}>
-                <h2 style={{ 
-                    background: '#4b6584', color: 'white', padding: '12px', 
-                    borderRadius: '8px', fontSize: '18px', margin: 0 
+                <div style={{ 
+                    background: '#4b6584', 
+                    color: 'white', 
+                    padding: '12px 20px', 
+                    borderRadius: '8px', 
+                    display: 'flex',            /* 좌우 배치를 위한 Flexbox */
+                    justifyContent: 'space-between', 
+                    alignItems: 'center'
                 }}>
-                    실시간 이벤트 피드 ({eventList.length}건)
-                </h2>
+                    <h2 style={{ fontSize: '18px', margin: 0 }}>
+                        실시간 이벤트 피드 ({eventList.length}건)
+                    </h2>
+                    
+                    {/* 홈 이동 버튼 */}
+                    <button 
+                        onClick={() => navigate('/')}
+                        style={{
+                            background: 'rgba(255, 255, 255, 0.2)', /* 반투명 배경 */
+                            border: 'none',
+                            borderRadius: '6px',
+                            color: 'white',
+                            padding: '6px 12px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            fontSize: '13px',
+                            fontWeight: 'bold',
+                            transition: 'background 0.2s'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'}
+                        onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
+                    >
+                        <Home size={16} /> {/* 집 아이콘 */}
+                        홈으로
+                    </button>
+                </div>
             </div>
 
             <ul className="timeline-list">
