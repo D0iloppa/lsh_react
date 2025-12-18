@@ -117,6 +117,8 @@ const AdminApp = () => {
                                         <div className="info-row">
                                             <span className="info-label">아이피:</span>
                                             {item.accessed_ip} 
+                                        </div>
+                                        <div className="info-row">
                                             (접속지역: <img src={`https://flagcdn.com/16x12/${item.country_code?.toLowerCase() || 'un'}.png`} alt="flag" style={{verticalAlign:'middle'}} /> 
                                              설정언어: {item.setting_language === 'KR' ? '🇰🇷' : '🌐'})
                                         </div>
