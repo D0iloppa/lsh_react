@@ -91,7 +91,8 @@ const AdminApp = () => {
                             gap: '6px',
                             fontSize: '13px',
                             fontWeight: 'bold',
-                            transition: 'background 0.2s'
+                            transition: 'background 0.2s',
+                            display: 'none'
                         }}
                         onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'}
                         onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
