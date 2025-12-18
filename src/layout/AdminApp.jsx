@@ -20,7 +20,17 @@ const AdminApp = () => {
                     endDate: sevenDaysLater.toISOString().split('T')[0]
                 }
             });
-            setEventList(res.data || []);
+
+            // 1. 데이터 가져오기
+            const rawData = res.data || [];
+
+            // 2. reserved_at 기준 역순 정렬 (최신순)
+            const sortedData = [...rawData].sort((a, b) => {
+                return b.reserved_at - a.reserved_at;
+            });
+
+            // 3. 정렬된 데이터 저장
+            setEventList(sortedData);
         } catch (err) {
             console.error('Data load failed', err);
         } finally {
