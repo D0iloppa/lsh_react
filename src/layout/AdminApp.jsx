@@ -112,7 +112,6 @@ const AdminApp = () => {
                                         <div className="info-row">
                                             <span className="info-label">신청자:</span>
                                             {item.nickname}
-                                            <button className="detail-btn">상세보기</button>
                                         </div>
                                         <div className="info-row">
                                             <span className="info-label">아이피:</span>
