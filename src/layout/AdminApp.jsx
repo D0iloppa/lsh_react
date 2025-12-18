@@ -10,12 +10,13 @@ import { PAGE_COMPONENTS, DEFAULT_MANAGER_PAGE } from '../config/pages.config';
 import HatchPattern from '@components/HatchPattern';
 import LoadingScreen from '@components/LoadingScreen';
 import SketchHeader from '@components/SketchHeader'
+
 import ApiClient from '@utils/ApiClient';
 import Swal from 'sweetalert2';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import './MainApp.css';
+import './AdminApp.css';
 
 const MainApp = () => {
     const location = useLocation();
@@ -203,21 +204,11 @@ const MainApp = () => {
 
     return (
         <div className="main-app-container">
+
             {/* 메인 콘텐츠 영역 (스크롤 가능) */}
             <main className="content-area">
-                {renderCurrentPage()}
+                test
             </main>
-
-            {/* 하단 네비게이션 (고정) */}
-           
-
-            {currentPage == 'HOME' && (
-                <section className="bottom-map-section">
-                    <div className="map-icon-container" onClick={handleMapClick}>
-                        <Map size={20} /> <span style={{marginLeft: '5px'}}>{get('Main1.1')}</span>
-                    </div>
-                </section>
-            )}
 
             <LoadingScreen 
                 isVisible={isLoading} 
