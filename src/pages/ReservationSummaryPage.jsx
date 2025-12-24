@@ -36,7 +36,7 @@ const ReserveSummaryPage = ({
     memo: '',
     escort_entrance: '',
     menuDisp: '',
-    coupon_id: null
+    coupon_id: -1
   });
   const [isConfirming, setIsConfirming] = useState(false);
 
@@ -113,7 +113,7 @@ const ReserveSummaryPage = ({
         venueToItem:true, pickupService:pickupService,useStaffService:useStaffService,
         escort_entrance: escort_entrance,
         item_id:menuItem.item_id,
-        coupon_id: coupon_id || null
+        coupon_id: coupon_id || -1
       };
 
       setReservationPayload(api_payload);
