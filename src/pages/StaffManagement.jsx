@@ -534,8 +534,7 @@ const loadStaffList = async () => {
                           alignItems: 'center',
                           justifyContent: 'center',
                           fontFamily: 'inherit',
-                          fontWeight: '500',
-                          display:'none'
+                          fontWeight: '500'
                         }}
                         title={get('STAFF_DELETE_BUTTON') || '삭제'}
                       >
