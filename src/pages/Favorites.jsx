@@ -120,6 +120,8 @@ const FavoritesPage = ({
 
     if(!target_id) return;
     
+    console.log('handleDiscover', item);
+
     switch(target_type){
       case 'venue':
         navigateToPageWithData && navigateToPageWithData(PAGES.DISCOVER, {

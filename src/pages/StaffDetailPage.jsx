@@ -829,6 +829,20 @@ hideIOSImageViewer();
 
   // availCnt 가져오기
   useEffect(() => {
+
+
+    const safeAwait = async (promise) => {
+      try {
+        const data = await promise;
+        return [data, null];
+      } catch (error) {
+        return [null, error];
+      }
+    };
+
+
+
+
     const fetchStaffAvailCnt = async () => {
       if (!girl.staff_id) return;
       setIsLoadingAvailCnt(true);
@@ -838,8 +852,38 @@ hideIOSImageViewer();
         let vn_schedule_status = girl?.vn_schedule_status || false;
 
 
+
+        let _venue_id = girl?.venue_id;
+
+
+        if (!_venue_id) {
+          const [response, apiError] = await safeAwait(
+            ApiClient.get('/api/getStaffProfile', {
+              params: {
+                user_id: user?.user_id ?? 1,
+                staff_id: otherProps?.staff_id,
+                lang: currentLang
+              }
+            })
+          );
+        
+          if (apiError) {
+            console.error('API Call Failed:', apiError);
+            _venue_id = 1; // 실패 시 fallback
+          } else {
+            const firstItem = Array.isArray(response) && response.length > 0 ? response[0] : null;
+            
+            console.log('staff profile data fetched(no_venue_id):', firstItem);
+            _venue_id = firstItem?.venue_id ?? 1;
+          }
+        }
+
+
+
+
+
         const vn_response = await ApiClient.get(`/api/getVenue`, {
-          params: { venue_id: girl.venue_id
+          params: { venue_id: _venue_id
             ,lang:currentLang
            },
         });
