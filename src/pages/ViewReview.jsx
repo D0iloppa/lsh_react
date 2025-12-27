@@ -155,6 +155,7 @@ const ViewReviewPage = ({
       navigateToPageWithData && navigateToPageWithData(PAGES.STAFFDETAIL, {
         staff_id: review.target_id,
         image_url: review.image_url,
+        venue_id: review.venue_id,
         fromReview: true
       });
     }
