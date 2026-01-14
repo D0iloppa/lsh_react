@@ -369,7 +369,7 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
             } else {
                 // [Scenario B: Initial Load / Polling]
                 if (isInitial) {
-                    const dbMsgs = await ChatStorage.getMessages(limit, null);
+                    let dbMsgs = await ChatStorage.getMessages(limit, null);
 
                     dbMsgs = [];
 
