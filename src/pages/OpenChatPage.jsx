@@ -272,7 +272,7 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
             try {
                 await ChatStorage.init();
 
-                await ChatStorage.deleteAllMessages();
+                // await ChatStorage.deleteAllMessages();
 
                 await ChatStorage.cleanupOldMessages(RETENTION_DAYS);
             } catch (e) { console.error('DB Init Error:', e); }
@@ -347,6 +347,8 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
 
                 let dbMsgs = await ChatStorage.getMessages(limit, oldestSn);
 
+                dbMsgs = [];
+
                 if (dbMsgs.length < limit) {
                     const lastSn = dbMsgs.length > 0 ? dbMsgs[dbMsgs.length - 1].chat_sn : oldestSn;
                     const response = await ApiClient.get('/api/openchat/messages', {
@@ -368,6 +370,9 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                 // [Scenario B: Initial Load / Polling]
                 if (isInitial) {
                     const dbMsgs = await ChatStorage.getMessages(limit, null);
+
+                    dbMsgs = [];
+
                     if (dbMsgs.length > 0) {
                         // ... (transformation logic handled below) ...
                         const transformed = dbMsgs.map(item => ({
