@@ -704,6 +704,7 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                 const realChatSn = res.data.chat_sn;
                 const realUrl = res.data.image_url || res.data.video_url || previewUrl;
                 const created_at = res.data.created_at || now.toISOString();
+                const chat_msg = res.chat_msg || '';
 
                 lastChatSnRef.current = realChatSn;
 
@@ -711,7 +712,7 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                 const confirmedData = {
                     chat_sn: realChatSn,
                     sender_id: user.user_id,
-                    message: '',
+                    message: chat_msg,
                     image_url: fileType === 'image' ? realUrl : null,
                     video_url: fileType === 'video' ? realUrl : null,
                     type: fileType,
@@ -744,6 +745,7 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
             Swal.fire('오류', '파일 업로드에 실패했습니다.', 'error');
         } finally {
             isLoadingRef.current = false;
+            setTimeout(() => scrollToBottom('auto', true), 10);
         }
     };
 
@@ -826,7 +828,7 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                                     <div>{msg.text}</div>
                                 )
                             )}
-                            {msg.image && <img src={msg.image} className="chat-img" onClick={() => setModalImage(msg.image)} alt="chat" />}
+                            {(msg.image && msg.text == '') && <img src={msg.image} className="chat-img" onClick={() => setModalImage(msg.image)} alt="chat" />}
                             {translation && <div className="translated-text">{translation} <span>(번역됨)</span></div>}
                             {!isMine && !translation && hasText && (
                                 <button className="trans-btn-inline" onClick={() => onTranslate(msg.chat_sn, msg.text)}>번역</button>
