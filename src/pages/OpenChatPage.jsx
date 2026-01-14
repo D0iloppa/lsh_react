@@ -206,7 +206,7 @@ let initialScrollY = 0;
 
 // --- Main Component ---
 
-const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCounts, ...otherProps }) => {
+const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, refreshUnreadCounts, ...otherProps }) => {
 
     const textareaRef = useRef < HTMLTextAreaElement > (null);
     const [isFocus, setIsFocus] = useState(false);
@@ -271,6 +271,9 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
         const initDB = async () => {
             try {
                 await ChatStorage.init();
+
+                await ChatStorage.deleteAllMessages();
+
                 await ChatStorage.cleanupOldMessages(RETENTION_DAYS);
             } catch (e) { console.error('DB Init Error:', e); }
         };
@@ -709,6 +712,8 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
 
                 let img_src_ = match ? match[1] : null;
 
+                console.log('real_url', img_src_);
+
                 lastChatSnRef.current = realChatSn;
 
                 // RECONCILE & SAVE TO DB
@@ -1014,7 +1019,9 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                             }
                         }
                     ]}
-                    title={roomTitle} showBack={true} onBack={goBack} />
+                    title={roomTitle} showBack={true} onBack={() => {
+                        navigateToPage(PAGES.HOME);
+                    }} />
 
                 <div className="chat-messages" ref={chatBoxRef}>
                     {isLoadingOlder && (
