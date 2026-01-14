@@ -732,8 +732,8 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                         return {
                             ...m,
                             chat_sn: realChatSn,
-                            image: fileType === 'image' ? realUrl : null,
-                            video: fileType === 'video' ? realUrl : null,
+                            image: fileType === 'image' ? img_src_ || realUrl : null,
+                            video: fileType === 'video' ? img_src_ || realUrl : null,
                             isUploading: false
                         };
                     }
