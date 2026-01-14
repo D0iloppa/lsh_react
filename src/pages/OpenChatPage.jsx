@@ -705,6 +705,9 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                 const realUrl = res.data.image_url || res.data.video_url || previewUrl;
                 const created_at = res.data.created_at || now.toISOString();
                 const chat_msg = res.chat_msg || '';
+                const match = chat_msg.match(/src=['"]([^'"]+)['"]/);
+
+                let img_src_ = match ? match[1] : null;
 
                 lastChatSnRef.current = realChatSn;
 
@@ -712,9 +715,9 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                 const confirmedData = {
                     chat_sn: realChatSn,
                     sender_id: user.user_id,
-                    message: chat_msg,
-                    image_url: fileType === 'image' ? realUrl : null,
-                    video_url: fileType === 'video' ? realUrl : null,
+                    message: '',
+                    image_url: fileType === 'image' ? img_src_ || realUrl : null,
+                    video_url: fileType === 'video' ? img_src_ || realUrl : null,
                     type: fileType,
                     created_at: created_at,
                     send_dt: created_at,
