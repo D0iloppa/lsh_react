@@ -39,6 +39,8 @@ import Setting from '@pages/Setting';
 import Chatting from '@pages/Chatting';
 import ChattingList from '@pages/ChattingList';
 
+import OpenChatPage from '@pages/OpenChatPage';
+
 
 import Login from '@components/Login/LoginView';
 import RegisterView from '@components/Register/RegisterView';
@@ -83,15 +85,17 @@ export const PAGES = {
     CHATTING: 'CHATTING',
     CHATTINGLIST: 'CHATTINGLIST',
     LOGIN: 'LOGIN',
-    REGISTER : 'REGISTER',
-    TERMS : 'TERMS',
-    PRIVACY : 'PRIVACY',
+    REGISTER: 'REGISTER',
+    TERMS: 'TERMS',
+    PRIVACY: 'PRIVACY',
     PURCHASEPAGE: 'PURCHASEPAGE',
     RANKING: 'RANKING',
     NOTICE: 'NOTICE',
     BARLIST: 'BARLIST',
     MASSAGELIST: 'MASSAGELIST',
-    SHORTSVIEWER: 'SHORTSVIEWER'
+
+    SHORTSVIEWER: 'SHORTSVIEWER',
+    OPENCHAT: 'OPENCHAT'
 };
 
 // 페이지 컴포넌트 매핑
@@ -129,7 +133,9 @@ export const PAGE_COMPONENTS = {
     [PAGES.NOTICE]: Notice,
     [PAGES.BARLIST]: BarMainPage,
     [PAGES.MASSAGELIST]: MassageMainPage,
-    [PAGES.SHORTSVIEWER]: ShortsViewer
+
+    [PAGES.SHORTSVIEWER]: ShortsViewer,
+    [PAGES.OPENCHAT]: OpenChatPage
 };
 
 // 기본 페이지

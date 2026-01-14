@@ -10,28 +10,29 @@ import '@components/SketchComponents.css';
 import { useMsg, useMsgGet, useMsgLang } from '@contexts/MsgContext';
 import { useAuth } from '@contexts/AuthContext';
 
-import { Check, X } from 'lucide-react';
+import { Check, X, Trash2 } from 'lucide-react';
 import qs from 'qs';
 import LoadingScreen from '@components/LoadingScreen';
 import Swal from 'sweetalert2';
+import ChatStorage from '@utils/ChatStorage'; // IndexedDB utility
 import ApiClient from '@utils/ApiClient';
 
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const SettingsPage = ({ 
-  navigateToPageWithData, 
+const SettingsPage = ({
+  navigateToPageWithData,
   PAGES,
   goBack,
-  ...otherProps 
+  ...otherProps
 }) => {
 
   const { user, isLoggedIn, verifyPassword } = useAuth();
   const [userInfo, setUserInfo] = useState({});
   const [userSetting, setSetting] = useState([]);
   const API_HOST = import.meta.env.VITE_API_HOST; // ex: https://doil.chickenkiller.com/api
-  
-  const [language, setLanguage] = useState('ko'); 
+
+  const [language, setLanguage] = useState('ko');
   const [receiveUpdates, setReceiveUpdates] = useState(true);
   const [eventAlerts, setEventAlerts] = useState(false);
   const [email, setEmail] = useState('user@example.com');
@@ -63,12 +64,12 @@ const SettingsPage = ({
   }, [messages, currentLang]);
 
   useEffect(() => {
-  if (currentLang) {
-    setLanguage(currentLang);
-  }
-}, [currentLang]);
+    if (currentLang) {
+      setLanguage(currentLang);
+    }
+  }, [currentLang]);
 
-console.log("language", language)
+  console.log("language", language)
 
 
   // useEffect 의존성 최적화 - 설정 데이터 로딩
@@ -77,7 +78,7 @@ console.log("language", language)
       try {
         const response = await axios.post(
           `${API_HOST}/api/selectSetting`,
-          qs.stringify({ 
+          qs.stringify({
             user_id: user?.user_id || 1,
             user_type: 'user'
           }),
@@ -94,8 +95,8 @@ console.log("language", language)
         console.log(data.update_alert);
 
         localStorage.setItem('lsh_language', data.language);
-        
-        
+
+
         setLanguage(data.language || 'ko');
         setReceiveUpdates(data.update_alert ?? true);
         setEventAlerts(data.event_alert ?? false);
@@ -117,7 +118,7 @@ console.log("language", language)
 
   const handleEventAlertsChange = (newValue) => {
     setEventAlerts(newValue);
-    
+
     // 토글 변경 시 즉시 토스트 표시
     if (newValue) {
       toast.info(get('tost.event.alert.on'));
@@ -143,6 +144,31 @@ console.log("language", language)
   const handleBack = () => {
     console.log('Back 클릭');
     navigateToPageWithData && navigateToPageWithData(PAGES.HOME);
+  };
+
+
+  const handleClearChat = async () => {
+    const result = await Swal.fire({
+      title: '채팅 데이터 삭제',
+      text: '정말로 모든 채팅 기록을 삭제하시겠습니까?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: '삭제',
+      cancelButtonText: '취소'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await ChatStorage.clearAllMessages();
+        console.log('채팅로그 삭제 완료');
+        await Swal.fire('삭제 완료', '채팅 기록이 삭제되었습니다.', 'success');
+      } catch (error) {
+        console.error('채팅로그 삭제 실패:', error);
+        await Swal.fire('오류', '삭제 중 문제가 발생했습니다.', 'error');
+      }
+    }
   };
 
   const handleSave = async () => {
@@ -174,7 +200,7 @@ console.log("language", language)
       if (setGlobalLang && language !== currentLang) {
         setGlobalLang(language);
         console.log('언어 변경됨:', language);
-        
+
         // CSS 변수도 함께 업데이트 (폰트 즉시 적용)
         if (language === 'ja') {
           document.documentElement.style.setProperty('--font-primary', "'NotoSansJP', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif");
@@ -182,7 +208,7 @@ console.log("language", language)
           document.documentElement.style.setProperty('--font-primary', "'BMHanna', 'Comic Sans MS', cursive, sans-serif");
         }
       }
-      
+
       await Swal.fire({
         title: get('SETTINGS_SAVE_SUCCESS'),
         icon: 'success',
@@ -208,7 +234,7 @@ console.log("language", language)
       });
       return;
     }
-  
+
     setIsVerifyingPassword(true);
     try {
       const response = await verifyPassword({
@@ -218,18 +244,18 @@ console.log("language", language)
         login_type: user.login_type,
         account_type: user.type
       });
-      
+
       console.log('response', response);
-  
+
       const { success = false } = response;
-  
+
       if (success) {
         // React 18의 배치 업데이트를 활용하여 한 번에 업데이트
         startTransition(() => {
           setIsPasswordVerified(true);
           setShowNewPasswordFields(true);
         });
-        
+
         Swal.fire({
           title: get('SWAL_SUCCESS_TITLE'),
           text: get('PASSWORD_VERIFY_SUCCESS'),
@@ -256,7 +282,7 @@ console.log("language", language)
       setIsVerifyingPassword(false);
     }
   };
-  
+
   // 새 비밀번호 저장
   const handleSaveNewPassword = async () => {
     // 1. Current Password vs New Password 체크
@@ -268,7 +294,7 @@ console.log("language", language)
       });
       return;
     }
-  
+
     // 2. New Password vs Confirm Password 체크
     if (password.new !== password.confirm) {
       Swal.fire({
@@ -278,7 +304,7 @@ console.log("language", language)
       });
       return;
     }
-  
+
     // 3. 새 비밀번호 길이 체크
     if (password.new.length < 6) {
       Swal.fire({
@@ -288,7 +314,7 @@ console.log("language", language)
       });
       return;
     }
-  
+
     try {
       const response = await ApiClient.postForm('/api/UpdatePassword', {
         login_type: user.login_type,
@@ -298,14 +324,14 @@ console.log("language", language)
         passwd: password.new,
         rePasswd: password.confirm,
       });
-  
+
       if (response.success) {
         Swal.fire({
           title: get('SWAL_SUCCESS_TITLE'),
           text: get('PASSWORD_UPDATE_SUCCESS'),
           icon: 'success'
         });
-        
+
         // 폼 초기화
         setPassword({ current: '', new: '', confirm: '' });
         setIsPasswordVerified(false);
@@ -326,123 +352,123 @@ console.log("language", language)
       });
     }
   };
-  
+
   const handleChangePassword = async () => {
-      // 1. 입력값 검증
-      if (!password.current.trim()) {
+    // 1. 입력값 검증
+    if (!password.current.trim()) {
+      Swal.fire({
+        title: get('SWAL_ERROR_TITLE'),
+        text: get('PASSWORD_ENTER_CURRENT'),
+        icon: 'error'
+      });
+      return;
+    }
+
+    if (!password.new.trim()) {
+      Swal.fire({
+        title: get('SWAL_ERROR_TITLE'),
+        text: get('VALIDATION_NEW_PASSWORD_REQUIRED'),
+        icon: 'error'
+      });
+      return;
+    }
+
+    if (!password.confirm.trim()) {
+      Swal.fire({
+        title: get('SWAL_ERROR_TITLE'),
+        text: get('VALIDATION_CONFIRM_PASSWORD_REQUIRED'),
+        icon: 'error'
+      });
+      return;
+    }
+
+    // 2. 새 비밀번호 유효성 검사
+    if (password.current === password.new) {
+      Swal.fire({
+        title: get('SWAL_ERROR_TITLE'),
+        text: get('PASSWORD_MUST_BE_DIFFERENT'),
+        icon: 'error'
+      });
+      return;
+    }
+
+    if (password.new !== password.confirm) {
+      Swal.fire({
+        title: get('SWAL_ERROR_TITLE'),
+        text: get('PASSWORD_CONFIRM_MISMATCH'),
+        icon: 'error'
+      });
+      return;
+    }
+
+    if (password.new.length < 6) {
+      Swal.fire({
+        title: get('SWAL_ERROR_TITLE'),
+        text: get('PASSWORD_MIN_LENGTH'),
+        icon: 'error'
+      });
+      return;
+    }
+
+    setIsChangingPassword(true);
+
+    try {
+      // 3. 현재 비밀번호 검증
+      const verifyResponse = await verifyPassword({
+        login_id: user.login_id,
+        email: user.login_id,
+        passwd: password.current,
+        login_type: user.login_type,
+        account_type: user.type
+      });
+
+      if (!verifyResponse.success) {
         Swal.fire({
           title: get('SWAL_ERROR_TITLE'),
-          text: get('PASSWORD_ENTER_CURRENT'),
+          text: get('PASSWORD_CURRENT_INCORRECT'),
           icon: 'error'
         });
         return;
       }
 
-      if (!password.new.trim()) {
+      // 4. 새 비밀번호로 업데이트
+      const updateResponse = await ApiClient.postForm('/api/UpdatePassword', {
+        login_type: user.login_type,
+        account_type: user.type,
+        login_id: user.login_id,
+        email: user.login_id,
+        passwd: password.new,
+        rePasswd: password.confirm,
+      });
+
+      if (updateResponse.success) {
+        Swal.fire({
+          title: get('SWAL_SUCCESS_TITLE'),
+          text: get('PASSWORD_UPDATE_SUCCESS'),
+          icon: 'success'
+        });
+
+        // 폼 초기화
+        setPassword({ current: '', new: '', confirm: '' });
+      } else {
         Swal.fire({
           title: get('SWAL_ERROR_TITLE'),
-          text: get('VALIDATION_NEW_PASSWORD_REQUIRED'),
+          text: updateResponse.message || get('PASSWORD_UPDATE_FAILED'),
           icon: 'error'
         });
-        return;
       }
 
-      if (!password.confirm.trim()) {
-        Swal.fire({
-          title: get('SWAL_ERROR_TITLE'),
-          text: get('VALIDATION_CONFIRM_PASSWORD_REQUIRED'),
-          icon: 'error'
-        });
-        return;
-      }
-
-      // 2. 새 비밀번호 유효성 검사
-      if (password.current === password.new) {
-        Swal.fire({
-          title: get('SWAL_ERROR_TITLE'),
-          text: get('PASSWORD_MUST_BE_DIFFERENT'),
-          icon: 'error'
-        });
-        return;
-      }
-
-      if (password.new !== password.confirm) {
-        Swal.fire({
-          title: get('SWAL_ERROR_TITLE'),
-          text: get('PASSWORD_CONFIRM_MISMATCH'),
-          icon: 'error'
-        });
-        return;
-      }
-
-      if (password.new.length < 6) {
-        Swal.fire({
-          title: get('SWAL_ERROR_TITLE'),
-          text: get('PASSWORD_MIN_LENGTH'),
-          icon: 'error'
-        });
-        return;
-      }
-
-      setIsChangingPassword(true);
-
-      try {
-        // 3. 현재 비밀번호 검증
-        const verifyResponse = await verifyPassword({
-          login_id: user.login_id,
-          email: user.login_id,
-          passwd: password.current,
-          login_type: user.login_type,
-          account_type: user.type
-        });
-
-        if (!verifyResponse.success) {
-          Swal.fire({
-            title: get('SWAL_ERROR_TITLE'),
-            text: get('PASSWORD_CURRENT_INCORRECT'),
-            icon: 'error'
-          });
-          return;
-        }
-
-        // 4. 새 비밀번호로 업데이트
-        const updateResponse = await ApiClient.postForm('/api/UpdatePassword', {
-          login_type: user.login_type,
-          account_type: user.type,
-          login_id: user.login_id,
-          email: user.login_id,
-          passwd: password.new,
-          rePasswd: password.confirm,
-        });
-
-        if (updateResponse.success) {
-          Swal.fire({
-            title: get('SWAL_SUCCESS_TITLE'),
-            text: get('PASSWORD_UPDATE_SUCCESS'),
-            icon: 'success'
-          });
-          
-          // 폼 초기화
-          setPassword({ current: '', new: '', confirm: '' });
-        } else {
-          Swal.fire({
-            title: get('SWAL_ERROR_TITLE'),
-            text: updateResponse.message || get('PASSWORD_UPDATE_FAILED'),
-            icon: 'error'
-          });
-        }
-
-      } catch (error) {
-        console.error('Password change error:', error);
-        Swal.fire({
-          title: get('SWAL_ERROR_TITLE'),
-          text: get('PASSWORD_UPDATE_FAILED'),
-          icon: 'error'
-        });
-      } finally {
-        setIsChangingPassword(false);
-      }
-    };
+    } catch (error) {
+      console.error('Password change error:', error);
+      Swal.fire({
+        title: get('SWAL_ERROR_TITLE'),
+        text: get('PASSWORD_UPDATE_FAILED'),
+        icon: 'error'
+      });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
 
 
 
@@ -450,7 +476,7 @@ console.log("language", language)
   const ToggleSwitch = ({ checked, onChange, label }) => (
     <div className="toggle-container">
       <span className="toggle-label">{label}</span>
-      <div 
+      <div
         className={`toggle-switch ${checked ? 'checked' : ''}`}
         onClick={() => onChange(!checked)}
       >
@@ -636,13 +662,13 @@ console.log("language", language)
 
       <div className="settings-container">
         {/* Header */}
-        <SketchHeader 
-          title={ get('Menu1.3') }
+        <SketchHeader
+          title={get('Menu1.3')}
           showBack={true}
           onBack={goBack}
           rightButtons={[]}
         />
-        
+
 
         {/* Settings Content */}
         <div className="settings-content">
@@ -652,7 +678,7 @@ console.log("language", language)
             <HatchPattern opacity={0.4} />
             <div className="section-content">
               <h2 className="section-title">{get('Setting1.1')}</h2>
-              <select 
+              <select
                 className="language-select"
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
@@ -660,8 +686,8 @@ console.log("language", language)
                 <option value="vi">{get('language.name.vietnamese')}</option>
                 <option value="kr">{get('language.name.korean')}</option>
                 <option value="en">{get('language.name.english')}</option>
-                <option value="ja">{get('language.name.japanese')}</option>  
-                <option value="cn">{get('LANGUAGE_CHINESE')}</option>  
+                <option value="ja">{get('language.name.japanese')}</option>
+                <option value="cn">{get('LANGUAGE_CHINESE')}</option>
               </select>
             </div>
           </SketchDiv>
@@ -671,12 +697,12 @@ console.log("language", language)
             <HatchPattern opacity={0.4} />
             <div className="section-content">
               <h2 className="section-title">{get('Setting1.2')}</h2>
-              <div style={{display:'none'}}><ToggleSwitch 
+              <div style={{ display: 'none' }}><ToggleSwitch
                 checked={receiveUpdates}
                 onChange={setReceiveUpdates}
                 label={get('Setting1.5')}
               /></div>
-              <ToggleSwitch  
+              <ToggleSwitch
                 checked={eventAlerts}
                 onChange={handleEventAlertsChange}
                 label={get('Setting1.6')}
@@ -685,17 +711,17 @@ console.log("language", language)
           </SketchDiv>
 
           {/* Account Details */}
-          <SketchDiv className="settings-section" style={{display:'none'}}>
+          <SketchDiv className="settings-section" style={{ display: 'none' }}>
             <HatchPattern opacity={0.4} />
             <div className="section-content">
               <h2 className="section-title">{get('Setting1.3')}</h2>
-             <div className="form-field">
+              <div className="form-field">
                 <label className="field-label">{get('title.text.1')}</label>
                 <span style={{ display: 'inline-block', padding: '0.5rem 0' }}>
                   {email || get('PROFILE_NO_EMAIL')}
                 </span>
               </div>
-              <div className="form-field" style={{display:'none'}}>
+              <div className="form-field" style={{ display: 'none' }}>
                 <label className="field-label">{get('title.text.13')}</label>
                 <SketchInput
                   type="tel"
@@ -706,55 +732,55 @@ console.log("language", language)
 
               {/* 암호 변경 섹션*/}
               <div className="password-section">
-              <div className="section-title">{get('SETTINGS_CHANGE_PASSWORD')}</div>
-              <SketchDiv className="section-box">
-                <div className="input-row">
-                  <SketchInput
-                    name="currentPassword"
-                    value={password.current}
-                    onChange={e => setPassword(p => ({ ...p, current: e.target.value }))}
-                    placeholder={get('SETTINGS_CURRENT_PASSWORD_PLACEHOLDER')}
-                    type="password" 
-                    style={{fontFamily: 'none', padding:'0.4rem'}}
-                  />
-                </div>
-                
-                <div className="input-row">
-                  <SketchInput
-                    name="newPassword"
-                    value={password.new}
-                    onChange={e => setPassword(p => ({ ...p, new: e.target.value }))}
-                    placeholder={get('SETTINGS_NEW_PASSWORD_PLACEHOLDER')}
-                    type="password" 
-                    style={{fontFamily: 'none', padding:'0.4rem'}}
-                  />
-                </div>
-                
-                <div className="input-row">
-                  <SketchInput
-                    name="confirmPassword"
-                    value={password.confirm}
-                    onChange={e => setPassword(p => ({ ...p, confirm: e.target.value }))}
-                    placeholder={get('SETTINGS_CONFIRM_PASSWORD_PLACEHOLDER')}
-                    type="password" 
-                    style={{fontFamily: 'none', padding:'0.4rem'}}
-                  />
-                </div>
-                
-                <div className="save-btn-row">
-                  <SketchBtn 
-                    variant="accent" 
-                    size="small" 
-                    style={{width: '30%'}}
-                    onClick={handleChangePassword}
-                    disabled={isChangingPassword}
-                  >
-                    <HatchPattern opacity={0.6} />
-                    {isChangingPassword ? '변경 중...' : get('SETTINGS_SAVE_BUTTON')}
-                  </SketchBtn>
-                </div>
-              </SketchDiv> 
-            </div>
+                <div className="section-title">{get('SETTINGS_CHANGE_PASSWORD')}</div>
+                <SketchDiv className="section-box">
+                  <div className="input-row">
+                    <SketchInput
+                      name="currentPassword"
+                      value={password.current}
+                      onChange={e => setPassword(p => ({ ...p, current: e.target.value }))}
+                      placeholder={get('SETTINGS_CURRENT_PASSWORD_PLACEHOLDER')}
+                      type="password"
+                      style={{ fontFamily: 'none', padding: '0.4rem' }}
+                    />
+                  </div>
+
+                  <div className="input-row">
+                    <SketchInput
+                      name="newPassword"
+                      value={password.new}
+                      onChange={e => setPassword(p => ({ ...p, new: e.target.value }))}
+                      placeholder={get('SETTINGS_NEW_PASSWORD_PLACEHOLDER')}
+                      type="password"
+                      style={{ fontFamily: 'none', padding: '0.4rem' }}
+                    />
+                  </div>
+
+                  <div className="input-row">
+                    <SketchInput
+                      name="confirmPassword"
+                      value={password.confirm}
+                      onChange={e => setPassword(p => ({ ...p, confirm: e.target.value }))}
+                      placeholder={get('SETTINGS_CONFIRM_PASSWORD_PLACEHOLDER')}
+                      type="password"
+                      style={{ fontFamily: 'none', padding: '0.4rem' }}
+                    />
+                  </div>
+
+                  <div className="save-btn-row">
+                    <SketchBtn
+                      variant="accent"
+                      size="small"
+                      style={{ width: '30%' }}
+                      onClick={handleChangePassword}
+                      disabled={isChangingPassword}
+                    >
+                      <HatchPattern opacity={0.6} />
+                      {isChangingPassword ? '변경 중...' : get('SETTINGS_SAVE_BUTTON')}
+                    </SketchBtn>
+                  </div>
+                </SketchDiv>
+              </div>
               {/* <div className="password-section">
                 <div className="section-title">
                   {get('Staff.setting.password.title') || get('STAFF_SETTINGS_CHANGE_PASSWORD_TITLE')}
@@ -831,17 +857,43 @@ console.log("language", language)
             </div>
           </SketchDiv>
 
+
+          <SketchDiv className="settings-section" style={{ display: 'block' }}>
+            <HatchPattern opacity={0.4} />
+            <div className="section-content">
+              <h2 className="section-title">{'오픈채팅 데이터 관리'}</h2>
+              <div className="toggle-container">
+                <span className="toggle-label">오픈채팅 데이터 삭제</span>
+                <button
+                  onClick={handleClearChat}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#ef4444'
+                  }}
+                >
+                  <Trash2 size={20} />
+                </button>
+              </div>
+            </div>
+          </SketchDiv>
+
           {/* Privacy Settings */}
           <SketchDiv className="settings-section" style={{ display: 'none' }}>
             <HatchPattern opacity={0.4} />
             <div className="section-content">
               <h2 className="section-title">{get('Setting1.4')}</h2>
-              <ToggleSwitch 
+              <ToggleSwitch
                 checked={shareLocation}
                 onChange={setShareLocation}
                 label={get('Setting1.7')}
               />
-              <ToggleSwitch 
+              <ToggleSwitch
                 checked={showOnlineStatus}
                 onChange={setShowOnlineStatus}
                 label={get('Setting1.8')}
@@ -860,29 +912,29 @@ console.log("language", language)
               {get('btn.save.1')}
             </SketchBtn>
           </div>
-           <LoadingScreen 
-                     variant="cocktail"
-                     loadingText="Loading..."
-                     isVisible={isLoading} 
-                   />
+          <LoadingScreen
+            variant="cocktail"
+            loadingText="Loading..."
+            isVisible={isLoading}
+          />
         </div>
       </div>
 
       <ToastContainer
-      position="top-center"
-      autoClose={2000}
-      hideProgressBar={true}
-      newestOnTop={false}
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-       style={{
-    top: '65px',   // 100px → 60px로 줄여서 더 아래로
-    zIndex: 9999
-  }}
-    />
+        position="top-center"
+        autoClose={2000}
+        hideProgressBar={true}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        style={{
+          top: '65px',   // 100px → 60px로 줄여서 더 아래로
+          zIndex: 9999
+        }}
+      />
     </>
   );
 };
