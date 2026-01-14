@@ -775,7 +775,10 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                         </div>
                     )}
                     <div className="bubble-container">
-                        {!isMine && <div className="sender-name">{msg.rank_name} {msg.sender_name}</div>}
+                        {!isMine && <div className="sender-info">
+                            <span className="rank" style={{ color: msg.sender_color, fontWeight: 'bold' }}> {msg.sender_level < 10 ? `Lv.${msg.sender_level} ` : '🤠'}{msg.rank_name}</span>
+                            <span className="name" style={{ color: '#868e96' }}>{msg.sender_name}</span>
+                        </div>}
                         <div className="bubble" style={{ color: '#999', backgroundColor: '#f0f0f0', userSelect: 'none' }}>
                             [삭제된 메시지 입니다]
                         </div>
