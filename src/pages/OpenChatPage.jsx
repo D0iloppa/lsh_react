@@ -328,8 +328,13 @@ const LikeUsersModal = ({ show, onClose, users, loading }) => {
                     ) : (
                         users.map(u => (
                             <div key={u.user_id} className="like-user-item">
-                                <span className="name">{u.nickname}</span>
-                                <span className="time">{u.time}</span>
+                                <div className="profile-wrapper-sm">
+                                    <img src={USER_LEVEL_ICONS[u.level] || USER_LEVEL_ICONS[1]} alt="lv" />
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <span className="name">{u.nickname}</span>
+                                    {u.time && <span className="time">{u.time}</span>}
+                                </div>
                             </div>
                         ))
                     )}
@@ -342,9 +347,11 @@ const LikeUsersModal = ({ show, onClose, users, loading }) => {
                 .like-modal-header h4 { margin: 0; font-size: 16px; }
                 .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #868e96; }
                 .like-user-list { flex: 1; overflow-y: auto; padding: 0; }
-                .like-user-item { padding: 10px 16px; border-bottom: 1px solid #f8f9fa; display: flex; justify-content: space-between; align-items: center; }
-                .like-user-item .name { font-size: 14px; font-weight: 500; color: #343a40; }
-                .like-user-item .time { font-size: 12px; color: #adb5bd; }
+                .like-user-item { padding: 10px 16px; border-bottom: 1px solid #f8f9fa; display: flex; align-items: center; }
+                .profile-wrapper-sm { width: 32px; height: 32px; border-radius: 8px; overflow: hidden; margin-right: 12px; border: 1px solid #eee; flex-shrink: 0; }
+                .profile-wrapper-sm img { width: 100%; height: 100%; object-fit: contain; }
+                .name { font-size: 14px; font-weight: 500; color: #343a40; }
+                .time { font-size: 11px; color: #adb5bd; }
             `}</style>
         </div>
     );
@@ -1052,8 +1059,10 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
 
             if (res && res.list) {
                 const users = res.list.map(u => ({
-                    name: u.nickname,
-                    level: u.user_lvl
+                    user_id: u.user_id,
+                    nickname: u.nickname,
+                    level: u.user_lvl,
+                    time: u.reg_dt ? formatTime(new Date(u.reg_dt)) : ''
                 }));
                 setLikeModalData({ show: true, users, loading: false });
             } else {
