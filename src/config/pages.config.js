@@ -38,7 +38,6 @@ import Setting from '@pages/Setting';
 
 import Chatting from '@pages/Chatting';
 import ChattingList from '@pages/ChattingList';
-
 import OpenChatPage from '@pages/OpenChatPage';
 
 
@@ -93,7 +92,7 @@ export const PAGES = {
     NOTICE: 'NOTICE',
     BARLIST: 'BARLIST',
     MASSAGELIST: 'MASSAGELIST',
-
+    MASSAGELIST: 'MASSAGELIST',
     SHORTSVIEWER: 'SHORTSVIEWER',
     OPENCHAT: 'OPENCHAT'
 };
@@ -133,7 +132,8 @@ export const PAGE_COMPONENTS = {
     [PAGES.NOTICE]: Notice,
     [PAGES.BARLIST]: BarMainPage,
     [PAGES.MASSAGELIST]: MassageMainPage,
-
+    [PAGES.BARLIST]: BarMainPage,
+    [PAGES.MASSAGELIST]: MassageMainPage,
     [PAGES.SHORTSVIEWER]: ShortsViewer,
     [PAGES.OPENCHAT]: OpenChatPage
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
-import { ImageIcon, Loader2, ArrowDown, SendHorizonal, Menu } from 'lucide-react';
+import { ImageIcon, Loader2, ArrowDown, SendHorizonal, Menu, X, Edit3, Check, MessageSquare, Heart, Trash2 } from 'lucide-react';
 import SketchHeader from '@components/SketchHeader';
 
 import { useMsg } from '@contexts/MsgContext';
@@ -32,7 +32,7 @@ const FloatBottomButton = React.memo(({ isVisible, onClick }) => {
     );
 });
 
-const ChatInput = React.memo(({ onSend, placeholder, onRef }) => {
+const ChatInput = React.memo(({ onFocus, onBlur, onClick, onSend, placeholder, onRef }) => {
     const inputRef = useRef(null);
 
     const handleSend = useCallback(() => {
@@ -60,13 +60,16 @@ const ChatInput = React.memo(({ onSend, placeholder, onRef }) => {
                 className="chat-input-field"
                 type="text"
                 placeholder={placeholder}
+                onFocus={onFocus}
+                onBlur={onBlur}
+                onClick={onClick}
                 onKeyDown={handleKeyDown}
             />
         </div>
     );
 });
 
-const UserListDrawer = React.memo(({ show, onClose, users, currentLang, currentUser }) => {
+const UserListDrawer = React.memo(({ show, onClose, users, currentLang, currentUser, onEditNickname }) => {
     // Prevent background scroll when open
     useEffect(() => {
         if (show) {
@@ -74,10 +77,13 @@ const UserListDrawer = React.memo(({ show, onClose, users, currentLang, currentU
         }
     }, [show]);
 
-    // Group users by level/rank
+    // Group users by level/rank (Excluding Me)
     const groupedUsers = React.useMemo(() => {
         const groups = {};
         users.forEach(u => {
+            // Skip Current User for this list
+            if (currentUser && (u.nickname === currentUser.name || u.nickname === currentUser.nickname)) return;
+
             const lvl = u.user_lvl || 1;
             if (!groups[lvl]) {
                 groups[lvl] = {
@@ -90,21 +96,9 @@ const UserListDrawer = React.memo(({ show, onClose, users, currentLang, currentU
             groups[lvl].users.push(u);
         });
 
-        // Process each group: Sort by nickname, then move Me to top
+        // Process each group: Sort by nickname
         Object.values(groups).forEach(group => {
-            group.users.sort((a, b) => {
-                const nameA = a.nickname || '';
-                const nameB = b.nickname || '';
-
-                // Check for Me (Assuming nickname match or user_id if available)
-                const isMeA = (currentUser && (a.nickname === currentUser.name || a.nickname === currentUser.nickname));
-                const isMeB = (currentUser && (b.nickname === currentUser.name || b.nickname === currentUser.nickname));
-
-                if (isMeA && !isMeB) return -1;
-                if (!isMeA && isMeB) return 1;
-
-                return nameA.localeCompare(nameB);
-            });
+            group.users.sort((a, b) => (a.nickname || '').localeCompare(b.nickname || ''));
         });
 
         // Sort groups by level descending
@@ -119,26 +113,61 @@ const UserListDrawer = React.memo(({ show, onClose, users, currentLang, currentU
                     <h3>접속자 목록 <span className="count">({users.length})</span></h3>
                     <button className="close-btn" onClick={onClose}>&times;</button>
                 </div>
+
                 <div className="user-list">
+                    {/* Me Section */}
+                    {(() => {
+                        if (!currentUser) return null;
+                        // Find full user info from the list if possible to get rank name, color, etc.
+                        const meFull = users.find(u =>
+                            String(u.user_id) === String(currentUser.user_id) ||
+                            u.nickname === currentUser.nickname ||
+                            u.nickname === currentUser.name
+                        ) || currentUser;
+
+                        const myLevel = meFull.user_lvl || currentUser.level || 1;
+                        const myColor = meFull.code_color || currentUser.color || '#333';
+                        const myRankName = meFull['msg_' + (currentLang || 'kr')] || meFull.msg_kr || 'Member';
+                        const myName = meFull.nickname || meFull.name || currentUser.nickname || currentUser.name;
+
+                        return (
+                            <div className="user-group me-section">
+                                <div className="group-header" style={{ color: myColor }}>
+                                    <span className="group-name">나 (Me)</span>
+                                </div>
+                                <div className="user-item-simple me-item">
+                                    <div className="profile-wrapper-sm">
+                                        <img src={USER_LEVEL_ICONS[myLevel] || USER_LEVEL_ICONS[1]} alt="lv" />
+                                    </div>
+                                    <div style={{ flex: 1, marginLeft: '8px' }}>
+                                        <span className="nickname" style={{ fontWeight: 'bold' }}>{myName}</span>
+                                        <div className="user-meta" style={{ fontSize: '11px', color: '#868e96' }}>
+                                            {`${myLevel > 10 ? `` : `Lv.${myLevel}`} ${myRankName}`}
+                                        </div>
+                                    </div>
+                                    <button className="edit-nick-btn" onClick={onEditNickname}>
+                                        <Edit3 size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    })()}
+
                     {groupedUsers.map(group => (
                         <div key={group.level} className="user-group">
                             <div className="group-header" style={{ color: group.color }}>
                                 <div className="header-icon-wrapper">
                                     <img src={USER_LEVEL_ICONS[group.level] || USER_LEVEL_ICONS[1]} alt="lv" />
                                 </div>
-                                <span className="group-name">{group.name} — {group.users.length}</span>
+                                <span className="group-name">{`${group.level > 10 ? `🤠 ` : `Lv. ${group.level}`} ` + group.name} — {group.users.length}</span>
                             </div>
                             <div className="group-items">
-                                {group.users.map((u, i) => {
-                                    const isMe = (currentUser && (u.nickname === currentUser.name || u.nickname === currentUser.nickname));
-                                    return (
-                                        <div className="user-item-simple" key={u.nickname + i}>
-                                            <div className="status-dot" style={{ backgroundColor: group.color }}></div>
-                                            <span className="nickname">{u.nickname}</span>
-                                            {isMe && <span className="me-badge">(me)</span>}
-                                        </div>
-                                    );
-                                })}
+                                {group.users.map((u, i) => (
+                                    <div className="user-item-simple" key={u.nickname + i}>
+                                        <div className="status-dot" style={{ backgroundColor: group.color }}></div>
+                                        <span className="nickname">{u.nickname}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     ))}
@@ -169,6 +198,8 @@ const UserListDrawer = React.memo(({ show, onClose, users, currentLang, currentU
                 .user-list { flex: 1; overflow-y: auto; padding: 10px; }
 
                 .user-group { margin-bottom: 20px; }
+                .me-section { border-bottom: 2px dashed #f1f3f5; padding-bottom: 15px; margin-bottom: 15px; }
+                
                 .group-header { 
                     display: flex; align-items: center; 
                     font-size: 13px; font-weight: bold; 
@@ -181,27 +212,218 @@ const UserListDrawer = React.memo(({ show, onClose, users, currentLang, currentU
                 .user-item-simple { 
                     display: flex; align-items: center; padding: 6px 12px; 
                     border-radius: 4px; color: #495057; font-size: 15px; 
-                    /* hover effect optional */
                 }
-                .user-item-simple:hover { background: #f8f9fa; }
+                .me-item { background: #f8f9fa; border: 1px solid #e9ecef; }
                 
                 .status-dot {
                     width: 6px; height: 6px; border-radius: 50%; margin-right: 10px; opacity: 0.5;
                 }
                 .nickname { font-weight: 500; }
-                .me-badge {
-                    font-size: 11px; color: #adb5bd; margin-left: 6px; font-weight: normal;
+                
+                .edit-nick-btn {
+                    background: #fff; border: 1px solid #dee2e6; border-radius: 4px;
+                    padding: 4px; cursor: pointer; color: #495057;
+                    display: flex; align-items: center; justify-content: center;
+                    margin-left: auto;
                 }
+                .edit-nick-btn:hover { background: #e9ecef; }
+                .profile-wrapper-sm { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; margin-right: 0; border: 1px solid #e9ecef; }
+                .profile-wrapper-sm img { width: 100%; height: 100%; object-fit: cover; }
             `}</style>
         </>
     );
 });
 
+
+let initialScrollY = 0;
+
+
+const ContextMenu = ({ data, onClose, onLike, onReply, onDelete }) => {
+    if (!data) return null;
+    const { x, y } = data.coords;
+    const isMine = data.msg.sender === 'me';
+
+    // Prevent overflow (Simple clamping)
+    const screenW = window.innerWidth;
+    const menuHalfWidth = 90; // Approx half of min-width 160px + padding
+    let safeLeft = x;
+    if (safeLeft < menuHalfWidth) safeLeft = menuHalfWidth + 4;
+    if (safeLeft > screenW - menuHalfWidth) safeLeft = screenW - menuHalfWidth - 4;
+
+    const style = {
+        position: 'fixed',
+        top: y - 8,
+        left: safeLeft,
+        transform: 'translate(-50%, -100%)',
+        backgroundColor: '#fff',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+        borderRadius: '12px',
+        zIndex: 9999,
+        overflow: 'hidden',
+        minWidth: '160px',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '4px',
+        border: '1px solid #f1f3f5'
+    };
+
+    return (
+        <>
+            <div className="context-overlay" onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 9998 }} />
+            <div className="context-menu" style={style}>
+                <button onClick={() => { onReply(data.msg); onClose(); }}>
+                    <MessageSquare size={16} style={{ marginRight: '8px' }} />
+                    <span style={{ fontSize: '14px', fontWeight: 500 }}>답변</span>
+                </button>
+                <button onClick={() => { onLike(data.msg); onClose(); }}>
+                    <Heart size={16} style={{ marginRight: '8px' }} />
+                    <span style={{ fontSize: '14px', fontWeight: 500 }}>좋아요</span>
+                </button>
+                {isMine && (
+                    <button onClick={() => { onDelete(data.msg.chat_sn); onClose(); }} style={{ color: '#e03131' }}>
+                        <Trash2 size={16} style={{ marginRight: '8px' }} />
+                        <span style={{ fontSize: '14px', fontWeight: 500 }}>삭제</span>
+                    </button>
+                )}
+            </div>
+            <style jsx="true">{`
+                .context-menu button {
+                    width: 100%;
+                    padding: 10px 12px;
+                    border: none;
+                    background: transparent;
+                    text-align: left;
+                    color: #495057;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    border-radius: 8px;
+                    transition: background 0.1s;
+                }
+                .context-menu button:active { background-color: #f1f3f5; }
+            `}</style>
+        </>
+    );
+};
+
+const LikeUsersModal = ({ show, onClose, users, loading }) => {
+    if (!show) return null;
+    return (
+        <div className="like-modal-overlay" onClick={onClose}>
+            <div className="like-modal-content" onClick={e => e.stopPropagation()}>
+                <div className="like-modal-header">
+                    <h4>좋아요 ({loading ? '...' : users.length})</h4>
+                    <button className="close-btn" onClick={onClose}>&times;</button>
+                </div>
+                <div className="like-user-list">
+                    {loading ? (
+                        <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+                            <Loader2 className="spinner" size={24} color="#adb5bd" />
+                        </div>
+                    ) : (
+                        <>
+                            {users.map((u, i) => (
+                                <div key={i} className="like-user-item">
+                                    <div className="profile-wrapper-sm">
+                                        <img src={USER_LEVEL_ICONS[u.level] || USER_LEVEL_ICONS[1]} alt="lv" />
+                                    </div>
+                                    <span className="like-username">{u.name}</span>
+                                </div>
+                            ))}
+                            {users.length === 0 && <div className="no-likes">아직 좋아요가 없습니다.</div>}
+                        </>
+                    )}
+                </div>
+            </div>
+            <style jsx="true">{`
+                .like-modal-overlay {
+                    position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2100;
+                    display: flex; align-items: center; justify-content: center;
+                }
+                .like-modal-content {
+                    background: #fff; width: 300px; max-height: 400px; border-radius: 12px;
+                    display: flex; flex-direction: column; overflow: hidden;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                }
+                .like-modal-header {
+                    padding: 12px 16px; border-bottom: 1px solid #f0f0f0;
+                    display: flex; justify-content: space-between; align-items: center;
+                }
+                .like-modal-header h4 { margin: 0; font-size: 16px; font-weight: 600; color: #343a40; }
+                .like-user-list { flex: 1; overflow-y: auto; padding: 12px; }
+                .like-user-item { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #f8f9fa; }
+                .like-user-item:last-child { border-bottom: none; }
+                .profile-wrapper-sm { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; margin-right: 12px; border: 1px solid #e9ecef; }
+                .profile-wrapper-sm img { width: 100%; height: 100%; object-fit: cover; }
+                .like-username { font-size: 14px; color: #495057; font-weight: 500; }
+                .no-likes { text-align: center; color: #adb5bd; padding: 20px; font-size: 14px; }
+            `}</style>
+        </div>
+    );
+};
+
+const ReplyIndicator = ({ replyingTo, onClose }) => {
+    if (!replyingTo) return null;
+
+    // Determine display text
+    let displayText = replyingTo.text || '';
+    if (displayText.startsWith('<img') || displayText.includes('<img src=')) {
+        displayText = '[사진]';
+    } else if (!displayText && replyingTo.image) {
+        displayText = '[사진]';
+    } else if (!displayText) {
+        displayText = '...';
+    }
+
+    return (
+        <div className="reply-indicator">
+            <div className="reply-content">
+                <span className="reply-title">답변: {replyingTo.sender_name}</span>
+                <p className="reply-preview">{displayText}</p>
+            </div>
+            <button className="close-btn" onClick={onClose}><Loader2 size={16} style={{ transform: 'rotate(45deg)' }} /></button>
+            <style jsx="true">{`
+                .reply-indicator {
+                    position: fixed;
+                    bottom: calc(146px + var(--safe-bottom, 0px)); /* ChatInput Height + gap */
+                    left: 10px; right: 10px;
+                    background: rgba(255, 255, 255, 0.95);
+                    border-left: 4px solid #4dabf7;
+                    border-radius: 4px;
+                    padding: 10px 14px;
+                    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+                    z-index: 95;
+                    display: flex; justify-content: space-between; align-items: center;
+                    backdrop-filter: blur(5px);
+                }
+                .reply-content { flex: 1; overflow: hidden; }
+                .reply-title { font-size: 12px; color: #4dabf7; font-weight: bold; display: block; margin-bottom: 2px; }
+                .reply-preview { font-size: 13px; color: #495057; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
+                .close-btn { background: none; border: none; padding: 4px; cursor: pointer; color: #868e96; }
+
+                @keyframes highlight {
+                    0% { background-color: rgba(77, 171, 247, 0.2); }
+                    100% { background-color: transparent; }
+                }
+                .highlight-msg { animation: highlight 2s ease-out; }
+
+                
+            `}</style>
+        </div>
+    );
+};
+
+
 // --- Main Component ---
 
-const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCounts, ...otherProps }) => {
+const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, refreshUnreadCounts, ...otherProps }) => {
+
+    const textareaRef = useRef < HTMLTextAreaElement > (null);
+    const [isFocus, setIsFocus] = useState(false);
+
+
     const { get, currentLang } = useMsg();
-    const { user } = useAuth();
+    const { user, updateLoginState } = useAuth();
 
     const [room_sn, setRoomSn] = useState(1);
     const [roomTitle, setRoomTitle] = useState('');
@@ -214,8 +436,14 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
     const [modalImage, setModalImage] = useState(null);
     const [showUserList, setShowUserList] = useState(false);
     const [onlineUsers, setOnlineUsers] = useState([]);
+    const [contextMenuData, setContextMenuData] = useState(null);
+    const [likeModalData, setLikeModalData] = useState({ show: false, users: [], loading: false });
+    const [replyingTo, setReplyingTo] = useState(null);
+    const [returnScrollPos, setReturnScrollPos] = useState(null);
+    const [showReturnBtn, setShowReturnBtn] = useState(false);
 
     const intervalRef = useRef(null);
+    const statusIntervalRef = useRef(null);
     const lastChatSnRef = useRef(null);
     const firstChatSnRef = useRef(null); // 과거 데이터 로딩용 기준점
     const chatBoxRef = useRef(null);
@@ -224,10 +452,44 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
     const isLoadingRef = useRef(false);
     const scrollTimeoutRef = useRef(null);
 
+
+    // 키보드 밀림현상
+    useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+
+            if (isFocus) {
+                if (!initialScrollY) {
+                    initialScrollY = currentScrollY;
+                }
+
+                if (currentScrollY > initialScrollY) {
+                    window.scrollTo(0, initialScrollY);
+                }
+            } else {
+                initialScrollY = 0;
+            }
+        };
+
+        window.visualViewport?.addEventListener('resize', handleScroll);
+        window.addEventListener('scroll', handleScroll);
+
+        return () => {
+            window.visualViewport?.removeEventListener('resize', handleScroll);
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, [isFocus]);
+
+
+
+
     useEffect(() => {
         const initDB = async () => {
             try {
                 await ChatStorage.init();
+
+                // await ChatStorage.deleteAllMessages();
+
                 await ChatStorage.cleanupOldMessages(RETENTION_DAYS);
             } catch (e) { console.error('DB Init Error:', e); }
         };
@@ -301,6 +563,8 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
 
                 let dbMsgs = await ChatStorage.getMessages(limit, oldestSn);
 
+                dbMsgs = [];
+
                 if (dbMsgs.length < limit) {
                     const lastSn = dbMsgs.length > 0 ? dbMsgs[dbMsgs.length - 1].chat_sn : oldestSn;
                     const response = await ApiClient.get('/api/openchat/messages', {
@@ -321,7 +585,10 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
             } else {
                 // [Scenario B: Initial Load / Polling]
                 if (isInitial) {
-                    const dbMsgs = await ChatStorage.getMessages(limit, null);
+                    let dbMsgs = await ChatStorage.getMessages(limit, null);
+
+                    dbMsgs = [];
+
                     if (dbMsgs.length > 0) {
                         // ... (transformation logic handled below) ...
                         const transformed = dbMsgs.map(item => ({
@@ -376,20 +643,51 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
             }
 
             // Transform raw data to UI format
-            const transformed = messagesToDisplay.map(item => ({
-                id: item.chat_sn,
-                chat_sn: item.chat_sn,
-                is_deleted: item.is_deleted,
-                sender: String(item.sender_id) === String(user.user_id) ? 'me' : 'other',
-                text: item.message || item.chat_msg || '',
-                image: item.image_url,
-                video: item.video_url,
-                time: formatTime(new Date(item.created_at || item.send_dt)),
-                sender_name: item.sender_name,
-                sender_level: item.sender_level,
-                sender_color: item.sender_color,
-                rank_name: item['msg_' + (currentLang || 'kr')] || item.msg_kr || '',
-            }));
+            const transformed = messagesToDisplay.map(item => {
+                let replyParent = null;
+                if (item.reply_message) {
+                    try {
+                        // Assuming reply_message is a JSON string
+                        const parsed = typeof item.reply_message === 'string'
+                            ? JSON.parse(item.reply_message)
+                            : item.reply_message;
+
+                        // Normalize parsed object to match UI format if necessary, 
+                        // or just use it raw if fields match (sender_name, text, etc.)
+
+                        let pText = parsed.message || parsed.chat_msg || '';
+                        if (pText.startsWith('<img') || pText.includes('<img src=')) {
+                            pText = '[사진]';
+                        }
+
+                        replyParent = {
+                            chat_sn: parsed.chat_sn,
+                            sender_name: parsed.sender_name,
+                            text: pText,
+                            image: parsed.image_url,
+                        };
+                    } catch (e) {
+                        console.error('Failed to parse reply_message', item.reply_message);
+                    }
+                }
+
+                return {
+                    id: item.chat_sn,
+                    chat_sn: item.chat_sn,
+                    is_deleted: item.is_deleted,
+                    sender: String(item.sender_id) === String(user.user_id) ? 'me' : 'other',
+                    text: item.message || item.chat_msg || '',
+                    image: item.image_url,
+                    video: item.video_url,
+                    time: formatTime(new Date(item.created_at || item.send_dt)),
+                    sender_name: item.sender_name,
+                    sender_level: item.sender_level,
+                    sender_color: item.sender_color,
+                    rank_name: item['msg_' + (currentLang || 'kr')] || item.msg_kr || '',
+                    reply_to: item.reply_to,
+                    reply_parent: replyParent
+                };
+            });
 
 
             if (loadOlder) {
@@ -442,13 +740,63 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
         }
     }, [room_sn, user.user_id, formatTime, currentLang, scrollToBottom, refreshUnreadCounts]);
 
+    const getChatStatus = useCallback(async () => {
+        if (!chat_messages.length || !user.user_id) return;
+
+        // Collect chat_sn list
+        const chat_sn_list = chat_messages.map(m => m.chat_sn);
+
+        try {
+            const res = await ApiClient.postForm('/api/openchat/chatStatus', {
+                chat_sn_list,
+                user_id: user.user_id
+            });
+
+            if (res.data && Array.isArray(res.data)) {
+                // response.data = [ { chat_sn, is_deleted, like_count, is_liked_by_me }, ... ]
+
+                const statusMap = new Map();
+                res.data.forEach(item => statusMap.set(item.chat_sn, item));
+
+                setChatMessages(prev => prev.map(msg => {
+                    const status = statusMap.get(msg.chat_sn);
+                    if (!status) return msg;
+
+                    const isChanged =
+                        msg.is_deleted !== status.is_deleted ||
+                        msg.like_count !== status.like_count ||
+                        msg.is_liked_by_me !== status.is_liked_by_me;
+
+                    if (!isChanged) return msg;
+
+                    return {
+                        ...msg,
+                        is_deleted: status.is_deleted,
+                        like_count: status.like_count,
+                        is_liked_by_me: status.is_liked_by_me
+                    };
+                }));
+            }
+        } catch (e) {
+            console.error("Failed to poll chat status", e);
+        }
+    }, [chat_messages, user.user_id]);
+
     useEffect(() => {
         getChattingData(true);
-        intervalRef.current = setInterval(() => getChattingData(), 500);
 
+        intervalRef.current = setInterval(() => {
+            getChattingData();
+            getChatStatus();
+        }, 500);
 
-        return () => clearInterval(intervalRef.current);
-    }, [room_sn, getChattingData]);
+        //statusIntervalRef.current = setInterval(() => getChatStatus(), 500); // Poll status every 3s
+
+        return () => {
+            clearInterval(intervalRef.current);
+            clearInterval(statusIntervalRef.current);
+        };
+    }, [room_sn, getChattingData, getChatStatus]);
 
     const isInitialScrollDone = useRef(false);
     const hasForcedScroll = useRef(false);
@@ -517,9 +865,17 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
         }
     };
 
-    const handleMessageSend = async (message) => {
-        const tempId = Date.now();
+    // Memoize Msg Map for O(1) lookup
+    const msgMap = React.useMemo(() => {
+        const map = new Map();
+        chat_messages.forEach(m => map.set(m.chat_sn, m));
+        return map;
+    }, [chat_messages]);
+
+    const handleMessageSend = useCallback(async (message) => {
+        if (!message.trim() || isLoadingRef.current) return;
         const now = new Date();
+        const tempId = Date.now();
         const uiMsg = {
             id: tempId,
             chat_sn: tempId,
@@ -528,11 +884,14 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
             time: formatTime(now),
             sender_name: user.name || 'Me',
             sender_level: user.level,
-            sender_color: user.color // Assuming user object might have this, or fallback
+            sender_color: user.color, // Assuming user object might have this, or fallback
+            reply_to: replyingTo?.chat_sn || null, // Include reply_to in optimistic UI
         };
 
         setChatMessages(prev => [...prev, uiMsg]);
         setTimeout(() => scrollToBottom('auto', true), 0);
+        setReplyingTo(null); // Clear reply state after sending
+        isLoadingRef.current = true; // Temporary lock
 
         try {
             // User Request: Fix API call (Text should be JSON usually, but check if postForm was intended.
@@ -541,7 +900,8 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                 room_sn,
                 sender_id: user.user_id,
                 chat_msg: message,
-                type: 'text'
+                type: 'text',
+                reply_to: uiMsg.reply_to, // Include reply_to in API payload
             };
             const response = await ApiClient.postForm('/api/openchat/message', payload);
             const realChatSn = response.data?.chat_sn;
@@ -557,14 +917,15 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                     send_dt: now.toISOString(),
                     sender_name: user.name,
                     sender_level: user.level,
-                    room_sn: room_sn
+                    room_sn: room_sn,
+                    reply_to: uiMsg.reply_to, // Save reply_to to DB
                 };
                 await ChatStorage.saveMessages([confirmedData]);
 
                 // Reconcile: Update the optimistic message with real chat_sn
                 setChatMessages(prev => prev.map(m => {
                     if (m.id === tempId) {
-                        return { ...m, chat_sn: realChatSn };
+                        return { ...m, chat_sn: realChatSn, isUploading: false }; // Clear isUploading
                     }
                     return m;
                 }));
@@ -576,8 +937,10 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
             console.error('Message Send Failed:', e);
             // Optionally mark error or remove
             setChatMessages(prev => prev.filter(m => m.id !== tempId));
+        } finally {
+            isLoadingRef.current = false; // Release lock
         }
-    };
+    }, [room_sn, user.user_id, user.name, user.level, user.color, formatTime, scrollToBottom, replyingTo]);
 
     const handleDeleteMessage = useCallback(async (chat_sn) => {
         try {
@@ -613,6 +976,78 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
         }
     }, [user.user_id]);
 
+    // --- Handlers for Like / Reply ---
+    const handleLike = useCallback(async (msg) => {
+        // Optimistic Update
+        const targetSn = msg.chat_sn;
+        const isCurrentlyLiked = msg.is_liked_by_me;
+
+        setChatMessages(prev => prev.map(m => {
+            if (m.chat_sn === targetSn) {
+                return {
+                    ...m,
+                    is_liked_by_me: !isCurrentlyLiked,
+                    like_count: Math.max(0, m.like_count + (isCurrentlyLiked ? -1 : 1))
+                };
+            }
+            return m;
+        }));
+
+        try {
+            await ApiClient.postForm('/api/openchat/reaction', {
+                chat_sn: msg.chat_sn,
+                user_id: user.user_id
+            });
+        } catch (e) {
+            console.error(e);
+            // Rollback on error (Optional, but good practice)
+            setChatMessages(prev => prev.map(m => {
+                if (m.chat_sn === targetSn) {
+                    return {
+                        ...m,
+                        is_liked_by_me: isCurrentlyLiked,
+                        like_count: Math.max(0, m.like_count + (isCurrentlyLiked ? 1 : -1))
+                    };
+                }
+                return m;
+            }));
+        }
+    }, [user.user_id]);
+
+    const handleReply = useCallback((msg) => {
+        setReplyingTo(msg);
+        if (chatInputRef.current?.inputRef?.current) {
+            chatInputRef.current.inputRef.current.focus();
+        }
+    }, []);
+
+    const handleShowLikers = useCallback(async (msg) => {
+        setLikeModalData({ show: true, users: [], loading: true });
+
+        try {
+            const res = await ApiClient.postForm('/api/openchat/reaction_list', {
+                chat_sn: msg.chat_sn
+            });
+
+            if (res && res.list) {
+                const users = res.list.map(u => ({
+                    name: u.nickname,
+                    level: u.user_lvl
+                }));
+                setLikeModalData({ show: true, users, loading: false });
+            } else {
+                setLikeModalData({ show: true, users: [], loading: false });
+            }
+        } catch (e) {
+            console.error("Failed to fetch likers", e);
+            setLikeModalData({ show: true, users: [], loading: false });
+        }
+    }, []);
+
+    const handleContextMenuAction = useCallback((msg, coords) => {
+        setContextMenuData({ msg, coords });
+    }, []);
+
     const handleFileSelect = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -633,11 +1068,13 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
             time: formatTime(now),
             sender_name: user.name || 'Me',
             sender_level: user.level,
-            isUploading: true
+            isUploading: true,
+            reply_to: replyingTo?.chat_sn || null, // Include reply_to for files
         };
 
         setChatMessages(prev => [...prev, uiMsg]);
         scrollToBottom('auto', true);
+        setReplyingTo(null); // Clear reply state after sending file
         isLoadingRef.current = true; // Temporary lock
 
         try {
@@ -648,6 +1085,9 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
             formData.append('chat_msg', '');
             formData.append('type', fileType);
             formData.append('file', file);
+            if (uiMsg.reply_to) {
+                formData.append('reply_to', uiMsg.reply_to); // Include reply_to in file upload payload
+            }
 
             console.log('📤 Uploading file...', file.name);
 
@@ -661,6 +1101,12 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                 const realChatSn = res.data.chat_sn;
                 const realUrl = res.data.image_url || res.data.video_url || previewUrl;
                 const created_at = res.data.created_at || now.toISOString();
+                const chat_msg = res.data.chat_msg || ''; // Access chat_msg from res.data
+                const match = chat_msg.match(/src=['"]([^'"]+)['"]/);
+
+                let img_src_ = match ? match[1] : null;
+
+                console.log('real_url', img_src_);
 
                 lastChatSnRef.current = realChatSn;
 
@@ -669,14 +1115,15 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                     chat_sn: realChatSn,
                     sender_id: user.user_id,
                     message: '',
-                    image_url: fileType === 'image' ? realUrl : null,
-                    video_url: fileType === 'video' ? realUrl : null,
+                    image_url: fileType === 'image' ? img_src_ || realUrl : null,
+                    video_url: fileType === 'video' ? img_src_ || realUrl : null,
                     type: fileType,
                     created_at: created_at,
                     send_dt: created_at,
                     sender_name: user.name,
                     sender_level: user.level,
-                    room_sn: room_sn
+                    room_sn: room_sn,
+                    reply_to: uiMsg.reply_to, // Save reply_to to DB for files
                 };
                 await ChatStorage.saveMessages([confirmedData]);
 
@@ -685,8 +1132,8 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                         return {
                             ...m,
                             chat_sn: realChatSn,
-                            image: fileType === 'image' ? realUrl : null,
-                            video: fileType === 'video' ? realUrl : null,
+                            image: fileType === 'image' ? img_src_ || realUrl : null,
+                            video: fileType === 'video' ? img_src_ || realUrl : null,
                             isUploading: false
                         };
                     }
@@ -701,11 +1148,32 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
             Swal.fire('오류', '파일 업로드에 실패했습니다.', 'error');
         } finally {
             isLoadingRef.current = false;
+            setTimeout(() => scrollToBottom('auto', true), 10);
         }
     };
 
+
+    // Return to Original Message Logic
+    const handleReturnToOrigin = () => {
+        if (returnScrollPos !== null && chatBoxRef.current) {
+            chatBoxRef.current.scrollTo({
+                top: returnScrollPos,
+                behavior: 'smooth'
+            });
+            setShowReturnBtn(false);
+            setReturnScrollPos(null);
+        }
+    };
+
+    const handleReplyJump = useCallback(() => {
+        if (chatBoxRef.current) {
+            setReturnScrollPos(chatBoxRef.current.scrollTop);
+            setShowReturnBtn(true);
+        }
+    }, []);
+
     // --- Message Render ---
-    const ChatMessage = React.memo(({ msg, setModalImage, translation, onTranslate, onDelete }) => {
+    const ChatMessage = React.memo(({ msg, parentMsg, setModalImage, translation, onTranslate, onDelete, onContextMenu, onLike, onShowLikers, onReplyJump }) => {
         const isMine = msg.sender === 'me';
         // Soft Delete Logic
         if (msg.is_deleted) {
@@ -717,7 +1185,10 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                         </div>
                     )}
                     <div className="bubble-container">
-                        {!isMine && <div className="sender-name">{msg.rank_name} {msg.sender_name}</div>}
+                        {!isMine && <div className="sender-info">
+                            <span className="rank" style={{ color: msg.sender_color, fontWeight: 'bold' }}> {msg.sender_level < 10 ? `Lv.${msg.sender_level} ` : '🤠'}{msg.rank_name}</span>
+                            <span className="name" style={{ color: '#868e96' }}>{msg.sender_name}</span>
+                        </div>}
                         <div className="bubble" style={{ color: '#999', backgroundColor: '#f0f0f0', userSelect: 'none' }}>
                             [삭제된 메시지 입니다]
                         </div>
@@ -730,14 +1201,20 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
         const hasMedia = !!msg.image || (msg.text && (msg.text.includes('<img') || msg.text.includes('<video')));
         const isImageOnly = hasMedia && !hasText;
 
-        // Long press handling
+        // Long press & Double Tap handling
         const timerRef = useRef(null);
+        const lastTapRef = useRef(0);
 
-        const handleTouchStart = () => {
-            if (!isMine) return;
+        const handleTouchStart = (e) => {
+            // Always trigger ContextMenu on long press
+            // Capture coordinates
+            const touch = e.touches ? e.touches[0] : (e.nativeEvent ? e.nativeEvent : e);
+            const coords = { x: touch.clientX, y: touch.clientY };
+
             timerRef.current = setTimeout(() => {
-                onDelete(msg.chat_sn);
-            }, 800); // 800ms long press
+                if (navigator.vibrate) navigator.vibrate(50); // Haptic Feedback
+                onContextMenu(msg, coords);
+            }, 800);
         };
 
         const handleTouchEnd = () => {
@@ -747,8 +1224,71 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
             }
         };
 
+        const likeColor = msg.is_liked_by_me ? '#fa5252' : '#adb5bd'; // Red if liked, Gray otherwise
+        const hasLikes = msg.like_count > 0;
+
+        const handleReplyClick = (e) => {
+            e.stopPropagation();
+            if (!msg.reply_to) return;
+            const targetEl = document.getElementById(`msg-${msg.reply_to}`);
+
+            if (targetEl) {
+                // Find local bubble to animate
+                const bubbleEl = targetEl.querySelector('.bubble');
+                if (!bubbleEl) return;
+
+                const container = targetEl.closest('.chat-messages');
+
+                // Animation Trigger Helper
+                const triggerAnimate = () => {
+                    bubbleEl.classList.remove('shake-msg', 'highlight-msg'); // Reset just in case
+                    // Force reflow
+                    void bubbleEl.offsetWidth;
+
+                    bubbleEl.classList.add('shake-msg');
+                    bubbleEl.classList.add('highlight-msg');
+
+                    setTimeout(() => {
+                        bubbleEl.classList.remove('shake-msg');
+                        bubbleEl.classList.remove('highlight-msg');
+                    }, 2000);
+                };
+
+                if (container) {
+                    let scrollTimeout;
+
+                    const onScrollEnd = () => {
+                        container.removeEventListener('scroll', handleScroll);
+                        triggerAnimate();
+                    };
+
+                    const handleScroll = () => {
+                        clearTimeout(scrollTimeout);
+                        // Wait for scroll to stop (100ms stable)
+                        scrollTimeout = setTimeout(onScrollEnd, 100);
+                    };
+
+                    container.addEventListener('scroll', handleScroll, { passive: true });
+
+                    // Initial Fallback: If no scroll happens (e.g. already in view), trigger anyway
+                    // If scroll starts, this is cleared by handleScroll
+                    scrollTimeout = setTimeout(onScrollEnd, 150);
+                } else {
+                    // No container found (unlikely), valid fallback
+                    triggerAnimate();
+                }
+
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Trigger Parent Logic to show Return Button
+                if (onReplyJump) onReplyJump();
+            } else {
+                console.log('Original message not found');
+            }
+        };
+
         return (
-            <div className={`message-row ${msg.sender}`}>
+            <div id={`msg-${msg.chat_sn}`} className={`message-row ${msg.sender}`}>
                 {!isMine && (
                     <div className="profile-wrapper">
                         <img src={USER_LEVEL_ICONS[msg.sender_level] || USER_LEVEL_ICONS[1]} alt="lv" className="lv-icon" />
@@ -769,7 +1309,53 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                             onMouseDown={handleTouchStart}
                             onMouseUp={handleTouchEnd}
                             onMouseLeave={handleTouchEnd}
+                            onClick={(e) => {
+                                // Double Tap Detection (Manual)
+                                const now = Date.now();
+                                if (now - lastTapRef.current < 300) {
+                                    if (onLike) onLike(msg);
+                                    e.stopPropagation(); // Stop zoom or other clicks
+                                }
+                                lastTapRef.current = now;
+                            }}
                         >
+                            {/* Reply Quote Block */}
+                            {msg.reply_to && (
+                                <div className="reply-quote" onClick={handleReplyClick} style={{
+                                    borderBottom: isMine ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(0,0,0,0.1)',
+                                    marginBottom: '8px',
+                                    paddingBottom: '6px',
+                                    opacity: 0.9,
+                                    fontSize: '13px',
+                                    display: 'flex', flexDirection: 'column',
+                                    cursor: 'pointer'
+                                }}>
+                                    <div style={{
+                                        fontWeight: 'bold',
+                                        fontSize: '12px',
+                                        color: isMine ? '#fff' : '#212529',
+                                        marginBottom: '4px'
+                                    }}>
+                                        답변 : {parentMsg ? parentMsg.sender_name : '알 수 없는 사용자'}
+                                    </div>
+                                    <div style={{
+                                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '180px',
+                                        fontSize: '12.5px',
+                                        color: isMine ? 'rgba(255,255,255,0.9)' : '#495057',
+                                        fontWeight: '400'
+                                    }}>
+                                        {(() => {
+                                            if (!parentMsg) return '삭제되거나 오래된 메시지입니다.';
+                                            let pText = parentMsg.text || '';
+                                            if (pText.startsWith('<img') || pText.includes('<img src=')) {
+                                                return '[사진]';
+                                            }
+                                            return pText || (parentMsg.image ? '[사진]' : '...');
+                                        })()}
+                                    </div>
+                                </div>
+                            )}
+
                             {msg.text && (
                                 (msg.text.includes('<img') || msg.text.includes('<video')) ? (
                                     <div
@@ -783,7 +1369,7 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                                     <div>{msg.text}</div>
                                 )
                             )}
-                            {msg.image && <img src={msg.image} className="chat-img" onClick={() => setModalImage(msg.image)} alt="chat" />}
+                            {(msg.image && msg.text == '') && <img src={msg.image} className="chat-img" onClick={() => setModalImage(msg.image)} alt="chat" />}
                             {translation && <div className="translated-text">{translation} <span>(번역됨)</span></div>}
                             {!isMine && !translation && hasText && (
                                 <button className="trans-btn-inline" onClick={() => onTranslate(msg.chat_sn, msg.text)}>번역</button>
@@ -803,10 +1389,57 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                         </div>
                         <span className="time">{msg.time}</span>
                     </div>
+                    {/* Like Indicator */}
+                    {hasLikes && (
+                        <div className="like-indicator" onClick={() => onShowLikers(msg)} style={{
+                            alignSelf: isMine ? 'flex-end' : 'flex-start',
+                            marginTop: '2px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            cursor: 'pointer',
+                            backgroundColor: msg.is_liked_by_me ? '#fff0f6' : '#fff', // Highlight if liked
+                            border: msg.is_liked_by_me ? '1px solid #ffdeeb' : '1px solid #eee',
+                            borderRadius: '12px',
+                            padding: '2px 8px',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                        }}>
+                            <span style={{ fontSize: '11px', color: msg.is_liked_by_me ? '#e64980' : '#adb5bd', marginRight: '4px', lineHeight: 1 }}>
+                                {msg.is_liked_by_me ? '♥' : '♡'}
+                            </span>
+                            <span style={{ fontSize: '11px', color: msg.is_liked_by_me ? '#d6336c' : '#868e96', lineHeight: 1, fontWeight: '600' }}>
+                                {msg.like_count}
+                            </span>
+                        </div>
+                    )}
                 </div>
             </div>
         );
     });
+
+    // ReplyIndicator Component
+    const ReplyIndicator = ({ replyingTo, onClose }) => {
+        if (!replyingTo) return null;
+
+        return (
+            <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '8px 12px', backgroundColor: '#e9ecef', borderTop: '1px solid #dee2e6',
+                fontSize: '14px', color: '#495057',
+            }}>
+                <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, overflow: 'hidden' }}>
+                    <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {replyingTo.sender_name}에게 답장
+                    </span>
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '12px', opacity: 0.8 }}>
+                        {replyingTo.text || (replyingTo.image ? '사진' : '메시지')}
+                    </span>
+                </div>
+                <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                    <X size={18} color="#495057" />
+                </button>
+            </div>
+        );
+    };
 
     return (
         <>
@@ -911,6 +1544,8 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                     border-radius: 16px 2px 16px 16px; 
                 }
 
+
+
                 .time { font-size: 10px; color: #adb5bd; flex-shrink: 0; margin-bottom: 2px; }
                 .chat-img, .html-content img { max-width: 220px; border-radius: 12px; display: block; cursor: pointer; }
                 
@@ -925,10 +1560,16 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                     left: 0; right: 0;
                     background: #fff;
                     display: flex;
-                    align-items: center;
-                    padding: 8px 12px;
+                    flex-direction: column; /* Changed to column to stack reply indicator */
+                    align-items: stretch; /* Stretch items horizontally */
+                    padding: 0 12px 8px 12px; /* Adjusted padding */
                     border-top: 1px solid #e9ecef;
                     z-index: 100;
+                    gap: 8px;
+                }
+                .input-row { /* New div for input and buttons */
+                    display: flex;
+                    align-items: center;
                     gap: 8px;
                 }
                 .input-inner-container { flex: 1; background: #f1f3f5; border-radius: 20px; padding: 4px 12px; }
@@ -966,9 +1607,33 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                             }
                         }
                     ]}
-                    title={roomTitle} showBack={true} onBack={goBack} />
+                    title={roomTitle} showBack={true} onBack={() => {
+                        navigateToPage(PAGES.HOME);
+                    }} />
 
                 <div className="chat-messages" ref={chatBoxRef}>
+                    {/* Return to Origin Button */}
+                    {showReturnBtn && (
+                        <div onClick={handleReturnToOrigin} style={{
+                            position: 'fixed',
+                            bottom: '160px', // Above input area
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            backgroundColor: 'rgba(0,0,0,0.7)',
+                            color: '#fff',
+                            padding: '8px 16px',
+                            borderRadius: '20px',
+                            fontSize: '13px',
+                            fontWeight: 'bold',
+                            zIndex: 90,
+                            cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                        }}>
+                            <ArrowDown size={14} /> 원래 위치로
+                        </div>
+                    )}
+
                     {isLoadingOlder && (
                         <div className="top-loader">
                             <Loader2 className="spinner" size={24} />
@@ -979,39 +1644,54 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                         <ChatMessage
                             key={msg.id}
                             msg={msg}
+                            parentMsg={msg.reply_parent || (msg.reply_to ? msgMap.get(msg.reply_to) : null)}
                             setModalImage={setModalImage}
                             translation={translationMap[msg.chat_sn]}
                             onTranslate={handleTranslate}
                             onDelete={handleDeleteMessage}
+                            onContextMenu={handleContextMenuAction}
+                            onLike={handleLike}
+                            onShowLikers={handleShowLikers}
+                            onReplyJump={handleReplyJump}
                         />
                     ))}
                 </div>
 
                 <FloatBottomButton isVisible={showFloatButton} onClick={() => scrollToBottom('smooth')} />
-            </div>
+            </div >
 
             <div className="chat-input-wrapper">
-                <button className="icon-btn" onClick={() => document.getElementById('media-upload-input').click()}>
-                    <ImageIcon size={24} />
-                </button>
-                <input id="media-upload-input" type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={handleFileSelect} />
+                <ReplyIndicator replyingTo={replyingTo} onClose={() => setReplyingTo(null)} />
+                <div className="input-row">
+                    <button className="icon-btn" onClick={() => document.getElementById('media-upload-input').click()}>
+                        <ImageIcon size={24} />
+                    </button>
+                    <input id="media-upload-input" type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={handleFileSelect} />
 
-                <ChatInput
-                    onSend={handleMessageSend}
-                    placeholder="메시지를 입력하세요..."
-                    onRef={(ref) => chatInputRef.current = ref}
-                />
+                    <ChatInput
+                        onFocus={() => setIsFocus(true)}
+                        onBlur={() => setIsFocus(false)}
+                        onClick={() => {
+                            textareaRef?.current?.focus();
+                        }}
+                        onSend={handleMessageSend}
+                        placeholder="메시지를 입력하세요..."
+                        onRef={(ref) => chatInputRef.current = ref}
+                    />
 
-                <button className="icon-btn send-btn-active" onClick={() => chatInputRef.current?.handleSend()}>
-                    <SendHorizonal size={24} />
-                </button>
+                    <button className="icon-btn send-btn-active" onClick={() => chatInputRef.current?.handleSend()}>
+                        <SendHorizonal size={24} />
+                    </button>
+                </div>
             </div>
 
-            {modalImage && (
-                <div className="image-modal" onClick={() => setModalImage(null)}>
-                    <img src={modalImage} alt="zoom" />
-                </div>
-            )}
+            {
+                modalImage && (
+                    <div className="image-modal" onClick={() => setModalImage(null)}>
+                        <img src={modalImage} alt="zoom" />
+                    </div>
+                )
+            }
 
             <UserListDrawer
                 show={showUserList}
@@ -1019,7 +1699,90 @@ const OpenChatPage = ({ navigateToPageWithData, PAGES, goBack, refreshUnreadCoun
                 users={onlineUsers}
                 currentLang={currentLang}
                 currentUser={user}
+                onEditNickname={async () => {
+                    const { value: nickname } = await Swal.fire({
+                        title: '닉네임 변경',
+                        input: 'text',
+                        inputLabel: '변경할 닉네임을 입력하세요',
+                        inputValue: user.nickname || user.name,
+                        showCancelButton: true,
+                        confirmButtonText: '변경',
+                        cancelButtonText: '취소',
+                        inputValidator: (value) => {
+                            if (!value) {
+                                return '닉네임을 입력해주세요!';
+                            }
+                        }
+                    });
+
+                    if (nickname) {
+                        try {
+                            // 1. Check Duplicate
+                            const chkRes = await ApiClient.postForm('/api/openchat/nickname_chk', {
+                                user_id: user.user_id,
+                                nickname: nickname
+                            });
+
+                            if (chkRes.isDuplicate) {
+                                Swal.fire('중복됨', '이미 사용 중인 닉네임입니다.', 'error');
+                                return;
+                            }
+
+                            // 2. Update Nickname
+                            const updateRes = await ApiClient.postForm('/api/openchat/nickname_edit', {
+                                user_id: user.user_id,
+                                nickname: nickname
+                            });
+
+                            if (updateRes.success) {
+                                Swal.fire('성공', '닉네임이 변경되었습니다.', 'success');
+
+                                // Update Global User Context
+                                updateLoginState({ ...user, name: nickname, nickname: nickname });
+
+                                // Refresh Online User List
+                                try {
+                                    const res = await ApiClient.get('/api/openchat/getCurrentUser');
+                                    setOnlineUsers(res.data || []);
+                                } catch (err) {
+                                    console.error("Failed to refresh user list", err);
+                                }
+                            } else {
+                                Swal.fire('오류', '닉네임 변경에 실패했습니다.', 'error');
+                            }
+                        } catch (e) {
+                            console.error(e);
+                            Swal.fire('오류', '서버 통신 오류', 'error');
+                        }
+                    }
+                }}
             />
+
+            <ContextMenu
+                data={contextMenuData}
+                onClose={() => setContextMenuData(null)}
+                onLike={handleLike}
+                onReply={handleReply}
+                onDelete={handleDeleteMessage}
+            />
+
+            <LikeUsersModal
+                show={likeModalData.show}
+                users={likeModalData.users}
+                loading={likeModalData.loading}
+                onClose={() => setLikeModalData(prev => ({ ...prev, show: false }))}
+            />
+            <style>{`
+                @keyframes shake-vertical {
+                    0% { transform: translateY(0); }
+                    20% { transform: translateY(-6px); }
+                    40% { transform: translateY(6px); }
+                    60% { transform: translateY(-3px); }
+                    80% { transform: translateY(3px); }
+                    100% { transform: translateY(0); }
+                }
+                .shake-msg { animation: shake-vertical 0.5s ease-in-out both; }
+            `}</style>
         </>
     );
 };

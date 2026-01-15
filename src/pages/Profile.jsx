@@ -6,7 +6,7 @@ import SketchBtn from '@components/SketchBtn';
 import SketchMenuBtn from '@components/SketchMenuBtn';
 import SketchDiv from '@components/SketchDiv';
 import '@components/SketchComponents.css';
-import {ChevronRight} from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import SketchHeader from '@components/SketchHeader';
 
 import { Star, Edit3, User, Sparkles, Check } from 'lucide-react';
@@ -23,7 +23,7 @@ const Profile = ({
   goBack,
   ...otherProps
 }) => {
-  const { user, isActiveUser, isLoggedIn } = useAuth();
+  const { user, isActiveUser, isLoggedIn, updateLoginState } = useAuth();
   const [userInfo, setUserInfo] = useState({});
   const [userReviews, setUserReviews] = useState([]);
   const [userCoupons, setuserCoupons] = useState([]);
@@ -36,16 +36,16 @@ const Profile = ({
     window.scrollTo(0, 0);
 
     if (messages && Object.keys(messages).length > 0) {
-        console.log('✅ Messages loaded:', messages);
-        // setLanguage('en'); // 기본 언어 설정
-        console.log('Current language set to:', currentLang);
-        window.scrollTo(0, 0);
-      }
+      console.log('✅ Messages loaded:', messages);
+      // setLanguage('en'); // 기본 언어 설정
+      console.log('Current language set to:', currentLang);
+      window.scrollTo(0, 0);
+    }
 
     const fetchUserInfo = async () => {
       try {
         const response = await axios.get(`${API_HOST}/api/getUserInfo`, {
-          params: { user_id: user?.user_id}
+          params: { user_id: user?.user_id }
         });
         setUserInfo(response.data || {});
       } catch (error) {
@@ -58,9 +58,9 @@ const Profile = ({
     };
 
     const fetchUserReviews = async () => {
-    try {
-          const response = await axios.get(`${API_HOST}/api/getMyReviewList`, {
-          params: { user_id: user?.user_id}
+      try {
+        const response = await axios.get(`${API_HOST}/api/getMyReviewList`, {
+          params: { user_id: user?.user_id }
         });
         setUserReviews(response.data || []);
       } catch (error) {
@@ -70,16 +70,16 @@ const Profile = ({
 
     const fetchUserCoupons = async () => {
       try {
-            const response = await axios.get(`${API_HOST}/api/coupon/getCouponList`, {
-            params: { user_id: user?.user_id}
-          });
+        const response = await axios.get(`${API_HOST}/api/coupon/getCouponList`, {
+          params: { user_id: user?.user_id }
+        });
 
-          console.log('쿠폰 목록', response.data.data);
-          setuserCoupons(response.data.data || []);
-        } catch (error) {
-          console.error('쿠폰 목록 불러오기 실패:', error);
-        }
-      };
+        console.log('쿠폰 목록', response.data.data);
+        setuserCoupons(response.data.data || []);
+      } catch (error) {
+        console.error('쿠폰 목록 불러오기 실패:', error);
+      }
+    };
 
     fetchUserInfo();
     fetchUserReviews();
@@ -87,176 +87,232 @@ const Profile = ({
   }, [user, messages, currentLang]);
 
   // 1) 스크롤 복구: userReviews가 렌더링된 뒤에 적용
-useEffect(() => {
-  if (!userReviews || userReviews.length === 0) return;
+  useEffect(() => {
+    if (!userReviews || userReviews.length === 0) return;
 
-  const raw = localStorage.getItem('profileScrollY');
-  if (!raw) return;
+    const raw = localStorage.getItem('profileScrollY');
+    if (!raw) return;
 
-  const y = parseInt(raw, 10);
-  if (Number.isNaN(y)) return;
+    const y = parseInt(raw, 10);
+    if (Number.isNaN(y)) return;
 
-  const container = document.querySelector('.content-area');
-  if (!container) return;
+    const container = document.querySelector('.content-area');
+    if (!container) return;
 
-  // 다음 페인트 시점에 한 번
-  requestAnimationFrame(() => {
-    container.scrollTop = y;
-  });
+    // 다음 페인트 시점에 한 번
+    requestAnimationFrame(() => {
+      container.scrollTop = y;
+    });
 
-  // 이미지/폰트 로딩 등으로 레이아웃이 변하는 경우를 위한 보정(선택)
-  const t = setTimeout(() => {
-    container.scrollTop = y;
-  }, 150);
+    // 이미지/폰트 로딩 등으로 레이아웃이 변하는 경우를 위한 보정(선택)
+    const t = setTimeout(() => {
+      container.scrollTop = y;
+    }, 150);
 
-  return () => clearTimeout(t);
-}, [userReviews]);
+    return () => clearTimeout(t);
+  }, [userReviews]);
 
 
   const handleDailyPassClick = () => {
-  if (iauData?.isActiveUser) {
-    // // 이미 활성화됨 알림
-    // Swal.fire({
-    //   title: get('reservation.daily_pass.purchase_button3'),
-    //   text: get('SWAL_LAREADY_PURCHASE'),
-    //   icon: 'info'
-    // });
-    return; // 페이지 이동 차단
-  }
-  
-  // 구매 페이지로 이동
-   navigate('/purchase');
-};
+    if (iauData?.isActiveUser) {
+      // // 이미 활성화됨 알림
+      // Swal.fire({
+      //   title: get('reservation.daily_pass.purchase_button3'),
+      //   text: get('SWAL_LAREADY_PURCHASE'),
+      //   icon: 'info'
+      // });
+      return; // 페이지 이동 차단
+    }
+
+    // 구매 페이지로 이동
+    navigate('/purchase');
+  };
 
   const handleBack = () => {
     navigateToPageWithData && navigateToPageWithData(PAGES.ACCOUNT);
   };
 
-const edeitReview = (review) => {
+  const handleEditNickname = async () => {
+    if (!user) return;
 
-  console.log('🌐 review:', review);
-
-  const container = document.querySelector('.content-area');
-
-      if (container) {
-        const scrollY = container.scrollTop;
-        localStorage.setItem('profileScrollY', scrollY.toString());
+    const { value: nickname } = await Swal.fire({
+      title: '닉네임 변경',
+      input: 'text',
+      inputLabel: '변경할 닉네임을 입력하세요',
+      inputValue: userInfo.nickname || userInfo.name || '',
+      showCancelButton: true,
+      confirmButtonText: '변경',
+      cancelButtonText: '취소',
+      inputValidator: (value) => {
+        if (!value) {
+          return '닉네임을 입력해주세요!';
+        }
       }
+    });
+
+    if (nickname) {
+      try {
+        // 1. Check Duplicate
+        const chkRes = await ApiClient.postForm('/api/openchat/nickname_chk', {
+          user_id: user.user_id,
+          nickname: nickname
+        });
+
+        if (chkRes.isDuplicate) {
+          Swal.fire('중복됨', '이미 사용 중인 닉네임입니다.', 'error');
+          return;
+        }
+
+        // 2. Update Nickname
+        const updateRes = await ApiClient.postForm('/api/openchat/nickname_edit', {
+          user_id: user.user_id,
+          nickname: nickname
+        });
+
+        if (updateRes.success) {
+          Swal.fire('성공', '닉네임이 변경되었습니다.', 'success');
+
+          // Update Global User Context
+          updateLoginState({ ...user, name: nickname, nickname: nickname });
+
+          // Update Local State
+          setUserInfo(prev => ({ ...prev, nickname: nickname, name: nickname }));
+
+        } else {
+          Swal.fire('오류', '닉네임 변경에 실패했습니다.', 'error');
+        }
+      } catch (e) {
+        console.error(e);
+        Swal.fire('오류', '서버 통신 오류', 'error');
+      }
+    }
+  };
+
+  const edeitReview = (review) => {
+
+    console.log('🌐 review:', review);
+
+    const container = document.querySelector('.content-area');
+
+    if (container) {
+      const scrollY = container.scrollTop;
+      localStorage.setItem('profileScrollY', scrollY.toString());
+    }
 
 
     navigateToPageWithData && navigateToPageWithData(PAGES.SHARE_EXP, {
-      mode:'edit',
-      review:review,
+      mode: 'edit',
+      review: review,
 
-      reservation_id : review.reservation_id,
-      image : review.targetImage,
-      user_id : review.user_id,
-      target : review.target_type,
-      target_id : review.target_id,
-      targetName : review.targetName
+      reservation_id: review.reservation_id,
+      image: review.targetImage,
+      user_id: review.user_id,
+      target: review.target_type,
+      target_id: review.target_id,
+      targetName: review.targetName
     });
   }
 
-// 리뷰 삭제 함수
-const deleteReview = async (reviewId) => {
-  try {
-    // 삭제 확인 다이얼로그
-    const result = await Swal.fire({
-      title: get('REVIEW_DELETE_CONFIRM'),
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: get('PROMOTION_DELETE_BUTTON'),
-      cancelButtonText: get('Reservation.CancelButton')
-    });
-    
-    if (!result.isConfirmed) {
-      return; // 사용자가 취소한 경우
-    }
+  // 리뷰 삭제 함수
+  const deleteReview = async (reviewId) => {
+    try {
+      // 삭제 확인 다이얼로그
+      const result = await Swal.fire({
+        title: get('REVIEW_DELETE_CONFIRM'),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: get('PROMOTION_DELETE_BUTTON'),
+        cancelButtonText: get('Reservation.CancelButton')
+      });
 
-    const response = await ApiClient.postForm('/api/deleteReview', {
-      user_id: user.user_id,
-      review_id: reviewId
-    });
-    
-    if (response == 1) {
+      if (!result.isConfirmed) {
+        return; // 사용자가 취소한 경우
+      }
+
+      const response = await ApiClient.postForm('/api/deleteReview', {
+        user_id: user.user_id,
+        review_id: reviewId
+      });
+
+      if (response == 1) {
+        await Swal.fire({
+          title: get('REVIEW_DELETE_SUCCESS'),
+          icon: 'success',
+          confirmButtonText: get('SWAL_CONFIRM_BUTTON')
+        });
+
+        const updatedReviews = userReviews.filter(review => review.review_id !== reviewId);
+        setUserReviews(updatedReviews);
+      } else {
+        throw new Error(`서버 오류: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('리뷰 삭제 실패:', error);
       await Swal.fire({
-        title: get('REVIEW_DELETE_SUCCESS'),
-        icon: 'success',
+        title: get('REVIEW_DELETE_ERROR'),
+        icon: 'error',
         confirmButtonText: get('SWAL_CONFIRM_BUTTON')
       });
-      
-      const updatedReviews = userReviews.filter(review => review.review_id !== reviewId);
-      setUserReviews(updatedReviews);
-    } else {
-      throw new Error(`서버 오류: ${response.status}`);
     }
-  } catch (error) {
-    console.error('리뷰 삭제 실패:', error);
-    await Swal.fire({
-      title: get('REVIEW_DELETE_ERROR'),
-      icon: 'error',
-      confirmButtonText: get('SWAL_CONFIRM_BUTTON')
-    });
+  };
+
+  function formatDate(dt) {
+    if (!dt) return '-';
+
+    const y = dt.year.toString().slice(2);        // yy
+    const m = String(dt.monthValue).padStart(2, '0');
+    const d = String(dt.dayOfMonth).padStart(2, '0');
+    const hh = String(dt.hour).padStart(2, '0');
+    const mm = String(dt.minute).padStart(2, '0');
+    const ss = String(dt.second).padStart(2, '0');
+
+    return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
   }
-};
 
-function formatDate(dt) {
-  if (!dt) return '-';
+  function getRemainingTime(expiredAt) {
+    if (!expiredAt) return '-';
 
-  const y = dt.year.toString().slice(2);        // yy
-  const m = String(dt.monthValue).padStart(2, '0');
-  const d = String(dt.dayOfMonth).padStart(2, '0');
-  const hh = String(dt.hour).padStart(2, '0');
-  const mm = String(dt.minute).padStart(2, '0');
-  const ss = String(dt.second).padStart(2, '0');
+    const exp = new Date(
+      expiredAt.year,
+      expiredAt.monthValue - 1,
+      expiredAt.dayOfMonth,
+      expiredAt.hour,
+      expiredAt.minute,
+      expiredAt.second
+    );
 
-  return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
-}
+    const now = new Date();
+    let diff = exp - now;
 
-function getRemainingTime(expiredAt) {
-  if (!expiredAt) return '-';
+    if (diff <= 0) return get('profile_coupon_expired') || '만료됨';
 
-  const exp = new Date(
-    expiredAt.year,
-    expiredAt.monthValue - 1,
-    expiredAt.dayOfMonth,
-    expiredAt.hour,
-    expiredAt.minute,
-    expiredAt.second
-  );
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    diff -= hours * 1000 * 60 * 60;
 
-  const now = new Date();
-  let diff = exp - now;
+    const minutes = Math.floor(diff / (1000 * 60));
 
-  if (diff <= 0) return get('profile_coupon_expired') || '만료됨';
+    const left = get('profile_coupon_time_left'); // ← 다국어 처리된 '남음'
 
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  diff -= hours * 1000 * 60 * 60;
-
-  const minutes = Math.floor(diff / (1000 * 60));
-
-  const left = get('profile_coupon_time_left'); // ← 다국어 처리된 '남음'
-
-  return `${hours}시간 ${minutes}분 ${left}`;
-}
+    return `${hours}시간 ${minutes}분 ${left}`;
+  }
 
 
 
-const iauDataRender = () => {
-  console.log('iauDataRender', iauData);
+  const iauDataRender = () => {
+    console.log('iauDataRender', iauData);
 
-  const btn = document.querySelector('.daily-stats');
+    const btn = document.querySelector('.daily-stats');
 
-  if (btn) {
-    if (iauData && iauData.isActiveUser != true) {
-      btn.style.display = 'block';   // 조건 충족 시 표시
-    } else {
-      btn.style.display = 'none';    // 그 외에는 숨김
+    if (btn) {
+      if (iauData && iauData.isActiveUser != true) {
+        btn.style.display = 'block';   // 조건 충족 시 표시
+      } else {
+        btn.style.display = 'none';    // 그 외에는 숨김
+      }
     }
-  }
-};
+  };
 
 
   return (
@@ -663,61 +719,66 @@ const iauDataRender = () => {
             <div className="profile-header">
               <div className="profile-image">
                 <img src={userInfo.image_url} alt="profile" />
-            </div>
+              </div>
               <div className="profile-details">
                 <h2
                   style={{
-                    "display" : "flex",
-                    "flexDirection" : "column"
+                    "display": "flex",
+                    "flexDirection": "column"
                   }}
                 >
                   <div>{iauDataRender()}</div>
-                   {iauData?.isActiveUser == true && (
-                      <div className="premium-badge">Ad-Free</div>
-                    )}
-                  {userInfo?.nickname || get('PROFILE_NO_NICKNAME')}
+                  {iauData?.isActiveUser == true && (
+                    <div className="premium-badge">Ad-Free</div>
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {userInfo?.nickname || get('PROFILE_NO_NICKNAME')}
+                    <button className="edit-nick-profile-btn" onClick={handleEditNickname} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex' }}>
+                      <Edit3 size={16} color="#666" />
+                    </button>
+                  </div>
                 </h2>
                 {/*<p>{userInfo?.email || get('PROFILE_NO_EMAIL')}</p>*/}
                 <p>{userInfo?.created_at
                   ? `${get('PROFILE_MEMBER_SINCE')} ${new Date(userInfo.created_at).toLocaleString('en-US', {
-                      year: 'numeric',
-                      month: 'long'
-                    })}`
+                    year: 'numeric',
+                    month: 'long'
+                  })}`
                   : get('PROFILE_NO_JOIN_DATE')}</p>
               </div>
             </div>
             <div className="profile-stats">
-            <div className="stat-item">
-              <span className="stat-number">{userInfo?.booking_cnt ?? 0}</span>
-              <span className="stat-label">{get('BookingSum1.1')}</span>
+              <div className="stat-item">
+                <span className="stat-number">{userInfo?.booking_cnt ?? 0}</span>
+                <span className="stat-label">{get('BookingSum1.1')}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-number">{userInfo?.review_cnt ?? 0}</span>
+                <span className="stat-label">{get('Profile1.1')}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-number">{userInfo?.favorites_cnt ?? 0}</span>
+                <span className="stat-label">{get('Menu1.8')}</span>
+              </div>
             </div>
-            <div className="stat-item">
-              <span className="stat-number">{userInfo?.review_cnt ?? 0}</span>
-              <span className="stat-label">{get('Profile1.1')}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number">{userInfo?.favorites_cnt ?? 0}</span>
-              <span className="stat-label">{get('Menu1.8')}</span>
-            </div>
-          </div>
 
-           <SketchBtn 
-            className={`daily-stats ${iauData?.isActiveUser ? 'active' : ''}`}
-            variant={iauData?.isActiveUser ? true : false}
-            onClick={handleDailyPassClick}
-          >
-            {iauData?.isActiveUser ? (
-              <>
-                <Check size={16} style={{ marginRight: '0.5rem' }} />
-                {get('reservation.daily_pass.purchase_button3')}
-              </>
-            ) : (
-              <>
-                {get('reservation.daily_pass.purchase_button2')} 
-                <Sparkles size={16} color='#448e8d' style={{ marginLeft: '0.5rem' }} />
-              </>
-            )}
-          </SketchBtn>
+            <SketchBtn
+              className={`daily-stats ${iauData?.isActiveUser ? 'active' : ''}`}
+              variant={iauData?.isActiveUser ? true : false}
+              onClick={handleDailyPassClick}
+            >
+              {iauData?.isActiveUser ? (
+                <>
+                  <Check size={16} style={{ marginRight: '0.5rem' }} />
+                  {get('reservation.daily_pass.purchase_button3')}
+                </>
+              ) : (
+                <>
+                  {get('reservation.daily_pass.purchase_button2')}
+                  <Sparkles size={16} color='#448e8d' style={{ marginLeft: '0.5rem' }} />
+                </>
+              )}
+            </SketchBtn>
           </SketchDiv>
 
           {/*쿠폰 섹션*/}
@@ -727,9 +788,9 @@ const iauDataRender = () => {
             </div>
 
             <div className="reviews-list">
-        {userCoupons.length > 0 ? (
-          userCoupons.map((coupon) => (
-            <div key={coupon.coupon_id} className="review-item coupon-item">
+              {userCoupons.length > 0 ? (
+                userCoupons.map((coupon) => (
+                  <div key={coupon.coupon_id} className="review-item coupon-item">
 
                     {/* LEFT: Title */}
                     <div className="coupon-left">
@@ -741,14 +802,14 @@ const iauDataRender = () => {
 
 
 
-                    <div className="coupon-row">
-                      <span className="label">{get('profile_coupon_expire_date')}</span>
-                      <span className="value">{formatDate(coupon.expired_at)}</span>
-                    </div>
+                      <div className="coupon-row">
+                        <span className="label">{get('profile_coupon_expire_date')}</span>
+                        <span className="value">{formatDate(coupon.expired_at)}</span>
+                      </div>
 
-                    <div className="coupon-row remaining-time">
-                      <span className="value">{getRemainingTime(coupon.expired_at)}</span>
-                    </div>
+                      <div className="coupon-row remaining-time">
+                        <span className="value">{getRemainingTime(coupon.expired_at)}</span>
+                      </div>
 
 
                     </div>
@@ -779,21 +840,21 @@ const iauDataRender = () => {
                         <div className="venue-info">
                           {review.target_type === 'venue' && (
                             <svg className="icon-tiny" viewBox="0 0 24 24">
-                              <path d="M3 9L12 2L21 9V20A1 1 0 0 1 20 21H4A1 1 0 0 1 3 20V9Z" stroke="black" strokeWidth="1.5" fill="none"/>
-                              <path d="M9 21V12H15V21" stroke="black" strokeWidth="1.5" fill="none"/>
+                              <path d="M3 9L12 2L21 9V20A1 1 0 0 1 20 21H4A1 1 0 0 1 3 20V9Z" stroke="black" strokeWidth="1.5" fill="none" />
+                              <path d="M9 21V12H15V21" stroke="black" strokeWidth="1.5" fill="none" />
                             </svg>
                           )}
                           {review.target_type === 'staff' && (
                             <svg className="icon-tiny" viewBox="0 0 24 24">
-                              <circle cx="12" cy="7" r="4" stroke="black" strokeWidth="1.5" fill="none"/>
-                              <path d="M5.5 21a6.5 6.5 0 0 1 13 0" stroke="black" strokeWidth="1.5" fill="none"/>
+                              <circle cx="12" cy="7" r="4" stroke="black" strokeWidth="1.5" fill="none" />
+                              <path d="M5.5 21a6.5 6.5 0 0 1 13 0" stroke="black" strokeWidth="1.5" fill="none" />
                             </svg>
                           )}
                           <span>{review.venue_name}</span>
                         </div>
                         <div className='btn-set'>
-                          <button 
-                            style={{marginRight: '0.3rem'}}
+                          <button
+                            style={{ marginRight: '0.3rem' }}
                             className='edit-btn' onClick={() => edeitReview(review)}>
                             {get('PROMOTION_EDIT_BUTTON')}
                           </button>
@@ -821,22 +882,22 @@ const iauDataRender = () => {
                       <div className="review-date">
                         {review.created_at
                           ? new Date(review.created_at).toLocaleString('ko-KR', {
-                              year: 'numeric',
-                              month: '2-digit',
-                              day: '2-digit',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              second: '2-digit',
-                              hour12: false
-                            }).replace(/\./g, '-').replace(' ', ' ').replace(/- /g, '-')
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: false
+                          }).replace(/\./g, '-').replace(' ', ' ').replace(/- /g, '-')
                           : ''}
                       </div>
                       {review.reply_content && (
                         <div className={`manager-response ${review.target_type === 'staff' ? 'staff-response' : ''}`}>
                           <div className="response-header">
                             <span className="response-label">
-                              {review.target_type === 'venue' 
-                                ? get('REVIEW_MANAGER_RESPONSE') 
+                              {review.target_type === 'venue'
+                                ? get('REVIEW_MANAGER_RESPONSE')
                                 : get('REVIEW_STAFF_RESPONSE')
                               }
                             </span>
@@ -857,11 +918,11 @@ const iauDataRender = () => {
               )}
             </div>
           </SketchDiv>
-            <LoadingScreen 
-                      variant="cocktail"
-                      loadingText="Loading..."
-                      isVisible={isLoading} 
-                    />
+          <LoadingScreen
+            variant="cocktail"
+            loadingText="Loading..."
+            isVisible={isLoading}
+          />
         </div>
       </div>
     </>
