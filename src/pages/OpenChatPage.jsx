@@ -8,6 +8,7 @@ import '@components/SketchComponents.css';
 import ApiClient from '@utils/ApiClient';
 import ChatStorage from '@utils/ChatStorage';
 import Swal from 'sweetalert2';
+import { requestCameraPermission } from '@utils/nativeBridge';
 
 const RETENTION_DAYS = 7;
 
@@ -1712,7 +1713,10 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
             <div className="chat-input-wrapper">
                 <ReplyIndicator replyingTo={replyingTo} onClose={() => setReplyingTo(null)} />
                 <div className="input-row">
-                    <button className="icon-btn" onClick={() => document.getElementById('media-upload-input').click()}>
+                    <button className="icon-btn" onClick={() => {
+                        requestCameraPermission();
+                        document.getElementById('media-upload-input').click();
+                    }}>
                         <ImageIcon size={24} />
                     </button>
                     <input id="media-upload-input" type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={handleFileSelect} />
