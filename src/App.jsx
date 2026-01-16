@@ -49,168 +49,168 @@ const AppRoutes = () => {
 
   useEffect(() => {
     const init = async () => {
-    const currentQuery = window.location.href;
-    const url = new URL(currentQuery);
-    const params = new URLSearchParams(url.search);
-    const versionFromParam = params.get('version');
-    const pathname = url.pathname;
+      const currentQuery = window.location.href;
+      const url = new URL(currentQuery);
+      const params = new URLSearchParams(url.search);
+      const versionFromParam = params.get('version');
+      const pathname = url.pathname;
 
 
-    const today = new Date().toLocaleDateString('sv-SE');  // YYYY-MM-DD
-    let hasFetched = localStorage.getItem("hasFetchedNotice");
+      const today = new Date().toLocaleDateString('sv-SE');  // YYYY-MM-DD
+      let hasFetched = localStorage.getItem("hasFetchedNotice");
 
-    // hasFetched 값이 "true"가 아니고, 오늘 날짜도 아니면 false로 설정
-    if (hasFetched !== today) {
-      localStorage.setItem("hasFetchedNotice", "false");
-    }
-
-    hasFetched = localStorage.getItem('hasFetchedNotice');
-
-    // ✅ 저장된 버전이 있는 경우
-    let version = versionFromParam || localStorage.getItem('app_version');
-
-    // ✅ 버전이 있으면 localStorage에 저장
-    if (versionFromParam) {
-      localStorage.setItem('app_version', versionFromParam);
-    }
-
-    // ✅ 전역 상태에도 반영
-    setAppVersion(version);
-
-    const compareVersions = (v1, v2) => {
-      const a = v1.split('.').map(Number);
-      const b = v2.split('.').map(Number);
-      for (let i = 0; i < Math.max(a.length, b.length); i++) {
-        if ((a[i] || 0) > (b[i] || 0)) return 1;
-        if ((a[i] || 0) < (b[i] || 0)) return -1;
-      }
-      return 0;
-    };
-
-    const isAndroid = !!window.native;
-    const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
-
-    let deviceType = 'nonNative';
-    if (isAndroid) {
-      deviceType = 'android';
-    } else if (isIOS) {
-      deviceType = 'ios';
-    }
-
-    localStorage.setItem('app_device', deviceType);
-
-    try {
-      const uuid = await getUUIDTmp();
-
-      const allowedUUIDs = [
-        '2E14837B-E59D-4812-BA9E-583E20947AAC',
-        '89716887-4177-4DD9-A76A-9DB026231E6D',
-        'FCCD560A-D1D2-4CEC-A0CA-F5888E5A6B35',
-        '259d616410fefca9',
-        '7f94a544b7a4fa9a',
-        '8a19307d021cf7a5'
-      ];
-
-      if (!allowedUUIDs.includes(uuid)) {
-        // navigate('/block');
-        // return;
+      // hasFetched 값이 "true"가 아니고, 오늘 날짜도 아니면 false로 설정
+      if (hasFetched !== today) {
+        localStorage.setItem("hasFetchedNotice", "false");
       }
 
-    } catch (err) {
-      console.error('UUID 오류:', err);
-      //Swal.fire('UUID 에러', err.toString(), 'error');
-      
-    }
+      hasFetched = localStorage.getItem('hasFetchedNotice');
+
+      // ✅ 저장된 버전이 있는 경우
+      let version = versionFromParam || localStorage.getItem('app_version');
+
+      // ✅ 버전이 있으면 localStorage에 저장
+      if (versionFromParam) {
+        localStorage.setItem('app_version', versionFromParam);
+      }
+
+      // ✅ 전역 상태에도 반영
+      setAppVersion(version);
+
+      const compareVersions = (v1, v2) => {
+        const a = v1.split('.').map(Number);
+        const b = v2.split('.').map(Number);
+        for (let i = 0; i < Math.max(a.length, b.length); i++) {
+          if ((a[i] || 0) > (b[i] || 0)) return 1;
+          if ((a[i] || 0) < (b[i] || 0)) return -1;
+        }
+        return 0;
+      };
+
+      const isAndroid = !!window.native;
+      const isIOS = !!window.webkit?.messageHandlers?.native?.postMessage;
+
+      let deviceType = 'nonNative';
+      if (isAndroid) {
+        deviceType = 'android';
+      } else if (isIOS) {
+        deviceType = 'ios';
+      }
+
+      localStorage.setItem('app_device', deviceType);
+
+      try {
+        const uuid = await getUUIDTmp();
+
+        const allowedUUIDs = [
+          '2E14837B-E59D-4812-BA9E-583E20947AAC',
+          '89716887-4177-4DD9-A76A-9DB026231E6D',
+          'FCCD560A-D1D2-4CEC-A0CA-F5888E5A6B35',
+          '259d616410fefca9',
+          '7f94a544b7a4fa9a',
+          '8a19307d021cf7a5'
+        ];
+
+        if (!allowedUUIDs.includes(uuid)) {
+          // navigate('/block');
+          // return;
+        }
+
+      } catch (err) {
+        console.error('UUID 오류:', err);
+        //Swal.fire('UUID 에러', err.toString(), 'error');
+
+      }
 
 
-    const isNotNative = !isAndroid && !isIOS;
+      const isNotNative = !isAndroid && !isIOS;
 
-    let vcObj = {
-      isLatestVersion: false,
-      isAndroid, isIOS, isNotNative
-    };
+      let vcObj = {
+        isLatestVersion: false,
+        isAndroid, isIOS, isNotNative
+      };
 
 
 
-    localStorage.setItem('versionCheck', JSON.stringify(vcObj));
-
-    const saveVersionCheck = (isLatest) => {
-      vcObj.isLatestVersion = isLatest;
       localStorage.setItem('versionCheck', JSON.stringify(vcObj));
+
+      const saveVersionCheck = (isLatest) => {
+        vcObj.isLatestVersion = isLatest;
+        localStorage.setItem('versionCheck', JSON.stringify(vcObj));
+      };
+
+      // 분기 기준 버전
+      const andVersion = '1.0.24';
+      const iosVersion = '1.0.10';
+
+      // ✅ 버전 분기 처리
+      if (version) {
+        if (isAndroid && compareVersions(version, andVersion) < 0) {
+          navigate('/downloadAndroid');
+        } else if (isIOS && compareVersions(version, iosVersion) < 0) {
+          navigate('/downloadIOS');
+        }
+      } else {
+        if (isAndroid && compareVersions(version, andVersion) < 0) {
+          navigate('/downloadAndroid');
+        } else if (isIOS && compareVersions(version, iosVersion) < 0) {
+          navigate('/downloadIOS');
+        }
+      }
+
+
+      if (version) {
+        if (isAndroid && compareVersions(version, andVersion) == 0) {
+          saveVersionCheck(true);
+        } else if (isIOS && compareVersions(version, iosVersion) == 0) {
+          saveVersionCheck(true);
+        }
+      }
+
+
+
+
+
+      /*
+            if (version) {
+             if (isAndroid && compareVersions(version, '1.0.9') < 0) {
+                saveVersionCheck(false);
+             } else if (isIOS && compareVersions(version, '1.0.6') < 0) {
+                saveVersionCheck(false);
+            }
+          } else {
+            if (isAndroid && compareVersions(version, '1.0.9') < 0) {
+               saveVersionCheck(false);
+             } else if (isIOS && compareVersions(version, '1.0.6') < 0) {
+               saveVersionCheck(false);
+            }
+          }
+      */
+
+      if (isNotNative) {
+        saveVersionCheck(false);
+      }
+
+
     };
 
-    // 분기 기준 버전
-    const andVersion = '1.0.23';
-    const iosVersion = '1.0.10';
-
-    // ✅ 버전 분기 처리
-    if (version) {
-       if (isAndroid && compareVersions(version, andVersion) < 0) {
-          navigate('/downloadAndroid');
-       } else if (isIOS && compareVersions(version, iosVersion) < 0) {
-          navigate('/downloadIOS');
-      }
-    } else {
-      if (isAndroid && compareVersions(version, andVersion) < 0) {
-         navigate('/downloadAndroid');
-       } else if (isIOS && compareVersions(version, iosVersion) < 0) {
-         navigate('/downloadIOS');
-      }
-    }
-
-
-    if (version) {
-       if (isAndroid && compareVersions(version, andVersion) == 0) {
-          saveVersionCheck(true);
-       } else if (isIOS && compareVersions(version, iosVersion) == 0) {
-          saveVersionCheck(true);
-      }
-    }
+    init();
+  }, []);
 
 
 
+  useEffect(() => {
+    deviceLogin();
+  }, [deviceLogin]);
 
+  useEffect(() => {
+    // body에 현재 언어 속성 추가
+    document.body.setAttribute('data-lang', currentLang);
 
-/*
-      if (version) {
-       if (isAndroid && compareVersions(version, '1.0.9') < 0) {
-          saveVersionCheck(false);
-       } else if (isIOS && compareVersions(version, '1.0.6') < 0) {
-          saveVersionCheck(false);
-      }
-    } else {
-      if (isAndroid && compareVersions(version, '1.0.9') < 0) {
-         saveVersionCheck(false);
-       } else if (isIOS && compareVersions(version, '1.0.6') < 0) {
-         saveVersionCheck(false);
-      }
-    }
-*/
-
-    if (isNotNative) {
-      saveVersionCheck(false);
-    }
-
-
-  };
-
-  init();
-}, []);
-
-
-
-    useEffect(() => {
-      deviceLogin();
-    }, [deviceLogin]);
-
-    useEffect(() => {
-      // body에 현재 언어 속성 추가
-      document.body.setAttribute('data-lang', currentLang);
-      
-      // 또는 클래스 방식
-      document.body.classList.remove('lang-en', 'lang-ko', 'lang-ja', 'lang-zh', 'lang-cn');
-      document.body.classList.add(`lang-${currentLang}`);
-    }, [currentLang]);
+    // 또는 클래스 방식
+    document.body.classList.remove('lang-en', 'lang-ko', 'lang-ja', 'lang-zh', 'lang-cn');
+    document.body.classList.add(`lang-${currentLang}`);
+  }, [currentLang]);
 
   const navigate = useNavigate();
 
@@ -259,7 +259,7 @@ const AppRoutes = () => {
         }
       />
 
-      
+
       <Route
         path="/block"
         element={
@@ -306,7 +306,7 @@ const AppRoutes = () => {
 
 
 //import { ShieldCheck, Clock, Package, Globe, QrCode } from 'lucide-react';
-import { ShieldCheck, Clock, Gift , MessagesSquare, ShoppingBasket,  Package, Globe, QrCode } from 'lucide-react';
+import { ShieldCheck, Clock, Gift, MessagesSquare, ShoppingBasket, Package, Globe, QrCode } from 'lucide-react';
 
 const LeTantonSheriffPage = () => {
   return (
@@ -628,7 +628,7 @@ const LeTantonSheriffPage = () => {
       <div className="main-container">
         {/* 헤더 */}
         <div>
-          <div className="header">            
+          <div className="header">
             <div className="logo-section">
               <div className="logo-icon">
                 <Cocktail />
@@ -641,9 +641,9 @@ const LeTantonSheriffPage = () => {
           </div>
 
           {/* <HatchPattern opacity={0.8} />*/}
-          
+
         </div>
-        
+
 
         <div className="content-container">
 
@@ -719,7 +719,7 @@ const LeTantonSheriffPage = () => {
           {/* QR 코드 섹션 */}
           <div className="qr-section">
             <div className="qr-placeholder">
-              <img src="/cdn/qr.png" style={{"width": "100%"}}></img>
+              <img src="/cdn/qr.png" style={{ "width": "100%" }}></img>
             </div>
             <div className="qr-content">
               <div className="qr-title">
@@ -766,7 +766,7 @@ const NotificationHandler = () => {
     window.ReactReady = true;
 
     window.onNotificationClick = (navigateTo, data) => {
-      let prefix = '/main' ;
+      let prefix = '/main';
       // (data?.chatRoomType === 'staff') ? '/staff' : '/manager';
 
       // 쿼리스트링 생성 (navigateTo, chatRoomType 등 불필요한 값은 제외 가능)
@@ -787,7 +787,7 @@ const NotificationHandler = () => {
     if (window.native?.readyToReceiveToken) {
       window.native.readyToReceiveToken();
     }
-    
+
     if (window.webkit?.messageHandlers?.native) {
       window.webkit.messageHandlers.native.postMessage("readyToReceiveToken");
       console.log("📤 readyToReceiveToken 메시지 전송");
@@ -840,21 +840,21 @@ function App() {
 
     // 1. 확대 기능 비활성화
     const disableZoom = () => {
-        const contentValue = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
-        const metaViewport = document.querySelector('meta[name="viewport"]');
+      const contentValue = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+      const metaViewport = document.querySelector('meta[name="viewport"]');
 
-        if (metaViewport) {
-          metaViewport.setAttribute('content', contentValue);
-        } else {
-          const meta = document.createElement('meta');
-          meta.name = 'viewport';
-          meta.content = contentValue;
-          document.head.appendChild(meta);
-        }
+      if (metaViewport) {
+        metaViewport.setAttribute('content', contentValue);
+      } else {
+        const meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = contentValue;
+        document.head.appendChild(meta);
+      }
 
-        // CSS 및 이벤트 방지는 그대로 유지
-        const style = document.createElement('style');
-        style.textContent = `
+      // CSS 및 이벤트 방지는 그대로 유지
+      const style = document.createElement('style');
+      style.textContent = `
           * {
             touch-action: manipulation;
           }
@@ -871,34 +871,34 @@ function App() {
             touch-action: auto !important;
           }
         `;
-        document.head.appendChild(style);
+      document.head.appendChild(style);
 
-        const preventZoomGestures = (e) => {
-          if (e.touches && e.touches.length > 1) {
-            const allowZoomElements = e.target.closest('[data-allow-zoom="true"]');
-            if (!allowZoomElements) {
-              e.preventDefault();
-            }
-          }
-        };
-
-        const preventDoubleTapZoom = (e) => {
+      const preventZoomGestures = (e) => {
+        if (e.touches && e.touches.length > 1) {
           const allowZoomElements = e.target.closest('[data-allow-zoom="true"]');
           if (!allowZoomElements) {
             e.preventDefault();
           }
-        };
-
-        document.addEventListener('touchstart', preventZoomGestures, { passive: false });
-        document.addEventListener('touchmove', preventZoomGestures, { passive: false });
-        document.addEventListener('gesturestart', preventDoubleTapZoom, { passive: false });
-
-        return () => {
-          document.removeEventListener('touchstart', preventZoomGestures);
-          document.removeEventListener('touchmove', preventZoomGestures);
-          document.removeEventListener('gesturestart', preventDoubleTapZoom);
-        };
+        }
       };
+
+      const preventDoubleTapZoom = (e) => {
+        const allowZoomElements = e.target.closest('[data-allow-zoom="true"]');
+        if (!allowZoomElements) {
+          e.preventDefault();
+        }
+      };
+
+      document.addEventListener('touchstart', preventZoomGestures, { passive: false });
+      document.addEventListener('touchmove', preventZoomGestures, { passive: false });
+      document.addEventListener('gesturestart', preventDoubleTapZoom, { passive: false });
+
+      return () => {
+        document.removeEventListener('touchstart', preventZoomGestures);
+        document.removeEventListener('touchmove', preventZoomGestures);
+        document.removeEventListener('gesturestart', preventDoubleTapZoom);
+      };
+    };
 
 
     // 2. 뒤로가기 막기
@@ -949,9 +949,9 @@ function App() {
       <OverlayProvider>
         <FcmProvider>
           <AuthProvider>
-              <PopupProvider>
-                  <AppContent />
-              </PopupProvider>
+            <PopupProvider>
+              <AppContent />
+            </PopupProvider>
           </AuthProvider>
         </FcmProvider>
       </OverlayProvider>
