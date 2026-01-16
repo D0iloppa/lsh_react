@@ -8,7 +8,14 @@ import '@components/SketchComponents.css';
 import ApiClient from '@utils/ApiClient';
 import ChatStorage from '@utils/ChatStorage';
 import Swal from 'sweetalert2';
-import { requestCameraPermission } from '@utils/nativeBridge';
+import {
+    requestCameraPermission as requestCameraPermissionNative,
+    requestCameraPermissionNotification
+} from '@utils/nativeBridge';
+
+
+
+// --- Sub Components ---
 
 const RETENTION_DAYS = 7;
 
@@ -474,6 +481,19 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
     const scrollTimeoutRef = useRef(null);
 
 
+    const [cameraGranted, setCameraGranted] = useState(null);
+
+    const requestCameraPermission = async () => {
+        try {
+            const granted = await requestCameraPermissionNative();
+            setCameraGranted(granted);
+            return granted;
+        } catch (e) {
+            setCameraGranted(0);
+            return false;
+        }
+    };
+
     // 키보드 밀림현상
     useEffect(() => {
         const handleScroll = () => {
@@ -516,6 +536,9 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
         };
         initDB();
         setRoomTitle(get('open_chat_label') || '오픈채팅');
+
+        // 진입 시 카메라 권한 요청
+        requestCameraPermission();
     }, [get]);
 
     const formatTime = useCallback((date) => {
@@ -1713,9 +1736,47 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
             <div className="chat-input-wrapper">
                 <ReplyIndicator replyingTo={replyingTo} onClose={() => setReplyingTo(null)} />
                 <div className="input-row">
-                    <button className="icon-btn" onClick={() => {
-                        requestCameraPermission();
-                        document.getElementById('media-upload-input').click();
+                    <button className="icon-btn" onClick={async () => {
+                        const isGranted = await requestCameraPermission();
+
+
+                        if (isGranted) {
+                            document.getElementById('media-upload-input').click();
+                        } else {
+
+                            // ios
+                            if (window.webkit?.messageHandlers?.native?.postMessage) {
+                                window.webkit.messageHandlers.native.postMessage(
+                                    'requestCameraPermissionAlert'
+                                );
+                            }
+                            // Android WebView
+                            else if (window.native?.postMessage) {
+                                //window.native.postMessage('requestCameraPermission');
+                                Swal.fire({
+                                    title: '카메라 권한 필요',
+                                    html: `
+                                        <div style="font-size: 15px; color: #495057; line-height: 1.6;">
+                                            사진 촬영 및 파일 첨부를 위해<br/>
+                                            <b>카메라 접근 권한</b>이 필요합니다.<br/><br/>
+                                            휴대폰 <b>설정</b>에서 카메라 권한을<br/>
+                                            허용으로 변경해주세요.
+                                        </div>
+                                    `,
+                                    icon: 'warning',
+                                    confirmButtonText: '확인',
+                                    confirmButtonColor: '#4dabf7',
+                                    width: '320px',
+                                    padding: '1.5em'
+                                });
+                            }
+
+                            // else
+                            else {
+                                document.getElementById('media-upload-input').click();
+                            }
+
+                        }
                     }}>
                         <ImageIcon size={24} />
                     </button>
