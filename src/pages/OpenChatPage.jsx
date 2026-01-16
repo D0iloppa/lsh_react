@@ -478,6 +478,7 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
     const chatInputRef = useRef(null);
     const isScrollingRef = useRef(false);
     const isLoadingRef = useRef(false);
+    const isSendingRef = useRef(false);
     const scrollTimeoutRef = useRef(null);
 
 
@@ -538,7 +539,7 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
         setRoomTitle(get('open_chat_label') || '오픈채팅');
 
         // 진입 시 카메라 권한 요청
-        requestCameraPermission();
+        // requestCameraPermission();
     }, [get]);
 
     const formatTime = useCallback((date) => {
@@ -832,7 +833,7 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
         intervalRef.current = setInterval(() => {
             getChattingData();
             getChatStatus();
-        }, 500);
+        }, 1000);
 
         //statusIntervalRef.current = setInterval(() => getChatStatus(), 500); // Poll status every 3s
 
@@ -922,7 +923,11 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
     }, [chat_messages]);
 
     const handleMessageSend = useCallback(async (message) => {
-        if (!message.trim() || isLoadingRef.current) return;
+        if (!message.trim() || isSendingRef.current) return;
+
+        isSendingRef.current = true;
+        isLoadingRef.current = true; // Temporary lock polling
+
         const now = new Date();
         const tempId = Date.now();
         const uiMsg = {
@@ -940,7 +945,6 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
         setChatMessages(prev => [...prev, uiMsg]);
         setTimeout(() => scrollToBottom('auto', true), 0);
         setReplyingTo(null); // Clear reply state after sending
-        isLoadingRef.current = true; // Temporary lock
 
         try {
             // User Request: Fix API call (Text should be JSON usually, but check if postForm was intended.
@@ -972,12 +976,21 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                 await ChatStorage.saveMessages([confirmedData]);
 
                 // Reconcile: Update the optimistic message with real chat_sn
-                setChatMessages(prev => prev.map(m => {
-                    if (m.id === tempId) {
-                        return { ...m, chat_sn: realChatSn, isUploading: false }; // Clear isUploading
+                setChatMessages(prev => {
+                    // Check if realChatSn already exists (from background poll)
+                    const exists = prev.some(m => m.chat_sn === realChatSn && m.id !== tempId);
+                    if (exists) {
+                        // Remove optimistic message since real one is already there
+                        return prev.filter(m => m.id !== tempId);
                     }
-                    return m;
-                }));
+
+                    return prev.map(m => {
+                        if (m.id === tempId) {
+                            return { ...m, chat_sn: realChatSn, isUploading: false }; // Clear isUploading
+                        }
+                        return m;
+                    });
+                });
             } else {
                 // If API call was successful but no chat_sn returned, remove optimistic message
                 setChatMessages(prev => prev.filter(m => m.id !== tempId));
@@ -991,6 +1004,7 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
             setChatMessages(prev => prev.filter(m => m.id !== tempId));
         } finally {
             isLoadingRef.current = false; // Release lock
+            isSendingRef.current = false;
         }
     }, [room_sn, user.user_id, user.name, user.level, user.color, formatTime, scrollToBottom, replyingTo]);
 
@@ -1737,9 +1751,16 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                 <ReplyIndicator replyingTo={replyingTo} onClose={() => setReplyingTo(null)} />
                 <div className="input-row">
                     <button className="icon-btn" onClick={async () => {
-                        const isGranted = await requestCameraPermission();
 
 
+                        document.getElementById('media-upload-input').click();
+
+                        // const isGranted = await requestCameraPermission();
+
+
+
+
+                        /*
                         if (isGranted) {
                             document.getElementById('media-upload-input').click();
                         } else {
@@ -1777,6 +1798,10 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                             }
 
                         }
+                        */
+
+
+
                     }}>
                         <ImageIcon size={24} />
                     </button>
