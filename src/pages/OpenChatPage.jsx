@@ -1752,15 +1752,16 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                 <div className="input-row">
                     <button className="icon-btn" onClick={async () => {
 
-
-                        document.getElementById('media-upload-input').click();
-
-                        // const isGranted = await requestCameraPermission();
-
-
-
-
                         /*
+                        // 파일 첨부 버튼 무조건 클릭되도록
+                        document.getElementById('media-upload-input').click();
+                        */
+
+
+
+                        // 권한에 의한 파일 첨부 버튼 제어
+                        const isGranted = await requestCameraPermission();
+
                         if (isGranted) {
                             document.getElementById('media-upload-input').click();
                         } else {
@@ -1796,11 +1797,7 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                             else {
                                 document.getElementById('media-upload-input').click();
                             }
-
                         }
-                        */
-
-
 
                     }}>
                         <ImageIcon size={24} />
