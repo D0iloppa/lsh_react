@@ -8,6 +8,14 @@ import '@components/SketchComponents.css';
 import ApiClient from '@utils/ApiClient';
 import ChatStorage from '@utils/ChatStorage';
 import Swal from 'sweetalert2';
+import {
+    requestCameraPermission as requestCameraPermissionNative,
+    requestCameraPermissionNotification
+} from '@utils/nativeBridge';
+
+
+
+// --- Sub Components ---
 
 const RETENTION_DAYS = 7;
 
@@ -276,7 +284,12 @@ const ContextMenu = ({ data, onClose, onLike, onReply, onDelete }) => {
                     <span style={{ fontSize: '14px', fontWeight: 500 }}>답변</span>
                 </button>
                 <button onClick={() => { onLike(data.msg); onClose(); }}>
-                    <Heart size={16} style={{ marginRight: '8px' }} />
+                    <Heart
+                        size={16}
+                        style={{ marginRight: '8px' }}
+                        fill={data.msg.is_liked_by_me ? "#fa5252" : "none"}
+                        color={data.msg.is_liked_by_me ? "#fa5252" : "currentColor"}
+                    />
                     <span style={{ fontSize: '14px', fontWeight: 500 }}>좋아요</span>
                 </button>
                 {isMine && (
@@ -321,43 +334,56 @@ const LikeUsersModal = ({ show, onClose, users, loading }) => {
                             <Loader2 className="spinner" size={24} color="#adb5bd" />
                         </div>
                     ) : (
-                        <>
-                            {users.map((u, i) => (
-                                <div key={i} className="like-user-item">
-                                    <div className="profile-wrapper-sm">
-                                        <img src={USER_LEVEL_ICONS[u.level] || USER_LEVEL_ICONS[1]} alt="lv" />
-                                    </div>
-                                    <span className="like-username">{u.name}</span>
+                        users.map(u => (
+                            <div key={u.user_id} className="like-user-item">
+                                <div className="profile-wrapper-sm">
+                                    <img src={USER_LEVEL_ICONS[u.level] || USER_LEVEL_ICONS[1]} alt="lv" />
                                 </div>
-                            ))}
-                            {users.length === 0 && <div className="no-likes">아직 좋아요가 없습니다.</div>}
-                        </>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <span className="name">{u.nickname}</span>
+                                    {u.time && <span className="time">{u.time}</span>}
+                                </div>
+                            </div>
+                        ))
                     )}
                 </div>
             </div>
             <style jsx="true">{`
-                .like-modal-overlay {
-                    position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2100;
-                    display: flex; align-items: center; justify-content: center;
-                }
-                .like-modal-content {
-                    background: #fff; width: 300px; max-height: 400px; border-radius: 12px;
-                    display: flex; flex-direction: column; overflow: hidden;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-                }
-                .like-modal-header {
-                    padding: 12px 16px; border-bottom: 1px solid #f0f0f0;
-                    display: flex; justify-content: space-between; align-items: center;
-                }
-                .like-modal-header h4 { margin: 0; font-size: 16px; font-weight: 600; color: #343a40; }
-                .like-user-list { flex: 1; overflow-y: auto; padding: 12px; }
-                .like-user-item { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #f8f9fa; }
-                .like-user-item:last-child { border-bottom: none; }
-                .profile-wrapper-sm { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; margin-right: 12px; border: 1px solid #e9ecef; }
-                .profile-wrapper-sm img { width: 100%; height: 100%; object-fit: cover; }
-                .like-username { font-size: 14px; color: #495057; font-weight: 500; }
-                .no-likes { text-align: center; color: #adb5bd; padding: 20px; font-size: 14px; }
+                .like-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center; }
+                .like-modal-content { background: white; width: 300px; max-height: 400px; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+                .like-modal-header { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+                .like-modal-header h4 { margin: 0; font-size: 16px; }
+                .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #868e96; }
+                .like-user-list { flex: 1; overflow-y: auto; padding: 0; }
+                .like-user-item { padding: 10px 16px; border-bottom: 1px solid #f8f9fa; display: flex; align-items: center; }
+                .profile-wrapper-sm { width: 32px; height: 32px; border-radius: 8px; overflow: hidden; margin-right: 12px; border: 1px solid #eee; flex-shrink: 0; }
+                .profile-wrapper-sm img { width: 100%; height: 100%; object-fit: contain; }
+                .name { font-size: 14px; font-weight: 500; color: #343a40; }
+                .time { font-size: 11px; color: #adb5bd; }
             `}</style>
+        </div>
+    );
+};
+
+const ImageWithSkeleton = ({ src, onClick, alt, className }) => {
+    const [loaded, setLoaded] = useState(false);
+
+    return (
+        <div className={className} onClick={onClick} style={{ position: 'relative', overflow: 'hidden', minHeight: loaded ? 'auto' : '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {!loaded && (
+                <div className="skeleton" style={{ width: '100%', height: '200px', position: 'absolute', inset: 0 }} />
+            )}
+            <img
+                src={src}
+                alt={alt}
+                onLoad={() => setLoaded(true)}
+                style={{
+                    display: loaded ? 'block' : 'none',
+                    width: '100%',
+                    height: 'auto',
+                    borderRadius: 'inherit' // Inherit from parent bubble/img class
+                }}
+            />
         </div>
     );
 };
@@ -439,8 +465,10 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
     const [contextMenuData, setContextMenuData] = useState(null);
     const [likeModalData, setLikeModalData] = useState({ show: false, users: [], loading: false });
     const [replyingTo, setReplyingTo] = useState(null);
+
     const [returnScrollPos, setReturnScrollPos] = useState(null);
     const [showReturnBtn, setShowReturnBtn] = useState(false);
+    const [originChatSn, setOriginChatSn] = useState(null);
 
     const intervalRef = useRef(null);
     const statusIntervalRef = useRef(null);
@@ -450,8 +478,22 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
     const chatInputRef = useRef(null);
     const isScrollingRef = useRef(false);
     const isLoadingRef = useRef(false);
+    const isSendingRef = useRef(false);
     const scrollTimeoutRef = useRef(null);
 
+
+    const [cameraGranted, setCameraGranted] = useState(null);
+
+    const requestCameraPermission = async () => {
+        try {
+            const granted = await requestCameraPermissionNative();
+            setCameraGranted(granted);
+            return granted;
+        } catch (e) {
+            setCameraGranted(0);
+            return false;
+        }
+    };
 
     // 키보드 밀림현상
     useEffect(() => {
@@ -495,6 +537,9 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
         };
         initDB();
         setRoomTitle(get('open_chat_label') || '오픈채팅');
+
+        // 진입 시 카메라 권한 요청
+        // requestCameraPermission();
     }, [get]);
 
     const formatTime = useCallback((date) => {
@@ -788,7 +833,7 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
         intervalRef.current = setInterval(() => {
             getChattingData();
             getChatStatus();
-        }, 500);
+        }, 1000);
 
         //statusIntervalRef.current = setInterval(() => getChatStatus(), 500); // Poll status every 3s
 
@@ -825,23 +870,28 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
 
 
     const handleScroll = useCallback(() => {
-        if (!chatBoxRef.current || isLoadingRef.current) return;
+        if (!chatBoxRef.current) return;
 
         // [Fix 2] Block logic if initial scroll hasn't finished
         if (!isInitialScrollDone.current) return;
 
-        const { scrollTop, scrollHeight, clientHeight } = chatBoxRef.current; // Read layout immediately
+        const { scrollTop, scrollHeight, clientHeight } = chatBoxRef.current; // Immediate for Load Older
 
-        // 1. Check for Load Older (Immediate Trigger)
-        if (!isLoadingOlder && hasMoreOlder && scrollTop < 50) {
+        // 1. Check for Load Older (Immediate Trigger) - Blocked by isLoadingRef
+        if (!isLoadingRef.current && !isLoadingOlder && hasMoreOlder && scrollTop < 50) {
             getChattingData(false, true);
         }
 
-        // 2. Float Button & Other logic (Debounced)
+        // 2. Float Button & Other logic (Debounced) - NOT blocked by isLoadingRef
         if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
         scrollTimeoutRef.current = setTimeout(() => {
-            const dist = scrollHeight - scrollTop - clientHeight;
-            setShowFloatButton(dist > 300);
+            // Re-read metrics to ensure we have the SETTLED position
+            if (chatBoxRef.current) {
+                const { scrollTop: finalTop, scrollHeight: finalHeight, clientHeight: finalClient } = chatBoxRef.current;
+                const dist = finalHeight - finalTop - finalClient;
+                // Use a small buffer (e.g., 5px) to account for sub-pixel differences
+                setShowFloatButton(dist > 300);
+            }
         }, 150);
 
     }, [isLoadingOlder, hasMoreOlder, getChattingData]);
@@ -873,7 +923,11 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
     }, [chat_messages]);
 
     const handleMessageSend = useCallback(async (message) => {
-        if (!message.trim() || isLoadingRef.current) return;
+        if (!message.trim() || isSendingRef.current) return;
+
+        isSendingRef.current = true;
+        isLoadingRef.current = true; // Temporary lock polling
+
         const now = new Date();
         const tempId = Date.now();
         const uiMsg = {
@@ -891,7 +945,6 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
         setChatMessages(prev => [...prev, uiMsg]);
         setTimeout(() => scrollToBottom('auto', true), 0);
         setReplyingTo(null); // Clear reply state after sending
-        isLoadingRef.current = true; // Temporary lock
 
         try {
             // User Request: Fix API call (Text should be JSON usually, but check if postForm was intended.
@@ -901,7 +954,7 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                 sender_id: user.user_id,
                 chat_msg: message,
                 type: 'text',
-                reply_to: uiMsg.reply_to, // Include reply_to in API payload
+                ...(uiMsg.reply_to && { reply_to: uiMsg.reply_to }) // Only add if exists
             };
             const response = await ApiClient.postForm('/api/openchat/message', payload);
             const realChatSn = response.data?.chat_sn;
@@ -923,22 +976,35 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                 await ChatStorage.saveMessages([confirmedData]);
 
                 // Reconcile: Update the optimistic message with real chat_sn
-                setChatMessages(prev => prev.map(m => {
-                    if (m.id === tempId) {
-                        return { ...m, chat_sn: realChatSn, isUploading: false }; // Clear isUploading
+                setChatMessages(prev => {
+                    // Check if realChatSn already exists (from background poll)
+                    const exists = prev.some(m => m.chat_sn === realChatSn && m.id !== tempId);
+                    if (exists) {
+                        // Remove optimistic message since real one is already there
+                        return prev.filter(m => m.id !== tempId);
                     }
-                    return m;
-                }));
+
+                    return prev.map(m => {
+                        if (m.id === tempId) {
+                            return { ...m, chat_sn: realChatSn, isUploading: false }; // Clear isUploading
+                        }
+                        return m;
+                    });
+                });
             } else {
                 // If API call was successful but no chat_sn returned, remove optimistic message
                 setChatMessages(prev => prev.filter(m => m.id !== tempId));
             }
+
+            lastChatSnRef.current = realChatSn;
+
         } catch (e) {
             console.error('Message Send Failed:', e);
             // Optionally mark error or remove
             setChatMessages(prev => prev.filter(m => m.id !== tempId));
         } finally {
             isLoadingRef.current = false; // Release lock
+            isSendingRef.current = false;
         }
     }, [room_sn, user.user_id, user.name, user.level, user.color, formatTime, scrollToBottom, replyingTo]);
 
@@ -1031,8 +1097,10 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
 
             if (res && res.list) {
                 const users = res.list.map(u => ({
-                    name: u.nickname,
-                    level: u.user_lvl
+                    user_id: u.user_id,
+                    nickname: u.nickname,
+                    level: u.user_lvl,
+                    time: u.reg_dt ? formatTime(new Date(u.reg_dt)) : ''
                 }));
                 setLikeModalData({ show: true, users, loading: false });
             } else {
@@ -1153,6 +1221,19 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
     };
 
 
+    // Helper: Trigger Shake Animation
+    const triggerShakeAnimation = (targetEl) => {
+        const bubbleEl = targetEl.querySelector('.bubble');
+        if (bubbleEl) {
+            bubbleEl.classList.remove('shake-msg', 'highlight-msg');
+            void bubbleEl.offsetWidth; // Force Reflow
+            bubbleEl.classList.add('shake-msg', 'highlight-msg');
+            setTimeout(() => {
+                bubbleEl.classList.remove('shake-msg', 'highlight-msg');
+            }, 2000);
+        }
+    };
+
     // Return to Original Message Logic
     const handleReturnToOrigin = () => {
         if (returnScrollPos !== null && chatBoxRef.current) {
@@ -1162,18 +1243,69 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
             });
             setShowReturnBtn(false);
             setReturnScrollPos(null);
+
+            // Animate Origin Message if exists
+            if (originChatSn) {
+                const originEl = document.getElementById(`msg-${originChatSn}`);
+                if (originEl) {
+                    // Slight delay to allow scroll to start/finish
+                    setTimeout(() => triggerShakeAnimation(originEl), 500);
+                }
+                setOriginChatSn(null);
+            }
         }
     };
 
-    const handleReplyJump = useCallback(() => {
-        if (chatBoxRef.current) {
+    // Handle Reply Link Click (Navigate to Target)
+    const handleReplyLinkClick = useCallback((targetSn, currentSn) => {
+        if (!targetSn) return;
+        const targetEl = document.getElementById(`msg-${targetSn}`);
+
+        if (targetEl && chatBoxRef.current) {
+            // 1. Save Current Position & Origin
             setReturnScrollPos(chatBoxRef.current.scrollTop);
+            setOriginChatSn(currentSn);
             setShowReturnBtn(true);
+
+            // 2. Scroll to Target
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // 3. Robust Animation Trigger (Wait for scroll end)
+            const container = chatBoxRef.current; // chat-messages ref
+            let lastScrollTop = container.scrollTop;
+            let checks = 0;
+            const checkScrollEnd = () => {
+                const currentScroll = container.scrollTop;
+                if (Math.abs(currentScroll - lastScrollTop) < 2) {
+                    checks++;
+                    if (checks >= 2) { // Stable for 2 checks (approx 100ms)
+                        triggerShakeAnimation(targetEl);
+                        return;
+                    }
+                } else {
+                    checks = 0;
+                    lastScrollTop = currentScroll;
+                }
+                requestAnimationFrame(checkScrollEnd);
+            };
+            // Start checking
+            requestAnimationFrame(checkScrollEnd);
+
+        } else {
+            // Target not found (maybe unloaded?)
+            Swal.fire({
+                icon: 'info',
+                text: '원본 메시지를 찾을 수 없습니다.',
+                timer: 1500,
+                showConfirmButton: false,
+                toast: true,
+                position: 'bottom'
+            });
         }
     }, []);
 
     // --- Message Render ---
-    const ChatMessage = React.memo(({ msg, parentMsg, setModalImage, translation, onTranslate, onDelete, onContextMenu, onLike, onShowLikers, onReplyJump }) => {
+    const ChatMessage = React.memo(({ msg, parentMsg, setModalImage, translation, onTranslate, onDelete, onContextMenu, onLike, onShowLikers, onReplyLinkClick }) => {
         const isMine = msg.sender === 'me';
         // Soft Delete Logic
         if (msg.is_deleted) {
@@ -1229,61 +1361,8 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
 
         const handleReplyClick = (e) => {
             e.stopPropagation();
-            if (!msg.reply_to) return;
-            const targetEl = document.getElementById(`msg-${msg.reply_to}`);
-
-            if (targetEl) {
-                // Find local bubble to animate
-                const bubbleEl = targetEl.querySelector('.bubble');
-                if (!bubbleEl) return;
-
-                const container = targetEl.closest('.chat-messages');
-
-                // Animation Trigger Helper
-                const triggerAnimate = () => {
-                    bubbleEl.classList.remove('shake-msg', 'highlight-msg'); // Reset just in case
-                    // Force reflow
-                    void bubbleEl.offsetWidth;
-
-                    bubbleEl.classList.add('shake-msg');
-                    bubbleEl.classList.add('highlight-msg');
-
-                    setTimeout(() => {
-                        bubbleEl.classList.remove('shake-msg');
-                        bubbleEl.classList.remove('highlight-msg');
-                    }, 2000);
-                };
-
-                if (container) {
-                    let scrollTimeout;
-
-                    const onScrollEnd = () => {
-                        container.removeEventListener('scroll', handleScroll);
-                        triggerAnimate();
-                    };
-
-                    const handleScroll = () => {
-                        clearTimeout(scrollTimeout);
-                        // Wait for scroll to stop (100ms stable)
-                        scrollTimeout = setTimeout(onScrollEnd, 100);
-                    };
-
-                    container.addEventListener('scroll', handleScroll, { passive: true });
-
-                    // Initial Fallback: If no scroll happens (e.g. already in view), trigger anyway
-                    // If scroll starts, this is cleared by handleScroll
-                    scrollTimeout = setTimeout(onScrollEnd, 150);
-                } else {
-                    // No container found (unlikely), valid fallback
-                    triggerAnimate();
-                }
-
-                targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-                // Trigger Parent Logic to show Return Button
-                if (onReplyJump) onReplyJump();
-            } else {
-                console.log('Original message not found');
+            if (msg.reply_to && onReplyLinkClick) {
+                onReplyLinkClick(msg.reply_to, msg.chat_sn);
             }
         };
 
@@ -1369,7 +1448,14 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                                     <div>{msg.text}</div>
                                 )
                             )}
-                            {(msg.image && msg.text == '') && <img src={msg.image} className="chat-img" onClick={() => setModalImage(msg.image)} alt="chat" />}
+                            {(msg.image && msg.text == '') && (
+                                <ImageWithSkeleton
+                                    src={msg.image}
+                                    className="chat-img"
+                                    onClick={() => setModalImage(msg.image)}
+                                    alt="chat"
+                                />
+                            )}
                             {translation && <div className="translated-text">{translation} <span>(번역됨)</span></div>}
                             {!isMine && !translation && hasText && (
                                 <button className="trans-btn-inline" onClick={() => onTranslate(msg.chat_sn, msg.text)}>번역</button>
@@ -1648,11 +1734,12 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                             setModalImage={setModalImage}
                             translation={translationMap[msg.chat_sn]}
                             onTranslate={handleTranslate}
-                            onDelete={handleDeleteMessage}
+
                             onContextMenu={handleContextMenuAction}
                             onLike={handleLike}
                             onShowLikers={handleShowLikers}
-                            onReplyJump={handleReplyJump}
+                            onReplyLinkClick={handleReplyLinkClick}
+                            onDelete={handleDeleteMessage}
                         />
                     ))}
                 </div>
@@ -1663,7 +1750,56 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
             <div className="chat-input-wrapper">
                 <ReplyIndicator replyingTo={replyingTo} onClose={() => setReplyingTo(null)} />
                 <div className="input-row">
-                    <button className="icon-btn" onClick={() => document.getElementById('media-upload-input').click()}>
+                    <button className="icon-btn" onClick={async () => {
+
+                        /*
+                        // 파일 첨부 버튼 무조건 클릭되도록
+                        document.getElementById('media-upload-input').click();
+                        */
+
+
+
+                        // 권한에 의한 파일 첨부 버튼 제어
+                        const isGranted = await requestCameraPermission();
+
+                        if (isGranted) {
+                            document.getElementById('media-upload-input').click();
+                        } else {
+
+                            // ios
+                            if (window.webkit?.messageHandlers?.native?.postMessage) {
+                                window.webkit.messageHandlers.native.postMessage(
+                                    'requestCameraPermissionAlert'
+                                );
+                            }
+                            // Android WebView
+                            else if (window.native?.postMessage) {
+                                //window.native.postMessage('requestCameraPermission');
+                                Swal.fire({
+                                    title: '카메라 권한 필요',
+                                    html: `
+                                        <div style="font-size: 15px; color: #495057; line-height: 1.6;">
+                                            사진 촬영 및 파일 첨부를 위해<br/>
+                                            <b>카메라 접근 권한</b>이 필요합니다.<br/><br/>
+                                            휴대폰 <b>설정</b>에서 카메라 권한을<br/>
+                                            허용으로 변경해주세요.
+                                        </div>
+                                    `,
+                                    icon: 'warning',
+                                    confirmButtonText: '확인',
+                                    confirmButtonColor: '#4dabf7',
+                                    width: '320px',
+                                    padding: '1.5em'
+                                });
+                            }
+
+                            // else
+                            else {
+                                document.getElementById('media-upload-input').click();
+                            }
+                        }
+
+                    }}>
                         <ImageIcon size={24} />
                     </button>
                     <input id="media-upload-input" type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={handleFileSelect} />
@@ -1782,6 +1918,17 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                     100% { transform: translateY(0); }
                 }
                 .shake-msg { animation: shake-vertical 0.5s ease-in-out both; }
+                
+                /* Skeleton Loader */
+                .skeleton {
+                    background-color: #e0e0e0;
+                    animation: pulse 1.5s infinite;
+                }
+                @keyframes pulse {
+                    0% { opacity: 1; }
+                    50% { opacity: 0.5; }
+                    100% { opacity: 1; }
+                }
             `}</style>
         </>
     );

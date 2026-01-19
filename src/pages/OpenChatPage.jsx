@@ -479,6 +479,7 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
     const isScrollingRef = useRef(false);
     const isLoadingRef = useRef(false);
     const isSendingRef = useRef(false);
+    const isStatusSyncedRef = useRef(false); // [NEW] Track status sync
     const scrollTimeoutRef = useRef(null);
 
 
@@ -768,7 +769,8 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                 } else if (messagesToDisplay.length > 0) {
                     // Initial sync: Force scroll if it's the very first load
                     if (isInitial) {
-                        setTimeout(() => scrollToBottom('smooth'), 1000);
+                        // [MODIFIED] Defer scroll until status sync
+                        // setTimeout(() => scrollToBottom('smooth'), 1000);
                     } else {
                         scrollToBottom('smooth');
                     }
@@ -821,6 +823,12 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                         is_liked_by_me: status.is_liked_by_me
                     };
                 }));
+
+                // [NEW] Trigger Initial Scroll AFTER Status Sync
+                if (!isStatusSyncedRef.current) {
+                    isStatusSyncedRef.current = true;
+                    setTimeout(() => scrollToBottom('smooth', true), 50); // Use 'auto' for instant jump or 'smooth'
+                }
             }
         } catch (e) {
             console.error("Failed to poll chat status", e);
@@ -829,6 +837,14 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
 
     useEffect(() => {
         getChattingData(true);
+
+        // [NEW] Fallback Scroll Limit (2 seconds)
+        setTimeout(() => {
+            if (!isStatusSyncedRef.current) {
+                isStatusSyncedRef.current = true;
+                scrollToBottom('smooth');
+            }
+        }, 2000);
 
         intervalRef.current = setInterval(() => {
             getChattingData();
