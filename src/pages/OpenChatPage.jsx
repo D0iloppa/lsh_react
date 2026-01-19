@@ -614,7 +614,7 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                 if (dbMsgs.length < limit) {
                     const lastSn = dbMsgs.length > 0 ? dbMsgs[dbMsgs.length - 1].chat_sn : oldestSn;
                     const response = await ApiClient.get('/api/openchat/messages', {
-                        params: { room_sn, limit: limit - dbMsgs.length, direction: 'older', before_chat_sn: lastSn }
+                        params: { room_sn, limit: limit - dbMsgs.length, direction: 'older', before_chat_sn: lastSn, user_id: user.user_id }
                     });
 
                     if (response.data?.length > 0) {
@@ -641,6 +641,8 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                             id: item.chat_sn,
                             chat_sn: item.chat_sn,
                             is_deleted: item.is_deleted,
+                            like_count: item.like_count || 0,
+                            is_liked_by_me: !!item.is_liked_by_me,
                             sender: String(item.sender_id) === String(user.user_id) ? 'me' : 'other',
                             text: item.message || item.chat_msg || '',
                             image: item.image_url,
@@ -670,7 +672,7 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
 
                 const lastSn = lastChatSnRef.current || 0;
                 const response = await ApiClient.get('/api/openchat/messages', {
-                    params: { room_sn, limit, direction: 'newer', last_chat_sn: lastSn }
+                    params: { room_sn, limit, direction: 'newer', last_chat_sn: lastSn, user_id: user.user_id }
                 });
 
                 if (response.data?.length > 0) {
@@ -721,6 +723,8 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                     id: item.chat_sn,
                     chat_sn: item.chat_sn,
                     is_deleted: item.is_deleted,
+                    like_count: item.like_count || 0,
+                    is_liked_by_me: !!item.is_liked_by_me,
                     sender: String(item.sender_id) === String(user.user_id) ? 'me' : 'other',
                     text: item.message || item.chat_msg || '',
                     image: item.image_url,
