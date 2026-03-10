@@ -139,4 +139,4 @@ export const PAGE_COMPONENTS = {
 };
 
 // 기본 페이지
-export const DEFAULT_PAGE = PAGES.HOME;
+export const DEFAULT_PAGE = PAGES.OPENCHAT;

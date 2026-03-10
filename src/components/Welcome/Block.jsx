@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from "react-router-dom";
 
 const Block = () => {
-  const [lang, setLang] = useState('ko'); // 기본 언어: 한국어
+  const [lang, setLang] = useState('ko');
+  const navigate = useNavigate();
 
   useEffect(() => {
     window.history.pushState(null, '', window.location.href);
@@ -12,76 +14,152 @@ const Block = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  /*
   const messages = {
-  ko: {
-    title: '서비스 이용이 제한되었습니다.',
-    desc: (
-      <>
-        최근 <strong>고객님의 비정상적인 이용 행위(잦은 예약 취소)</strong>가 <br />
-        확인되어 서비스 정책에 따라 이용이 제한되었습니다. <br />
-        <br />
-        서비스의 안정적인 운영과 다른 이용자분들의 <br />
-        원활한 예약을 위한 조치입니다. <br />
-        양해 부탁드립니다.
-      </>
-    ),
-  },
-  en: {
-    title: 'Service Access Restricted',
-    desc: (
-      <>
-        Due to <strong>frequent reservation cancellations</strong> recently, <br />
-        your access has been restricted in accordance with our policy. <br />
-        <br />
-        This measure ensures stable service operation <br />
-        and a smooth booking experience for all users. <br />
-        We appreciate your understanding.
-      </>
-    ),
-  },
-  vi: {
-    title: 'Tạm khóa dịch vụ',
-    desc: (
-      <>
-        Gần đây, hệ thống phát hiện <strong>bạn hủy đặt chỗ nhiều lần</strong>, <br />
-        vì vậy quyền sử dụng của bạn bị giới hạn theo chính sách dịch vụ. <br />
-        <br />
-        Biện pháp này nhằm đảm bảo hệ thống hoạt động ổn định <br />
-        và giúp mọi người đặt chỗ thuận lợi hơn. <br />
-        Rất mong bạn thông cảm.
-      </>
-    ),
-  },
-  ja: {
-    title: '一時的に利用制限中',
-    desc: (
-      <>
-        最近、<strong>頻繁な予約キャンセル</strong>が確認されたため、 <br />
-        サービス方針に基づきご利用を一時的に制限しています。 <br />
-        <br />
-        安定した運営と他のお客様の円滑な予約のための措置です。 <br />
-        ご理解とご協力をお願いいたします。
-      </>
-    ),
-  },
-  cn: {
-    title: '服务使用受限',
-    desc: (
-      <>
-        由于您最近<strong>多次取消预约</strong>， <br />
-        根据服务政策，您的使用权限已被暂时限制。 <br />
-        <br />
-        此措施旨在确保服务稳定运行 <br />
-        并为其他用户提供顺畅的预约体验。 <br />
-        感谢您的理解与配合。
-      </>
-    ),
-  },
-};
+    ko: {
+      title: '서비스 준비 중입니다',
+      desc: (
+        <>
+          더 나은 서비스를 제공하기 위해 <br />
+          <strong>시스템 개편이 진행 중입니다.</strong> <br />
+          <br />
+          향상된 서비스로 다시 찾아뵙겠습니다. <br />
+          감사합니다.
+        </>
+      ),
+      btn: '오픈채팅'
+    },
+    en: {
+      title: 'Service Under Preparation',
+      desc: (
+        <>
+          We are currently performing <br />
+          <strong>system improvements</strong> to provide better service. <br />
+          <br />
+          We will return soon with an improved experience. <br />
+          Thank you.
+        </>
+      ),
+      btn: 'Open Chat'
+    },
+    vi: {
+      title: 'Đang chuẩn bị dịch vụ',
+      desc: (
+        <>
+          Hệ thống đang được <strong>nâng cấp</strong> <br />
+          để mang đến dịch vụ tốt hơn. <br />
+          <br />
+          Chúng tôi sẽ sớm quay lại với phiên bản mới. <br />
+          Xin cảm ơn.
+        </>
+      ),
+      btn: 'Chat'
+    },
+    ja: {
+      title: 'サービス準備中',
+      desc: (
+        <>
+          より良いサービス提供のため <br />
+          <strong>システム改編作業</strong>を行っています。 <br />
+          <br />
+          新しいサービスでまもなく戻ってきます。 <br />
+          ありがとうございます。
+        </>
+      ),
+      btn: 'チャット'
+    },
+    cn: {
+      title: '服务准备中',
+      desc: (
+        <>
+          为了提供更好的服务体验， <br />
+          当前正在进行<strong>系统升级</strong>。 <br />
+          <br />
+          我们将很快以更好的服务再次与您见面。 <br />
+          感谢您的理解。
+        </>
+      ),
+      btn: '在线聊天'
+    },
+  };
+  */
 
+
+  const messages = {
+    ko: {
+      title: '서비스 종료 안내',
+      desc: (
+        <>
+          그동안의 성원에 감사드립니다. <br />
+          더 나은 가치를 제공해 드리기 위해, <br />
+          기존 서비스는 여기서 마침표를 찍게 되었습니다. <br />
+          <br />
+          감사합니다.
+        </>
+      ),
+      btn: '오픈채팅'
+    },
+    en: {
+      title: 'Service Termination Notice',
+      desc: (
+        <>
+          Thank you for your support. <br />
+          To provide better value, <br />
+          we are ending our current service. <br />
+          <br />
+          Thank you.
+        </>
+      ),
+      btn: 'Open Chat'
+    },
+    vi: {
+      title: 'Thông báo kết thúc dịch vụ',
+      desc: (
+        <>
+          Cảm ơn sự ủng hộ của bạn. <br />
+          Để mang lại giá trị tốt hơn, <br />
+          dịch vụ hiện tại xin được kết thúc tại đây. <br />
+          <br />
+          Xin cảm ơn.
+        </>
+      ),
+      btn: 'Chat'
+    },
+    ja: {
+      title: 'サービス終了のご案内',
+      desc: (
+        <>
+          これまでのご愛顧에感謝いたします。 <br />
+          より良い価値を提供するため、 <br />
+          現行サービスはここで終了させていただくこととなりました。 <br />
+          <br />
+          ありがとうございます。
+        </>
+      ),
+      btn: 'チャット'
+    },
+    cn: {
+      title: '服务终止通知',
+      desc: (
+        <>
+          感谢您一直以来的支持。 <br />
+          为了提供更好的价值， <br />
+          现行服务将在此画上句号。 <br />
+          <br />
+          谢谢。
+        </>
+      ),
+      btn: '在线聊天'
+    },
+  };
+
+  const openChat = () => {
+    navigate('/openchat');
+  };
 
   return (
     <div style={styles.container}>
+
       {/* 언어 선택 */}
       <div style={styles.langSelector}>
         <select
@@ -97,12 +175,22 @@ const Block = () => {
         </select>
       </div>
 
-      {/* 본문 */}
+      {/* 아이콘 */}
       <div style={styles.iconContainer}>
-        <div style={styles.icon}>🚫</div>
+        <div style={styles.icon}>🚧</div>
       </div>
+
+      {/* 제목 */}
       <h1 style={styles.title}>{messages[lang].title}</h1>
+
+      {/* 메시지 */}
       <p style={styles.message}>{messages[lang].desc}</p>
+
+      {/* 버튼 */}
+      <button style={styles.button} onClick={openChat}>
+        {messages[lang].btn}
+      </button>
+
     </div>
   );
 };
@@ -131,13 +219,38 @@ const styles = {
     fontSize: '14px',
     backgroundColor: '#fff',
   },
-  iconContainer: { marginBottom: '24px' },
-  icon: { fontSize: '120px', animation: 'gentlePulse 2.5s infinite' },
-  title: { fontSize: '30px', fontWeight: 'bold', marginBottom: '16px', color: '#1e293b' },
-  message: { fontSize: '17px', color: '#475569', lineHeight: '1.7' },
+  iconContainer: {
+    marginBottom: '24px'
+  },
+  icon: {
+    fontSize: '110px',
+    animation: 'gentlePulse 2.5s infinite'
+  },
+  title: {
+    fontSize: '30px',
+    fontWeight: 'bold',
+    marginBottom: '16px',
+    color: '#1e293b'
+  },
+  message: {
+    fontSize: '17px',
+    color: '#475569',
+    lineHeight: '1.7',
+    marginBottom: '30px'
+  },
+  button: {
+    padding: '12px 28px',
+    fontSize: '16px',
+    fontWeight: '600',
+    borderRadius: '10px',
+    border: 'none',
+    backgroundColor: '#f59e0b',
+    color: '#fff',
+    cursor: 'pointer'
+  }
 };
 
-// 부드러운 아이콘 애니메이션
+// 아이콘 애니메이션
 const styleSheet = document.createElement('style');
 styleSheet.textContent = `
   @keyframes gentlePulse {

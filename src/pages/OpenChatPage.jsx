@@ -1553,7 +1553,7 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                 .chat-container {
                     display: flex;
                     flex-direction: column;
-                    height: calc(100dvh - 140px - var(--safe-bottom, 0px));
+                    height: calc(100dvh - 50px - var(--safe-bottom, 0px));
                     background: #ffffff; /* 흰색 배경 */
                     overflow: hidden;
                     position: relative;
@@ -1662,7 +1662,6 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
 
                 .chat-input-wrapper {
                     position: fixed;
-                    bottom: calc(92px + var(--safe-bottom, 0px));
                     left: 0; right: 0;
                     background: #fff;
                     display: flex;
@@ -1713,8 +1712,8 @@ const OpenChatPage = ({ navigateToPage, navigateToPageWithData, PAGES, goBack, r
                             }
                         }
                     ]}
-                    title={roomTitle} showBack={true} onBack={() => {
-                        navigateToPage(PAGES.HOME);
+                    title={roomTitle} showBack={false} onBack={() => {
+                        navigateToPage(PAGES.OpenChatPage);
                     }} />
 
                 <div className="chat-messages" ref={chatBoxRef}>

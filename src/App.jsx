@@ -28,6 +28,8 @@ import PrivacyView from '@components/Privacy';
 
 import MainApp from '@layout/MainApp';
 
+import MainApp2 from '@layout/MainApp2';
+
 import Cocktail from '@components/CocktailIcon';
 import HatchPattern from '@components/HatchPattern';
 
@@ -36,7 +38,7 @@ import PurchasePage from '@components/PurchasePage';
 import DownloadIOS from '@components/Welcome/downloadIOS';
 import DownloadAndroid from '@components/Welcome/downloadAndroid';
 import Block from '@components/Welcome/Block';
-
+import OpenChatPage from '@pages/OpenChatPage';
 
 import Swal from 'sweetalert2';
 
@@ -111,10 +113,10 @@ const AppRoutes = () => {
           '8a19307d021cf7a5'
         ];
 
-        if (!allowedUUIDs.includes(uuid)) {
-          // navigate('/block');
-          // return;
-        }
+        //if (!allowedUUIDs.includes(uuid)) {
+        navigate('/block');
+        return;
+        //}
 
       } catch (err) {
         console.error('UUID 오류:', err);
@@ -139,6 +141,8 @@ const AppRoutes = () => {
         localStorage.setItem('versionCheck', JSON.stringify(vcObj));
       };
 
+      navigate('/block');
+      return;
       // 분기 기준 버전
       const andVersion = '1.0.24';
       const iosVersion = '1.0.11';
@@ -266,6 +270,15 @@ const AppRoutes = () => {
           <Block />
         }
       />
+
+      <Route
+        path="/openchat"
+        element={
+          <MainApp2 />
+        }
+      />
+
+
 
 
       {/* 3. 회원가입 페이지 */}

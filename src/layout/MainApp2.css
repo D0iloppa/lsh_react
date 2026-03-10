@@ -1,0 +1,204 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: white;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  overflow: hidden; /* ❗ 스크롤 자체 제거 */
+   padding-bottom: env(safe-area-inset-bottom);
+}
+
+body {
+ 
+}
+
+img {
+  -webkit-touch-callout: none;     /* iOS에서 꾹 누를 때 저장 등 메뉴 차단 */
+}
+
+.main-app-container {
+  height: 100vh; /* 또는 height: 100dvh */
+  /* min-height는 제거하거나 조건부로 사용 */
+  max-width: 28rem;
+  margin: 0 auto;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+}
+.content-area {
+    flex: 1;
+    overflow-y: auto;
+    height: calc(100% - (0px + env(safe-area-inset-bottom)));
+    padding-bottom: calc(40px + env(safe-area-inset-bottom));
+
+    -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
+  }
+
+.bottom-navigation {
+  /* 기존 스타일 유지 */
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 28rem;
+  z-index: 10000;
+  background-color: white;
+  border-top: 1px solid #1f2937;
+  padding: 1rem 1rem;
+
+  /* 추가: 배경색 아래까지 확장 */
+  box-shadow: inset 0 -9999px white;
+  padding-bottom: calc(1rem + var(--safe-bottom, 0px));
+
+}
+
+  .nav-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+  
+  
+  .nav-item {
+    font-family: 'BMHanna', 'Comic Sans MS', cursive, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    transform: rotate(0.5deg);
+  }
+  
+  .nav-item:hover {
+    transform: rotate(-0.5deg) scale(1.05);
+  }
+  
+  .nav-item.active {
+    color: #1f2937;
+    font-weight: 600;
+    transform: rotate(-1deg) scale(1.1);
+  }
+
+  
+  .nav-item.active .nav-icon {
+    stroke: var(--custom-stroke, var(--theme-button-bg)) !important;
+  }
+
+  
+  .nav-item:not(.active) {
+    color: #6b7280;
+  }
+  
+  .nav-icon {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2;
+  }
+  
+  .nav-label {
+    font-size: 0.75rem;
+    text-align: center;
+    line-height: 1;
+  }
+  
+.nav-icon[color] {
+    stroke: attr(color) !important;
+}
+
+  /* 스케치 스타일 효과 */
+  .nav-item:nth-child(1) { transform: rotate(1deg); }
+  .nav-item:nth-child(2) { transform: rotate(-0.5deg); }
+  .nav-item:nth-child(3) { transform: rotate(0.8deg); }
+  .nav-item:nth-child(4) { transform: rotate(-1.2deg); }
+  
+  .nav-item.active:nth-child(1) { transform: rotate(1.5deg) scale(1.1); }
+  .nav-item.active:nth-child(2) { transform: rotate(-1deg) scale(1.1); }
+  .nav-item.active:nth-child(3) { transform: rotate(1.3deg) scale(1.1); }
+  .nav-item.active:nth-child(4) { transform: rotate(-1.7deg) scale(1.1); }
+
+  /* 하단 지도 아이콘 스타일 */
+.bottom-map-section {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+
+.map-icon-container {
+  border: 1px solid #666;
+  border-radius: 20px;
+  width: 84px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #374151;
+  color: white;
+
+  /* 하단 네비게이션 피해서 위로 올리기 */
+  margin-bottom: var(--safe-bottom, 0px);
+}
+.map-icon-container:hover {
+  background: #f3f4f6;
+}
+
+.scroll-up-btn {
+  position: fixed;
+  bottom: calc(100px + var(--safe-bottom, 0px));
+  right: 11px;
+  background: #374151;
+  color: white;
+  border: 1px solid #666;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.scroll-up-btn:active {
+  transform: scale(0.95);
+}
+
+/* MainApp.css에 추가할 스타일 */
+.nav-icon-container {
+  position: relative;
+  display: inline-block;
+}
+
+.chat-badge {
+  position: absolute;
+    top: -8px;
+    right: -12px;
+    background: #ef4444;
+    color: white;
+    border-radius: 999px; /* Fully rounded pill */
+    padding: 1px 4px;
+    font-size: 9px;
+    font-weight: 700;
+    min-width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    border: 1.5px solid white;
+    line-height: 1;
+    z-index: 10;
+    transition: all 0.2s ease;
+}
+  
