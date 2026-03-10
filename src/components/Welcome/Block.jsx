@@ -239,6 +239,7 @@ const styles = {
     marginBottom: '30px'
   },
   button: {
+    display: 'none',
     padding: '12px 28px',
     fontSize: '16px',
     fontWeight: '600',
